@@ -8208,44 +8208,44 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/software.amazon.awssdk/s3@2.57.6?type=jar",
+      "bom-ref" : "pkg:maven/software.amazon.awssdk/s3@2.57.9?type=jar",
       "group" : "software.amazon.awssdk",
       "name" : "s3",
-      "version" : "2.57.6",
+      "version" : "2.57.9",
       "description" : "The AWS Java SDK for Amazon S3 module holds the client classes that are used for communicating with Amazon Simple Storage Service",
       "scope" : "required",
       "hashes" : [
         {
           "alg" : "MD5",
-          "content" : "c82ade21988adb0f6726a14b8e9fa41c"
+          "content" : "cf2a5a4a915ba859cadcb25799c8ea31"
         },
         {
           "alg" : "SHA-1",
-          "content" : "9566ccd6ffb0ac410c8f91ad66204677858c2463"
+          "content" : "86bba660292f29df153c83d9ff02d2c60e7193a3"
         },
         {
           "alg" : "SHA-256",
-          "content" : "6509daed91329aad09cbd5dd50aa60563e9d622fc1d0884f9e7284a41d66639a"
+          "content" : "0d44d0dd55052814b9fb01cc92b7709eb000d1de89b437f3e35f2fb627fbffbd"
         },
         {
           "alg" : "SHA-512",
-          "content" : "7c5d5e90f50b996497577a46fb01816ba2ec4d1275c3ab0acdc863c58591c778f655d0eb7e69308338d7024386d1716aec283099d44bd2b78e104078464654ac"
+          "content" : "15a86863ebdcb92f736573445c79490f537cb5d16387ef35b5229056beeacf2f178403daa3354621cd573290e1b44d4f4a045649b52cecd2483f9cdfb500fdfb"
         },
         {
           "alg" : "SHA-384",
-          "content" : "0c34704c99f797c2a1816044b7c0e96348d509c6fbd7b8a1a0e09126de898050a336457b6fa8943fa36dfdb255dc0d69"
+          "content" : "a4de8e35bf1db49e0376741c3dd9dcdb033a24422c23945117fe0c3c51824f94c83d43182720fada81db57d06dc85fc4"
         },
         {
           "alg" : "SHA3-384",
-          "content" : "e817fa7adec678195259031ea9074b1e530a0c70ca86d55f3b939ca442653dd384b6d85610edc572528e21624c2f92aa"
+          "content" : "394f613e799cea8c23533a5cb1fbec9253b5da0e71e9de9695efa9cd332861a984dff3df04d73a1eda7a5e43ef9dbd52"
         },
         {
           "alg" : "SHA3-256",
-          "content" : "b6ed56a11e4b1fe917ae152af750375e3ed1aaea7e0b58ce38073666af0128ae"
+          "content" : "617013abec996b9829ad94c0225288ddbd045c35c0856f3adedd7e6937eb253d"
         },
         {
           "alg" : "SHA3-512",
-          "content" : "153be93ca2a5c26808dc242b39974c66744bc2db40c03c281d947cdc42f33cf77098d219932c1d1781b1e1978f13dd1bc924c90e954ec54f759173eef127f5e5"
+          "content" : "ec0f97881d43d9594926e86cea64dc64e2791e68fd507e2a5432f316a4ef07b32dd291ecbc9f539b033be2f34169b0aed07ce4b80795e7b77b1fdbdb1cafe630"
         }
       ],
       "licenses" : [
@@ -8255,7 +8255,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/software.amazon.awssdk/s3@2.57.6?type=jar",
+      "purl" : "pkg:maven/software.amazon.awssdk/s3@2.57.9?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -8269,44 +8269,44 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/software.amazon.awssdk/aws-xml-protocol@2.57.6?type=jar",
+      "bom-ref" : "pkg:maven/software.amazon.awssdk/aws-xml-protocol@2.57.9?type=jar",
       "group" : "software.amazon.awssdk",
       "name" : "aws-xml-protocol",
-      "version" : "2.57.6",
+      "version" : "2.57.9",
       "description" : "The AWS SDK for Java - module holds the classes for AWS Xml protocol",
       "scope" : "required",
       "hashes" : [
         {
           "alg" : "MD5",
-          "content" : "caa8700bc9a3619655a1cab5e4c22a12"
+          "content" : "e27ed0ce91af18364e01ca7b779ccae7"
         },
         {
           "alg" : "SHA-1",
-          "content" : "7fbfac1d2bba52182387a1dbd9edf8c033f20d89"
+          "content" : "2816418b15a40acd3c2d5b8c46c349b759596c33"
         },
         {
           "alg" : "SHA-256",
-          "content" : "e41d85d3ea1e4cb690acea810328926f32c6ea8e88daebe5c4fa8009f320e4bf"
+          "content" : "141722f7d5bf5fc559dc7c01f5b9eb2bf67c91af0293bdd2797f67f44efafd7e"
         },
         {
           "alg" : "SHA-512",
-          "content" : "ef698b0dc5638887d132f3bb267c38a5a9aba1a419d23331208a2a909e87451f7ee2b0061bd15fb8cac85d2868b44adf0c44536db4494a7b148a029c0bca0e15"
+          "content" : "080a6f7899da919e9ef508513fe5e108170729491cd4232763850d52821c2007b3d9c99355537ef614e900bd29cedfe879bd5166ffa040d2d474a72f331e28a1"
         },
         {
           "alg" : "SHA-384",
-          "content" : "61b58c7874d6cef46b58367af393726d015bc5b8e7987baee819098087a60ab25e7fd7447f7cb6d579853e6cc1053d09"
+          "content" : "3a7438795ad9ccdaf4eff94acd46e75da82d9c1e44218c0ac81a82fd822c579778f3926acf47e10203d31f7c70ad9e5c"
         },
         {
           "alg" : "SHA3-384",
-          "content" : "b56d1bfa6bb22c78b645b8a49865e7b24bbe5f98dc88bf1ad38282016574bce9aaacec7f9ceaddd9eceb375fddc18f8f"
+          "content" : "4361d78b9400fa25fec9398b25bd3d0c14c30fa8ab3d099eb46fa4989e12f21345db6aac4c5bce8b60bbcaf30cab6524"
         },
         {
           "alg" : "SHA3-256",
-          "content" : "922dee39192462d64ac8d8efdfa4da45e1c515513548274e197619775682d4f7"
+          "content" : "84f7f40dfed7922b3d811ff4cca28a114712dd9213c8a8344e9fa8ce955aadea"
         },
         {
           "alg" : "SHA3-512",
-          "content" : "64fe00f51e1f13a5fc7af839d5406ee5a7afe979aadae06c9a30987fe53e2d715744a9eb214370fd0dcfd477717d5ec18f9b7507d51cfa63714beb0df794ba00"
+          "content" : "5e822aa7cfec2c32fed7793e4a96e7832430860ac748a40123da123f12618bc22e5bfe9ac6ab21c09dfb9ce56604f8f92f19db21266466b9aa6b4465e2f6a2a5"
         }
       ],
       "licenses" : [
@@ -8316,7 +8316,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/software.amazon.awssdk/aws-xml-protocol@2.57.6?type=jar",
+      "purl" : "pkg:maven/software.amazon.awssdk/aws-xml-protocol@2.57.9?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -8330,44 +8330,44 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/software.amazon.awssdk/aws-query-protocol@2.57.6?type=jar",
+      "bom-ref" : "pkg:maven/software.amazon.awssdk/aws-query-protocol@2.57.9?type=jar",
       "group" : "software.amazon.awssdk",
       "name" : "aws-query-protocol",
-      "version" : "2.57.6",
+      "version" : "2.57.9",
       "description" : "The AWS SDK for Java - module holds the classes for AWS Query protocol",
       "scope" : "required",
       "hashes" : [
         {
           "alg" : "MD5",
-          "content" : "ff2f497c39b73dc8f09f58cf5df4bb88"
+          "content" : "2b99a40cb8dafbe292e667884fc83d10"
         },
         {
           "alg" : "SHA-1",
-          "content" : "31b86bec60b4305c6542eede5689dba31dafa59b"
+          "content" : "68aa0b21efb4fc3863021c40fd1c51ce18f3a395"
         },
         {
           "alg" : "SHA-256",
-          "content" : "5f985f28b1cdec4aa5e0e131f686a0d41b5014ec8b3d636c3fe959e1c6b43a2d"
+          "content" : "fc3efdf4fd76f7fc33118570fcb6c66d2512b4510f1181bb4d974276f3655c0d"
         },
         {
           "alg" : "SHA-512",
-          "content" : "e5e6dcd6bf8057c4ff7af19a33b203c4f103da4458b24c2699e4e46b861bbcc6b3f18961051e158a51c376564169dd43aa4757acd898594146b085e31f14e09c"
+          "content" : "0206d186f9866b9b9c99e25d66db5a8522c8f0820c7be06194c1d5fe6e1a7fdbd501d289860b0dc83e03f8906efd91aea0b78524f91f9c3a274a0ee1e9b8cd59"
         },
         {
           "alg" : "SHA-384",
-          "content" : "28c59464566aa049b6d8a713d4310d36a721ee0d04b185bbea98a63be2b6df047c1587cb26edf098076ecbeec67bff0c"
+          "content" : "c64b5fd1275e6a3fad9fe692edc3fea4c5b7b7155a7f9619602b13a3391c1c7af10edec86d55c4544039b8f1cacb5265"
         },
         {
           "alg" : "SHA3-384",
-          "content" : "317777a989cc9f6ea3de4d0ec870ddee8e74adcdff292966e7fea98fa0b3f5164bce5fa3cf8e90d6ca2db40fa1251589"
+          "content" : "16a617ad64bdadbf48654ffa2062879df55ca14be1f4e87b74a7a52b163595469f03a1550f0c977398c015c3a31f26e5"
         },
         {
           "alg" : "SHA3-256",
-          "content" : "0c4a11f8f8867547c4dc6c0ba170372f3a5029506fc920ebc5045ec3d8cb9e53"
+          "content" : "653e25eeee70c7a1e4d21a8ca5dbcb90a80d00a2282192d0a1414a2722176e49"
         },
         {
           "alg" : "SHA3-512",
-          "content" : "641956c4e263c7b37ca010c0f03bcbccae1417115d9788eace4413c9147617fda9745b99242a1df8538eb56cde53c68bb0ec0d234e5b91d7bc65b5a44bd92845"
+          "content" : "336cd44c7ade8a0d1ff38d4d086e38dfc66de03f60c88fb349e7a0420d1e378bb154c230f8958f801c0cba3124e74fafd97b230f72bf538fc9f711c9a849f4ab"
         }
       ],
       "licenses" : [
@@ -8377,7 +8377,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/software.amazon.awssdk/aws-query-protocol@2.57.6?type=jar",
+      "purl" : "pkg:maven/software.amazon.awssdk/aws-query-protocol@2.57.9?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -8391,44 +8391,44 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/software.amazon.awssdk/protocol-core@2.57.6?type=jar",
+      "bom-ref" : "pkg:maven/software.amazon.awssdk/protocol-core@2.57.9?type=jar",
       "group" : "software.amazon.awssdk",
       "name" : "protocol-core",
-      "version" : "2.57.6",
+      "version" : "2.57.9",
       "description" : "The AWS SDK for Java - module holds the core protocol classes",
       "scope" : "required",
       "hashes" : [
         {
           "alg" : "MD5",
-          "content" : "9a43880379e0242b3d8b2e4d906610e0"
+          "content" : "606dcf44aec66ea337cfeb7c1f23c4f4"
         },
         {
           "alg" : "SHA-1",
-          "content" : "4b30436d9bf38f6a9eeab45fdc1c4142a89510b5"
+          "content" : "f4e6fd8bd453ae7af74b8bea6949e7e2f6e36154"
         },
         {
           "alg" : "SHA-256",
-          "content" : "1da93feb7c2e28db4205c44d5faf8edc090114614f494ab53b3e68635525d4e4"
+          "content" : "f2667d4c72e96b13ef003c124b329533594d960edf659fa55a4b912d106847e1"
         },
         {
           "alg" : "SHA-512",
-          "content" : "c71ada9d0ecf3e1e410fcb855862b7aed47a616e45e19e1318a9d1c36db932941d6aaf9981be323c76d1e2c6667d7d6cd939a78ceba2d1265d9d4b21adf2afae"
+          "content" : "821730a7da5e032c20ba1c45566b85334bdcfa80e9df40eed648b6461b58ad14e28eabb89a54f5f13b2c65b4b916e6d38e6e51893275403fc130fb9419cfcf8c"
         },
         {
           "alg" : "SHA-384",
-          "content" : "19c86306469d63fec2a607acf4bde25f636216984d2418841d25fcf74edfb34e9440fcbc0ac3b64502944b842b4898ed"
+          "content" : "190b92f9da7e0eb8343d4c9d7f7606b9405348ad64810ac19f51ebf709b9afbe5aa3b17b037f172902c8e71f854975ef"
         },
         {
           "alg" : "SHA3-384",
-          "content" : "948421025fadbfa7b3cfe97b948cbe58a159738cc9672f88b765006d04180612bf859513e985cbad0534b6b5b0a5a167"
+          "content" : "01770a1485ead433e10ea6c1b1c12965689359f736fd95d624e3f894bdd678e10b7082eb826304030ae02c59978be4bd"
         },
         {
           "alg" : "SHA3-256",
-          "content" : "c0971407f81c7a98bec33a49876eaee48895626139e331cb18aa14f4bebb703f"
+          "content" : "a6f9ca93165bd7f63dfa1c21b9820681d7c06d189eafdb5116545329ac8758f7"
         },
         {
           "alg" : "SHA3-512",
-          "content" : "8df082a08902f47dd2972827eda59d4170e619a08cd9dc617814fa88dd9375a67354450a0e729046d70e1f60e5f02531b753a95b7c893b1398daad748a31b02e"
+          "content" : "72ab98940158131a64dacc96a9b61a75c2d1354f54d2da065077a1491392fa1edfba0d73683583fdd2eb31432ebf2f2d0e9007d50c1dee9d75c73092c4a2d3ce"
         }
       ],
       "licenses" : [
@@ -8438,7 +8438,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/software.amazon.awssdk/protocol-core@2.57.6?type=jar",
+      "purl" : "pkg:maven/software.amazon.awssdk/protocol-core@2.57.9?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -8452,44 +8452,44 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/software.amazon.awssdk/arns@2.57.6?type=jar",
+      "bom-ref" : "pkg:maven/software.amazon.awssdk/arns@2.57.9?type=jar",
       "group" : "software.amazon.awssdk",
       "name" : "arns",
-      "version" : "2.57.6",
+      "version" : "2.57.9",
       "description" : "The AWS SDK for Java - Arns module holds the classes that are related to AWS ARN",
       "scope" : "required",
       "hashes" : [
         {
           "alg" : "MD5",
-          "content" : "ffd82b4ef7ed26e1a40af48b8528e459"
+          "content" : "7af882371eb37ddaa3733fa74e502a8d"
         },
         {
           "alg" : "SHA-1",
-          "content" : "69b9f5577751bb21e83f8de51be1885548165143"
+          "content" : "3b35abd5884e0a5e71cab2f58642810743131ec3"
         },
         {
           "alg" : "SHA-256",
-          "content" : "299cd9307d70ec16529334522de1fb8203c13db1edfa8cb81216443f42316718"
+          "content" : "212cf54634a9beeb534d13512916e2743ab34d77b48fef896c9996b94f584f71"
         },
         {
           "alg" : "SHA-512",
-          "content" : "ef228aef44968bb11d9d4ebe0bfd51947183435ed9b5b6a25eb68d573e61cabad27e8a06d0d103e62dd659c60e84499e0732d6b3cf57553b7d01dceff1e4020b"
+          "content" : "e5195fc46031468b3058e4860a4977abe072406dab98190b3ba4754195649104243dd938e586b29a6a1c0ba94d0b20025ac6393231320ed7b68d4c4c84f32b70"
         },
         {
           "alg" : "SHA-384",
-          "content" : "9fd123bbabb039dce8ed9d140ed8cd2fe6731e777065e109a55d5bff48251f2a6e8e867a7aa1486ca3eff0cb74662ef5"
+          "content" : "d02ef6d7fc1e3a8f5f016365e73a59eed963cc7a22d7758da23ff36ddc56d361c68ef01e4f3dea8175c2213330d3a31c"
         },
         {
           "alg" : "SHA3-384",
-          "content" : "a2d159eb790d473177bfdec0622bdff5f39020f9abb296a825cf9621c999ec4bee2ecda6c17a520eb0aa1b012fd0845d"
+          "content" : "1877b9aa8bac792e2355225bc0bd2e332e60da8ef648d2dae78c8361239ef1ea4311cef3b7c095ecc445f1e0481e317b"
         },
         {
           "alg" : "SHA3-256",
-          "content" : "ecd474b9bec8dbfdbcbde4f220851a983037db36dbbbda67e51886177e6b4984"
+          "content" : "926fd849c77e21e4c4c23596c7b9f6d0967d88f2273786c90085b2129ed23da3"
         },
         {
           "alg" : "SHA3-512",
-          "content" : "0a11e9cc3af024a4e01414e8d72bf87c80562d498557b2c88ef9b6fd2428565b73a15e8fd11076421e586844e9f18831ffc22c9f5d695fb62806fe97212037a4"
+          "content" : "6a775a7bb893171cabdd6aa149f17cdda43dff16b7b2d4036ab171e5a50effa6a29d569d4c3da6aa964d16e60e78b9d7afbe73546185621b0db45e16d82d6671"
         }
       ],
       "licenses" : [
@@ -8499,7 +8499,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/software.amazon.awssdk/arns@2.57.6?type=jar",
+      "purl" : "pkg:maven/software.amazon.awssdk/arns@2.57.9?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -8513,44 +8513,44 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/software.amazon.awssdk/profiles@2.57.6?type=jar",
+      "bom-ref" : "pkg:maven/software.amazon.awssdk/profiles@2.57.9?type=jar",
       "group" : "software.amazon.awssdk",
       "name" : "profiles",
-      "version" : "2.57.6",
+      "version" : "2.57.9",
       "description" : "Profile module allows loading information from AWS configuration and credentials files.",
       "scope" : "required",
       "hashes" : [
         {
           "alg" : "MD5",
-          "content" : "f4883e3b9f0d56c50389d2966718db28"
+          "content" : "aedc4dd2fd7a2e8490ea4719e9281a41"
         },
         {
           "alg" : "SHA-1",
-          "content" : "ba5b1439cd8081133c22d499902f652d5e369bab"
+          "content" : "22d69a989e7e03fd5847e757dc293da1c5c1a09b"
         },
         {
           "alg" : "SHA-256",
-          "content" : "c3b87653a57ac2e7945c64be30d24bbbe40dd71a46560bd7a3a55b1e27e78851"
+          "content" : "174dc21047bff958ddf24be46b428a75207c578054ee0903ad0e7bca9f90f1da"
         },
         {
           "alg" : "SHA-512",
-          "content" : "592a91b31a120dbda495fb60538646ca985588da95a3bf87b45620c1ddefd321cfa78f1e53883425d5bba13b4daf55f8e38a26fb0df9be620553c5871d49d7e0"
+          "content" : "a895988b35cd9218d32417719fd20252c6b8451b4807cd4423ba37f59dc0b1206b42655935bd2aa0e816e7a0b00ae8b14bb354b83b3de25cf7d2cecc11e41a42"
         },
         {
           "alg" : "SHA-384",
-          "content" : "c6c25aa43c7828ad4b289a4d3ea4e4d72460f1bed8fdd64d155f952e67d5dbde25f505a1434d95ac4ec5874b55dd19db"
+          "content" : "5641d8dc775de5cf573be6a110c9248ef6ad3394077e7ff1616d94702295c5a30ce36a5dd5cb884cf74013f6b3fdfec6"
         },
         {
           "alg" : "SHA3-384",
-          "content" : "b6395306e970eb83b760317912bf79b014024c076c9d92ac9daea33ed8f19d64c91a619a67950836db0ffd3d6f60cd15"
+          "content" : "be74d3b9fcd2fa214559dabd11e240b61728c8ff56524b2bd507426f93b4da04016cd58c0d2dd08a4931b04bcad3fe42"
         },
         {
           "alg" : "SHA3-256",
-          "content" : "8ea1b3305543e9e77ccc19644d44a335745a70bfa308a14cd71c51403e84df30"
+          "content" : "de07167941f1c80ce2747620b52f47289e5399b98171094a4b18ce1631cc31ad"
         },
         {
           "alg" : "SHA3-512",
-          "content" : "952bc09f45e5a4187837c3f614b1b068bc44fa8f4b979c46162fff8341b9868db41595e97a75d880ed6f1e162597204a1adbe729ec29fd1177eeb8d583174534"
+          "content" : "a6e40e86875e862b153502391a5275f9db25d9a9ab3ccb5a16d08f2d5d95b88625fb35a65c79ea4f688b297317f83daebe6ecfaa7d1ac6322b9d015d8cc919b0"
         }
       ],
       "licenses" : [
@@ -8560,7 +8560,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/software.amazon.awssdk/profiles@2.57.6?type=jar",
+      "purl" : "pkg:maven/software.amazon.awssdk/profiles@2.57.9?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -8574,44 +8574,44 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/software.amazon.awssdk/crt-core@2.57.6?type=jar",
+      "bom-ref" : "pkg:maven/software.amazon.awssdk/crt-core@2.57.9?type=jar",
       "group" : "software.amazon.awssdk",
       "name" : "crt-core",
-      "version" : "2.57.6",
+      "version" : "2.57.9",
       "description" : "The AWS SDK for Java - AWS CRT Core holds common types that are built on the AWS Common Runtime",
       "scope" : "required",
       "hashes" : [
         {
           "alg" : "MD5",
-          "content" : "168dbc8b649b372f5ea57f19eeb8ef95"
+          "content" : "f79e7b9009f07a39ac42d9e60645ebb4"
         },
         {
           "alg" : "SHA-1",
-          "content" : "d75063e09f2c7b4bcdbf89bdca80e13c11962aef"
+          "content" : "c2f6126251f7d3b3f1aa1a94724fea701a5382a2"
         },
         {
           "alg" : "SHA-256",
-          "content" : "50d89ae26ce36d202d627623a3e2e6fd664c549ac9faa2489b4f101322a68fc0"
+          "content" : "7e7343b44d9e807e10b375c89c6ce2ab96048465d716a37bf0886b59f36c4a5b"
         },
         {
           "alg" : "SHA-512",
-          "content" : "a8d0f90f094c4def94e88751370e64d2279345322075de550268e81cb5a55b3a3806231913612ee731a7fc1299cc1d89e739a7d5764fdae4e6595f8a5f32ec68"
+          "content" : "c11dfb38aed5261733183bbc0a32e57844b762eea2ea02a46de422540bb4f3b6249b2a90d87666a45d6468dec71d565c1caea65464fa9b383a8265bc40eaf554"
         },
         {
           "alg" : "SHA-384",
-          "content" : "aa7dc65eca9f15c89ab87ce8f160bf597e85053e5061a49661e2195566739738a6887b0cf694cdcc1234a17674cfe817"
+          "content" : "c932a0d08db87ced76b58898ae41126f731f5c636adc171a52fb6514285407168fc49d59bbbf1d24453c25acd1d55537"
         },
         {
           "alg" : "SHA3-384",
-          "content" : "36806104311ff529f6debae7f49036c299478f593ac497aff28c1c7f3db8ba4c687c0d574b8b7a4fdbbb49024f5f1b7e"
+          "content" : "ed82339ebcef07ab4793a5fdce397d0534cddfdf8fda62d596f7a9c4bad5128ebbacb390c3021fc727a176cb37bfda9c"
         },
         {
           "alg" : "SHA3-256",
-          "content" : "1f5aa9f4447c4d8661c0bc7f825486b58cb03a67f66928bf6c0f85219bcff1d0"
+          "content" : "43f97c54bb480ece9831d7d3c94a5efe28125f82604a9048e4e963aa10bfb697"
         },
         {
           "alg" : "SHA3-512",
-          "content" : "8953af9ea14efe12dca0dd7010739f61a12e6b4937e317b620c27be41acc5c28f63eb978fd87c9e6fee7fb90d2afc0f18fcd4278bd04006965bb195eb75182e0"
+          "content" : "51455f874c57b4cd48aa33a5e7ebe5c4327bff5f9a0dc300814effb3b0b10c053e7cb88120f4f54eb59e73540f25363f10496ed34746a82b610ed473c1ee1676"
         }
       ],
       "licenses" : [
@@ -8621,7 +8621,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/software.amazon.awssdk/crt-core@2.57.6?type=jar",
+      "purl" : "pkg:maven/software.amazon.awssdk/crt-core@2.57.9?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -8635,44 +8635,44 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/software.amazon.awssdk/http-auth@2.57.6?type=jar",
+      "bom-ref" : "pkg:maven/software.amazon.awssdk/http-auth@2.57.9?type=jar",
       "group" : "software.amazon.awssdk",
       "name" : "http-auth",
-      "version" : "2.57.6",
+      "version" : "2.57.9",
       "description" : "The AWS SDK for Java - HTTP Auth module contains interfaces and implementations for generic HTTP authentication",
       "scope" : "required",
       "hashes" : [
         {
           "alg" : "MD5",
-          "content" : "9bba0dc1a0302fbba2f6706c3f38bad4"
+          "content" : "ff3b359622dec3908613cf3299def0a4"
         },
         {
           "alg" : "SHA-1",
-          "content" : "d94f19b52802d5be09b19c4459e7e1b6dddcbb55"
+          "content" : "defc3d33a26cd87f509c649186498505d68813a9"
         },
         {
           "alg" : "SHA-256",
-          "content" : "579be70819333a8735cdcd53e7148b302984340b35edacba0d53c15fab411b75"
+          "content" : "aa0dac2000ed62b8c702599089f014b3309d43ee076deecc08249d80f288e5f1"
         },
         {
           "alg" : "SHA-512",
-          "content" : "fb569b8f53998e228bd9cee3398bc8e30b913afdcf17cb26a6b72de74454b3c147cb8fe20d39cca36ed5004954200c590c3af5fe1e3784916f5d9d134ae89aa5"
+          "content" : "9e6a13804571999862960e4be11b8288884627f864298c100b39b9118bc99fc099b481f50bc77e4e774576c1e90b56a9801b5de98915f47ab9a07c3f06aa314c"
         },
         {
           "alg" : "SHA-384",
-          "content" : "fe6f5b4878a6a399fccc1dd881f3a60f46d54df370d322c4f745645c990adbc560b1515b32bc1ac96c6b29a8990201ed"
+          "content" : "f8a153301576f8755c2a3028f65c78d7305cbdf147311f0b74209d1187086f9520e2bf1efeda2868c19cbe3273797db2"
         },
         {
           "alg" : "SHA3-384",
-          "content" : "6bc484237297d93c53c8e8479cdb7038e3bff05367e8dde9866de85e597bfe33555f6d8cf46aabdb9cde86675c261069"
+          "content" : "c4c5e3421c8148340cf57580cfdfe4348d08b855e210f6029198284066e56f4058de20440f6e7bfb14c3121efae98880"
         },
         {
           "alg" : "SHA3-256",
-          "content" : "7173bc9aac514467878ad8056a14d18883b2550b941abb9bc1e73f35b4a123fc"
+          "content" : "a4dcb465b43885a1141a0286dc9f4c358f2f73b703b17fa5ae6e0576e802a744"
         },
         {
           "alg" : "SHA3-512",
-          "content" : "9d69cc753c416843a29a119ba7b8d904297b3b6a70123182b43d46e646ea127f6746c79dd3f31b27fd3804b38e3712bf4ac0d77d21460ef7dd178a202dfc39a9"
+          "content" : "152f66b76cee7a26f73f01ea37ab0d1875b1c75bce2536ac55193ef51e4e0492c37655548efd084b20fd5adcb6589f7803d828aec8627c271ed6ec768bce0043"
         }
       ],
       "licenses" : [
@@ -8682,7 +8682,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/software.amazon.awssdk/http-auth@2.57.6?type=jar",
+      "purl" : "pkg:maven/software.amazon.awssdk/http-auth@2.57.9?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -8696,44 +8696,44 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/software.amazon.awssdk/identity-spi@2.57.6?type=jar",
+      "bom-ref" : "pkg:maven/software.amazon.awssdk/identity-spi@2.57.9?type=jar",
       "group" : "software.amazon.awssdk",
       "name" : "identity-spi",
-      "version" : "2.57.6",
+      "version" : "2.57.9",
       "description" : "The AWS SDK for Java - Identity SPI module contains the Identity interfaces that are used by other modules in the library.",
       "scope" : "required",
       "hashes" : [
         {
           "alg" : "MD5",
-          "content" : "c3817ed34f903fe576d1e5fe5a5241ad"
+          "content" : "251e86893183e91706c65dcb53495981"
         },
         {
           "alg" : "SHA-1",
-          "content" : "cc5f94f2b28b15754ab33d6d2a850291b5053048"
+          "content" : "0b05ad23e549e212cdd06fabb6f00309ac20c2e8"
         },
         {
           "alg" : "SHA-256",
-          "content" : "5f4f2aac6c615f55709a3aef26874503e1c08783f32f1b69974dd6f12288df2c"
+          "content" : "d57da183b38bd7bc9595de431d10cd76fc4f62d3997fb541c4211af3fe16925c"
         },
         {
           "alg" : "SHA-512",
-          "content" : "9bbe3aaf80eb34aca06e31ffc1092a7f98703a7e2b24d1c1fa19c4813f713cbab8a95487fccc6f7d1af59848e5bf84c3c3d19dd39ebb6efaa11d712cd9bba2f0"
+          "content" : "338ef3eab3f5c38889f89990e78fa50f12cc48e20086b6c5d8c5a129c34e0e718600821617f1be65ca3bad350406f369331296b2312ffc5db9c28d1fa77d3bc0"
         },
         {
           "alg" : "SHA-384",
-          "content" : "19b575f0321631da2c87daf57614c0e70b0bd1106dac62b924b4fa455571a2f838e242ba471d90911b68c1a8e1860e24"
+          "content" : "051f4d9f94697560d14de32a9d2f472c3f37a095d627c6356084583eafa1eb32312df3e952d934925705e3b2cf164a3a"
         },
         {
           "alg" : "SHA3-384",
-          "content" : "97c667f159994ff7570bc413efede4014ecb25dfb39981e24dd05bc4841b5b7c8c906afe5ca80680016ad99ff7ba5638"
+          "content" : "b181b9fe87c6d4af0bdf21c39a1044e86b13b3c67426ecec4ec793d646144de2aaa5f1031135f1cadb7fed5311dac6c5"
         },
         {
           "alg" : "SHA3-256",
-          "content" : "9e6cb865fe4cc6fd1bc57defd3bd1e6875ef654606a6f5e7e9aa6a5799a5cc52"
+          "content" : "2d5268f300a79b01dc696b192aa62bbec982a3ea76a46aeff71401531a0ce8bf"
         },
         {
           "alg" : "SHA3-512",
-          "content" : "00bb5d665dc39331f0219d22b974f3c0c0c519b1b2a5b24416bbb53da713830f9decc4ad0982e616e0ff9eee4128e06d589038e70b7bc4d0fef58a59ee78484e"
+          "content" : "e78b36378c497a915cc0fe80a6fdd506949a5c6466b2867aa91b38945e7a5d938021336a287b320f0c800adc68fab7f68c715ec597fd595aa27cbbd5f262d274"
         }
       ],
       "licenses" : [
@@ -8743,7 +8743,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/software.amazon.awssdk/identity-spi@2.57.6?type=jar",
+      "purl" : "pkg:maven/software.amazon.awssdk/identity-spi@2.57.9?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -8757,44 +8757,44 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/software.amazon.awssdk/http-auth-spi@2.57.6?type=jar",
+      "bom-ref" : "pkg:maven/software.amazon.awssdk/http-auth-spi@2.57.9?type=jar",
       "group" : "software.amazon.awssdk",
       "name" : "http-auth-spi",
-      "version" : "2.57.6",
+      "version" : "2.57.9",
       "description" : "The AWS SDK for Java - HTTP Auth SPI module contains the interfaces for authentication that are used by other modules in the library.",
       "scope" : "required",
       "hashes" : [
         {
           "alg" : "MD5",
-          "content" : "08a6c4bb087eab8f2e62dab366c4a44c"
+          "content" : "943aa4d4ed8db09c0e760d1976e83445"
         },
         {
           "alg" : "SHA-1",
-          "content" : "3239cc70101828a97fcc8872ca9116a8d9fc439c"
+          "content" : "94901192cc9c3da8dff8d0b6e0b598e613899950"
         },
         {
           "alg" : "SHA-256",
-          "content" : "9c37c26b34756fc5850da9d8a62267ef9f62d361482b63072a55e0dd473df4d1"
+          "content" : "ab3319d8c398ae1afda3aeac4d192591227737c9a214c90ec884d30dfc4e15e5"
         },
         {
           "alg" : "SHA-512",
-          "content" : "f650867524a5ff32765e23689d8de1492e2aa82f620d5b4bf6d3d461a6e105aba508b6f288682f68404c96bd7e3d5450f1e963a57697c5a971539456268e968d"
+          "content" : "e36eab90c1ba75087d2f317c58d0bd308280e42ce8985df2765a0c03cfd5379edf631577edd833722cc2dbce12d768725f9e3fbedb6051cf574d1bbb3a4fab0d"
         },
         {
           "alg" : "SHA-384",
-          "content" : "3269064072408ed5372ac8715b7ee8d48deb38f48dc4f0efa6913d96418d71319d8b3ad663c0f495d964875ef4147bfe"
+          "content" : "0f7869a6910f1acd97eb155529223513acc9ff9f391b2cd16b6d186e59aca7abf60863ffe5902bc098b7bb670617ab94"
         },
         {
           "alg" : "SHA3-384",
-          "content" : "d6f1f196b9df641e070dfdca7856a6633344a6f8205f5007c58b0a0f23715f6b70e9bf87e664f0180bc109cfbf3f2df7"
+          "content" : "5c67917c7802e1ffb9d9ed1070bbd9d74138b62afc08908fd01991705a58c6638134481cd16cc6f58e9193afb33897fe"
         },
         {
           "alg" : "SHA3-256",
-          "content" : "ae18bd89aee47a4d9830830cda1e3bbdd3e8881ffeb60ac94ebbc4c3e9a37b52"
+          "content" : "1f5768ab20ed04ef8171fd66704eb7ee641d34adfb3b298c29990c60ee89dad1"
         },
         {
           "alg" : "SHA3-512",
-          "content" : "630a2a842ce4ce4ea7a07a4878626980bb0a941c462698507304accff4a6d15de8b2e1eb15cee470150f4994144ea25841672bd134f540f877cf87aa053ee423"
+          "content" : "18ea8f292d42465080ba431ca9b979fdb9eb5b528d2cecb863a30edd21cbaad965a4fa15c3fa823f8709788325230cf72c85fdcf3d4f9daabc3644b0685705c0"
         }
       ],
       "licenses" : [
@@ -8804,7 +8804,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/software.amazon.awssdk/http-auth-spi@2.57.6?type=jar",
+      "purl" : "pkg:maven/software.amazon.awssdk/http-auth-spi@2.57.9?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -8876,44 +8876,44 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/software.amazon.awssdk/http-auth-aws@2.57.6?type=jar",
+      "bom-ref" : "pkg:maven/software.amazon.awssdk/http-auth-aws@2.57.9?type=jar",
       "group" : "software.amazon.awssdk",
       "name" : "http-auth-aws",
-      "version" : "2.57.6",
+      "version" : "2.57.9",
       "description" : "The AWS SDK for Java - HTTP Auth AWS module contains interfaces and implementations for HTTP authentication specific to AWS.",
       "scope" : "required",
       "hashes" : [
         {
           "alg" : "MD5",
-          "content" : "2a43dc89f4175016d64e0cde7dfb0287"
+          "content" : "cea06c6cd64fa3795c41363d434d968d"
         },
         {
           "alg" : "SHA-1",
-          "content" : "2b5c816dfde46bf884fd23e1cf0914f1c8ac5f29"
+          "content" : "6f1f256a4b9d84b9cacef7a92349dc8fb8aca6e7"
         },
         {
           "alg" : "SHA-256",
-          "content" : "a5a54ab50f2f849d926dcfdf315d030333fce1037749f91992428d69b3a4a40e"
+          "content" : "61f01753345613c534b0013ec62639ae0c7637940b0b3883496d73f8c6e2d512"
         },
         {
           "alg" : "SHA-512",
-          "content" : "7fd65882186d83661456068bfbf926c1b8eac3ef8c31cdbe22c269b06fb9807d6daea89d2ffeb754759198a5cf2432edc6753b12e16cb3588f75a4ce53a58924"
+          "content" : "78d0436400896b9eb35c43c7bad39dc870307e819998b6cce7dc7332f728492b8297559b9a0a8d8c35c336da02fbe1e19005e05b210bca3ec854cfdb2ea41712"
         },
         {
           "alg" : "SHA-384",
-          "content" : "c6f250cef0d7a5a35e22fe906267c23a5003dfb2460ac702171cb3590e5106cc5eda0086d47e4f5454e027c1531b541e"
+          "content" : "ac86bd35bcd2d79d29d2426ae1aafb73d5e70ff4026be0d1804cbfcad91cd7dd2bba35deb4b411ea1835ac13eacf3f68"
         },
         {
           "alg" : "SHA3-384",
-          "content" : "fca02a22f2a41d67811c27d1fa3015dbb7031d75eff776848de0797ac9d966a003bd6c2607ebb6e40693440dc7106c4a"
+          "content" : "2d96bf4089940d945bec2192c55cef8b438fe3e147a4dad5d11676aba94d42ced761b5881baac8bef13ce63ee79815fb"
         },
         {
           "alg" : "SHA3-256",
-          "content" : "d60f58acd9b207c2fdc11317449bf5ca1c526f3948f8aa96a363e1623d5a1b35"
+          "content" : "e6f458accb3868cf3b3fb02b78a5dac591d3c3dad409c7833055c54d17d8c5d3"
         },
         {
           "alg" : "SHA3-512",
-          "content" : "56cab7beb04b30086d1d6142e21e8c275390dc2845f9803343a879f9cfd4f5454a2b0fc49bbec5cd98a4dc832ceeb8d4863275783c709e2ad7dd7128fbcf7057"
+          "content" : "d54b17e711e9e82b020833b73600842072d4e03eb2b22efbc3c7293ca00a6354c2865d128a4c8abe91613138173f16b08fb0229b8b9ece8c59fb59d9910dc50f"
         }
       ],
       "licenses" : [
@@ -8923,7 +8923,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/software.amazon.awssdk/http-auth-aws@2.57.6?type=jar",
+      "purl" : "pkg:maven/software.amazon.awssdk/http-auth-aws@2.57.9?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -8937,44 +8937,44 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/software.amazon.awssdk/checksums@2.57.6?type=jar",
+      "bom-ref" : "pkg:maven/software.amazon.awssdk/checksums@2.57.9?type=jar",
       "group" : "software.amazon.awssdk",
       "name" : "checksums",
-      "version" : "2.57.6",
+      "version" : "2.57.9",
       "description" : "The AWS SDK for Java - Checksums module contains checksums and related items that are used by other modules in the library.",
       "scope" : "required",
       "hashes" : [
         {
           "alg" : "MD5",
-          "content" : "95222f5604e52ac36d609e7820f50c5e"
+          "content" : "76d5bb64bebca72991e1936f5d57772e"
         },
         {
           "alg" : "SHA-1",
-          "content" : "ddbff5e46ffbf4debc66e3d846679b592ee02bf9"
+          "content" : "4666b166d513517ba99bd6122deb43a1cbf0c971"
         },
         {
           "alg" : "SHA-256",
-          "content" : "069d9562d6a7bc07ed10089aa3026cb710648d0fb0619d42daa8da16f5c80bac"
+          "content" : "8a29ffb8d77f4095792ea61d13d9ce4dc61ddd27afb794f645a0e98ed24a7718"
         },
         {
           "alg" : "SHA-512",
-          "content" : "76d40b8a84be80b6e4f02eaf6728bf1eaf6fdaf7001732b113958883a941e2f94f9c2df3f0c473d292b1aa576ba805063485941ac013e9a6d67cdf041c1ac86a"
+          "content" : "99230452a64c9c9bf945db117ef304c8c7257778d8c2634a85e6fd83943530b75d54b70c64556f051739560117d947c4590a182e46b524f8711ab89c719f7bcf"
         },
         {
           "alg" : "SHA-384",
-          "content" : "a53e4df65600f6753d30021829b3cf0f0a136bde8748b48429a7ec913b0a6ab1039d97332129bcab133ec9dbfe2b2d4a"
+          "content" : "ba9884214c74ff5be1791e33fea622443f40e81faf24bf74bef1e069f62cf037ebaa8c68c90446a52acd980e96f3466d"
         },
         {
           "alg" : "SHA3-384",
-          "content" : "5471b0c1fd3c3b7076a977b02a1a9cec499918411d31969d62ae7f097a4a27adc6154b0ae3e44e3a212a27533c2b08c4"
+          "content" : "fb10552e524d1c95a56f799dfedf8819be6c90022f14e817c6ac9d7054a96628e394267def2d522245b7b3ddcd5cf339"
         },
         {
           "alg" : "SHA3-256",
-          "content" : "d9d35fbe04c6185b199caf4b04d5b9225aa6f5f5daddc3ba4917824e02c0bd38"
+          "content" : "fff8104fcedfec092cbe0846a5271edf5cdea877e945a0968a6e479d8d4e1997"
         },
         {
           "alg" : "SHA3-512",
-          "content" : "8d7220627eaebf595882075960387a38aacbbba55cf4b5709794e239c0df45b6a36d67049bc1079876f9fe203aabdb9c92619d8b760b606c746f68a24b83b1b4"
+          "content" : "8e067eede8483dfae2b79ed7b39ff2a2378f3818be7b2a8242280ffa69a15d3c4e0275aac68235b9fa9739b7d005212d2eb913a28f649065588abcedb27384e0"
         }
       ],
       "licenses" : [
@@ -8984,7 +8984,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/software.amazon.awssdk/checksums@2.57.6?type=jar",
+      "purl" : "pkg:maven/software.amazon.awssdk/checksums@2.57.9?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -8998,44 +8998,44 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/software.amazon.awssdk/checksums-spi@2.57.6?type=jar",
+      "bom-ref" : "pkg:maven/software.amazon.awssdk/checksums-spi@2.57.9?type=jar",
       "group" : "software.amazon.awssdk",
       "name" : "checksums-spi",
-      "version" : "2.57.6",
+      "version" : "2.57.9",
       "description" : "The AWS SDK for Java - Checksums SPI module contains checksum interfaces that are used by other modules in the library.",
       "scope" : "required",
       "hashes" : [
         {
           "alg" : "MD5",
-          "content" : "bb774d2be6f4a6baf1b15397bed20afa"
+          "content" : "e3877b21cad6130ccd363faa077225da"
         },
         {
           "alg" : "SHA-1",
-          "content" : "990c74556e023818bc2749781f7243920d8a1df2"
+          "content" : "49c543119df7130fb021ace6c6e40d8d95d577a4"
         },
         {
           "alg" : "SHA-256",
-          "content" : "ed218aa4997f23e4530a8935ea4b111cb0929d81d2bc0f68e97c184d563e3aef"
+          "content" : "1db68c128331c29667afa9e4108ef1aa0fbc949206a736b3f8013ee3fcc8b74e"
         },
         {
           "alg" : "SHA-512",
-          "content" : "87bc3fed81b4a2b49c2022ad78bcdd4c35619c08e523d5b17f5a56b50dca7bb279e39032f6fc1ce9566544bfaabedea6d3780ea3da794e76e963965cac09a1a1"
+          "content" : "fe837e90f4e1cf15fcb6511181663c726e1eba64744b3e5c80d7658c16958f70a4a25f183161ecfcbe52776c063cb60eb5e3e0acb81d1f477f8d88f8158dbf40"
         },
         {
           "alg" : "SHA-384",
-          "content" : "e0db37a0ca64d201f2282a43d5b2fbeb9c2aeaed784cd9f29f27b701ebb16bd40216dcd9e180afd748a7414095686abc"
+          "content" : "283e225134e8ab775c468582d6593d3881744d2ec13980b67a679d69b005fa06597eae023e2f576e3724defa4dc74d32"
         },
         {
           "alg" : "SHA3-384",
-          "content" : "0287b34931eca2d3f4e92ea7af60a06a75b7a8322d2cbb8fdf588feb11d16bacf968f49638afb129e829b1c83ed02321"
+          "content" : "56a23182912d8aa23edb9e0a22ff1689b046979eff8232f66208f24d4f52a433db5a7dd87fcba3958f343a13863e60da"
         },
         {
           "alg" : "SHA3-256",
-          "content" : "ccbc5639b24e3e74d9cc6f61e83597e3cb59f81680625314f8b0b87126a381e4"
+          "content" : "e710cea43a84d78dcac86ade6874eb3ba359bb832cef45e2e888956b2ba7784b"
         },
         {
           "alg" : "SHA3-512",
-          "content" : "f640875ded30ef1d7e5a50d4b9dd3f0b3bb3b286480d41c2985b691275c369dab331ba760fb89c55e553608c85a0b9ce2c68f5cab751f05683d80479ba37245f"
+          "content" : "d4aa7a3742358b0c1bc96e13eff3bebedef40344883a39f7a2b139453cfafe42e7434bab63a515254de881291c01d39d91ba8534e5e64c94e94759401de9c90f"
         }
       ],
       "licenses" : [
@@ -9045,7 +9045,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/software.amazon.awssdk/checksums-spi@2.57.6?type=jar",
+      "purl" : "pkg:maven/software.amazon.awssdk/checksums-spi@2.57.9?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -9059,44 +9059,44 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/software.amazon.awssdk/retries-spi@2.57.6?type=jar",
+      "bom-ref" : "pkg:maven/software.amazon.awssdk/retries-spi@2.57.9?type=jar",
       "group" : "software.amazon.awssdk",
       "name" : "retries-spi",
-      "version" : "2.57.6",
+      "version" : "2.57.9",
       "description" : "The AWS SDK for Java - Core is an umbrella module that contains child modules which are considered as core of the library.",
       "scope" : "required",
       "hashes" : [
         {
           "alg" : "MD5",
-          "content" : "cda1785c6fcac5b36f1a62ef584e77ec"
+          "content" : "a8bb700e2f354d7fbb2016d46f7ef30a"
         },
         {
           "alg" : "SHA-1",
-          "content" : "819f51eafde0b2793c79fb02b7009b6717106d4c"
+          "content" : "dcb39640367109523b930f774400b71b281fdd4b"
         },
         {
           "alg" : "SHA-256",
-          "content" : "2eb316a61d0840d7250794a124602c0d83445b0e823efcd89b50b3ad83933689"
+          "content" : "8c4b46b43a7094c44d55c97e2054d21e6a8e0a8ae1cae06764c7aa3918685a69"
         },
         {
           "alg" : "SHA-512",
-          "content" : "88189a53abcebcc450fa1601e6fd81d8459ebbf1c6fb2781fb6b6366e505b968dff197045c52542d1357792f7abbd46c70c4c5092b25d6a4328e4c3604701c44"
+          "content" : "166a481b542d03587c4bc44ff7aaa3a72e80853df4b6e7451bc9f2e15daf9c03fcbefd3603ad4fa4b986bdcbb4929212b16a48fad475f62b28550cffd7237ee8"
         },
         {
           "alg" : "SHA-384",
-          "content" : "6a3e28235b96058bdd8f923bb09f8a772498b408c9e1b75229f4e8e11a406f1f2c114ddd97696c214e86d41ec3e55b55"
+          "content" : "5d13d22be7f75f9f0e96acdbbd8202fbd635a1f07f14941ab59ade9de9df2deb76775a1bd43213e440dc77945ac9f38c"
         },
         {
           "alg" : "SHA3-384",
-          "content" : "eb2449f316afab4382372bae70a753c5accf51920d098b7711209457ca39d8129eb9140937f765e422966a55d5f067e4"
+          "content" : "789b6f3a3e1313f89668e8f18940b9c290872da06645b9724a5f03853ae1d9a3b7502730f09b9a26e0bce87fe7953d02"
         },
         {
           "alg" : "SHA3-256",
-          "content" : "fc4404406bdf96b0d716643a0054171bbfcd7e92795bde888584d9c39b8e065c"
+          "content" : "3948cdc8a9d4d2f8e8788f9bb127b61c06bccebe02b59d430a74bdaff087cc8e"
         },
         {
           "alg" : "SHA3-512",
-          "content" : "9e6a8b2f571567326b506f45f107527919d7594efcb68f2744df3cd33a291212c14e149c00e6399d07da4da453e4348abbcab8df99b095635f054cd6a6ef4f1f"
+          "content" : "35c7e0a94ff830b3c8239e453a788e2f0d72f47132db24a1fb7fc9c85f6c3d6a33e05ad66f9ebd3db47587182130ac748a02d4a77b3149e9aebda9f37264729f"
         }
       ],
       "licenses" : [
@@ -9106,7 +9106,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/software.amazon.awssdk/retries-spi@2.57.6?type=jar",
+      "purl" : "pkg:maven/software.amazon.awssdk/retries-spi@2.57.9?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -9120,44 +9120,44 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/software.amazon.awssdk/sdk-core@2.57.6?type=jar",
+      "bom-ref" : "pkg:maven/software.amazon.awssdk/sdk-core@2.57.9?type=jar",
       "group" : "software.amazon.awssdk",
       "name" : "sdk-core",
-      "version" : "2.57.6",
+      "version" : "2.57.9",
       "description" : "The AWS SDK for Java - SDK Core runtime module holds the classes that are used by the individual service clients to interact with Amazon Web Services. Users need to depend on aws-java-sdk artifact for accessing individual client classes.",
       "scope" : "required",
       "hashes" : [
         {
           "alg" : "MD5",
-          "content" : "f12cd6999b082014c053663373588e2c"
+          "content" : "5e7949f4fe64db27318cb74cbb024bb9"
         },
         {
           "alg" : "SHA-1",
-          "content" : "a1176e4fc90bac6add85334e89a6982c50c53258"
+          "content" : "e956541ac25f9b089038890ba4f50f7af650058e"
         },
         {
           "alg" : "SHA-256",
-          "content" : "ac92a795c4bc90595f77dc0603b82da1c573e371f91db5943f5e1024a81a7f78"
+          "content" : "66c0056ebdd4a83b29549c40652b87c138aa6e659bb48b2e255fb91428a94921"
         },
         {
           "alg" : "SHA-512",
-          "content" : "dd2d5b0d2d532a557918eb00672d7dfd891cc42b34f931467aac9751315f39b8258055bd25603721b49b3e406093c04838e0e368913bc3e1c2c594dca5e9de7e"
+          "content" : "6d7845cb5869e16522045edc0a4a6ebe1dfe14ae7ea9641c819bc86a63e9effdf02d68610feba59565a23c060c6145dbe05e3173a1644c667c6b9bc17db50fac"
         },
         {
           "alg" : "SHA-384",
-          "content" : "b2c09e931b897720d8fd0ec44e58dbbba3d8afd8775f232130fd2a4a3d125ba2ad736a1b8a4a0a00ebb377fc7921c90e"
+          "content" : "9ff24653da531bdba9a6527ab42ea01fa8e3eee9eca22141077f80fff6537ff34ab3865b5e6aa0b02fc104a49405bc2e"
         },
         {
           "alg" : "SHA3-384",
-          "content" : "792771ed57263e58e89bc7e0291949454d6fb045a267963c7ffd58def7fa691950b73128e4f8c1644d5deb08dd8554ef"
+          "content" : "296d55c800eb4f693fc055764a4db9052a56abaf0aac1fa71215e72ad527c0bc25d77aa4892583fa23c03e34546e9109"
         },
         {
           "alg" : "SHA3-256",
-          "content" : "af405e31a9c6af08b2e25c8c5e5a01ee6f1effe4aa34d25651a4473af8ff4ecb"
+          "content" : "6cc4ef60b4e54688738cd9da24acfbc4174f41a559c95755bfa3986449605edf"
         },
         {
           "alg" : "SHA3-512",
-          "content" : "4da3c617ed27e5ff80bc09b897bc61b7ac80554d66dff9604e0510c89b7c74f4e00985c00b1583e4533d4f33c7320186edf45b97090a043bb0140ebc6d920d19"
+          "content" : "9879d1723c8d111e0a663282be95e232dff848eedcd4e3c8b606dc29283c06e310499a14b9680eec88110e0765506a6bf09692914f274e64f352863877845260"
         }
       ],
       "licenses" : [
@@ -9167,7 +9167,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/software.amazon.awssdk/sdk-core@2.57.6?type=jar",
+      "purl" : "pkg:maven/software.amazon.awssdk/sdk-core@2.57.9?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -9181,44 +9181,44 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/software.amazon.awssdk/retries@2.57.6?type=jar",
+      "bom-ref" : "pkg:maven/software.amazon.awssdk/retries@2.57.9?type=jar",
       "group" : "software.amazon.awssdk",
       "name" : "retries",
-      "version" : "2.57.6",
+      "version" : "2.57.9",
       "description" : "The AWS SDK for Java - Core is an umbrella module that contains child modules which are considered as core of the library.",
       "scope" : "required",
       "hashes" : [
         {
           "alg" : "MD5",
-          "content" : "046b21789a38fe0c72690ae5cf8cb99e"
+          "content" : "b46f1bd0d06f007d534487cc076269f2"
         },
         {
           "alg" : "SHA-1",
-          "content" : "40dc51c9c9eb61a04e2c191dbcebfc4f57958708"
+          "content" : "584e3c13e644e336cb7cde8075c860ae771f9965"
         },
         {
           "alg" : "SHA-256",
-          "content" : "17dfdf3ad662ae0fa665a7df8aaa4ad378e9da787d0ac9501d501b7868fd6574"
+          "content" : "9501d4313f5111dcdbc0b0d5abd27fe31b441eb475e73fb392b6281834d7ef7e"
         },
         {
           "alg" : "SHA-512",
-          "content" : "0ebd9a5ad121f8d3c7ee73e82e84adc03c3108d31aff9323c05a0690feb9b23f8c80c0512aeee62a90d5f4179ab9cc79283816eb0702883267929bee32edb840"
+          "content" : "5e1f3e7728f0348699967d84a947129ec56de5431588951c7a6f2a573331d868e2545a6d387c8d3b6d07f3ac16cd99ebabae6f1b40f35134f83e0523093816f9"
         },
         {
           "alg" : "SHA-384",
-          "content" : "60c78eb42e758d67893e784f593e9ef7e9e412dac294a20ef10399d6746376ee559736a88bd2eb23ca9ea80caf0476aa"
+          "content" : "4c1f85f837e6ad74fc1d4f44c64b5c5ef0fb029ff25a7bac11585a547e3db535322f55c2c76e101537d3acafbdfd46f6"
         },
         {
           "alg" : "SHA3-384",
-          "content" : "f43a3c010120674e77da60307ef1912f4c1532b5d17b2b16574acb914829d5e95336a773e571a99099b7462567ccb853"
+          "content" : "91fc0f1498d099c9ef61ebfcc5cd88eed39f3e892c5ae1b72e9e48917837a3b64be027d774452370bb2ca86b538b41de"
         },
         {
           "alg" : "SHA3-256",
-          "content" : "5705c9c6bc8210a2791a04c0891ef47e1c65d92c73de2b1084b2f5acc9d86f24"
+          "content" : "ff555721ce87d5543799a5e5c147cd1efd4c66f6b56387233428b8e47f62de3e"
         },
         {
           "alg" : "SHA3-512",
-          "content" : "b2dc2f8f6172393f33a7ba96e469718cc2b50cd7d9b6da380aca3588cfc81bafb47701c590c2ad8d0c93cd2f697f910effaeb59a87cad9ca348498fe55e2f8ae"
+          "content" : "04ddb4c75a466cfef098ddb656dd954c479b2c57133d27aa0a252b688ced3c02d937f7982d2efb9dfd88502abebc91c55ebad57d01d991f04d129ffce503c817"
         }
       ],
       "licenses" : [
@@ -9228,7 +9228,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/software.amazon.awssdk/retries@2.57.6?type=jar",
+      "purl" : "pkg:maven/software.amazon.awssdk/retries@2.57.9?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -9242,44 +9242,44 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/software.amazon.awssdk/auth@2.57.6?type=jar",
+      "bom-ref" : "pkg:maven/software.amazon.awssdk/auth@2.57.9?type=jar",
       "group" : "software.amazon.awssdk",
       "name" : "auth",
-      "version" : "2.57.6",
+      "version" : "2.57.9",
       "description" : "The AWS SDK for Java - Auth module holds the classes that are used for authentication with services",
       "scope" : "required",
       "hashes" : [
         {
           "alg" : "MD5",
-          "content" : "6effb17b532e9b94128afaafde019f63"
+          "content" : "8dc914e68091f5d568973ae0a41a1af1"
         },
         {
           "alg" : "SHA-1",
-          "content" : "e0d73c08d1c4609d4b030e18c7ef085bd726f8ae"
+          "content" : "0642c6e4ce70f05ad87379e4f59169e449f160d8"
         },
         {
           "alg" : "SHA-256",
-          "content" : "6515d7d2b63c05bafb923952a730bb3af522210d6dac567e7ea4125fd365955b"
+          "content" : "ac856058dda05ac1f313d57002e6a11d27dd03c8d84533b269a2ceb5a9156a94"
         },
         {
           "alg" : "SHA-512",
-          "content" : "f95f2a633b65483e56bdfdacd85bb85d9839afd3f1db59627636a3943aa50e5891ef938cafeafa46a9d83a1adef40f7983b7c1f56e0deeaa432bbc4d4594d57e"
+          "content" : "443dbcdeb93a76bfc4c42d5a375eea51e3bdc41b364a7797fbaee1ce6afc2cb508de7e56985a9f769790e540eebebbc8a21706b1d58c65708be944c89f00f84f"
         },
         {
           "alg" : "SHA-384",
-          "content" : "5b045e8f8ba0b4f657bb80a958291a70e2e232160b1b9c9276d67060201f3efecc8b1dfac45661e5a2cc4b5abe6a222a"
+          "content" : "d68bce7b3ab7e8c17f38611345682f4ec4e5c0af6e809e5b742265cd897462b49305a302249e38e209b44ae8e7a29c47"
         },
         {
           "alg" : "SHA3-384",
-          "content" : "82d8d1dcbdbc06db90d5204a31c69654883da7f2c10e6b294c8b57d18d2cf2460880117424f4218b5e1edcb2003fa977"
+          "content" : "c2139021372a298e6dfdda735bd03caec3983df54777bcf05274201a1d7798be7530a1a9c37ffbe4a5ba227fd7ae37d1"
         },
         {
           "alg" : "SHA3-256",
-          "content" : "df2272f525f423e28df6f5bbfd7a0b99ab1e4048ace36142217a640c7c7fa8e6"
+          "content" : "8757c360b93e2dacb421b1012933de5257b9c9339b97dfb232e27eab00f970b6"
         },
         {
           "alg" : "SHA3-512",
-          "content" : "dc46aaa28e0b10f74114a93ce302e7454ff8e0a394757c6e37edec99625f89ef8e9f3433944f357cd0da641f95f95dd3f87bb6178127194b2d79da94e0f1a4bd"
+          "content" : "a7850610a64669c71227e574528fea5c411190679fea6126f9a81c3c203af26219f3051a08048c3d93bd7ab3683885a67eced6c0f650826c88dd60b2ec6a0b9f"
         }
       ],
       "licenses" : [
@@ -9289,7 +9289,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/software.amazon.awssdk/auth@2.57.6?type=jar",
+      "purl" : "pkg:maven/software.amazon.awssdk/auth@2.57.9?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -9303,44 +9303,44 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/software.amazon.awssdk/http-auth-aws-eventstream@2.57.6?type=jar",
+      "bom-ref" : "pkg:maven/software.amazon.awssdk/http-auth-aws-eventstream@2.57.9?type=jar",
       "group" : "software.amazon.awssdk",
       "name" : "http-auth-aws-eventstream",
-      "version" : "2.57.6",
+      "version" : "2.57.9",
       "description" : "The AWS SDK for Java - HTTP Auth AWS Event Stream module contains interfaces and implementations for AWS specific authentication of event streams in HTTP services.",
       "scope" : "required",
       "hashes" : [
         {
           "alg" : "MD5",
-          "content" : "3882b975448f7a96a8e673a2756cac76"
+          "content" : "f51e7a2bbb1e3916752c347665e717cc"
         },
         {
           "alg" : "SHA-1",
-          "content" : "2f7f147171b649aa4d356ff2a95cb9d6407d1309"
+          "content" : "c9f2eaee3f61e4924484b654a2662f6178341b72"
         },
         {
           "alg" : "SHA-256",
-          "content" : "f9c0a9a6b788289fe122c91e6da296c9fb4e45bda29d2c3e903bead43216b543"
+          "content" : "b5de0cc2f5fe964a7d59d2cb42835e5a163dbf273d91d5cd54fcec8b9b0f09e4"
         },
         {
           "alg" : "SHA-512",
-          "content" : "9dbec505341a8a206bb83c87a9e27013320e391d5e5ac7161966fe4a40a57da8a3e6bd62d79f83398fad7c7e9d84b077663604e9f7658b829f82154dc33ee60d"
+          "content" : "4cc4c186c5d0f087a1cabf061e283b6005100e10a6ea6da133ee411d4456dbf79150ae2e6a760580ac3559c4512703a607e72c1c0111c6ac0acf325d55da322c"
         },
         {
           "alg" : "SHA-384",
-          "content" : "7badb39a2a602b91fa90d16a0d1f51cb37d6fac31173d82f3d3a564e056c90264880ee7f55a70c10f1c57915ff325715"
+          "content" : "a6ee59a002d7927e5b6456dd0d2f683e769dbcb69fe017a6e1218bde4aa8b0691730c0668bb1e245dc760e354dd53f73"
         },
         {
           "alg" : "SHA3-384",
-          "content" : "50f304201d4dcb873d5107dccae104222e9304f621ef8674e2856a6c2959011dc9398fbdb6f83618522d26484e83e453"
+          "content" : "0dc286bf754db1bdfe9d8d246a7503f6e8f89b23f669c04d138104196b1ce3884972ac697d9abcf0a135a59961381d8c"
         },
         {
           "alg" : "SHA3-256",
-          "content" : "e3d93f3d1fbe93898f86b109806f7d5d7c809dee18d74953a6af580341a65453"
+          "content" : "32bfa2d90127883df39eb5cd39f744485f0b68f4cc68674cc25bc81a86d760ff"
         },
         {
           "alg" : "SHA3-512",
-          "content" : "2577ffe6916df9697cd20c92f9d9736b93821269af323f071851419a6a22a8e44d54fbec5852469bc0dbf55c451b2737414d321b2055ba89c74275cafcb01679"
+          "content" : "a9df6812f31dcc515dfb7e02ce25b8ba4ff948c20015bff3e135c9f52e534d66918201b8d3464008303dda4e9ed6385a254f11d24f813817ef6a2e9f1cd5215d"
         }
       ],
       "licenses" : [
@@ -9350,7 +9350,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/software.amazon.awssdk/http-auth-aws-eventstream@2.57.6?type=jar",
+      "purl" : "pkg:maven/software.amazon.awssdk/http-auth-aws-eventstream@2.57.9?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -9364,44 +9364,44 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/software.amazon.awssdk/eventstream@2.57.6?type=jar",
+      "bom-ref" : "pkg:maven/software.amazon.awssdk/eventstream@2.57.9?type=jar",
       "group" : "software.amazon.awssdk",
       "name" : "eventstream",
-      "version" : "2.57.6",
+      "version" : "2.57.9",
       "description" : "The AWS SDK for Java - EventStream module holds the classes that are used serializing and deserializing 'application/vnd.amazon.eventstream' request and response streams.",
       "scope" : "required",
       "hashes" : [
         {
           "alg" : "MD5",
-          "content" : "bc93e1d05348f0e7faa7d5f1218a2bfd"
+          "content" : "6da148a3c4dd3e3fc83efcbe79921346"
         },
         {
           "alg" : "SHA-1",
-          "content" : "ff087b6ca5afb4c8d0b7252e253b7b488b2bc0d5"
+          "content" : "b0ff141767d1d4872b9cf60c1e49b8ece76f9b78"
         },
         {
           "alg" : "SHA-256",
-          "content" : "8d35e90de00a5e63ca53c1bbc262331e82f2fe1b9500a2db1de40289c7a9359e"
+          "content" : "5eff890c4d1079d9ae7cfa27ed03ee3d0fa94cf5fd702094a263a90f01c028bc"
         },
         {
           "alg" : "SHA-512",
-          "content" : "0bac76d46d12878182233a3091b666bda0a7630b76f81695c5c250e72b0b042130de1fcbba4a7e8038df18062cb9bfe499b0a94223af298d379875724eb72793"
+          "content" : "95b5b1f046354b8779301182f53f725ceac9f0374eed070264fb9f75849c08ca13e68bc7fedf2a319e32e1a16a776bab0fa40a6b88c8d59be01cf2730a43a658"
         },
         {
           "alg" : "SHA-384",
-          "content" : "15f16813758c40fd09908e66debae34f23307e02b80d895403e02b175d7f1300d8a0e15c6d718c246c74c0c1af14cbdd"
+          "content" : "46ba3f2c8c08a023848a55e10937a9fdc8328c25446e51068520168a3e64997ecab792c17ee5d4684bdaa8d686467636"
         },
         {
           "alg" : "SHA3-384",
-          "content" : "14d7bf78671e4b45e532c03e2c4fcb6332243ae700ab9a85b40ee98507abcdd59dd79669a7e84b8f7f59f91d3e2b6d29"
+          "content" : "f54828ee6e76dec7755230f87f333bf7786562de30946fc3782aa8b9c93e001e6e4a9f4ebb709216d6d80234c1e2b9e9"
         },
         {
           "alg" : "SHA3-256",
-          "content" : "74613b98322e9c36230644ee8d0b314369713b0a3304c2c853bdbca4f7f2e5eb"
+          "content" : "86f9b592c5493ed7826e88e2d70d02757fa78927d55bf18c41b3b084b8e44398"
         },
         {
           "alg" : "SHA3-512",
-          "content" : "0238671f1fa9e3be52c9c9791657c8fed01b34d9b86de86569b97bdf82e63c159e080f103cb4cbe91c101f555f0574c57ced24647d80b10c5f51d30dc65398e3"
+          "content" : "2551f81fa58cb7819b2a7a2ba0e658d0c9258aab5c248955e226d1b79d5ae156f5ce5ee180c5d3a9a44956a082d8286f776bd585f702faa1cc22e2726e9039fb"
         }
       ],
       "licenses" : [
@@ -9411,7 +9411,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/software.amazon.awssdk/eventstream@2.57.6?type=jar",
+      "purl" : "pkg:maven/software.amazon.awssdk/eventstream@2.57.9?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -9425,44 +9425,44 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/software.amazon.awssdk/http-client-spi@2.57.6?type=jar",
+      "bom-ref" : "pkg:maven/software.amazon.awssdk/http-client-spi@2.57.9?type=jar",
       "group" : "software.amazon.awssdk",
       "name" : "http-client-spi",
-      "version" : "2.57.6",
+      "version" : "2.57.9",
       "description" : "The Amazon Web Services SDK for Java provides Java APIs for building software on AWS' cost-effective, scalable, and reliable infrastructure products. The AWS Java SDK allows developers to code against APIs for all of Amazon's infrastructure web services (Amazon S3, Amazon EC2, Amazon SQS, Amazon Relational Database Service, Amazon AutoScaling, etc).",
       "scope" : "required",
       "hashes" : [
         {
           "alg" : "MD5",
-          "content" : "d24fc329b28986a373cb3214a319279f"
+          "content" : "1a59694b26aa2c5ec8d295c3bd700cfa"
         },
         {
           "alg" : "SHA-1",
-          "content" : "8a525b1b0d381917ef519b473b36fc1dae652cfb"
+          "content" : "565b6e518862ce3581e775361983d969c444eb43"
         },
         {
           "alg" : "SHA-256",
-          "content" : "b7646649e887536eeca8117d256323d8a7aa5f824e240fb233dd2a218c22c45c"
+          "content" : "c0b6b120d86a708ffb4ff0aab1ce084214b234800c7efb43184ecf4c51fc339e"
         },
         {
           "alg" : "SHA-512",
-          "content" : "a142f50b84cfadde5e07b54c1229534f163fa67d083db61a6cdf78090a3107c35c47c46a6a1241689f5c771d43a815051fe02c213c3f471212b3c4eebc0f71ee"
+          "content" : "530e067a59fc5c3e6e61b8e5fd6781411baab2f1d220e9b7565c29bfb2c3fe66215637640dcf6966ea179e6cd896b31f8e7fe5e6f5756dddfcb9d07641bc50bb"
         },
         {
           "alg" : "SHA-384",
-          "content" : "db9912910df1571989f2c6a0549be8af8b27eb15c06b8f58f6786b256c9990b87035a439285460c98fe824b1291c2137"
+          "content" : "1d252f34cae30a4e20ae46c59805a6d7003bb07e869d20a72942ae62ba7af266c74b761f2d3f2db00b515e6ca336faa8"
         },
         {
           "alg" : "SHA3-384",
-          "content" : "b38096c26752c19794f0b84558d610fe3d99549f49ca72daff9267104c284834f868eec2876f3a54c3eb4d241c920ee5"
+          "content" : "f09fbb20b69fba45063cd6b77e836eb3c2da87eb8927302af959cc708b57ea9f0d0a0fe1e5652aea4c2af1d1589c1aa2"
         },
         {
           "alg" : "SHA3-256",
-          "content" : "49a0fbc20feaf574823556de2df1a147fcf52cf93e7f503cad6c62ee906b09df"
+          "content" : "dd3a7e001bcf15528ba7ba3a1d1ca051352089012ea10f1a6b8fe33f6797a0ec"
         },
         {
           "alg" : "SHA3-512",
-          "content" : "b9cc00314c796aa55bb71581b69d4d965492589f4faa9a9c916f7a2b5a8412470fc907be0f930f8e6e777cd0a898340b1604867be074ec5c4fac1a6600e385bf"
+          "content" : "fefc9bde4ef1c88eebc267b04f5d0044a29144d8e7ab2aa68d83548a791779c23cab0065f6b67ea3fa187346b8cdef6acbc8af11d4c1290a6af3fd02e26d0573"
         }
       ],
       "licenses" : [
@@ -9472,7 +9472,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/software.amazon.awssdk/http-client-spi@2.57.6?type=jar",
+      "purl" : "pkg:maven/software.amazon.awssdk/http-client-spi@2.57.9?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -9486,44 +9486,44 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/software.amazon.awssdk/regions@2.57.6?type=jar",
+      "bom-ref" : "pkg:maven/software.amazon.awssdk/regions@2.57.9?type=jar",
       "group" : "software.amazon.awssdk",
       "name" : "regions",
-      "version" : "2.57.6",
+      "version" : "2.57.9",
       "description" : "The AWS SDK for Java - Core is an umbrella module that contains child modules which are considered as core of the library.",
       "scope" : "required",
       "hashes" : [
         {
           "alg" : "MD5",
-          "content" : "8c7f18a283cac4a6958e9ab1fa79db5e"
+          "content" : "133cb21e559dd9208d5e99a6808879cf"
         },
         {
           "alg" : "SHA-1",
-          "content" : "906177288858808c936a7de09816bc9ae6acd631"
+          "content" : "68eb32ee41fefcd9e5c22f5623e12deb883f86ce"
         },
         {
           "alg" : "SHA-256",
-          "content" : "5cf2af486c7f5b0d8e6c564d5318ba476028bf09b33593a423423cde30133fac"
+          "content" : "2e46afe701ec6b86de73f98ca937f83455e7e1f322ac82d504e81531ec91ec68"
         },
         {
           "alg" : "SHA-512",
-          "content" : "36189fc64f158c8feaa5f6b3d7949542e1b0f290a5996781ef1cd7148c9ec6d49cb446213a61875f01b8d3a03cb718e081e3e0c54b267d76852986c60647f5b9"
+          "content" : "c7c498721c94a33189244c58d856d94027d79ac3e2ec900727d35c621c5ad1bb33465497ea35ed108effc862f27d02428759f4ea87a97fd98192151449bda7d8"
         },
         {
           "alg" : "SHA-384",
-          "content" : "156eb3faca9d24fe027b3654ffe09871e2477ced0409be3c4b65aa0adaf5f73c28c24f9acaab17d6cf3884d8a1bfa7e9"
+          "content" : "c7c20cd5dd13942bf6815ad1b971d37c52e4d493ffeb0ff0d3cc9dce3f0fcd04030de769e7723f9c3b0878ac75315d11"
         },
         {
           "alg" : "SHA3-384",
-          "content" : "95529e0505cf47662cd0d34b0ef49a20bd09d810eb8c3080fbd9e191340797b8d7628695017cf7a069713ea371687fd5"
+          "content" : "b3c8ccefaa86731248c8320aac949e310e66c1fcb3a4cc24edf4a961cac2948380eecee84a458478a4c18f005b7075b2"
         },
         {
           "alg" : "SHA3-256",
-          "content" : "fe8e9ec2f433861e3b1372f8981afab16c412f1c8c30449eb8d44518f50529d4"
+          "content" : "0cc89bcdbe88642ab475914c2e7369ee951c8206474704b71281a7dd53cd57cc"
         },
         {
           "alg" : "SHA3-512",
-          "content" : "f2438d5dcc91d57905e7bde7d0a2dd7487e1769ec1432dbaaeccf73567c820f6c82a6e3a891afd660a70fb574ade022ee2dd26cfd7ab31494bb319ab04c12abd"
+          "content" : "26ea454b7b9d30c001de692c6ba4d351ad3cb933c60cc798f4ecc9aa7466fbb87bc652a9ea165fc976d8f27a46d161b405d4856023e0c5bad7a348a127ab65a7"
         }
       ],
       "licenses" : [
@@ -9533,7 +9533,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/software.amazon.awssdk/regions@2.57.6?type=jar",
+      "purl" : "pkg:maven/software.amazon.awssdk/regions@2.57.9?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -9547,44 +9547,44 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/software.amazon.awssdk/annotations@2.57.6?type=jar",
+      "bom-ref" : "pkg:maven/software.amazon.awssdk/annotations@2.57.9?type=jar",
       "group" : "software.amazon.awssdk",
       "name" : "annotations",
-      "version" : "2.57.6",
+      "version" : "2.57.9",
       "description" : "The AWS SDK for Java - Core is an umbrella module that contains child modules which are considered as core of the library.",
       "scope" : "required",
       "hashes" : [
         {
           "alg" : "MD5",
-          "content" : "7c705bcd5eed075a6c1b84102af359fb"
+          "content" : "5036487651ccb5efc508890b425b4016"
         },
         {
           "alg" : "SHA-1",
-          "content" : "bf54c83a7fb21e94060688a523d14fcedecd6fe5"
+          "content" : "f2c6dc181181f927e0690f849e7a9d56514ad86e"
         },
         {
           "alg" : "SHA-256",
-          "content" : "a9ad71a2bf5ba2673c95f5a3e45783d7c240c6c5439f1b7a02ee98fe3ab1345c"
+          "content" : "2619dc9a7017002667754dad834b779e358faff7507405d89a9482b960932c6c"
         },
         {
           "alg" : "SHA-512",
-          "content" : "85ac1183776ad59244d0fa5dd55dc05720597f35b56497bb1efc278a56841188f9b275077635e0da1f6f1524d8e5efbf0100355ffcefaec9985e801aaca34857"
+          "content" : "eca60fce6de1cb86a272b97b2955a3d51447b6d57cdf4bf3e3d6f3972625eeeea4a1d9652266814201719fc411af0e8f5315dae6d13830b631b0983bd394aacd"
         },
         {
           "alg" : "SHA-384",
-          "content" : "8390937609d69874e71d8327373686ceece4198876406c68d646f6fba48529af9c28d0fb64a3d01d2d641933d0efc4e6"
+          "content" : "be1966d241e56aa34eaa62c081cb5c0d8c047eb6f237806362e14e51737f3d0cc87287f03e5f0e02a063dce2dad18805"
         },
         {
           "alg" : "SHA3-384",
-          "content" : "3bfa572438d2bf15c0bd8f4720114700d577113b072ed4f5b8f652aa9544de3520d1b0cf57c04342f20f75d30ab3137e"
+          "content" : "563261f9b5abc72eb56fed5ef81f6ced4088a22f6a639b67f6e1c0574195dc79b94e6e8b39f240bd0c50cda2f9317ce0"
         },
         {
           "alg" : "SHA3-256",
-          "content" : "d1c4996766a7a8967ac928f33b352108a20b6c66cddd46554aee929a4e0d0a66"
+          "content" : "0d204d2b546dc9dfbb0e745a501032b9855cf9747ba6ade8821b2af8d61e3405"
         },
         {
           "alg" : "SHA3-512",
-          "content" : "3404fa2e22ead98b4551e438ec7150371b3afbb952a450a1b16eb701d385809c4bfe74ee53df0fbcafda922126e4eae5a55bd45114cda4e2271ba186660d10ed"
+          "content" : "2dcbbfb57f02e358be7b054f5b0e5733e3c1ee3de45d9f0c888f41c951adc482f13e55206fe5ca47db5a2b0d4ac4d0b245ac2a2a11417f29221de4baeac5c455"
         }
       ],
       "licenses" : [
@@ -9594,7 +9594,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/software.amazon.awssdk/annotations@2.57.6?type=jar",
+      "purl" : "pkg:maven/software.amazon.awssdk/annotations@2.57.9?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -9608,44 +9608,44 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/software.amazon.awssdk/utils@2.57.6?type=jar",
+      "bom-ref" : "pkg:maven/software.amazon.awssdk/utils@2.57.9?type=jar",
       "group" : "software.amazon.awssdk",
       "name" : "utils",
-      "version" : "2.57.6",
+      "version" : "2.57.9",
       "description" : "The Amazon Web Services SDK for Java provides Java APIs for building software on AWS' cost-effective, scalable, and reliable infrastructure products. The AWS Java SDK allows developers to code against APIs for all of Amazon's infrastructure web services (Amazon S3, Amazon EC2, Amazon SQS, Amazon Relational Database Service, Amazon AutoScaling, etc).",
       "scope" : "required",
       "hashes" : [
         {
           "alg" : "MD5",
-          "content" : "63046ae8e4dcdf8f0d4f4ccd0a4477eb"
+          "content" : "62bf645c49a6c22efc0e9d34347f587f"
         },
         {
           "alg" : "SHA-1",
-          "content" : "5a53938f2506c052bb3d32573628273bf34a442b"
+          "content" : "96b297bad1b72e623e16374f8b7f3c6f8475c7c5"
         },
         {
           "alg" : "SHA-256",
-          "content" : "bf3bfbacb9f407a23b2894d3b3bfdcf93c316e007e806681205abd2654675cb5"
+          "content" : "3b936e1465bd4359e4211584352276318d9cc9d2b7842ce37d90c007a87c564e"
         },
         {
           "alg" : "SHA-512",
-          "content" : "72dabae9e7801bfe81b29ddc195d0f3c4bd4c7948a3dd8fe4caa491cb9649bcfe02d9766c9e0c3d069fe29c0a08fb9651379db0e8e3166bf0f850625f15fe50b"
+          "content" : "3034542ea4ebab9d1f730bc7004e6484374bfd7033ec606ffa91a235f88dd1f99e3deeb3e67087af5ccaeae5cd6373d5071f2098230b73513a2774d6f8784a2c"
         },
         {
           "alg" : "SHA-384",
-          "content" : "cc3caed001697e84354b1bdf63f4aa954c25003b71595a37f04db8246b3038772ef9da34608b919eab367d82c55c612e"
+          "content" : "003ce8492edbd69b036d49faeaa6e3e6fd5c4ea56cfb280471e43437800753e2a56f511a2a64733e2349e241ce1fb69d"
         },
         {
           "alg" : "SHA3-384",
-          "content" : "701ba5b8f5c6fa09b084185a60a5f565d33a61efe9745e72b1a95a5b6efcb5f5a74cbc1d2df3efbd1aa06f4c600ce729"
+          "content" : "0a0545e0f4218071a494acad5c247c4beea5a8aceda6b8446beb8238ba2671322b3535727c7bdcefe1e498f13c020511"
         },
         {
           "alg" : "SHA3-256",
-          "content" : "2b63045c6373571a1b00aab9262945659ecaed951502557f66bd975c031d8a0d"
+          "content" : "3bdf4412cf35f8d426f5b97a5345e1085f226d134e77f2dfe9bddc69b87840d2"
         },
         {
           "alg" : "SHA3-512",
-          "content" : "0bae8c7275c0184ddc8fd0fff811ee19f25b74fa1e3f83edc1aead0b91acc70d2437907bd1389b65c298fd7bbb404a18bccc65956df7f4fec79f662cab1e4911"
+          "content" : "eb55940e5732c93fd584c8c589673c94c2262d898810d30d4aed1fcaef257fc31ce29914398a319cc89f386334f876f99bd88d9187afaf324ea7139c390a4ec2"
         }
       ],
       "licenses" : [
@@ -9655,7 +9655,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/software.amazon.awssdk/utils@2.57.6?type=jar",
+      "purl" : "pkg:maven/software.amazon.awssdk/utils@2.57.9?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -9669,44 +9669,44 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/software.amazon.awssdk/aws-core@2.57.6?type=jar",
+      "bom-ref" : "pkg:maven/software.amazon.awssdk/aws-core@2.57.9?type=jar",
       "group" : "software.amazon.awssdk",
       "name" : "aws-core",
-      "version" : "2.57.6",
+      "version" : "2.57.9",
       "description" : "The AWS SDK for Java - Core runtime module holds the classes that are used by the individual service clients to interact with Amazon Web Services. Users need to depend on aws-java-sdk artifact for accessing individual client classes.",
       "scope" : "required",
       "hashes" : [
         {
           "alg" : "MD5",
-          "content" : "bd93a0f53ab95f9deb0061d58b9d4641"
+          "content" : "cbad39815682be3686ae2f02765772ef"
         },
         {
           "alg" : "SHA-1",
-          "content" : "26c1529ad3f913c9279690833040ff59e4340e31"
+          "content" : "e645750722284bef53314d756e011394034c1167"
         },
         {
           "alg" : "SHA-256",
-          "content" : "c3e0ffdc7ffc1e6d7e720e68d694d6fdd3b1ef336ebce24cbef7304a48f8be3e"
+          "content" : "ce71555162ca8d96e632ee87946dd65501a1c37fda71fb1a05ca14dd7f855327"
         },
         {
           "alg" : "SHA-512",
-          "content" : "2ea38c04ebde34dd5c2ed30769fe06db51848db5f52afde005e3c5a0883484a986082ef86798a242b9b78db9ecea171e7a21cd8e356f0b294b034bcaea112f24"
+          "content" : "054551d0a98e4feb97369ed7737e6eda13af5493d0e998d9a892ca603ae9c15fa9f643df50c3b787d148b860f8051f2ab547047681840c36ba9684800e8e098a"
         },
         {
           "alg" : "SHA-384",
-          "content" : "c9a987af8446f99cc1c0c3dd6f264d934ad2e9725b0ec10d54e9c3df8299faa711c539df62d8f80ea92b7cefacb64752"
+          "content" : "37d624646e4269c279dcfc0a7d0120df22c901017e117c5b0249ccac5ad072b6c783ec9fe3ba6f3acc41a9644b73b933"
         },
         {
           "alg" : "SHA3-384",
-          "content" : "2181ab1c2bb90cc8ca26bdac7d11f25afd278b256a166f24fb4758cbfb77e51fc53cc8c2ab0a5354e977c0db4643fb75"
+          "content" : "51f10ce7cb3daf29769d7b144ebf64786edf2e24ce815e1b03f76a38a162c50f37eb17b9cfc3269a65e03029941557cf"
         },
         {
           "alg" : "SHA3-256",
-          "content" : "537bf23f875a08714f3cdf907cf155814d9c1892aed2805780c05821a5c093d1"
+          "content" : "7909d2d32a5fdef10af92b072ad214c137490bba75b0551ec276a8a4023a6e36"
         },
         {
           "alg" : "SHA3-512",
-          "content" : "2add6fbd848474339431e6ad9d467437ece2aee320b992bab319946a860f3c188226a87246215dd3d1a1634cf7bfcf9ac4e44e8bb04050d51773310b2235d193"
+          "content" : "055988fe90332b757f16ef0a16384eb6e0f183469eb1da4d1f8fb50726399a2670f87dff78777994bf906cead2933b0510c7af383c228ad02c32a3c7ff365512"
         }
       ],
       "licenses" : [
@@ -9716,7 +9716,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/software.amazon.awssdk/aws-core@2.57.6?type=jar",
+      "purl" : "pkg:maven/software.amazon.awssdk/aws-core@2.57.9?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -9730,44 +9730,44 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/software.amazon.awssdk/utils-lite@2.57.6?type=jar",
+      "bom-ref" : "pkg:maven/software.amazon.awssdk/utils-lite@2.57.9?type=jar",
       "group" : "software.amazon.awssdk",
       "name" : "utils-lite",
-      "version" : "2.57.6",
+      "version" : "2.57.9",
       "description" : "A package providing minimal external utils.",
       "scope" : "required",
       "hashes" : [
         {
           "alg" : "MD5",
-          "content" : "8203b02420bc3b5836b979d89e3ec4fb"
+          "content" : "cc12ecc9664aa546ecf0ecf9e33950ff"
         },
         {
           "alg" : "SHA-1",
-          "content" : "b2e741273c9ed8431e10bc5982e81cd8dd4a1fa5"
+          "content" : "ad4ec5b14854cf23a50380b7c63f4c88d17bc0e8"
         },
         {
           "alg" : "SHA-256",
-          "content" : "b49e83584b21956c271336bf835b5d5daa44c9d52485e97af2a98c7c71ed5525"
+          "content" : "a56697e028b88fed8f0ec9beabc94cdcf79d4e4ec156e5ac8e0ddc80c66cf908"
         },
         {
           "alg" : "SHA-512",
-          "content" : "6e44abb9cbccb30b9e2a04aa209ec38ed34a9034bf970f760721df29314940c06e6157e22a7eb91f7693b90609f98d6033a22bf484ed7c8c4c8503ed5d2b39c6"
+          "content" : "efee0ee78f0fd0d22bac91e3a3a87fc9ed648b2df9c6abc6cb9bba65cbd917b162abc1acc58957c7786486fb91d363e2da3956082d3f0536bd582baebc63a37d"
         },
         {
           "alg" : "SHA-384",
-          "content" : "98a233b02ff6a0ed21dd663a53f679befda397ff5dfbca6355c3558e175194c51b6458abb2b180ea1a4eb5f50b7f8313"
+          "content" : "a028c4946099a496e6bb3076d8fbfb6d00324441ea7642180c754cc227cefb97bffde88d058c6734ec3a5a55c49f83bb"
         },
         {
           "alg" : "SHA3-384",
-          "content" : "9d813bb25250a815eca396b5da8a01245be1ef8a40fbdb4a01392789c04291ecf5434e633cf8e9e88d8a912d2cc957f1"
+          "content" : "1259ce9b2b3f84a2afad5598075a13a383cf8a96686711ad1e77dcb5a91387af3babd0cc4d2de1503856946b6ed1f9f7"
         },
         {
           "alg" : "SHA3-256",
-          "content" : "d7bd7edd62ff8ae95070d40eff234b0121c8153dd592a196d4fec75ab660e420"
+          "content" : "00e48a416d7e60f7a4a2b2d492725097064845181809023146068df80ef3890b"
         },
         {
           "alg" : "SHA3-512",
-          "content" : "3cf1459132619c5fa9c38663d94fa799a250a95f8dc764641ac21d67545e9c55bb4ace4f905343170332de71807c91ace25afd6fdcabac55866a65dbe7d43c2d"
+          "content" : "e5405d7150551bb6ac08598507d5a3cf8d807845d7bdca46a8d5c253f0fd7051532ca4be82e9f00989fa66c8c4893c10428d9730b0406ba9e10778c27db69b7e"
         }
       ],
       "licenses" : [
@@ -9777,7 +9777,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/software.amazon.awssdk/utils-lite@2.57.6?type=jar",
+      "purl" : "pkg:maven/software.amazon.awssdk/utils-lite@2.57.9?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -9791,44 +9791,44 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/software.amazon.awssdk/metrics-spi@2.57.6?type=jar",
+      "bom-ref" : "pkg:maven/software.amazon.awssdk/metrics-spi@2.57.9?type=jar",
       "group" : "software.amazon.awssdk",
       "name" : "metrics-spi",
-      "version" : "2.57.6",
+      "version" : "2.57.9",
       "description" : "This is the base module for SDK metrics feature. It contains the interfaces used for metrics feature that are used by other modules in the library.",
       "scope" : "required",
       "hashes" : [
         {
           "alg" : "MD5",
-          "content" : "18957cecf2a0aee9c6ed8f69680fa47b"
+          "content" : "694cba444c1c35a9a69fe858312dcc17"
         },
         {
           "alg" : "SHA-1",
-          "content" : "7b752016e4afa8c54a9b27509daa60d851851c4c"
+          "content" : "e6b4d9f400929b04b568c366cf93ecef2a432deb"
         },
         {
           "alg" : "SHA-256",
-          "content" : "f2539aeafb9314d93a6ffd653c0b14c905c95041101b82d543032c9c140e4993"
+          "content" : "22ed12935ab5e2d515f73ac89cefa3b4f185f17070466473c2683c722852b0b1"
         },
         {
           "alg" : "SHA-512",
-          "content" : "cefc7da12f78429d84d36eeb9e6c658c587d62838f403f8ea8e33e5a3f0b64ebdf346c0a26fb041a24c51b4f3e793bce8d32c6bfdf6e28cee3f123e1992f9305"
+          "content" : "31e7bae1970637c4d7b39d73163c3dff56b25a74f09b69634096a02fc7329b3157a260da00f5c32fd986f87133f90c6b6fbcb4d76ef4b4d5ad549091816fc0c0"
         },
         {
           "alg" : "SHA-384",
-          "content" : "7bf3d70b5121408a4465ed4ec592b35e14c49c87f0e07a5a66d87bfb92766b436b3ae5944092d8c2d66bd6fe03cba26d"
+          "content" : "b0ad133795220ddd57907e76c0ea7c0be3b00b96b03bb5e4334272fdf3156e3f9319fd0142a4c5ffaadbb609e9efddab"
         },
         {
           "alg" : "SHA3-384",
-          "content" : "076bbe7af5d426587047698ba4d8d73b1f1217dfe618ba74cc2447347c137c794d6442df25bafc9a1921b0096566f885"
+          "content" : "200be8b910faaaba3c17c830b83be6c5e0979da65db3754e59d4bdce10e0193aedec5ba3864a240dddc896230f21dab9"
         },
         {
           "alg" : "SHA3-256",
-          "content" : "d9052ce9890227205b701f67329601550fcaaeafd84a7f16a70c077dd86bb7de"
+          "content" : "7e51e77571c4850fe0dd0c04d47953207329214cbdd2bfaedb3de32c18df8f6d"
         },
         {
           "alg" : "SHA3-512",
-          "content" : "999bef8a1c278b383a80075713c2db47aba738fa5cc5b89837c1396667f08ef5bbc0d95ddaba058bd94e154d7d308dc9dc2a0d64e3f3e4af53384356ec948a96"
+          "content" : "c02b63d21f7f83ad503c305c680fb0efaca33d05911b2854812e2a200ee0576bcb48061e39bb60f03d45528d1e4bde540f3a082521d61f20ed7422b717488234"
         }
       ],
       "licenses" : [
@@ -9838,7 +9838,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/software.amazon.awssdk/metrics-spi@2.57.6?type=jar",
+      "purl" : "pkg:maven/software.amazon.awssdk/metrics-spi@2.57.9?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -9852,44 +9852,44 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/software.amazon.awssdk/json-utils@2.57.6?type=jar",
+      "bom-ref" : "pkg:maven/software.amazon.awssdk/json-utils@2.57.9?type=jar",
       "group" : "software.amazon.awssdk",
       "name" : "json-utils",
-      "version" : "2.57.6",
+      "version" : "2.57.9",
       "description" : "The AWS SDK for Java - Core is an umbrella module that contains child modules which are considered as core of the library.",
       "scope" : "required",
       "hashes" : [
         {
           "alg" : "MD5",
-          "content" : "7dcae828ade0227940aac8505e274c46"
+          "content" : "b6e756c97c9583e7cd367597fe4c0454"
         },
         {
           "alg" : "SHA-1",
-          "content" : "ee6c3cf725a4acc3405222a3176928d2df589228"
+          "content" : "cfc79ef4e1aec8a40e6fa63dd52d0533d270db51"
         },
         {
           "alg" : "SHA-256",
-          "content" : "299ef25889bb778b56766421d9948348ff03b58ccac29575de88bb58e3a21673"
+          "content" : "9ad0cd6513c03ade4ca6211032ce2f330375e0227589a921d8e9c50ea41778ab"
         },
         {
           "alg" : "SHA-512",
-          "content" : "f5f29d147c0ef28714ce0337146f252a7a1f03392c45f1889375387aaae85fb4cbcfae1cdb5601fff600b243642c613bebd734e88b983adc6411c21d0a288985"
+          "content" : "9dfcbcd3bc55e5a0071a916a02ab6b2cef297d17b4f026a2b01c84b148731032d9d46db47310b5eebebcd2cce1c57a2cb6e42f8a6e348469b5ec6d35811213ef"
         },
         {
           "alg" : "SHA-384",
-          "content" : "5adb9a3131b5e519a86070df5ad89d2f6df4a6bee85c9ecbff47a434ad237a3d9e5cf0d37975dff4e90db5ff9dad96f2"
+          "content" : "478ff812594da1bffd6f4027c4157d4f660a9f6bab868e7791ee9543834e0b9b2891ac3291cda6a06f267ca0694ea51d"
         },
         {
           "alg" : "SHA3-384",
-          "content" : "4449ae2d195eb5d75a8ec4b229a28c43685c2d32b6f6a3e062de94474723f8b8800c90f0e35fa8b44a78bac804656aa4"
+          "content" : "b2928b685be006c2fcd0ed5222a9b883597f4a63473dd600ba0e9afc416dd5305a24ef62c1b3ae5db0e7db6c2bc283e8"
         },
         {
           "alg" : "SHA3-256",
-          "content" : "9b381a24ffd807722a0056f353114d8c811b1e87e87f5b4a408af83c68a07255"
+          "content" : "0069b09f3bdb90f0e36a14bd7e13755a54f3a46170f7482624454c4c7f164f77"
         },
         {
           "alg" : "SHA3-512",
-          "content" : "af09ebf1e7dde3288ac111d53f24a2cee022e2a6f3355f845ac6f891a7475770cbd5ad4280c3ac5e31f66ea192469f5c9c23015408f9189db1c936851fa7e73a"
+          "content" : "bec6204950cc49ec87497557f06be77b98d3d65c96eddc53d02b5aef53edae6b6e7a919cd8293468ff4aa5cb4a3ecfc88c366a933c4821210780b4308ba2a99a"
         }
       ],
       "licenses" : [
@@ -9899,7 +9899,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/software.amazon.awssdk/json-utils@2.57.6?type=jar",
+      "purl" : "pkg:maven/software.amazon.awssdk/json-utils@2.57.9?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -9913,44 +9913,44 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/software.amazon.awssdk/third-party-jackson-core@2.57.6?type=jar",
+      "bom-ref" : "pkg:maven/software.amazon.awssdk/third-party-jackson-core@2.57.9?type=jar",
       "group" : "software.amazon.awssdk",
       "name" : "third-party-jackson-core",
-      "version" : "2.57.6",
+      "version" : "2.57.9",
       "description" : "The AWS SDK for Java - Third Party is an umbrella module that contains child modules which are shaded third- party dependencies.",
       "scope" : "required",
       "hashes" : [
         {
           "alg" : "MD5",
-          "content" : "71301c65653d8466874658ea7bbc6f4a"
+          "content" : "137c672721ab0b917558020adba64cf1"
         },
         {
           "alg" : "SHA-1",
-          "content" : "695bb2b7740899b5fe0434249f774785e91f3f20"
+          "content" : "cee3da72bd82caf0af36a7316d9565207d639c07"
         },
         {
           "alg" : "SHA-256",
-          "content" : "b00914646b09fbcebcd695360756e678d9c95d3a1d9c4550deae971e27b954fc"
+          "content" : "01e84cd14d53ccae26bf118a8c0cf2ab08be7e11d39b0f13b4a424281f104934"
         },
         {
           "alg" : "SHA-512",
-          "content" : "c98644c2499e593894114f97a4fa227328d561c7d272c4e5ccbf92674fcc06eacd740676734c5ac53bbc5a8e2c0d42931814c0211cfcb28ba5722e173ab2437e"
+          "content" : "0ae0e884f7e48d4c3dd539498dfeeab0027d4bd6486f882d01845c52618b76785c3cc97dbf7ea8e7d01ae1554162068f44772fd9cd6cfcf882abd615d9f9b625"
         },
         {
           "alg" : "SHA-384",
-          "content" : "17173cc6c959bc19348a65fa5b6919b9f9330cdc98e77e2711de8207869b308809b21c9cc444df038c35db1d7bfbec3f"
+          "content" : "fb76b9f9737fdff773cc6499ba744d73694b99b7281f79ddb9812130d744463bdc107272083bc4fad67194c2de637421"
         },
         {
           "alg" : "SHA3-384",
-          "content" : "c1115e767171ca12e821f751a27321055a98a402e45ac0dbbbe8b9b0b929ff16e35aa2670e1320b28a85a56c2ec11a55"
+          "content" : "e9a3ed25ce86f558c0109cc1a1076fdcdc8ce2a34d90081a4f868e04fc1b37d448567eac9a77bb1d7736b5e5135540d0"
         },
         {
           "alg" : "SHA3-256",
-          "content" : "6c07096bf57e242b07a6e5f2951e85fa0d2aeb4e94ca0b45b3deaaeb7d448130"
+          "content" : "12e057745ecd5af2fd8067aeb3e8d17adf3903344f8ba137671a7a84909ffa97"
         },
         {
           "alg" : "SHA3-512",
-          "content" : "e2dec555c745d7e625c890d44a382be5e7d9d1e25cb569a3889ee88373e40309dc4c09dcdd34797b5548e341ee394af2b3effbb5aaaa23127d8ffbe6b5ad45bb"
+          "content" : "0baa20728b4eceeeb926339031ac98540027fd83bdfb9be557c4f185d8ff9a1e0dff2f334d2093032b8977ed7dcb42a6ca78770571209ac8edab1617bd4cd6fe"
         }
       ],
       "licenses" : [
@@ -9960,7 +9960,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/software.amazon.awssdk/third-party-jackson-core@2.57.6?type=jar",
+      "purl" : "pkg:maven/software.amazon.awssdk/third-party-jackson-core@2.57.9?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -9974,44 +9974,44 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/software.amazon.awssdk/endpoints-spi@2.57.6?type=jar",
+      "bom-ref" : "pkg:maven/software.amazon.awssdk/endpoints-spi@2.57.9?type=jar",
       "group" : "software.amazon.awssdk",
       "name" : "endpoints-spi",
-      "version" : "2.57.6",
+      "version" : "2.57.9",
       "description" : "The AWS SDK for Java - Core is an umbrella module that contains child modules which are considered as core of the library.",
       "scope" : "required",
       "hashes" : [
         {
           "alg" : "MD5",
-          "content" : "f3b621536cb52515fe27e00b5001e12e"
+          "content" : "562dd549eea60ef1c0676b01a034625c"
         },
         {
           "alg" : "SHA-1",
-          "content" : "9402fe270a72bac8c7b2afcdb13499eb1ee6b89d"
+          "content" : "d67e72301ea1e25173381229e7617fda9664e4b0"
         },
         {
           "alg" : "SHA-256",
-          "content" : "4b0bda35b823508ad303b0bfa7f47d01557058919150e8e098dbe4f846472add"
+          "content" : "ead1579f7fc44de6037d104c457ca5516ca9c604563f3b6f57669a5bbb0858a3"
         },
         {
           "alg" : "SHA-512",
-          "content" : "e4fba48ca231e02b878d2633fac411e40ab582acf0e6d97c49f213846eb9014db482b3800fc9f4e6d8ffbb926d1ee2c10d5e6e3fd84884d373241993582afc27"
+          "content" : "feb9f8b224bd79cf074dab8403537bdd7edba9eb641dac35f1c5261a41143078f0f2a34effda3a6401d564bed4f516352365d42ea213d9126b203a92ba551fdd"
         },
         {
           "alg" : "SHA-384",
-          "content" : "6d36852bdd0cee8daa0a17ce7531e9947375f8c00505b668685feebf7844f8cf80eda74e762810da31bf412a2869377d"
+          "content" : "b6cc153f179e686f5e10d4f6b277547ea81c058a5acad4dacb10cc2214a4e77ba3d052b421ae85d1e56a1e076092c15d"
         },
         {
           "alg" : "SHA3-384",
-          "content" : "5eabc77d973f567c6722437926eb01c8c62de487596af36943c0494fa5029703c636449c73ea92791068f54b60101f07"
+          "content" : "0ceb6dcd33bb5405d23112118629fc71709ecf48a4c52117f373a0434097bd43cf7693892f3b86cab3008e2ec326dd31"
         },
         {
           "alg" : "SHA3-256",
-          "content" : "48eea9f125ca4efa89276145a96bf5afa63b74a8265e9766a9f138fb66abd016"
+          "content" : "c52086f54fd5fb256c0c6d651d1ee63c339b3fa1d3bc42f611d94bb700c61657"
         },
         {
           "alg" : "SHA3-512",
-          "content" : "eaf9b063865c7453dbe10dd7ffbffc47a45a2d8ed239dea5bfbf2a08a9260ffa1a89c146ed9ab918a04ab8f05c148a73ed012c6ab4b67edf4e9dcb7b5c337628"
+          "content" : "8616b4615433387e640fee564a8a1653ed095f90f1e5fb6491ce047f15c293ace2cab97da0e15ea005e0ffd5977037986104a5415e6dd258de3d1f6bd5e7f18d"
         }
       ],
       "licenses" : [
@@ -10021,7 +10021,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/software.amazon.awssdk/endpoints-spi@2.57.6?type=jar",
+      "purl" : "pkg:maven/software.amazon.awssdk/endpoints-spi@2.57.9?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -10035,44 +10035,44 @@
     },
     {
       "type" : "library",
-      "bom-ref" : "pkg:maven/software.amazon.awssdk/url-connection-client@2.57.6?type=jar",
+      "bom-ref" : "pkg:maven/software.amazon.awssdk/url-connection-client@2.57.9?type=jar",
       "group" : "software.amazon.awssdk",
       "name" : "url-connection-client",
-      "version" : "2.57.6",
+      "version" : "2.57.9",
       "description" : "The Amazon Web Services SDK for Java provides Java APIs for building software on AWS' cost-effective, scalable, and reliable infrastructure products. The AWS Java SDK allows developers to code against APIs for all of Amazon's infrastructure web services (Amazon S3, Amazon EC2, Amazon SQS, Amazon Relational Database Service, Amazon AutoScaling, etc).",
       "scope" : "required",
       "hashes" : [
         {
           "alg" : "MD5",
-          "content" : "c038a5e51a7fe33fb1a735cf4970d6e6"
+          "content" : "a9c714f02061bffd4b3c7197b8497c2c"
         },
         {
           "alg" : "SHA-1",
-          "content" : "2f3e611736c7864e259c3ef2d166c5f183e915ee"
+          "content" : "10ab218a83cab04d9058179cfd4ff7a147e0e5b3"
         },
         {
           "alg" : "SHA-256",
-          "content" : "7019ba7f5ef1f1128f523899db336a43650fd2199703457662d4e200bd33e05e"
+          "content" : "ffe4248c4c8105a990217f38b663704ff97ecf3ae6db65b39262d5fbb69ef3f8"
         },
         {
           "alg" : "SHA-512",
-          "content" : "1f5c005b460623cb36416b63cde6a231dd03fcdc3b2609fe8515e32e6da75332e4400e7fb8dbe811099bc08f5acafc468a24d0848c654426d727a9c78dfa8eb9"
+          "content" : "0367b02c9e77af570529e46e559d061768784e909632515cb971e6b0e1c97a88ec738eb3ae4821cf9b67662d8054648916dec2d2103f0196c2012738a531916f"
         },
         {
           "alg" : "SHA-384",
-          "content" : "9306a12a5441d58dec56265e0beef8cd0be8c08059cdf0b27c09d26f1b42894c40c24887a5460dd906580ede817a2ed0"
+          "content" : "563fdda1a46d5ed02d175aa264d6d31d438e3e39a46034cfe6af69b1e80bf57af162d0acde206e16824c157b13419c11"
         },
         {
           "alg" : "SHA3-384",
-          "content" : "fc5098008d1d4ba9602cb9d370db79caeebdf0ecf70232cc0b8ffc037dea5419cf4fe71a56fe5c5d2ca53a81c23f6e17"
+          "content" : "cf2b633a467966ceb1717625a0336580fb6b8b0a83ea7bd67a891e90c2dd9f5547e7cf9bd11e467a7ee7e70345e071b2"
         },
         {
           "alg" : "SHA3-256",
-          "content" : "5dba9f5c1e7978697b2369c8e21d1743f402338bc32c1eefbc8e17bf7c4718f8"
+          "content" : "f87cc5b2eba09d4ca24476577900c8f2537b5f7b6d69bbb8f3cc9a4e8d7a8212"
         },
         {
           "alg" : "SHA3-512",
-          "content" : "00c2e4bb061a5b1be9c494d5b69dc71f4de12ae4b21d710784febba82b5515771e75b859e55ff78906c5066511dcd27d3a1befb2bea3fe7be572f8b56d976560"
+          "content" : "8c75c078bd2312d480f1f805af4decb5181aeb4aac4ece7ed209429eac4f990353517419811ccbe87220c1c225b9d0567fd58219304aa34a124028358987c22d"
         }
       ],
       "licenses" : [
@@ -10082,7 +10082,7 @@
           }
         }
       ],
-      "purl" : "pkg:maven/software.amazon.awssdk/url-connection-client@2.57.6?type=jar",
+      "purl" : "pkg:maven/software.amazon.awssdk/url-connection-client@2.57.9?type=jar",
       "externalReferences" : [
         {
           "type" : "website",
@@ -14413,8 +14413,8 @@
         "pkg:maven/org.flywaydb/flyway-database-postgresql@12.4.0?type=jar",
         "pkg:maven/org.postgresql/postgresql@42.7.14?type=jar",
         "pkg:maven/org.springdoc/springdoc-openapi-starter-webmvc-api@3.2.0?type=jar",
-        "pkg:maven/software.amazon.awssdk/s3@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/url-connection-client@2.57.6?type=jar",
+        "pkg:maven/software.amazon.awssdk/s3@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/url-connection-client@2.57.9?type=jar",
         "pkg:maven/org.projectlombok/lombok@1.18.48?type=jar"
       ]
     },
@@ -15215,102 +15215,102 @@
       ]
     },
     {
-      "ref" : "pkg:maven/software.amazon.awssdk/s3@2.57.6?type=jar",
+      "ref" : "pkg:maven/software.amazon.awssdk/s3@2.57.9?type=jar",
       "dependsOn" : [
-        "pkg:maven/software.amazon.awssdk/aws-xml-protocol@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/protocol-core@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/arns@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/profiles@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/crt-core@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/http-auth@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/identity-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/http-auth-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/http-auth-aws@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/checksums@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/checksums-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/retries-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/sdk-core@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/auth@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/http-client-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/regions@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/annotations@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/utils@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/aws-core@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/metrics-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/json-utils@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/endpoints-spi@2.57.6?type=jar"
+        "pkg:maven/software.amazon.awssdk/aws-xml-protocol@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/protocol-core@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/arns@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/profiles@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/crt-core@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/http-auth@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/identity-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/http-auth-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/http-auth-aws@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/checksums@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/checksums-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/retries-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/sdk-core@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/auth@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/http-client-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/regions@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/annotations@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/utils@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/aws-core@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/metrics-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/json-utils@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/endpoints-spi@2.57.9?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/software.amazon.awssdk/aws-xml-protocol@2.57.6?type=jar",
+      "ref" : "pkg:maven/software.amazon.awssdk/aws-xml-protocol@2.57.9?type=jar",
       "dependsOn" : [
-        "pkg:maven/software.amazon.awssdk/aws-query-protocol@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/protocol-core@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/aws-core@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/sdk-core@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/annotations@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/http-client-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/utils@2.57.6?type=jar"
+        "pkg:maven/software.amazon.awssdk/aws-query-protocol@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/protocol-core@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/aws-core@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/sdk-core@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/annotations@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/http-client-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/utils@2.57.9?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/software.amazon.awssdk/aws-query-protocol@2.57.6?type=jar",
+      "ref" : "pkg:maven/software.amazon.awssdk/aws-query-protocol@2.57.9?type=jar",
       "dependsOn" : [
-        "pkg:maven/software.amazon.awssdk/protocol-core@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/aws-core@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/sdk-core@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/annotations@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/http-client-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/utils@2.57.6?type=jar"
+        "pkg:maven/software.amazon.awssdk/protocol-core@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/aws-core@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/sdk-core@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/annotations@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/http-client-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/utils@2.57.9?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/software.amazon.awssdk/protocol-core@2.57.6?type=jar",
+      "ref" : "pkg:maven/software.amazon.awssdk/protocol-core@2.57.9?type=jar",
       "dependsOn" : [
-        "pkg:maven/software.amazon.awssdk/sdk-core@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/annotations@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/utils@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/http-client-spi@2.57.6?type=jar"
+        "pkg:maven/software.amazon.awssdk/sdk-core@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/annotations@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/utils@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/http-client-spi@2.57.9?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/software.amazon.awssdk/sdk-core@2.57.6?type=jar",
+      "ref" : "pkg:maven/software.amazon.awssdk/sdk-core@2.57.9?type=jar",
       "dependsOn" : [
-        "pkg:maven/software.amazon.awssdk/annotations@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/http-client-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/metrics-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/endpoints-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/http-auth-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/http-auth-aws@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/checksums-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/checksums@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/identity-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/utils@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/profiles@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/retries-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/retries@2.57.6?type=jar",
+        "pkg:maven/software.amazon.awssdk/annotations@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/http-client-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/metrics-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/endpoints-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/http-auth-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/http-auth-aws@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/checksums-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/checksums@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/identity-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/utils@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/profiles@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/retries-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/retries@2.57.9?type=jar",
         "pkg:maven/org.slf4j/slf4j-api@2.0.20?type=jar",
         "pkg:maven/org.reactivestreams/reactive-streams@1.0.4?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/software.amazon.awssdk/annotations@2.57.6?type=jar",
+      "ref" : "pkg:maven/software.amazon.awssdk/annotations@2.57.9?type=jar",
       "dependsOn" : [ ]
     },
     {
-      "ref" : "pkg:maven/software.amazon.awssdk/http-client-spi@2.57.6?type=jar",
+      "ref" : "pkg:maven/software.amazon.awssdk/http-client-spi@2.57.9?type=jar",
       "dependsOn" : [
-        "pkg:maven/software.amazon.awssdk/annotations@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/utils@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/metrics-spi@2.57.6?type=jar",
+        "pkg:maven/software.amazon.awssdk/annotations@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/utils@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/metrics-spi@2.57.9?type=jar",
         "pkg:maven/org.reactivestreams/reactive-streams@1.0.4?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/software.amazon.awssdk/utils@2.57.6?type=jar",
+      "ref" : "pkg:maven/software.amazon.awssdk/utils@2.57.9?type=jar",
       "dependsOn" : [
         "pkg:maven/org.reactivestreams/reactive-streams@1.0.4?type=jar",
-        "pkg:maven/software.amazon.awssdk/annotations@2.57.6?type=jar",
+        "pkg:maven/software.amazon.awssdk/annotations@2.57.9?type=jar",
         "pkg:maven/org.slf4j/slf4j-api@2.0.20?type=jar"
       ]
     },
@@ -15319,196 +15319,196 @@
       "dependsOn" : [ ]
     },
     {
-      "ref" : "pkg:maven/software.amazon.awssdk/metrics-spi@2.57.6?type=jar",
+      "ref" : "pkg:maven/software.amazon.awssdk/metrics-spi@2.57.9?type=jar",
       "dependsOn" : [
-        "pkg:maven/software.amazon.awssdk/annotations@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/utils@2.57.6?type=jar"
+        "pkg:maven/software.amazon.awssdk/annotations@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/utils@2.57.9?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/software.amazon.awssdk/endpoints-spi@2.57.6?type=jar",
+      "ref" : "pkg:maven/software.amazon.awssdk/endpoints-spi@2.57.9?type=jar",
       "dependsOn" : [
-        "pkg:maven/software.amazon.awssdk/annotations@2.57.6?type=jar"
+        "pkg:maven/software.amazon.awssdk/annotations@2.57.9?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/software.amazon.awssdk/http-auth-spi@2.57.6?type=jar",
+      "ref" : "pkg:maven/software.amazon.awssdk/http-auth-spi@2.57.9?type=jar",
       "dependsOn" : [
-        "pkg:maven/software.amazon.awssdk/annotations@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/utils@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/http-client-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/checksums-spi@2.57.6?type=jar",
+        "pkg:maven/software.amazon.awssdk/annotations@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/utils@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/http-client-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/checksums-spi@2.57.9?type=jar",
         "pkg:maven/org.reactivestreams/reactive-streams@1.0.4?type=jar",
-        "pkg:maven/software.amazon.awssdk/identity-spi@2.57.6?type=jar"
+        "pkg:maven/software.amazon.awssdk/identity-spi@2.57.9?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/software.amazon.awssdk/checksums-spi@2.57.6?type=jar",
+      "ref" : "pkg:maven/software.amazon.awssdk/checksums-spi@2.57.9?type=jar",
       "dependsOn" : [
-        "pkg:maven/software.amazon.awssdk/annotations@2.57.6?type=jar"
+        "pkg:maven/software.amazon.awssdk/annotations@2.57.9?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/software.amazon.awssdk/identity-spi@2.57.6?type=jar",
+      "ref" : "pkg:maven/software.amazon.awssdk/identity-spi@2.57.9?type=jar",
       "dependsOn" : [
-        "pkg:maven/software.amazon.awssdk/annotations@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/utils@2.57.6?type=jar"
+        "pkg:maven/software.amazon.awssdk/annotations@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/utils@2.57.9?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/software.amazon.awssdk/http-auth-aws@2.57.6?type=jar",
+      "ref" : "pkg:maven/software.amazon.awssdk/http-auth-aws@2.57.9?type=jar",
       "dependsOn" : [
-        "pkg:maven/software.amazon.awssdk/annotations@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/utils@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/identity-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/http-client-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/http-auth-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/checksums-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/checksums@2.57.6?type=jar"
+        "pkg:maven/software.amazon.awssdk/annotations@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/utils@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/identity-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/http-client-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/http-auth-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/checksums-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/checksums@2.57.9?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/software.amazon.awssdk/checksums@2.57.6?type=jar",
+      "ref" : "pkg:maven/software.amazon.awssdk/checksums@2.57.9?type=jar",
       "dependsOn" : [
-        "pkg:maven/software.amazon.awssdk/annotations@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/checksums-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/utils@2.57.6?type=jar"
+        "pkg:maven/software.amazon.awssdk/annotations@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/checksums-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/utils@2.57.9?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/software.amazon.awssdk/profiles@2.57.6?type=jar",
+      "ref" : "pkg:maven/software.amazon.awssdk/profiles@2.57.9?type=jar",
       "dependsOn" : [
-        "pkg:maven/software.amazon.awssdk/utils@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/annotations@2.57.6?type=jar"
+        "pkg:maven/software.amazon.awssdk/utils@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/annotations@2.57.9?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/software.amazon.awssdk/retries-spi@2.57.6?type=jar",
+      "ref" : "pkg:maven/software.amazon.awssdk/retries-spi@2.57.9?type=jar",
       "dependsOn" : [
-        "pkg:maven/software.amazon.awssdk/annotations@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/utils@2.57.6?type=jar"
+        "pkg:maven/software.amazon.awssdk/annotations@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/utils@2.57.9?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/software.amazon.awssdk/retries@2.57.6?type=jar",
+      "ref" : "pkg:maven/software.amazon.awssdk/retries@2.57.9?type=jar",
       "dependsOn" : [
-        "pkg:maven/software.amazon.awssdk/retries-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/annotations@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/utils@2.57.6?type=jar"
+        "pkg:maven/software.amazon.awssdk/retries-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/annotations@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/utils@2.57.9?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/software.amazon.awssdk/aws-core@2.57.6?type=jar",
+      "ref" : "pkg:maven/software.amazon.awssdk/aws-core@2.57.9?type=jar",
       "dependsOn" : [
-        "pkg:maven/software.amazon.awssdk/annotations@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/regions@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/auth@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/http-auth-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/identity-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/http-auth@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/profiles@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/sdk-core@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/http-client-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/metrics-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/endpoints-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/utils@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/retries-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/retries@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/utils-lite@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/eventstream@2.57.6?type=jar"
+        "pkg:maven/software.amazon.awssdk/annotations@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/regions@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/auth@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/http-auth-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/identity-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/http-auth@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/profiles@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/sdk-core@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/http-client-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/metrics-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/endpoints-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/utils@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/retries-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/retries@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/utils-lite@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/eventstream@2.57.9?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/software.amazon.awssdk/regions@2.57.6?type=jar",
+      "ref" : "pkg:maven/software.amazon.awssdk/regions@2.57.9?type=jar",
       "dependsOn" : [
-        "pkg:maven/software.amazon.awssdk/annotations@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/utils@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/sdk-core@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/profiles@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/json-utils@2.57.6?type=jar",
+        "pkg:maven/software.amazon.awssdk/annotations@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/utils@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/sdk-core@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/profiles@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/json-utils@2.57.9?type=jar",
         "pkg:maven/org.slf4j/slf4j-api@2.0.20?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/software.amazon.awssdk/json-utils@2.57.6?type=jar",
+      "ref" : "pkg:maven/software.amazon.awssdk/json-utils@2.57.9?type=jar",
       "dependsOn" : [
-        "pkg:maven/software.amazon.awssdk/utils@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/annotations@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/third-party-jackson-core@2.57.6?type=jar"
+        "pkg:maven/software.amazon.awssdk/utils@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/annotations@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/third-party-jackson-core@2.57.9?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/software.amazon.awssdk/third-party-jackson-core@2.57.6?type=jar",
+      "ref" : "pkg:maven/software.amazon.awssdk/third-party-jackson-core@2.57.9?type=jar",
       "dependsOn" : [ ]
     },
     {
-      "ref" : "pkg:maven/software.amazon.awssdk/auth@2.57.6?type=jar",
+      "ref" : "pkg:maven/software.amazon.awssdk/auth@2.57.9?type=jar",
       "dependsOn" : [
-        "pkg:maven/software.amazon.awssdk/annotations@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/utils@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/sdk-core@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/identity-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/regions@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/profiles@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/http-client-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/json-utils@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/http-auth-aws@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/http-auth-aws-eventstream@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/http-auth@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/http-auth-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/checksums-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/eventstream@2.57.6?type=jar"
+        "pkg:maven/software.amazon.awssdk/annotations@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/utils@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/sdk-core@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/identity-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/regions@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/profiles@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/http-client-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/json-utils@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/http-auth-aws@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/http-auth-aws-eventstream@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/http-auth@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/http-auth-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/checksums-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/eventstream@2.57.9?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/software.amazon.awssdk/http-auth-aws-eventstream@2.57.6?type=jar",
+      "ref" : "pkg:maven/software.amazon.awssdk/http-auth-aws-eventstream@2.57.9?type=jar",
       "dependsOn" : [
-        "pkg:maven/software.amazon.awssdk/annotations@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/eventstream@2.57.6?type=jar"
+        "pkg:maven/software.amazon.awssdk/annotations@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/eventstream@2.57.9?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/software.amazon.awssdk/eventstream@2.57.6?type=jar",
+      "ref" : "pkg:maven/software.amazon.awssdk/eventstream@2.57.9?type=jar",
       "dependsOn" : [
-        "pkg:maven/software.amazon.awssdk/annotations@2.57.6?type=jar"
+        "pkg:maven/software.amazon.awssdk/annotations@2.57.9?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/software.amazon.awssdk/http-auth@2.57.6?type=jar",
+      "ref" : "pkg:maven/software.amazon.awssdk/http-auth@2.57.9?type=jar",
       "dependsOn" : [
-        "pkg:maven/software.amazon.awssdk/annotations@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/utils@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/http-client-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/http-auth-spi@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/identity-spi@2.57.6?type=jar"
+        "pkg:maven/software.amazon.awssdk/annotations@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/utils@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/http-client-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/http-auth-spi@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/identity-spi@2.57.9?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/software.amazon.awssdk/utils-lite@2.57.6?type=jar",
+      "ref" : "pkg:maven/software.amazon.awssdk/utils-lite@2.57.9?type=jar",
       "dependsOn" : [
-        "pkg:maven/software.amazon.awssdk/annotations@2.57.6?type=jar"
+        "pkg:maven/software.amazon.awssdk/annotations@2.57.9?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/software.amazon.awssdk/arns@2.57.6?type=jar",
+      "ref" : "pkg:maven/software.amazon.awssdk/arns@2.57.9?type=jar",
       "dependsOn" : [
-        "pkg:maven/software.amazon.awssdk/annotations@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/utils@2.57.6?type=jar"
+        "pkg:maven/software.amazon.awssdk/annotations@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/utils@2.57.9?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/software.amazon.awssdk/crt-core@2.57.6?type=jar",
+      "ref" : "pkg:maven/software.amazon.awssdk/crt-core@2.57.9?type=jar",
       "dependsOn" : [
-        "pkg:maven/software.amazon.awssdk/annotations@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/utils@2.57.6?type=jar"
+        "pkg:maven/software.amazon.awssdk/annotations@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/utils@2.57.9?type=jar"
       ]
     },
     {
-      "ref" : "pkg:maven/software.amazon.awssdk/url-connection-client@2.57.6?type=jar",
+      "ref" : "pkg:maven/software.amazon.awssdk/url-connection-client@2.57.9?type=jar",
       "dependsOn" : [
-        "pkg:maven/software.amazon.awssdk/utils@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/annotations@2.57.6?type=jar",
-        "pkg:maven/software.amazon.awssdk/http-client-spi@2.57.6?type=jar"
+        "pkg:maven/software.amazon.awssdk/utils@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/annotations@2.57.9?type=jar",
+        "pkg:maven/software.amazon.awssdk/http-client-spi@2.57.9?type=jar"
       ]
     },
     {

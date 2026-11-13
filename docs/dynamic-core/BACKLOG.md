@@ -50,7 +50,6 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 | Ứng dụng mẫu gọi lõi từ bên ngoài | Chưa có ứng dụng có giao diện nào ngoài ứng dụng của đội gọi lõi qua API, nên câu "PaaS phục vụ các ứng dụng tầng trên" của đề chưa có bằng chứng chạy được; đã chốt làm một ứng dụng mẫu ở `examples/`, viết bằng khung khác react-admin, chỉ dùng OpenAPI theo mô hình và đăng nhập Keycloak |
 | Lịch sử issue | PoF chấm bug tracker có lịch sử; số issue và pull request lấy ở `website/docs/pof-audit.md`; mở issue cho việc phải sửa hoặc làm lại và đóng bằng pull request có `Closes #n`, còn việc phải thêm (giấy phép, lộ trình, ảnh) chỉ ghi ở file này; issue chỉ mang nhãn `enhancement` hoặc `documentation`, chưa gắn milestone |
 | Chỉ số mục tiêu | Chưa có người thật làm bài thử "trong một buổi" (bài thử và bản mô phỏng ở `docs/TARGETS.md`), chưa đo công vận hành mỗi tháng và thời gian lần cài đầu có tải image |
-| Webhook dạng `chat` | README và `deploy/INTEGRATIONS.md` nêu Mattermost nhận `{"text": ...}` nhưng chưa có lần thử nào với Mattermost thật, và bản cài không kèm Mattermost; thử một lần với một Mattermost dựng riêng rồi ghi kết quả vào `INTEGRATIONS.md` |
 | Số đo theo định dạng Prometheus | Giám sát mới là màn hình riêng: chưa có endpoint số đo cho Prometheus và Grafana (hồ sơ theo trạng thái và quá hạn, độ trễ hàng đợi sự kiện, số lần áp dụng); đề xuất chờ chốt, lý do và rủi ro ở `DANH_GIA.md` mục 7.1 |
 
 ## 4. Giới hạn chấp nhận

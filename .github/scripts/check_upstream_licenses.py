@@ -47,14 +47,18 @@ class Unreadable(Exception):
 
 
 def github(path: str, raw: bool = False):
-    """The answer of the GitHub API, or None when the path does not exist; a failure raises Unreadable."""
-    request = urllib.request.Request(
-        f"https://api.github.com/{path}",
-        headers={"User-Agent": "dxos-license-check", "Accept": "application/vnd.github.raw" if raw else "application/vnd.github+json"},
-    )
-    if os.environ.get("GITHUB_TOKEN"):
-        request.add_header("Authorization", f"Bearer {os.environ['GITHUB_TOKEN']}")
-    for attempt in range(3):
+    """The answer of the GitHub API, or None when the path does not exist; a failure raises Unreadable.
+
+    The data is public. A token only raises the rate limit, and an organization that restricts tokens (an IP
+    allow list, for one) answers 401 or 403 to it, so such an answer is asked again without the token.
+    """
+    headers = {"User-Agent": "dxos-license-check", "Accept": "application/vnd.github.raw" if raw else "application/vnd.github+json"}
+    token = os.environ.get("GITHUB_TOKEN")
+    last = path
+    for attempt in range(4):
+        request = urllib.request.Request(f"https://api.github.com/{path}", headers=dict(headers))
+        if token:
+            request.add_header("Authorization", f"Bearer {token}")
         try:
             with urllib.request.urlopen(request, timeout=30) as response:
                 body = response.read()
@@ -62,16 +66,19 @@ def github(path: str, raw: bool = False):
         except urllib.error.HTTPError as error:
             if error.code == 404:
                 return None
-            if error.code in (403, 429, 500, 502, 503) and attempt < 2:
+            detail = error.read().decode("utf-8", "replace")[:160].replace("\n", " ")
+            last = f"{path}: HTTP {error.code} {detail}"
+            if error.code in (401, 403) and token:
+                token = None
+                continue
+            if error.code in (403, 429, 500, 502, 503):
                 time.sleep(2 * (attempt + 1))
                 continue
-            raise Unreadable(f"{path}: HTTP {error.code}") from error
+            raise Unreadable(last) from error
         except (urllib.error.URLError, TimeoutError) as error:
-            if attempt < 2:
-                time.sleep(2 * (attempt + 1))
-                continue
-            raise Unreadable(f"{path}: {error}") from error
-    raise Unreadable(path)
+            last = f"{path}: {error}"
+            time.sleep(2 * (attempt + 1))
+    raise Unreadable(last)
 
 
 def version_of(tag: str) -> str | None:

@@ -69,6 +69,57 @@ class UpstreamLicenseTest(unittest.TestCase):
         self.assertIsNone(upstream.version_of("latest"))
 
 
+class GithubAccessTest(unittest.TestCase):
+    """The data is public: an organization that refuses the token is asked again without it."""
+
+    def setUp(self):
+        self.calls = []
+        self.original = upstream.urllib.request.urlopen
+        self.original_token = upstream.os.environ.get("GITHUB_TOKEN")
+        upstream.os.environ["GITHUB_TOKEN"] = "secret"
+        self.original_sleep = upstream.time.sleep
+        upstream.time.sleep = lambda seconds: None
+
+    def tearDown(self):
+        upstream.urllib.request.urlopen = self.original
+        upstream.time.sleep = self.original_sleep
+        if self.original_token is None:
+            upstream.os.environ.pop("GITHUB_TOKEN", None)
+        else:
+            upstream.os.environ["GITHUB_TOKEN"] = self.original_token
+
+    def respond(self, handler):
+        def urlopen(request, timeout=0):
+            self.calls.append(request.get_header("Authorization"))
+            return handler(request)
+        upstream.urllib.request.urlopen = urlopen
+
+    @staticmethod
+    def forbidden(url):
+        import io
+        import urllib.error
+        return urllib.error.HTTPError(url, 403, "Forbidden", {}, io.BytesIO(b'{"message": "IP allow list"}'))
+
+    def test_a_token_that_is_refused_is_dropped(self):
+        import io
+        def handler(request):
+            if request.get_header("Authorization"):
+                raise self.forbidden(request.full_url)
+            return io.BytesIO(b'{"license": {"spdx_id": "Apache-2.0"}}')
+        self.respond(handler)
+        self.assertEqual(upstream.github("repos/o/p/license"), {"license": {"spdx_id": "Apache-2.0"}})
+        self.assertEqual(self.calls, ["Bearer secret", None])
+
+    def test_a_refusal_without_a_token_is_reported_with_its_reason(self):
+        def handler(request):
+            raise self.forbidden(request.full_url)
+        self.respond(handler)
+        with self.assertRaises(upstream.Unreadable) as raised:
+            upstream.github("repos/o/p/license")
+        self.assertIn("HTTP 403", str(raised.exception))
+        self.assertIn("IP allow list", str(raised.exception))
+
+
 class SbomLicenseTest(unittest.TestCase):
     def check(self, licenses):
         component = {"group": "org.example", "name": "lib", "version": "1.0", "licenses": licenses}

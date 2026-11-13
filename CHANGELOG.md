@@ -52,6 +52,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 ### Dữ liệu
 
 - `GET /api/v1/data/{model}/{entity}/quality` đo chất lượng các dòng người gọi được xem (ADMIN đo mọi dòng của thực thể và chỉ nhận số đếm): độ điền của từng trường, số bản ghi thiếu trường bắt buộc có điều kiện, số giá trị vi phạm lựa chọn, `min`, `max` hay `pattern`, và độ mới theo `staleDays`; mỗi thực thể trong tab Danh mục dữ liệu có mục Chất lượng dữ liệu kèm thời điểm đo và số bản ghi được xét, và ô chọn số ngày cho độ mới.
+- `GET /api/v1/models/{model}/data-lineage` nêu cho từng trường của mô hình đang chạy nơi giá trị đi vào, các quy tắc đọc nó và nơi nó đi ra (ADMIN); tab Danh mục dữ liệu hiện phả hệ này ở mục Nguồn gốc của từng trường.
 
 ### Giao diện
 

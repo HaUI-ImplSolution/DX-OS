@@ -1,7 +1,7 @@
 # Vận hành
 
 Tài liệu cho người cài và chạy stack hằng ngày: cài đặt và lệnh `dxos`, quản trị người dùng, kiểm tra trước khi chạy, tài nguyên, giám sát từ ngoài, sao lưu và khôi phục, quét mã độc.
-Log, giới hạn tốc độ, sự kiện đăng nhập, audit và màn hình giám sát ở [`MONITORING.md`](./MONITORING.md).
+Log, giới hạn tốc độ, sự kiện đăng nhập, audit, số đo cho Prometheus và màn hình giám sát ở [`MONITORING.md`](./MONITORING.md).
 Webhook sự kiện, API kéo sự kiện, lịch sử chống sửa và hồ dữ liệu ở [`INTEGRATIONS.md`](./INTEGRATIONS.md).
 Kết nối công cụ báo cáo bằng vai PostgreSQL chỉ đọc ở [`REPORTING.md`](./REPORTING.md).
 
@@ -329,6 +329,7 @@ Chạy hai bản sau gateway thì mỗi bản giữ danh sách mô hình riêng 
 Chạy theo lịch bằng cron, ví dụ mỗi 12 giờ: `0 */12 * * * cd /đường/dẫn/deploy && ./online-check.sh >> online-check.log 2>&1`.
 Khi `.env` có `ALERT_WEBHOOK_URL_ADMIN` (hoặc `ALERT_WEBHOOK_URL`), script gửi một tin vào kênh khi site chuyển sang lỗi và một tin khi site trở lại, không gửi lặp trong lúc còn lỗi.
 Script chạy trên chính máy chủ nên không phát hiện được việc máy chủ tắt hẳn; muốn phát hiện, thêm một dịch vụ ping ngoài (ví dụ UptimeRobot) trỏ vào `/api/v1/system/status`.
+Người đã có Prometheus thì đọc số hồ sơ theo trạng thái, hồ sơ quá hạn, hàng đợi sự kiện và lần áp dụng mô hình ở `/actuator/prometheus`, cách đọc ở [`MONITORING.md`](./MONITORING.md#số-đo-cho-prometheus).
 
 ## Sao lưu và khôi phục
 

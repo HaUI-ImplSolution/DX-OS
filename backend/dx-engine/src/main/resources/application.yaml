@@ -89,3 +89,17 @@ audit:
   denied:
     # Refused requests recorded per client address and action each minute; the rest are counted.
     max-per-minute: 20
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  endpoint:
+    health:
+      show-details: never
+
+metrics:
+  # Password of the user "metrics" that scrapes /actuator/prometheus; empty closes the endpoint.
+  scrape-password: ${METRICS_PASSWORD:}
+  refresh-ms: ${METRICS_REFRESH_MS:30000}

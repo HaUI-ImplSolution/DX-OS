@@ -46,6 +46,7 @@ Hệ thống tự dựng trong bài thử mô phỏng bên dưới ở mức 2, 
 Phép đếm không cho kết quả 0 với mọi thứ: `examples/history-witness` (111 dòng Python) và `examples/itot-simulator` (205 dòng Python) là mã tự viết, cả hai ở mức 3.
 
 Để so sánh, phần Lab viết tay ngày trước gồm 5.792 dòng Java, 4.524 dòng giao diện và 8 migration cho một hệ thống.
+Với một luồng nghiệp vụ, phép so sánh 347 dòng Java viết tay với 28 dòng khai báo nằm ở `examples/effort-benchmark/README.md`; đó là một luồng, không phải cả hệ thống.
 
 ## Thời gian dựng và đổi
 

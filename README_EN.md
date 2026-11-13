@@ -42,7 +42,7 @@ The current version is `2.0.0`, and the changes of each version are in [`CHANGEL
 - **An interface set by declaration.** The model file can choose icons, menu groups, the default columns and sort, how forms are grouped and the hints; an officer selects several records and handles them at once, each still going through every rule.
 - **Printed documents from a record.** The model file declares a template for a certificate, slip or report; a record becomes a PDF with Vietnamese text for whoever may see that record, and only in the states the template allows.
 - **Board by state and list export.** The list of records with a process can be seen as a board with one column per state, and exported to a CSV file a spreadsheet can read, with exactly the rows the viewer may see.
-- **A data catalog.** One page shows where the data of each model lives, who may see it, how the kinds of records relate, where the data comes in from and where it goes out, and how complete and recent the data is.
+- **A data catalog.** One page shows where the data of each model lives, who may see it, how the kinds of records relate, where the data comes in from and where it goes out, down to each field, and how complete and recent the data is.
 - **Archive of old records.** Records closed long ago are written to an archive store on a daily schedule, the data in use stays as it is, and the copy can be checked and queried directly with DuckDB.
 - **An inbox that updates itself.** When a record changes, the inbox, the lists and the detail page that are open refresh without reloading the page.
 - **Try it at once.** One command creates a trial account for each role and sample records in several states, so a visitor who signs in finds a system with work in it.

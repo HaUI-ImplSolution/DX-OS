@@ -53,7 +53,7 @@ Vai `ADMIN` của nền tảng không cấp ở tab này mà cấp ở Keycloak 
 
 ## Dữ liệu và an toàn
 
-- **Danh mục dữ liệu:** tab cùng tên cho biết dữ liệu của mỗi mô hình nằm ở đâu, ai được xem, đi vào từ đâu và đi ra đâu.
+- **Danh mục dữ liệu:** tab cùng tên cho biết dữ liệu của mỗi mô hình nằm ở đâu, ai được xem, đi vào từ đâu và đi ra đâu, đến từng trường.
 - **Sao lưu:** `dxos backup` chụp bản mã hóa của cơ sở dữ liệu và tệp; cất mật khẩu sao lưu ở nơi khác máy chủ.
 - **Lịch sử chống sửa:** `dxos history verify` kiểm chuỗi lịch sử của hồ sơ chưa bị sửa.
 - **Lưu trữ dài hạn:** `dxos archive` ghi hồ sơ đã đóng ra tệp để lưu và kiểm lại.

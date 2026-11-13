@@ -69,6 +69,8 @@ Mã của bản trước (hai ứng dụng nghiệp vụ viết tay, Superset, M
 | Mọi tệp mã có header SPDX; mọi tệp có giấy phép và bản quyền theo chuẩn REUSE | `.github/scripts/check_licenses.py`, `reuse lint` với `REUSE.toml` | Job `Check licenses` của workflow `Compliance` |
 | Mọi gói trong SBOM có giấy phép cho phép, ngoại lệ có lý do | `check_licenses.py`, `.github/dependency-exceptions.json` | Cùng job |
 | Image, mô hình và tệp dữ liệu khai báo giấy phép | `.github/component-catalog.json` | Cùng job |
+| Giấy phép của từng image và bản tải về ở đúng phiên bản đang dùng đúng như đã khai và thuộc danh sách OSI; không xác định được thì đỏ | `.github/scripts/check_upstream_licenses.py` | Job `Check upstream licenses` của workflow `Compliance`, mỗi pull request và mỗi tuần |
+| Giấy phép của gói Maven và npm ở phiên bản mà pull request đề xuất | `check_licenses.py sbom` trên SBOM sinh lại | Job `Check SBOMs against lockfiles` và `Scan the backend SBOM` |
 | Không bí mật trong cây mã và lịch sử | gitleaks | Job `Scan for secrets` của workflow `Compliance` |
 | Không dependency có lỗ hổng HIGH hoặc CRITICAL đã có bản vá | Trivy, SBOM của Maven | workflow `Dependencies`, chạy cả theo lịch |
 | Không có `vendor/`, `node_modules/`, `third_party/` trong Git | `git ls-files \| grep -E '(^\|/)(vendor\|third_party\|node_modules)/'` | Chạy tay |

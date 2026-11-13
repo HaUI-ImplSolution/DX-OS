@@ -36,7 +36,7 @@ cd ../frontend && npm install && npm run dev
 | Web | `npx tsc --noEmit` trong `frontend/` |
 | Toàn stack | Các script `deploy/dev/check_*.py` theo thứ tự ở [`docs/TESTING.md`](./docs/TESTING.md), mục 4, trên stack mới dựng |
 | Giấy phép | `python3 .github/scripts/check_licenses.py` |
-| Giấy phép của dự án gốc | `GITHUB_TOKEN=... python3 .github/scripts/check_upstream_licenses.py` |
+| Giấy phép của phiên bản đang dùng | `GITHUB_TOKEN=... python3 .github/scripts/check_upstream_licenses.py` và `python3 -m unittest discover -s .github/scripts` |
 | Trang docs | `npm run build` trong `website/` |
 | Giao diện trên trình duyệt | Xem [`e2e/README.md`](./e2e/README.md) |
 | Workflow | `docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.12` |
@@ -58,7 +58,9 @@ cd ../frontend && npm install && npm run dev
 - Đổi dependency thì sinh lại SBOM theo [`sbom/README.md`](./sbom/README.md) và cập nhật [`DEPENDENCIES.txt`](./DEPENDENCIES.txt).
 - Dependabot chỉ mở pull request cho bản vá và bản phụ; bản chính, dòng hỗ trợ dài hạn khác và image gốc khác nâng bằng tay, sau khi kiểm giấy phép OSI, thời hạn hỗ trợ và tương thích (xem [`.github/dependabot.yml`](./.github/dependabot.yml)).
 - Image (kể cả image chép vào bằng `COPY --from`), bản phát hành tải bằng `ADD`, mô hình và tệp trọng số, tài liệu, nén phải khai báo ở [`.github/component-catalog.json`](./.github/component-catalog.json) với giấy phép được phép; `check_licenses.py` kiểm danh mục này.
-  `check_upstream_licenses.py` so giấy phép của dự án gốc với giấy phép đã khai, ở mỗi pull request và mỗi tuần: dự án đổi giấy phép thì job đỏ, và bản mới chỉ được dùng sau khi đọc giấy phép của nó.
+  `check_upstream_licenses.py` đọc giấy phép của dự án gốc ở đúng phiên bản đang dùng của từng image và bản tải về, ở mỗi pull request và mỗi tuần: giấy phép khác bản đã khai, ngoài danh sách OSI, không xác định được hoặc không đọc được đều làm job đỏ, nên một pull request của Dependabot đổi tag image bị kiểm ở chính phiên bản nó đề xuất.
+  Mục nào của danh mục không đọc được theo cách đó thì ghi cách xác minh ở mục ấy (`refs`, `text`) hoặc lý do ở `unverified`.
+  `check_licenses.py sbom <tệp>` kiểm giấy phép của SBOM sinh lại từ pull request, nên bản mới của một thư viện Maven hay npm bị kiểm trước khi `sbom/` được sinh lại.
 - Không đưa mật khẩu, khóa hay dữ liệu thật vào kho mã; `deploy/.env` nằm ngoài Git.
 
 ## Phát hành

@@ -248,6 +248,9 @@ Dịch vụ lõi là kết nối ghi duy nhất vào dữ liệu nghiệp vụ; 
 `report_ro` đọc được mọi dòng của mọi bảng nghiệp vụ và không áp quyền `own`, `unit`, `assigned` của người xem, nên chỉ cấp cho công cụ báo cáo của người vận hành.
 Cách kết nối, giới hạn mạng và xoay mật khẩu ở [`deploy/REPORTING.md`](./deploy/REPORTING.md).
 Người dùng cuối xem số liệu qua `GET /api/v1/data/{model}/{entity}/stats`, nơi quyền theo dòng được áp dụng.
+Báo cáo theo trường ở `GET /api/v1/data/{model}/{entity}/report`: `ReportService` đọc cùng các dòng và bộ lọc như `stats`, nhóm theo một trường lựa chọn, đơn vị, đúng/sai, trạng thái hoặc tháng của một ngày, và tính đếm, tổng, trung bình, nhỏ nhất, lớn nhất trên trường số.
+`ReportQuery` kiểm tên trường và phép tính theo mô hình trước khi chạy, nên không phần nào của yêu cầu thành SQL, và số nhóm bị giới hạn.
+Công cụ báo cáo cần quyền theo dòng dùng API này thay cho `report_ro`.
 Chất lượng dữ liệu đo ở `GET /api/v1/data/{model}/{entity}/quality`, trên đúng những dòng đó (ADMIN đo mọi dòng của thực thể và chỉ nhận số đếm): `DataQualityService` chạy mọi bean `QualityMetric` (độ điền, thiếu theo điều kiện, kiểm lại ràng buộc, độ mới), nên thêm một số đo là thêm một lớp.
 Phả hệ của từng trường đọc ở `GET /api/v1/models/{model}/data-lineage`: `LineageService` dựng từ tệp mô hình, với mỗi trường, nơi giá trị đi vào (vai được ghi, giá trị mặc định, thực thể tham chiếu, tên cũ), các quy tắc đọc nó và nơi nó đi ra (lịch sử, dòng sự kiện, webhook, lưu trữ).
 Lõi giữ nguyên giá trị đã nhập nên phả hệ không có bước biến đổi nào.

@@ -193,6 +193,21 @@ public class ModelOpenApi {
                                 "403",
                                 "409"))));
     paths.addPathItem(base, collection);
+    paths.addPathItem(
+        base + "/report",
+        new PathItem()
+            .get(
+                operation(
+                        "report" + type,
+                        "Group the records of " + label(entity) + " and compute figures",
+                        "Groups the records the caller can see by one field and gives a count, sum,"
+                            + " mean, minimum or maximum per group and over all. A role sees"
+                            + " figures of the rows its access reaches only. A sum, mean or bound"
+                            + " ignores empty values and is null for a group that has none. The"
+                            + " months are in UTC.")
+                    .parameters(reportParameters(entity))
+                    .responses(
+                        responses("ResponseObject", "200", "The groups", "400", "401", "403"))));
 
     PathItem record =
         new PathItem()
@@ -619,6 +634,52 @@ public class ModelOpenApi {
     parameters.add(
         new QueryParameter()
             .name("size")
+            .schema(
+                new IntegerSchema()
+                    .minimum(java.math.BigDecimal.ONE)
+                    .maximum(java.math.BigDecimal.valueOf(200))));
+    return parameters;
+  }
+
+  private List<Parameter> reportParameters(EntityMeta entity) {
+    List<Parameter> parameters = new ArrayList<>(filterParameters(entity));
+    List<String> groupable = new ArrayList<>();
+    List<String> numbers = new ArrayList<>();
+    for (FieldMeta field : entity.fields()) {
+      switch (field.type()) {
+        case "choice", "unit", "boolean" -> {
+          if (!field.multiple()) {
+            groupable.add(field.name());
+          }
+        }
+        case "date", "datetime" -> groupable.add(field.name() + ":month");
+        case "number" -> numbers.add(field.name());
+        default -> {}
+      }
+    }
+    if (entity.hasProcess()) {
+      groupable.add("status");
+    }
+    groupable.add("created_at:month");
+    parameters.add(
+        new QueryParameter()
+            .name("groupBy")
+            .description("The field the records are grouped by; a date by its month")
+            .schema(new StringSchema()._enum(groupable)));
+    parameters.add(
+        new QueryParameter()
+            .name("metrics")
+            .description(
+                "Comma separated figures, count by default and at most 6: count"
+                    + (numbers.isEmpty()
+                        ? ""
+                        : ", and sum(f), avg(f), min(f) or max(f) with f one of "
+                            + String.join(", ", numbers)))
+            .schema(new StringSchema()));
+    parameters.add(
+        new QueryParameter()
+            .name("limit")
+            .description("The number of groups, 50 by default")
             .schema(
                 new IntegerSchema()
                     .minimum(java.math.BigDecimal.ONE)

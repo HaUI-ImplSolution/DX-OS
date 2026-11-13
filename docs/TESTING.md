@@ -153,6 +153,8 @@ Giao diện, đăng nhập bằng `req1` (vai `BORROWER`), `keeper1` (vai `KEEPE
     Gọi API của hành động đang mờ trả 409 `ERR_INVALID_STATE` với `data.reason` là `CONDITION_NOT_MET`; đúng 5.000.000 thì `<=` đạt.
     Trình soạn YAML không gạch chân `when`, ô "Chỉ khi" ở chế độ Điền form hiện đúng điều kiện, nhãn cạnh của sơ đồ ghi điều kiện.
 22. Tỷ lệ đúng hạn: thực thể khai hạn ngắn, trang Thống kê hiện ô "Đúng hạn" với phần trăm và `n/N` hồ sơ đã đóng; thực thể không khai hạn không có ô này.
+   Dưới các ô là mục Báo cáo theo trường: chọn "Nhóm theo" một trường lựa chọn, đơn vị, trạng thái hoặc ngày theo tháng và "Tính" đếm hoặc tổng, trung bình, nhỏ nhất, lớn nhất của một trường số; bảng có một dòng mỗi nhóm kèm dòng Tất cả, nhóm không có giá trị hiện "Chưa có giá trị" và phép tính trên nhóm không có giá trị nào hiện dấu "—".
+   Vai chỉ xem hồ sơ của mình (`own`) nhận số của hồ sơ mình; gọi `GET /api/v1/data/{model}/{entity}/report?groupBy=<trường số>` hoặc `metrics=sum(<trường chữ>)` thì 400, vai không có quyền đọc thực thể thì 403.
     Hồ sơ đóng sau hạn dù trước lần quét có dòng `overdue` đứng trước dòng quyết định và tính là muộn; hồ sơ đóng trước hạn không có dòng này; lần quét sau không ghi dòng thứ hai và outbox chỉ có một thông điệp.
     Hồ sơ quá hạn rồi được trả lại, nộp lại và duyệt vẫn tính là muộn; hồ sơ rút lại sau hạn không tính; hai quyết định đồng thời trên hai hồ sơ quá hạn không kẹt khóa; `GET /api/v1/history/verify` vẫn báo chuỗi nguyên vẹn.
     Số `closedOnTime` cộng `closedLate` bằng số hồ sơ đã quyết định và không rút lại khi đối chiếu bằng SQL, ở nhiều người xem và nhiều bộ lọc.

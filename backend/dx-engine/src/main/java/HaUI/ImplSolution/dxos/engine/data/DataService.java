@@ -214,6 +214,20 @@ public class DataService {
         " FROM " + table(model, entity) + " WHERE " + String.join(" AND ", where), values);
   }
 
+  // The rows the roles of the caller reach, narrowed by the filter.<field> parameters, as the tail
+  // of a query: what stats and report read. An administrator with no role in the model reaches
+  // none.
+  Rows readableRows(Model model, Entity entity, Map<String, String> params) {
+    Access access = access(model, entity);
+    requireRead(access);
+    MapSqlParameterSource values = new MapSqlParameterSource();
+    List<String> where = new ArrayList<>();
+    where.add(scope(model, entity, access.reads(), values));
+    filters(entity, params, where, values);
+    return new Rows(
+        " FROM " + table(model, entity) + " WHERE " + String.join(" AND ", where), values);
+  }
+
   // Counts over the rows the caller can see, with the same filters as list: in all, per status,
   // past their deadline at computedAt (handle_by before it), and per unit when the entity has a
   // unit field. An entity with a deadline also counts the decided records that closed on time and

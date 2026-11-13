@@ -13,7 +13,7 @@
 
 Entry of the **OLP Open Source Software 2026** contest, DX-OS track (VFOSSA), by team **HaUI-ImplSolution**, School of Information and Communication Technology, Hanoi University of Industry.
 
-**Quick links:** [Overview](#overview) · [Features](#features) · [How it works](#how-it-works) · [Against the brief](#against-the-brief) · [Try it](#try-it) · [Documentation](#documentation) · [Structure](#repository-structure) · [Contributing](#contributing) · [License](#license)
+**Quick links:** [Overview](#overview) · [Features](#features) · [Screenshots](#screenshots) · [How it works](#how-it-works) · [Against the brief](#against-the-brief) · [Try it](#try-it) · [Documentation](#documentation) · [Structure](#repository-structure) · [Contributing](#contributing) · [License](#license)
 
 ## Overview
 
@@ -51,6 +51,37 @@ The current version is `2.0.0`, and the changes of each version are in [`CHANGEL
 - **Single sign-on.** Through Keycloak, and administrators can be required to enter a one-time code as well.
 
 Each feature and the test that proves it are matched in the [evidence matrix](https://haui-implsolution.github.io/DX-OS/docs/evidence-matrix) (Vietnamese).
+
+## Screenshots
+
+The screens below are captured from a running system with sample data; every name and record is invented.
+The labels of the sample models are in Vietnamese, and the interface text follows the language switch.
+
+From a submitted request to a record that is approved and printed:
+
+![An officer opens a record in the inbox, approves it and prints the certificate](website/docs/images/video/request-flow.gif)
+
+Edit the model file, preview the plan of the change and apply it; the system moves to the new version and the old data stays:
+
+![Editing the model file, previewing the plan and applying it](website/docs/images/video/model-change.gif)
+
+The control panel of the person deploying: write the model file, preview the impact and the workflow diagram.
+
+![The plan screen of the control panel](website/docs/images/en/plan.png)
+
+The inbox of the person handling records, and the detail page of one record with the history of every step.
+
+![The inbox](website/docs/images/en/inbox.png)
+
+![A record in detail](website/docs/images/en/detail.png)
+
+A booking calendar and a report by field.
+
+![The booking calendar](website/docs/images/en/calendar.png)
+
+![Statistics and report by field](website/docs/images/en/report.png)
+
+The full set, with the phone layout, the data catalog and the monitor screen, and the two videos are on the [documentation page](https://haui-implsolution.github.io/DX-OS/docs/hinh-anh) (Vietnamese).
 
 ## How it works
 
@@ -157,6 +188,7 @@ The documents are written in Vietnamese; the API reference is the OpenAPI specif
 
 | You need | See |
 |---|---|
+| Screenshots and videos | [the gallery page](https://haui-implsolution.github.io/DX-OS/docs/hinh-anh) (Vietnamese) |
 | Using the system by role | [submitters](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-nop), [handlers](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-xu-ly), [deployers](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-trien-khai}) (Vietnamese) |
 | Writing a model file | [`docs/MODEL.md`](./docs/MODEL.md) |
 | Calling the API | [`docs/API.md`](./docs/API.md) and the OpenAPI specification (`/v3/api-docs`) of the running backend |

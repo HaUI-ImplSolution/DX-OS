@@ -113,8 +113,8 @@ export default function CalendarPage({ byResource }: { byResource: Record<string
             "--fc-button-active-border-color": theme.palette.primary.dark,
           },
           "& .fc .fc-toolbar-title": { fontSize: 18, fontWeight: 700 },
-          "& .fc .fc-button": { textTransform: "none", fontWeight: 600, borderRadius: 8 },
-          "& .fc .fc-event": { borderRadius: 6, border: "none", padding: "1px 4px" },
+          "& .fc .fc-button": { textTransform: "none", fontWeight: 600, borderRadius: "8px" },
+          "& .fc .fc-event": { borderRadius: "4px", border: "none", padding: "1px 4px" },
         }}
       >
         <FullCalendar

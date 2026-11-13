@@ -4,8 +4,9 @@
 Run on a stack that has the earlier checks behind it, or a clean one:
     python3 deploy/dev/check_demo.py
 Criterion 3 needs the virus scan (docker compose --profile av) to see an infected file blocked;
-without it that part is not run.
+without it that part is not run, unless DXOS_REQUIRE_SCAN is set, which makes a stack without the scan fail.
 """
+import os
 import sys
 
 import check_api as rt
@@ -79,7 +80,14 @@ def main():
     rt.check("C3 a file attaches", status == 200 and body["data"]["name"] == "giay-hen.pdf", f"{status} {body}")
     status, body = kc.api(dt, "GET", f"{BASE}/{record}/files")
     rt.check("C3 the officer sees the file", status == 200 and len(body["data"]) == 1, str(status))
-    if kc.ENV.get("STORAGE_SCAN_HOST"):
+    clean = body["data"][0]["id"] if status == 200 and body["data"] else 0
+    status, body = kc.api(dt, "GET", f"{BASE}/{record}/files/{clean}/link")
+    fetched = kc.http("GET", body["data"]["url"], raw=True) if status == 200 else (0, "", None)
+    rt.check("C3 and downloads it", status == 200 and fetched[0] == 200 and fetched[1].startswith("%PDF"), f"{status} {fetched[0]}")
+    scan_on = bool(kc.ENV.get("STORAGE_SCAN_HOST"))
+    if os.environ.get("DXOS_REQUIRE_SCAN"):
+        rt.check("C3 the virus scan is on", scan_on, f"STORAGE_SCAN_HOST={kc.ENV.get('STORAGE_SCAN_HOST', '')!r}")
+    if scan_on:
         # The EICAR test string, built at run time so scanners on this machine leave the script alone.
         eicar = ("X5O!P%@AP[4\\PZX54(P^)7CC)7}$" + "EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*").encode()
         status, body = upload(stu1, BASE, record, "evidence", "virus.pdf", eicar)
@@ -93,6 +101,8 @@ def main():
         status, body = kc.api(dt, "GET", f"{BASE}/{record}/files")
         rt.check("C3 and is not stored either", status == 200 and len(body["data"]) == 1, str(status))
         rt.sh(rt.COMPOSE + ["up", "-d", "--wait", "clamav"])
+        status, body = upload(stu1, BASE, record, "evidence", "da-quet.pdf", b"%PDF-1.4 scanned again")
+        rt.check("C3 a clean file is stored again once the scanner is back", status == 200, f"{status} {body}")
     else:
         print("NOTE C3 the virus scan is off (STORAGE_SCAN_HOST blank); the infected file check is not run")
 

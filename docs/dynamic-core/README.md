@@ -102,7 +102,7 @@ Các hàm ý sau là suy luận từ cách đề viết, người ra đề khôn
 | Phân tách theo vòng đời và tốc độ của dữ liệu, đẩy dữ liệu lịch sử xuống hồ dữ liệu | `dxos archive --store` ghi hồ sơ đã đóng và lịch sử của chúng ra tệp Parquet vào một bucket riêng của SeaweedFS, kèm manifest và hash để kiểm lại; `dxos archive query` đọc chỉ một lần chạy bằng DuckDB; `dxos archive schedule install` đặt lịch chạy hằng ngày cho hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS`; dữ liệu trong cơ sở dữ liệu giữ nguyên; công cụ báo cáo vẫn có thể đọc dữ liệu đang chạy qua vai `report_ro` |
 | Hội tụ dữ liệu hành chính và dữ liệu vận hành, bản sao số | `examples/itot-simulator` và mẫu `plant_incident` đưa số đo của thiết bị vào thành hồ sơ sự cố đi qua cùng quy trình, quyền và lịch sử với hồ sơ hành chính; lõi không giữ trạng thái thời gian thực của thiết bị, nên bản sao số chỉ được phủ một phần |
 | Quản trị dữ liệu, phả hệ và nguồn gốc | Mô hình là danh mục dữ liệu; tab Danh mục dữ liệu đọc từ đó nơi dữ liệu đi vào, nơi đi ra, liên kết giữa các thực thể, quyền theo vai, số bản ghi và số đo chất lượng của từng thực thể (độ điền, thiếu theo điều kiện, vi phạm ràng buộc, độ mới); lịch sử mỗi hồ sơ nối thành chuỗi hash |
-| Zero-Trust gắn với GitOps, kiểm dịch mã độc, tự phục hồi                                        | APISIX và API chung đều kiểm token, ClamAV quét tệp tải lên khi bật (`dxos av on`), hạ tầng và nghiệp vụ kéo từ git    |
+| Zero-Trust gắn với GitOps, kiểm dịch mã độc, tự phục hồi                                        | APISIX và API chung đều kiểm token, ClamAV quét tệp tải lên và từ chối khi chưa quét được, hạ tầng và nghiệp vụ kéo từ git    |
 
 ## Tư tưởng thiết kế
 

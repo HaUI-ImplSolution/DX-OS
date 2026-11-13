@@ -18,7 +18,6 @@ Thứ tự dưới đây xếp theo số điểm đang để hở; chi tiết t�
 | 3 | Bằng chứng lõi là PaaS: ứng dụng mẫu (mục 3) | Nguyên gốc 10, phát triển bền vững 10 |
 | 4 | Bài trình bày, video (mục 2) | Hoàn thiện 10, trình diễn 10 |
 | 5 | Phần AI và chữ I của ứng dụng Tầng 2 (mục 3) | Hoàn thiện 10, nguyên gốc 10 |
-| 6 | Phủ thêm một nguyên lý: kiểm EICAR trong CI (mục 3) | Hoàn thiện 10 |
 
 ## 2. Phải xử lý trước khi phát hành
 
@@ -54,7 +53,6 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 | Lịch sử issue | PoF chấm bug tracker có lịch sử; số issue và pull request lấy ở `website/docs/pof-audit.md`; mở issue cho việc phải sửa hoặc làm lại và đóng bằng pull request có `Closes #n`, còn việc phải thêm (giấy phép, lộ trình, ảnh) chỉ ghi ở file này; issue chỉ mang nhãn `enhancement` hoặc `documentation`, chưa gắn milestone |
 | Nâng AWS SDK lên 2.57.8 | Pull request #239 của Dependabot chưa merge được vì `sbom/backend.cdx.json` còn ghi 2.57.6 và job `Scan the backend SBOM` đỏ; cần đổi `awssdk.version` và sinh lại SBOM theo `sbom/README.md` trong cùng một commit rồi đóng pull request |
 | Chỉ số mục tiêu | Chưa có người thật làm bài thử "trong một buổi" (bài thử và bản mô phỏng ở `docs/TARGETS.md`), chưa đo công vận hành mỗi tháng và thời gian lần cài đầu có tải image |
-| Kiểm dịch mã độc | Lệch câu chữ của đề: Nguyên lý (iv) của đề viết "kiểm dịch mã độc nghiêm ngặt"; quét tắt mặc định, và kiểm tệp EICAR không nằm trong CI vì job `API end-to-end` không bật quét |
 | Webhook dạng `chat` | README và `deploy/INTEGRATIONS.md` nêu Mattermost nhận `{"text": ...}` nhưng chưa có lần thử nào với Mattermost thật, và bản cài không kèm Mattermost; thử một lần với một Mattermost dựng riêng rồi ghi kết quả vào `INTEGRATIONS.md` |
 | Số đo theo định dạng Prometheus | Giám sát mới là màn hình riêng: chưa có endpoint số đo cho Prometheus và Grafana (hồ sơ theo trạng thái và quá hạn, độ trễ hàng đợi sự kiện, số lần áp dụng); đề xuất chờ chốt, lý do và rủi ro ở `DANH_GIA.md` mục 7.1 |
 | Mã hồ sơ đọc được | Hồ sơ chỉ có id là số tăng dần: chưa có kiểu trường sinh mã theo khuôn khai báo (tiền tố, năm, số thứ tự) để đọc, in và tra; đề xuất chờ chốt, lý do và rủi ro ở `DANH_GIA.md` mục 7.2 |

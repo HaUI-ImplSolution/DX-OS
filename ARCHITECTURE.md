@@ -21,7 +21,7 @@ flowchart TB
     EN["dx-engine: áp dụng mô hình, API chung, Flowable"]
     PG[("PostgreSQL")]
     S3[("SeaweedFS")]
-    AV["ClamAV (tùy chọn)"]
+    AV["ClamAV"]
   end
   EXT["Bên nhận webhook"]
   M -->|"POST /models/apply, dxos start"| GW
@@ -199,7 +199,7 @@ Trạng thái của hồ sơ chỉ đổi qua quy trình.
 
 ## 8. Tệp đính kèm
 
-- Trường kiểu `file` gắn tệp qua `AttachmentService`: byte ở SeaweedFS, siêu dữ liệu ở `engine.attachment`, quét ClamAV khi bật, quyền theo quyền của bản ghi.
+- Trường kiểu `file` gắn tệp qua `AttachmentService`: byte ở SeaweedFS, siêu dữ liệu ở `engine.attachment`, quét ClamAV, quyền theo quyền của bản ghi.
 - `AttachmentProcessor` chỉ nhận các phần mở rộng đã cấu hình, `AttachmentService` giữ mỗi hồ sơ tối đa số tệp đã cấu hình, và link tải luôn ở dạng đính kèm.
 - `AttachmentCleaner` xóa đối tượng khỏi kho khi tệp hoặc hồ sơ bị gỡ, qua thông điệp `file.delete` trong outbox sau một khoảng trễ, để bản sao lưu luôn có đủ tệp của mọi dòng trong bản dump.
 
@@ -247,7 +247,7 @@ Số đo này nói dữ liệu đang có tốt đến đâu, khác với phả h
 
 ## 12. Triển khai
 
-Compose chạy lõi (`postgres`, `keycloak`, `seaweedfs`, `backend`, `apisix`) và Tầng 2 (`frontend`, `portal`, `monitor`); `clamav` bật bằng profile `av`.
+Compose chạy lõi (`postgres`, `keycloak`, `seaweedfs`, `backend`, `apisix`) và Tầng 2 (`frontend`, `portal`, `monitor`); `clamav` chạy với profile `av`, có sẵn trong cấu hình mặc định.
 `dxos start --core` chỉ chạy lõi, không có Tầng 2 và gateway không có route của nó; Keycloak Admin Console mặc định không mở ra gateway.
 Gateway kiểm token cho mọi route API; các route không kiểm token nằm trong danh sách công khai kiểm bởi `deploy/apisix/check_routes.py`.
 `dxos start <tệp>...` đưa các tệp mô hình vào qua `deploy/model/` và in kết quả của `ModelBootstrap` cho từng tệp.
@@ -271,4 +271,4 @@ Bốn nguyên lý kỹ thuật của đề:
 | Phân tách theo vòng đời dữ liệu, đẩy dữ liệu lịch sử xuống hồ dữ liệu | `dxos archive --store` ghi hồ sơ đã đóng và lịch sử của chúng ra Parquet vào một bucket riêng của SeaweedFS kèm manifest và hash; `dxos archive schedule install` đặt lịch hằng ngày theo `ARCHIVE_AFTER_DAYS` |
 | Hội tụ dữ liệu hành chính (IT) và vận hành (OT) | Chương trình giả lập thiết bị tạo hồ sơ sự cố qua API (`examples/itot-simulator`), đi qua cùng quy trình, quyền và lịch sử với hồ sơ hành chính |
 | Quản trị dữ liệu, phả hệ và nguồn gốc | Tệp mô hình là danh mục dữ liệu, trang Danh mục dữ liệu đọc từ đó nơi dữ liệu đi vào, đi ra và liên kết giữa các thực thể, cùng số đo chất lượng của từng thực thể; lịch sử hồ sơ chống sửa |
-| Zero-Trust, GitOps, kiểm dịch mã độc, tự phục hồi | Token kiểm ở gateway và backend; ClamAV quét tệp khi bật; tệp mô hình là khai báo, xem trước rồi áp dụng, `dxos gitops` kéo hạ tầng và các tệp mô hình từ git; `dxos reconcile` và `restart: unless-stopped` |
+| Zero-Trust, GitOps, kiểm dịch mã độc, tự phục hồi | Token kiểm ở gateway và backend; ClamAV quét tệp tải lên và từ chối tệp khi chưa quét được; tệp mô hình là khai báo, xem trước rồi áp dụng, `dxos gitops` kéo hạ tầng và các tệp mô hình từ git; `dxos reconcile` và `restart: unless-stopped` |

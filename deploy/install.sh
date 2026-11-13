@@ -94,6 +94,8 @@ if [[ "$UPGRADE" == true ]]; then
   while IFS= read -r line; do
     key="${line%%=*}"
     if [[ "$line" =~ ^[A-Za-z0-9_]+= ]] && ! grep -q "^$key=" "$ENV_FILE"; then
+      # An install that never chose the virus scan keeps it off: the scan host without the profile av would refuse every upload.
+      [[ "$key" == STORAGE_SCAN_HOST ]] && line="STORAGE_SCAN_HOST="
       printf '%s\n' "$line" >> "$ENV_FILE"
       echo "    added $key"
     fi

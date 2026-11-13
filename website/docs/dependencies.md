@@ -25,7 +25,7 @@ Hai nơi đó được máy kiểm ở mỗi pull request, tài liệu này ch�
 | SeaweedFS | Apache-2.0 | Dữ liệu phi cấu trúc | API tương thích S3, nên đổi sang kho S3 khác chỉ đổi địa chỉ | Image chính thức ghim digest; truy cập qua AWS SDK |
 | Flowable 8 | Apache-2.0 | Động cơ luồng công việc | Động cơ BPMN trưởng thành, chạy nhúng trong tiến trình và dùng chung giao dịch với việc ghi hồ sơ | Nhúng bằng `flowable-spring`; người dùng không viết BPMN, đội cung cấp ba họ mẫu có tham số |
 | pgschema 1.13 | Apache-2.0 | So sánh và đổi lược đồ | Khai báo trạng thái đích rồi tính câu lệnh cần chạy, giống Terraform | Binary lấy từ image chính thức ghim digest; lõi đổi tên cột trước và chặn mọi thao tác xóa mà mô hình không yêu cầu |
-| ClamAV | GPL-2.0 | Quét mã độc tệp tải lên | Bộ quét nguồn mở sẵn có | Chạy ở container riêng, bật bằng profile `av`; lõi chỉ gọi qua mạng. Image của ClamAV kèm `libclamunrar` (giải nén RAR) theo giấy phép UnRAR, không phải mã mở; nạp lúc chạy, không liên kết với `libclamav`, và dự án không sửa hay phân phối lại nó |
+| ClamAV | GPL-2.0 | Quét mã độc tệp tải lên | Bộ quét nguồn mở sẵn có | Chạy ở container riêng, bật sẵn bằng profile `av`; lõi chỉ gọi qua mạng. Image của ClamAV kèm `libclamunrar` (giải nén RAR) theo giấy phép UnRAR, không phải mã mở; nạp lúc chạy, không liên kết với `libclamav`, và dự án không sửa hay phân phối lại nó |
 | Spring Boot, Java 21 | Apache-2.0, GPL-2.0 with Classpath Exception | Khung dịch vụ lõi | Khung phổ biến, có sẵn bảo mật OAuth2, Flyway và kiểm dữ liệu; ranh giới module kiểm được lúc biên dịch | Eclipse Temurin chạy nguyên bản |
 | react-admin, MUI | MIT | Giao diện dựng từ metadata | Có sẵn danh sách, form và trường cho các kiểu trường của mô hình; một mô hình nạp lúc chạy không cần build lại giao diện | Chỉ dùng phần MIT, không dùng gói Enterprise |
 | Monaco Editor, monaco-yaml | MIT | Trình soạn mô hình | Gợi ý và báo lỗi YAML theo JSON Schema của tệp mô hình | Chạy trong trình duyệt |
@@ -36,7 +36,7 @@ Hai nơi đó được máy kiểm ở mỗi pull request, tài liệu này ch�
 | reuse | Apache-2.0, GPL-3.0-or-later (mã); CC0-1.0, CC-BY-SA-4.0 (tài liệu) | Kiểm giấy phép và bản quyền của từng tệp theo chuẩn REUSE trong CI | Công cụ nguồn mở, chạy bằng `pipx run`, không đóng gói vào sản phẩm | `.github/workflows/ci-compliance.yml` |
 
 
-ClamAV được giữ vì đề thi yêu cầu kiểm dịch mã độc ngay tại cửa ngõ, và nó tắt mặc định.
+ClamAV được giữ vì đề thi yêu cầu kiểm dịch mã độc ngay tại cửa ngõ, và nó bật mặc định.
 Dự án kéo image chính thức nguyên bản khi chạy, không đóng gói và không phân phối lại nó.
 `libclamunrar` nạp lúc chạy, không liên kết với `libclamav`; thiếu nó thì ClamAV vẫn chạy, chỉ không giải nén RAR.
 

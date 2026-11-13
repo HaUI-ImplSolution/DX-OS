@@ -27,7 +27,7 @@ Mức hoàn thiện của từng tính năng và bài kiểm của nó ở [`web
 | Compose hợp lệ, dừng khi thiếu bí mật | `docker compose config` trong `deploy/` | `Validate the Compose file` của `Platform` |
 | Gói phát hành và bộ cài | `.github/scripts/check_archive.sh <gói> <phiên bản>` | `Install from the release archive` của `Platform` |
 | Sao lưu và khôi phục | `deploy/backup.sh` rồi `verify` | `Back up and restore` của `Platform` |
-| API trên stack thật | Các script `deploy/dev/check_*.py`, mục 4 | `API end-to-end` của `Platform`, ba nhóm, một nhóm chạy ở chế độ lõi |
+| API trên stack thật | Các script `deploy/dev/check_*.py`, mục 4 | `API end-to-end` của `Platform`, ba nhóm, một nhóm chạy ở chế độ lõi và giữ quét mã độc |
 | Bề mặt của gateway | `python3 deploy/dev/check_surface.py` | `Gateway surface` của `Platform`, hai chế độ |
 | Trình duyệt | Xem [`e2e/README.md`](../e2e/README.md) | `Browser end-to-end` của `Platform` |
 | Trang tài liệu | `cd website && npm ci && npm run build` | `Build the docs site` của `Docs` |
@@ -56,7 +56,7 @@ Kiểm trên một stack riêng thì không đụng stack chính:
 - Xóa project, volume và thư mục dữ liệu của nó sau khi kiểm.
 
 Các script gọi Keycloak Admin API qua gateway, mà gateway đóng `/admin` mặc định: đặt `KEYCLOAK_ADMIN_CONSOLE=true` trong env của stack kiểm rồi `docker compose up -d apisix-config` và `docker compose restart apisix`.
-Chế độ lõi thì đặt `DXOS_MODE=core` và `COMPOSE_PROFILES=` trong env đó, hoặc dùng `dxos start --core`.
+Chế độ lõi thì đặt `DXOS_MODE=core` và `COMPOSE_PROFILES=av` trong env đó, hoặc dùng `dxos start --core`.
 
 Cổng 9080 hoặc 5432 bị chiếm thì đổi `APISIX_HOST_PORT`, `POSTGRES_HOST_PORT` trong `deploy/.env`.
 
@@ -103,7 +103,9 @@ Mỗi kiểm in một dòng `PASS` hoặc `FAIL` kèm nhãn, cuối script in `N
 
 Điều kiện đặc biệt:
 
-- Tiêu chí 3 của `check_demo.py` (chặn tệp nhiễm mã độc, bằng tệp EICAR) chỉ chạy khi bật quét: `dxos av on` trên bản cài, hoặc đặt `COMPOSE_PROFILES=av` và `STORAGE_SCAN_HOST=clamav` trong `deploy/.env` rồi `docker compose up -d`.
+- Tiêu chí 3 của `check_demo.py` (tệp sạch tải lên và tải về, tệp EICAR bị chặn và không lưu, tệp bị từ chối khi ClamAV dừng) chỉ chạy khi bật quét, như `deploy/.env` mặc định; khi tắt quét (`dxos av off`) script in `NOTE` rồi bỏ qua phần này.
+- Đặt `DXOS_REQUIRE_SCAN=1` thì stack không quét làm script báo `FAIL`; nhóm chế độ lõi của `API end-to-end` đặt biến này, còn các nhóm khác tắt quét để không tốn thêm khoảng 1 GB RAM.
+- Với quét bật, đợi `clamav` khỏe (`docker compose up -d --wait clamav`) trước khi chạy script, vì tệp tải lên bị từ chối khi ClamAV chưa nạp xong chữ ký.
 - Một số kiểm cần backend chạy với biến gây lỗi có chủ ý (`ENGINE_FAULT_AFTER_DECISION=true` làm quyết định lỗi sau bước quy trình, `ENGINE_FAULT_APPLY_STEP=ENSURE_CLIENT` làm bước áp dụng có tên đó lỗi); các script tự bật rồi tắt bằng cách tạo lại service `backend`.
 - Keycloak 26.8 trả 400 thay vì 401 cho mật khẩu sai; các kiểm về mật khẩu nhận cả hai.
 

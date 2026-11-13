@@ -14,7 +14,7 @@ Nguồn: [đề thi](https://vfossa.vn/tin-tuc/de-thi-phan-mem-nguon-mo-olp-2026
 | Định danh, SSO | Keycloak; vai, đơn vị và client sinh từ mô hình | Đạt |
 | Cổng API | APISIX kiểm token và giới hạn tốc độ, dịch vụ lõi kiểm lại token | Đạt |
 | Dữ liệu có cấu trúc | PostgreSQL; lược đồ, ràng buộc và API có quyền theo dòng sinh từ mô hình | Đạt |
-| Dữ liệu phi cấu trúc | SeaweedFS, tệp đính kèm theo quyền của hồ sơ, ClamAV khi bật | Đạt; quét mã độc tắt mặc định |
+| Dữ liệu phi cấu trúc | SeaweedFS, tệp đính kèm theo quyền của hồ sơ, ClamAV | Đạt; quét mã độc bật mặc định, tệp EICAR bị chặn trong CI |
 | Động cơ luồng công việc | Flowable nhúng, BPMN sinh từ mô hình, ba họ mẫu | Đạt |
 | Ít nhất một ứng dụng Tầng 2 trong H-P-D-I | Ứng dụng web dựng từ metadata và bảng điều khiển, chạm H, P và D | Đạt; chưa có I; `README.md` có mục đối chiếu với đề |
 | Giấy phép OSI, mã công khai, có bản phát hành trước khi nộp | Apache-2.0; bảy bản `v1.0.0` đến `v2.0.0` | Đạt |

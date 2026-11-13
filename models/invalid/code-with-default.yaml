@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: Apache-2.0
+format: 1
+name: broken
+roles:
+  - name: STAFF
+entities:
+  ticket:
+    fields:
+      title: {type: text}
+      no: {type: code, format: "TCK-{seq:4}", default: "TCK-0000", required: true}
+    access: {STAFF: all}

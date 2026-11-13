@@ -17,6 +17,8 @@ function edgeText({ kind, name, detail }: LineageEdge): string {
       return t("Chọn từ các đơn vị: {name}", { name: detail ?? "" });
     case "file":
       return t("Tệp lưu ở kho tệp");
+    case "generated":
+      return t("Sinh khi tạo hồ sơ: {name}", { name });
     case "renamed_from":
       return t("Trước đây là trường {name}", { name });
     case "required_when":

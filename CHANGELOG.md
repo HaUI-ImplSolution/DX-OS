@@ -41,6 +41,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Tệp mô hình
 
+- Kiểu trường `code` sinh mã hồ sơ đọc được theo khuôn `format`, ví dụ `HS-{year}-{seq:5}`: chữ cố định, năm tạo và số thứ tự có độ dài cố định, đếm riêng theo mô hình, thực thể và trường, và đếm lại mỗi năm khi khuôn có `{year}`. Mã gán một lần lúc tạo hồ sơ, không ghi hay sửa được, tra bằng `filter.<trường>`; thêm trường vào thực thể đã có hồ sơ là thay đổi `MIGRATION` và điền mã cho hồ sơ cũ.
 - Thực thể khai báo mẫu in bằng khóa `documents`: tiêu đề, đoạn văn, bảng trường và khối chữ ký với chỗ trống `{{trường}}`, kèm tên tệp và trạng thái cho in. `GET /api/v1/data/{model}/{entity}/{id}/documents` liệt kê mẫu và `.../documents/{tên}` trả PDF tiếng Việt cho người đọc được hồ sơ; mỗi lần in vào `audit_log`, và màn hình hồ sơ có nút In.
 - Format hiện hành là `1`; lõi tự nâng format `0` trong bộ nhớ, API `/models/upgrade` và `dxos model upgrade` cho xem diff trước khi tùy chọn ghi nguyên tử, còn format tương lai hoặc thiếu bước migration bị từ chối.
 - Lần áp dụng đầu của tệp đã nâng format tạo thêm một phiên bản không đổi bảng hay quyền nào, và `dxos plan --check` trả 2 cho đến lúc đó.
@@ -62,6 +63,8 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Trình sửa mô hình chọn `default` của trường nhiều lựa chọn từ danh sách `options`, và trình soạn YAML không còn cảnh báo khi `default` là danh sách.
 - Các mức leo thang hiện ở ghi chú dưới sơ đồ quy trình, ở dòng lịch sử của hồ sơ kèm vai được báo và lần nhắc, và ở kế hoạch khi tệp đổi các mức này; trình soạn YAML gợi ý các khóa `escalate`, `after`, `to` và `repeat`.
 - Ở màn hình điện thoại, hộp việc và danh sách hồ sơ hiện mỗi hồ sơ là một thẻ, và thanh đầu giữ chỗ cho tên trang; bài `e2e/tests/phone.spec.ts` kiểm bảng điều khiển và hộp việc không rộng hơn màn hình 390 px.
+- Trường `code` không có ô nhập ở biểu mẫu; trang hồ sơ nêu mã trên đầu kèm nút sao chép, danh sách có cột mã đầu tiên và ô tìm theo một phần của mã.
+- Bộ lọc dạng khoảng ngày (`từ`, `đến`) và tìm theo một phần của mã gửi đúng `filter.<trường>.<phép>` tới API.
 
 ### Tài liệu
 

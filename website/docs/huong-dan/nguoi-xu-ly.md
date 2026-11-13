@@ -28,6 +28,11 @@ Nghiệp vụ có thể thêm hoặc đổi hành động, và có hành động
 Nếu nghiệp vụ có mẫu in, trang chi tiết hồ sơ hiện nút **In** ở những trạng thái mẫu cho phép; ví dụ giấy xác nhận chỉ in được khi hồ sơ đã duyệt.
 Bấm nút để tải tệp PDF của hồ sơ.
 
+## Tìm hồ sơ theo mã
+
+Nếu nghiệp vụ cấp mã hồ sơ, danh sách có cột mã và ô tìm theo mã: gõ cả mã hoặc một phần của nó để lọc.
+Mã nằm ở đầu trang chi tiết kèm nút sao chép, tiện dán vào trao đổi hay biên bản.
+
 ## Nhận và giao việc
 
 Hồ sơ chưa giao thì cả vai xử lý đều làm được.

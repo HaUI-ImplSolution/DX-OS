@@ -165,6 +165,8 @@ sequenceDiagram
 - **Gửi lại:** tạo hồ sơ và hành động nhận header `Idempotency-Key`; khóa được ghi vào `engine.idempotency` cùng giao dịch với việc làm, nên yêu cầu lỗi không giữ khóa và hai yêu cầu cùng khóa chạy cùng lúc chỉ làm một lần, yêu cầu sau chờ rồi nhận câu trả lời của yêu cầu trước.
   Khóa thuộc về người gửi và gắn với một yêu cầu (loại, đích và băm của nội dung), giữ 24 giờ rồi bị dọn.
 
+- **Mã hồ sơ:** trường `code` của thực thể nhận số từ bảng `engine.record_counter` ngay trong giao dịch tạo hồ sơ: hàng đếm bị khóa đến khi hồ sơ được lưu, nên hai hồ sơ không trùng mã và hồ sơ lỗi không làm mất số; bước `FILL_CODES` của lần áp dụng điền mã cho hồ sơ có sẵn khi một trường `code` mới được thêm.
+
 ## 6. Quy trình và trạng thái
 
 Trạng thái của hồ sơ chỉ đổi qua quy trình.

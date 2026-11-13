@@ -15,7 +15,8 @@ public enum FieldType {
   UNIT,
   FILE,
   BOOLEAN,
-  DATE;
+  DATE,
+  CODE;
 
   public String key() {
     return name().toLowerCase(Locale.ROOT);

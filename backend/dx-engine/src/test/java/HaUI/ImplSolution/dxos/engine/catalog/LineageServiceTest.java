@@ -101,6 +101,29 @@ class LineageServiceTest {
   }
 
   @Test
+  void aCodeIsMadeWhenTheRecordIsCreatedAndNeverChanges() {
+    Lineage codes =
+        LineageService.lineage(
+            ModelParser.parse(
+                """
+                format: 1
+                name: codes
+                roles:
+                  - name: STAFF
+                entities:
+                  doc:
+                    fields:
+                      number: {type: code, format: "D-{year}-{seq:4}"}
+                    access: {STAFF: all}
+                """),
+            1);
+
+    FieldLineage number = codes.fields().get(0);
+    assertThat(number.origins()).containsExactly(new Edge("generated", "D-{year}-{seq:4}", null));
+    assertThat(has(number.destinations(), "history", "updated")).isFalse();
+  }
+
+  @Test
   void aFileHasNoHistoryLineAndAnEntityWithoutProcessIsNotArchived() {
     assertThat(has(field("ticket", "evidence").destinations(), "history", "updated")).isFalse();
     assertThat(has(field("comment", "text").destinations(), "archive", "dxos archive")).isFalse();

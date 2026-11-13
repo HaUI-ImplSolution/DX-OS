@@ -284,7 +284,7 @@ public final class DdlGenerator {
 
   public static String sqlType(FieldType type) {
     return switch (type) {
-      case TEXT, CHOICE, USER, UNIT, FILE -> "TEXT";
+      case TEXT, CHOICE, USER, UNIT, FILE, CODE -> "TEXT";
       case NUMBER -> "NUMERIC";
       case DATETIME -> "TIMESTAMPTZ";
       case REFERENCE -> "BIGINT";

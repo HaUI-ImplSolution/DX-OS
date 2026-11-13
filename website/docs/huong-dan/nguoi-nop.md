@@ -30,6 +30,13 @@ Nghiệp vụ có thể khai báo mẫu in, ví dụ giấy xác nhận.
 Khi hồ sơ ở trạng thái mẫu cho phép, trang chi tiết hiện nút **In** (hoặc **In: tên mẫu** khi chỉ có một mẫu) và bấm vào là tải tệp PDF của hồ sơ.
 Chỉ người xem được hồ sơ mới in được.
 
+## Mã hồ sơ
+
+Nghiệp vụ có thể cho mỗi hồ sơ một mã ngắn, ví dụ `HS-2026-00007`.
+Mã hiện ở cột đầu của danh sách và ở đầu trang chi tiết, kèm nút sao chép; dùng nó khi hỏi hay tra cứu hồ sơ với người xử lý.
+Bạn không nhập mã: hệ thống tự cấp khi hồ sơ được tạo và mã không đổi nữa.
+Gõ một phần của mã vào ô tìm theo mã của danh sách thì chỉ còn các hồ sơ có mã đó.
+
 ## Theo dõi hồ sơ
 
 - Trạng thái của hồ sơ hiện ở danh sách và ở đầu trang chi tiết.

@@ -103,7 +103,8 @@ public record Model(
   // renamedFrom names the column this field had in the version before; defaultValue fills existing
   // and new rows. multiple lets a choice field hold several options. min and max bound a number or
   // date, as canonical text; pattern bounds a text and matches the whole value. requiredWhen makes
-  // the field required only for the records that meet the condition.
+  // the field required only for the records that meet the condition. format is the shape of the
+  // code of a code field, such as HS-{year}-{seq:5}.
   public record Field(
       String name,
       FieldType type,
@@ -118,9 +119,10 @@ public record Model(
       String min,
       String max,
       String pattern,
-      ProcessFamily.Condition requiredWhen) {
+      ProcessFamily.Condition requiredWhen,
+      String format) {
 
-    // A field without multiple, bounds, pattern or condition.
+    // A field without multiple, bounds, pattern, condition or format.
     public Field(
         String name,
         FieldType type,
@@ -142,6 +144,7 @@ public record Model(
           renamedFrom,
           defaultValue,
           false,
+          null,
           null,
           null,
           null,

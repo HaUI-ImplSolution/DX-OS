@@ -133,6 +133,9 @@ export const app: Record<string, string> = {
   "Chưa có đơn vị": "No unit",
   // Record screens
   "Sửa": "Edit",
+  "Sao chép mã": "Copy the code",
+  "Đã sao chép mã": "Code copied",
+  "Không sao chép được": "Could not copy",
   "Báo cáo theo trường": "Report by field",
   "{label}, theo tháng": "{label}, by month",
   "Ngày tạo, theo tháng": "Created, by month",

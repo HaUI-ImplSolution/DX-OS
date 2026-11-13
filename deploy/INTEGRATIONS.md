@@ -65,6 +65,19 @@ Dòng `escalated` không đổi trạng thái hồ sơ, và các trường còn 
 Câu có tên mô hình, thực thể, số hồ sơ và trạng thái, không có nội dung hồ sơ.
 Hồ sơ của thực thể có quy trình vừa được tạo hoặc nộp lại đọc là "Việc mới", dòng `due_soon` là "Sắp đến hạn xử lý", dòng `overdue` là "Quá hạn xử lý", dòng `escalated` là "Leo thang mức" kèm các vai nhận, dòng giao việc là "Được giao"; các dòng khác ghi hành động và trạng thái trước, sau.
 
+Để nối Mattermost, tạo Incoming Webhook cho kênh nhận, đặt URL vào đích `ops` ở ví dụ trên và khai `webhook: ops` trong mô hình.
+Giữ URL webhook ngoài Git và bảo đảm backend truy cập được; `localhost` trong container là chính container đó.
+
+Luồng webhook đã kiểm ngày 13/11/2026 với Mattermost Team Edition 11.7.15, dùng binary/client Linux amd64 nguyên bản theo `MIT-COMPILED-LICENSE`, không kèm plugin.
+Mattermost là dịch vụ dựng riêng, không thuộc bản cài mặc định của DX-OS.
+
+- Với hạn xử lý `1m` và `DXOS_DUE_SOON_BEFORE=20s`, các dòng `created`, `due_soon`, `overdue` tới đúng kênh và outbox ghi nhận đã giao.
+- Tên người làm bằng tiếng Việt hiển thị đúng; payload kiểm riêng qua `WebhookSender` giữ đúng xuống dòng, dấu nháy, `&`, `< >` và emoji trên giao diện Mattermost.
+- Khi Mattermost không phản hồi trong 5 giây hoặc hook sai trả HTTP 404, hồ sơ vẫn lưu, outbox ghi lỗi và tự gửi lại thành công sau khi khôi phục đích trước giới hạn số lần thử.
+
+Mattermost không khử trùng theo `X-Dxos-Event-Id`, nên thông báo có thể trùng khi hết thời gian chờ rồi gửi lại.
+Slack chưa được kiểm thực tế.
+
 ### Kiểm tra trước khi chuyển trạng thái
 
 Hành động khai `check: <tên đích>` thì dịch vụ ở đích đó được hỏi trước khi hồ sơ chuyển trạng thái.

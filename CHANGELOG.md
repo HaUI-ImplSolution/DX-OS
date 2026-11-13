@@ -70,6 +70,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Tài liệu
 
+- `deploy/INTEGRATIONS.md` ghi cấu hình và kết quả kiểm webhook `chat` với Mattermost Team Edition 11.7.15: thông báo, hiển thị tiếng Việt, gửi lại khi lỗi và khả năng trùng tin.
 - Bài so sánh luồng ticket cơ bản ở `examples/effort-benchmark/`: mã API/xử lý của Lab với khai báo Core, cách đếm tái lập và kết quả kiểm API/UI.
 - `docs/TARGETS.md` ghi cách đo và kết quả của các chỉ số mục tiêu: mức 1, 2 và 3 của một hệ thống, quy tắc đếm mã tự viết (`deploy/dev/count_own_code.py`), thời gian dựng và đổi, bài thử có hướng dẫn kèm một bản mô phỏng người mới, và chi phí hạ tầng của cấu hình tham chiếu.
 - Ba trang hướng dẫn sử dụng theo vai ở trang docs: người nộp hồ sơ, người xử lý hồ sơ và người triển khai.

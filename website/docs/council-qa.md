@@ -127,7 +127,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
   Duyệt nhiều cấp tuần tự và rẽ nhánh theo ngưỡng khai báo được bằng quy trình tự khai báo, mới kiểm tay trên stack tạm chứ chưa có kiểm tự động.
 - Hồ dữ liệu có phần lưu trữ hồ sơ đã đóng theo lịch và `dxos archive query` truy vấn từng lần chạy; hai nguyên lý kế tiếp của đề mới được đáp ứng một phần: dữ liệu vận hành mới vào qua bộ mô phỏng IT/OT và chưa có bản sao số; phả hệ mới dừng ở danh mục dữ liệu của mô hình, chưa đến từng trường.
 - Một bản backend; chưa chịu lỗi nhiều nút; chưa thử tải lớn.
-- Đích webhook dạng `chat` chưa thử với Mattermost và Slack thật.
+- Đích webhook dạng `chat` đã thử với Mattermost thật (ngày 13/11/2026, thông báo, tiếng Việt, gửi lại khi lỗi), chưa thử với Slack thật.
 - Đổi vai hoặc đơn vị của người đang đăng nhập có hiệu lực sau tối đa khoảng 5 phút; không có quyền theo từng trường.
 - Dữ liệu trong các kiểm là dữ liệu do script tạo trên stack rỗng; chưa có tổ chức nào dùng thật.
 - Bản triển khai công khai vẫn là `v1.1.1`; lõi mới phải dựng lại vì không có đường nâng cấp dữ liệu.

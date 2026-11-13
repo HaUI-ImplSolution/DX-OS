@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.engine.catalog;
 
+import HaUI.ImplSolution.dxos.engine.meta.MetaController.DocumentMeta;
 import HaUI.ImplSolution.dxos.engine.meta.MetaController.EntityMeta;
 import HaUI.ImplSolution.dxos.engine.meta.MetaController.FieldMeta;
 import HaUI.ImplSolution.dxos.model.Model;
@@ -233,6 +234,59 @@ public class ModelOpenApi {
     if (entity.fields().stream().anyMatch(f -> "file".equals(f.type()))) {
       addFiles(entity, type, one, paths);
     }
+    if (!entity.documents().isEmpty()) {
+      addDocuments(entity, type, one, paths);
+    }
+  }
+
+  private void addDocuments(EntityMeta entity, String type, String one, Paths paths) {
+    paths.addPathItem(
+        one + "/documents",
+        new PathItem()
+            .get(
+                operation(
+                        "listDocuments" + type,
+                        "The print templates of a record",
+                        "Each template with the name of its download and whether the record can"
+                            + " be printed in its state now.")
+                    .addParametersItem(idParameter())
+                    .responses(
+                        responses("ResponseList", "200", "The templates", "401", "403", "404"))));
+    ApiResponses pdf = new ApiResponses();
+    pdf.addApiResponse(
+        "200",
+        new ApiResponse()
+            .description("The PDF")
+            .content(
+                new Content()
+                    .addMediaType(
+                        "application/pdf",
+                        new MediaType().schema(new StringSchema().format("binary")))));
+    for (String code : List.of("401", "403", "404", "409", "422", "429")) {
+      pdf.addApiResponse(code, errorResponse(code));
+    }
+    paths.addPathItem(
+        one + "/documents/{name}",
+        new PathItem()
+            .get(
+                operation(
+                        "printDocument" + type,
+                        "The PDF of a record made from a template",
+                        "Templates: "
+                            + String.join(
+                                ", ", entity.documents().stream().map(DocumentMeta::name).toList())
+                            + ". 409 when the record is in a state the template excludes.")
+                    .addParametersItem(idParameter())
+                    .addParametersItem(
+                        new PathParameter()
+                            .name("name")
+                            .schema(
+                                new StringSchema()
+                                    ._enum(
+                                        entity.documents().stream()
+                                            .map(DocumentMeta::name)
+                                            .toList())))
+                    .responses(pdf)));
   }
 
   private void addProcess(

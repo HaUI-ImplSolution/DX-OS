@@ -133,8 +133,10 @@ def main():
     path = "/data/onestop_demo/request"
     for n in range(3):
         kc.api(demo_stu, "POST", path, {**REQUEST, "reason": "Trùng lặp" if n < 2 else "Khác"})
+    # The print template names the field too, so it follows the new name.
     changed = demo.replace("      reason: {type: text, label: Lý do, required: true}",
                            "      content: {type: text, label: Lý do, required: true, renamed_from: reason}\n      phone: {type: text, label: Điện thoại}")
+    changed = changed.replace("fields: [kind, reason,", "fields: [kind, content,")
     status, body = kc.api(admin, "POST", "/models/plan", changed, YAML)
     the_plan = body["data"]
     rt.check("C5 adding a field and renaming one gives a plan with its risk",

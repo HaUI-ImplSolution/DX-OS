@@ -52,6 +52,7 @@ import { ActionButtons, AssignPanel, FilesPanel, HistoryPanel } from "./casePart
 import DateTimeViInput from "./DateTimeViInput";
 import ExportCsvButton from "./ExportCsvButton";
 import KanbanBoard from "./KanbanBoard";
+import PrintButton from "./PrintButton";
 import { conditionMet, conditionText } from "./condition";
 import { PersonField, PersonInput } from "./people";
 import { StatusChip } from "./StatusChip";
@@ -286,6 +287,7 @@ function ShowActions({ model, entity }: { model: string; entity: EntityMeta }) {
     <Box sx={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 0.5 }}>
       {entity.canWrite && !closed && <EditButton label={t("Sửa")} />}
       <ActionButtons model={model} entity={entity} />
+      <PrintButton model={model} entity={entity} />
     </Box>
   );
 }

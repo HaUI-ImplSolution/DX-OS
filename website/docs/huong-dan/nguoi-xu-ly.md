@@ -43,7 +43,7 @@ Không có nút hoàn tác; hồ sơ xử lý nhầm thì xử lý tiếp theo �
 ## Các cách xem khác
 
 - **Theo trạng thái:** danh sách hiện như một bảng, mỗi cột là một trạng thái.
-- **Thống kê:** số hồ sơ theo trạng thái và đơn vị, thời gian xử lý trung bình, và tỉ lệ đóng đúng hạn khi nghiệp vụ có hạn.
+- **Thống kê:** số hồ sơ theo trạng thái và đơn vị, thời gian xử lý trung bình, và tỉ lệ đóng đúng hạn khi nghiệp vụ có hạn; mục Báo cáo theo trường gộp hồ sơ theo một trường hoặc theo tháng và tính số lượng, tổng hay trung bình của một trường số.
 - **Xuất CSV:** xuất danh sách ra tệp mà bảng tính đọc được, đúng phần bạn được quyền thấy.
 - **Lịch:** với nghiệp vụ đặt chỗ, các lượt đặt theo ngày và theo tài nguyên.
 

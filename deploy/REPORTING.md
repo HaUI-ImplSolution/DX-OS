@@ -5,6 +5,7 @@ Vai này có `USAGE` trên schema `m_<mô hình>` và `SELECT` trên từng bả
 Mỗi bảng mới được tạo qua một lần áp dụng mô hình cũng nhận quyền đọc này.
 
 Kết nối trực tiếp cơ sở dữ liệu không áp dụng quyền `own`, `unit` hay `assigned` của API.
+Báo cáo cần quyền theo dòng thì lấy từ `GET /api/v1/data/{model}/{entity}/report`, nhóm theo một trường và tính đếm, tổng hay trung bình trên các dòng người gọi được xem.
 `report_ro` đọc được mọi dòng của mọi bảng nghiệp vụ đã được cấp quyền, nên chỉ giao thông tin đăng nhập cho công cụ báo cáo do người vận hành tin cậy.
 Vai này không được cấp quyền đọc schema nội bộ `engine`, cơ sở dữ liệu Keycloak hay dữ liệu của màn hình giám sát.
 

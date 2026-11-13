@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-import { json, request } from "../shell/api";
+import { json, queryString, request } from "../shell/api";
 import type { AttachmentItem, EntityMeta, InboxItem, ModelMeta, Page, Person, RecordEvent } from "./types";
 
 export const listModels = () => request<ModelMeta[]>("/meta/models");
@@ -22,6 +22,23 @@ export interface EntityStats {
   oldestOpenAgeSeconds?: number | null;
   computedAt: string;
 }
+
+export interface ReportGroup {
+  key: string | null;
+  [figure: string]: string | number | boolean | null;
+}
+
+export interface EntityReport {
+  groupBy: string | null;
+  metrics: string[];
+  groups: ReportGroup[];
+  totals: Record<string, number | null>;
+  truncated: boolean;
+  computedAt: string;
+}
+
+export const getReport = (model: string, entity: string, groupBy: string, metrics: string[]) =>
+  request<EntityReport>(`/data/${model}/${entity}/report${queryString({ groupBy, metrics: metrics.join(",") })}`);
 
 export const getStats = (model: string, entity: string) => request<EntityStats>(`/data/${model}/${entity}/stats`);
 

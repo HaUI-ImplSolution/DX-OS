@@ -96,7 +96,7 @@ Sự cố: nếu kế hoạch báo lỗi ở một dòng, đọc lỗi cho hội
 
 ## 5. Vận hành và dữ liệu (12 đến 14 phút)
 
-- **Thống kê:** từ danh sách hồ sơ của `judge_supervisor` bấm Thống kê: số hồ sơ theo trạng thái và đơn vị, thời gian xử lý trung bình, tỷ lệ đóng đúng hạn khi mô hình có hạn.
+- **Thống kê:** từ danh sách hồ sơ của `judge_supervisor` bấm Thống kê: số hồ sơ theo trạng thái và đơn vị, thời gian xử lý trung bình, tỷ lệ đóng đúng hạn khi mô hình có hạn, và mục Báo cáo theo trường gộp hồ sơ theo một trường hoặc theo tháng.
 - **Lịch sử chống sửa:** `dxos history verify` báo chuỗi nguyên vẹn. Nếu có thời gian, nói rằng sửa một dòng lịch sử bằng SQL sẽ bị chỉ ra dòng đầu tiên bị đổi.
 - **Lưu trữ dài hạn:** `dxos archive onestop --out /tmp/archive` ghi hồ sơ đã đóng và lịch sử ra tệp Parquet, kèm manifest để kiểm lại bằng `dxos archive check`.
 - **Kiểm tự động:** nhắc rằng toàn bộ tám mục và các lệnh `dxos` được kiểm bằng `check_*.py` ở CI.

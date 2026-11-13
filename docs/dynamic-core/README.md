@@ -299,7 +299,7 @@ Giao diện cho người dùng cuối do bộ dựng sinh từ metadata, đủ d
 ### Ranh giới các tầng
 
 - **Tầng 1, lõi:** chỉ có API, không có trang nào do đội viết.
-- **Tầng 2, ứng dụng minh họa:** bộ dựng giao diện đọc metadata, gồm danh sách, form, chi tiết, hộp việc cần xử lý, chế độ xem lịch cho thực thể có trường khoảng thời gian, trang thống kê của thực thể có quy trình (số hồ sơ theo trạng thái và đơn vị, thời gian xử lý, tỷ lệ đóng đúng hạn), chọn người cho trường `user` theo tên, chọn cột và lưu bộ lọc của danh sách, hộp việc và danh sách tự làm mới khi hồ sơ đổi, giao diện tiếng Việt và tiếng Anh, màn hình xem kế hoạch và lịch sử áp dụng.
+- **Tầng 2, ứng dụng minh họa:** bộ dựng giao diện đọc metadata, gồm danh sách, form, chi tiết, hộp việc cần xử lý, chế độ xem lịch cho thực thể có trường khoảng thời gian, trang thống kê của thực thể có quy trình (số hồ sơ theo trạng thái và đơn vị, thời gian xử lý, tỷ lệ đóng đúng hạn, báo cáo gộp theo một trường hoặc theo tháng), chọn người cho trường `user` theo tên, chọn cột và lưu bộ lọc của danh sách, hộp việc và danh sách tự làm mới khi hồ sơ đổi, giao diện tiếng Việt và tiếng Anh, màn hình xem kế hoạch và lịch sử áp dụng.
   Bộ dựng xây trên react-admin, đội chỉ viết lớp mỏng nối metadata với khung.
   Portal và màn hình giám sát cũng thuộc tầng này.
 - **Tầng 3, nghiệp vụ:** chỉ là tệp mô hình, không có mã.

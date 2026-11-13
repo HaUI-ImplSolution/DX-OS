@@ -1,6 +1,6 @@
 # Giám sát và nhật ký
 
-Tài liệu cho người theo dõi hệ thống: log của gateway, sự kiện đăng nhập, giới hạn tốc độ, audit trong backend và màn hình giám sát.
+Tài liệu cho người theo dõi hệ thống: log của gateway, sự kiện đăng nhập, giới hạn tốc độ, audit trong backend, số đo cho Prometheus và màn hình giám sát.
 Mọi request vào stack đi qua gateway APISIX, nên log của gateway là bản ghi truy cập chính.
 Sự kiện đăng nhập nằm ở Keycloak.
 Cài đặt và các lệnh `dxos` ở [`OPERATIONS.md`](./OPERATIONS.md).
@@ -117,6 +117,82 @@ docker compose exec postgres sh -c 'psql -U "$POSTGRES_USER" -d "${POSTGRES_DB:-
 
 Bản ghi được giữ không giới hạn thời gian và trigger chặn xóa.
 Chạy lâu thì theo dõi dung lượng bảng.
+
+## Số đo cho Prometheus
+
+Dịch vụ lõi xuất số đo vận hành theo định dạng Prometheus ở `GET /actuator/prometheus` của cổng `8081` trong mạng Docker, để Prometheus, Grafana Agent hoặc công cụ tương tự đọc.
+Công cụ giám sát bên ngoài là tùy chọn: stack không kèm Prometheus hay Grafana.
+
+Truy cập:
+
+- Cổng API không chuyển đường dẫn `/actuator` ra ngoài, nên endpoint chỉ đọc được từ trong mạng Docker của stack.
+- Endpoint đòi HTTP Basic với người dùng `metrics` và mật khẩu `METRICS_PASSWORD` trong `deploy/.env`; `make_env.sh` sinh mật khẩu ngẫu nhiên, và để trống thì endpoint đóng với mọi người.
+- Chỉ endpoint này và `/actuator/health` được mở; các endpoint khác của Actuator không mở.
+
+Số đo do dịch vụ lõi tính từ cơ sở dữ liệu mỗi 30 giây (đổi bằng `METRICS_REFRESH_MS`, tính bằng mili giây), nên một lần đọc không truy vấn dữ liệu.
+Nhãn chỉ là tên mô hình, tên thực thể, trạng thái và kết quả áp dụng do các tệp mô hình khai báo, không bao giờ là hồ sơ, người dùng hay chữ tự do, nên số chuỗi theo số mô hình chứ không theo số hồ sơ.
+
+| Số đo | Kiểu | Nhãn | Ý nghĩa |
+|---|---|---|---|
+| `dxos_records` | gauge | `model`, `entity`, `status` | Số hồ sơ của thực thể có quy trình theo trạng thái; trạng thái chưa có hồ sơ vẫn hiện số 0 |
+| `dxos_records_overdue` | gauge | `model`, `entity` | Số hồ sơ mà người xử lý đã quá hạn |
+| `dxos_outbox_pending` | gauge | không | Số sự kiện gửi ra ngoài chưa chuyển được |
+| `dxos_outbox_retrying` | gauge | không | Số sự kiện chưa chuyển được và đã thử lỗi ít nhất một lần |
+| `dxos_outbox_oldest_age_seconds` | gauge | không | Tuổi của sự kiện chưa chuyển cũ nhất, bằng giây; 0 khi hàng đợi trống |
+| `dxos_model_applies_total` | counter | `result` (`done`, `failed`) | Số lần áp dụng tệp mô hình theo kết quả, tính từ lịch sử áp dụng |
+| `dxos_models` | gauge | không | Số mô hình đang chạy |
+
+Dịch vụ cũng xuất các số đo chuẩn của JVM, cơ sở dữ liệu và HTTP (`jvm_*`, `hikaricp_*`, `http_server_requests_*`); nhãn `uri` của chúng là mẫu đường dẫn như `/api/v1/data/{model}/{entity}`, không chứa mã hồ sơ.
+
+Thử đọc từ máy chủ của stack:
+
+```bash
+cd deploy
+PASSWORD=$(grep '^METRICS_PASSWORD=' .env | cut -d= -f2)
+docker compose exec backend wget -qO- --header "Authorization: Basic $(printf 'metrics:%s' "$PASSWORD" | base64 -w0)" http://localhost:8081/actuator/prometheus | grep '^dxos_'
+```
+
+Cấu hình Prometheus chạy trong cùng mạng Docker của stack (container tham gia mạng `<tên-dự-án>_default`, xem bằng `docker network ls`):
+
+```yaml
+scrape_configs:
+  - job_name: dxos
+    metrics_path: /actuator/prometheus
+    scrape_interval: 30s
+    basic_auth:
+      username: metrics
+      password_file: /etc/prometheus/dxos-metrics-password
+    static_configs:
+      - targets: ["backend:8081"]
+```
+
+Tệp `dxos-metrics-password` chứa mật khẩu trên một dòng, không có ký tự xuống dòng ở cuối.
+
+Truy vấn Grafana tham khảo, mỗi dòng là một panel:
+
+| Panel | Truy vấn |
+|---|---|
+| Hồ sơ theo trạng thái | `sum by (model, entity, status) (dxos_records)` |
+| Hồ sơ quá hạn | `sum by (model, entity) (dxos_records_overdue)` |
+| Tuổi hàng đợi sự kiện | `dxos_outbox_oldest_age_seconds` |
+| Sự kiện chưa chuyển được | `dxos_outbox_pending` và `dxos_outbox_retrying` |
+| Lần áp dụng thất bại trong 24 giờ | `increase(dxos_model_applies_total{result="failed"}[24h])` |
+
+Quy tắc cảnh báo gợi ý:
+
+```yaml
+groups:
+  - name: dxos
+    rules:
+      - alert: DxosRecordsOverdue
+        expr: sum by (model, entity) (dxos_records_overdue) > 0
+        for: 15m
+      - alert: DxosEventQueueStuck
+        expr: dxos_outbox_oldest_age_seconds > 600
+        for: 5m
+      - alert: DxosApplyFailed
+        expr: increase(dxos_model_applies_total{result="failed"}[1h]) > 0
+```
 
 ## Màn hình giám sát
 

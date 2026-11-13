@@ -1,6 +1,6 @@
 # Tương thích giữa các bản
 
-Tài liệu này nói bên dùng DX-OS được trông cậy vào điều gì khi lên bản mới: ứng dụng gọi API, bên nhận webhook, tệp mô hình và cơ sở dữ liệu.
+Tài liệu này nói bên dùng DX-OS được trông cậy vào điều gì khi lên bản mới: ứng dụng gọi API, bên nhận webhook, tệp mô hình, cơ sở dữ liệu và số đo vận hành.
 Mỗi thay đổi người dùng thấy được ghi ở [`CHANGELOG.md`](../CHANGELOG.md), theo từng bản.
 
 ## Đánh số bản
@@ -26,6 +26,12 @@ Bỏ đường dẫn, bỏ hoặc đổi tên một trường, đổi kiểu hay
 Bên gọi nên bỏ qua trường mà mình không biết.
 
 Đặc tả đầy đủ ở OpenAPI (`/v3/api-docs`) của backend đang chạy.
+
+## Số đo vận hành
+
+Tên, kiểu và nhãn của các số đo `dxos_*` ở `/actuator/prometheus` (bảng ở [`deploy/MONITORING.md`](../deploy/MONITORING.md)) được giữ trong cùng bản chính; thêm số đo hoặc thêm giá trị cho một nhãn được phép ở bản nhỏ.
+Bỏ hoặc đổi tên một số đo, đổi kiểu hoặc đổi nghĩa của nó, và thêm nhãn mới cho một số đo đã có chỉ làm ở bản chính tiếp theo.
+Các số đo chuẩn của JVM, cơ sở dữ liệu và HTTP do thư viện sinh ra và theo bản của thư viện, nên bảng của DX-OS không nói tới chúng.
 
 ## Tệp mô hình
 

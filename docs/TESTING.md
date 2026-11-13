@@ -179,6 +179,11 @@ Giao diện, đăng nhập bằng `req1` (vai `BORROWER`), `keeper1` (vai `KEEPE
    Tạo một hồ sơ: kênh nhận lần lượt "Việc mới", "Sắp đến hạn xử lý" và "Quá hạn xử lý" với đúng mã hồ sơ, mỗi loại một lần, và outbox ghi đã giao; tên người làm bằng tiếng Việt hiện đúng.
    Tạm dừng tiến trình Mattermost hơn 5 giây rồi tạo hồ sơ mới: API vẫn thành công, hồ sơ còn nguyên và outbox ghi lỗi; tiếp tục tiến trình thì outbox tự gửi lại và kênh nhận thông báo, có thể trùng một tin.
    Đổi đích sang một địa chỉ hook sai (Mattermost trả 404) thì outbox ghi lỗi mà hồ sơ vẫn lưu; trả địa chỉ đúng thì thông báo tự được giao.
+35. Số đo cho Prometheus: trên stack đã nạp mô hình `onestop` và hồ sơ mẫu của `dxos demo`, đọc `/actuator/prometheus` trong container `backend` như `deploy/MONITORING.md` hướng dẫn.
+   Không mật khẩu hoặc sai mật khẩu trả 401, đúng mật khẩu của `METRICS_PASSWORD` trả 200 và có các dòng `dxos_*`; qua cổng `9080` đường dẫn này không trả số đo; để `METRICS_PASSWORD` trống rồi khởi động lại `backend` thì mọi lần đọc trả 401.
+   `dxos_records{status=...}` cộng lại bằng số hồ sơ ở danh sách, `dxos_records_overdue` bằng số hồ sơ quá hạn của trang Thống kê; nộp thêm một hồ sơ, sau tối đa `METRICS_REFRESH_MS` thì số tăng một.
+   Làm hàng đợi sự kiện tồn (đặt một đích webhook trỏ sai) thì `dxos_outbox_pending` và `dxos_outbox_oldest_age_seconds` tăng, sửa đích thì về 0; áp dụng một tệp mô hình sai thì `dxos_model_applies_total{result="failed"}` tăng một.
+   Không có nhãn nào ngoài `model`, `entity`, `status` và `result` trong các dòng `dxos_*`.
 
 Hướng dẫn và mẫu mô hình, kiểm bằng đúng các lệnh và thao tác trong tài liệu:
 

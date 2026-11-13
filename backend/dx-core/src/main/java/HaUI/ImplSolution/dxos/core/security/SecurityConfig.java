@@ -72,6 +72,7 @@ public class SecurityConfig {
       RestAuthenticationEntryPoint authenticationEntryPoint,
       RestAccessDeniedHandler accessDeniedHandler,
       ServiceApiKeyAuthenticationFilter serviceApiKeyAuthenticationFilter,
+      MetricsBasicAuthFilter metricsBasicAuthFilter,
       ObjectProvider<EndpointPolicyContributor> endpointPolicies,
       ObjectProvider<ClientRestrictionPolicy> clientPolicies,
       ObjectProvider<RateLimitContributor> rateLimitContributors,
@@ -106,6 +107,9 @@ public class SecurityConfig {
                 auth.requestMatchers(HttpMethod.GET, publicGetPaths.toArray(String[]::new))
                     .permitAll();
               }
+              // The metrics scraper reads the numbers with the metrics password; nobody else does.
+              auth.requestMatchers(HttpMethod.GET, "/actuator/prometheus")
+                  .hasAuthority("ROLE_METRICS");
               // AI chỉ được gọi GET qua service API key - mọi method khác ở /internal/v1/**
               // bị chặn hẳn, kể cả nếu lỡ có endpoint ghi được thêm sau này.
               auth.requestMatchers(HttpMethod.GET, "/internal/v1/**")
@@ -116,6 +120,7 @@ public class SecurityConfig {
                   .authenticated();
             })
         .addFilterBefore(serviceApiKeyAuthenticationFilter, BearerTokenAuthenticationFilter.class)
+        .addFilterBefore(metricsBasicAuthFilter, BearerTokenAuthenticationFilter.class)
         .oauth2ResourceServer(
             oauth2 ->
                 oauth2

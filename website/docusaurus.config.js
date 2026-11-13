@@ -21,6 +21,7 @@ const config = {
   onBrokenAnchors: 'throw',
   markdown: {
     format: 'detect',
+    mermaid: true,
     hooks: {
       onBrokenMarkdownLinks: 'throw',
     },
@@ -30,6 +31,8 @@ const config = {
     defaultLocale: 'vi',
     locales: ['vi'],
   },
+
+  themes: ['@docusaurus/theme-mermaid'],
 
   presets: [
     [

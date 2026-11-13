@@ -129,8 +129,9 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 +--------------------------------------------------------------+--------------+--------------------------------------+
 | node-polyglot (qua ra-i18n-polyglot)                         | BSD-2-Clause | Dịch chữ của react-admin             |
 +--------------------------------------------------------------+--------------+--------------------------------------+
-| Docusaurus (core, preset-classic, faster), @mdx-js/react,    | MIT          | Trang tài liệu website/, chỉ dựng ra |
-| clsx, prism-react-renderer                                   |              | file tĩnh                            |
+| Docusaurus (core, preset-classic, faster, theme-mermaid),    | MIT          | Trang tài liệu website/, chỉ dựng ra |
+| mermaid (qua theme-mermaid), @mdx-js/react, clsx,            |              | file tĩnh; mermaid vẽ sơ đồ          |
+| prism-react-renderer                                         |              | của trang kiến trúc                  |
 +--------------------------------------------------------------+--------------+--------------------------------------+
 | caniuse-lite (qua browserslist, Docusaurus)                  | CC-BY-4.0    | Dữ liệu trình duyệt, chỉ lúc dựng    |
 |                                                              |              | trang tài liệu [4]                   |

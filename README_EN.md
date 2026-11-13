@@ -185,6 +185,7 @@ The full testing guide is in [`docs/TESTING.md`](./docs/TESTING.md) (Vietnamese)
 
 Docs site: <https://haui-implsolution.github.io/DX-OS/>.
 The documents are written in Vietnamese; the API reference is the OpenAPI specification of the running backend.
+The documents on writing a model file, the API, operation, monitoring, integrations, extension points and the architecture can also be read on the site, with a table of contents and links between pages.
 
 | You need | See |
 |---|---|

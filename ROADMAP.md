@@ -12,7 +12,6 @@ Mọi việc dưới đây giữ hướng đó: thêm nghiệp vụ là thêm t�
 ## Tiếp theo
 
 - **Chứng minh lõi phục vụ ứng dụng bên ngoài:** một ứng dụng mẫu có giao diện riêng chỉ gọi lõi qua API; một ví dụ cho thấy tệp mô hình sống trong git, chạy kế hoạch trên pull request và áp dụng khi gộp.
-- **Tài liệu sản phẩm:** cách viết tệp mô hình, API, vận hành và mở rộng ngay trên trang docs, thay cho liên kết sang GitHub.
 - **Dữ liệu:** truy vấn trực tiếp trên kho lưu trữ dài hạn.
 
 ## Sau đó

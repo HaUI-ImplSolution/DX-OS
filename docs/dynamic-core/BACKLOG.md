@@ -42,7 +42,6 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 | Phả hệ dữ liệu | #214 | Danh mục dữ liệu dừng ở mức thực thể; chưa có phả hệ đến từng trường |
 | Lớp tùy biến trên mẫu | #216 | Người triển khai sửa thẳng vào bản sao của mẫu, nên khi mẫu có bản mới phải gộp tay: chưa có khóa `extends: <mẫu>` để chỉ viết phần khác và chưa có lệnh in tệp đã gộp; lý do và rủi ro ở `DANH_GIA.md` mục 7.2 |
 | Giáo trình DX-OS | #217 | Mới đọc tổng quan, mục lục chương và trang Hộp cát; đọc hết rồi đối chiếu thuật ngữ và kiến trúc với lõi, nhất là dự án DX-Ticket |
-| Đo công sức | #228 | Mới có số mã tự viết của mười mẫu mô hình (`docs/TARGETS.md`); số của phần Lab viết tay là số cũ, chưa đếm lại bằng cùng quy tắc, chưa chọn một phạm vi nghiệp vụ tương đương để so sánh và chưa có thời gian viết tay làm mốc |
 | Khách hàng | #231 | Chưa nói chuyện với khách hàng nào; mục Khách hàng và giá trị của `README.md` là giả thuyết |
 
 ### 3.2. Chưa có issue
@@ -88,6 +87,7 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 | Kiểm tương thích khi đổi mô hình | Chưa có nơi đăng ký mã mở rộng nên chưa có hợp đồng để đối chiếu |
 | Người thứ hai duyệt thay đổi mô hình | Không bắt buộc; là chính sách tùy bản triển khai |
 | Ủy quyền có phạm vi và thời hạn | Không có; chạm nhiều đường kiểm quyền |
+| Thời gian viết tay làm mốc | Không đo; phần Lab viết tay không có ghi nhận giờ, nên so sánh công sức dùng số dòng (`examples/effort-benchmark/README.md`) chứ không dùng thời gian |
 | Quyền theo từng trường | Không có; phải phủ mọi đường dữ liệu đi ra: danh sách, bộ lọc, số đếm, lịch sử và webhook |
 | Tham chiếu sang mô hình khác | Trường `reference` chỉ trỏ tới thực thể cùng mô hình; trỏ sang mô hình khác thì mô hình không còn áp dụng và quay lui độc lập, và quyền của hai mô hình thuộc hai client khác nhau |
 | Kiểm tài liệu và OpenAPI chiều ngược | `check_docs.py` kiểm endpoint tài liệu nêu có trong OpenAPI; không kiểm chiều ngược vì `docs/API.md` chỉ liệt kê các đường dẫn chính và viết tắt đường dẫn, nên sẽ báo nhầm |

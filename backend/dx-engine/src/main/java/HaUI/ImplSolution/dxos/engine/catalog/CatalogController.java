@@ -26,16 +26,19 @@ public class CatalogController {
   private final CatalogService catalog;
   private final ProcessDiagramService diagrams;
   private final DataCatalogService dataCatalog;
+  private final LineageService lineage;
   private final ModelRegistry registry;
 
   public CatalogController(
       CatalogService catalog,
       ProcessDiagramService diagrams,
       DataCatalogService dataCatalog,
+      LineageService lineage,
       ModelRegistry registry) {
     this.catalog = catalog;
     this.diagrams = diagrams;
     this.dataCatalog = dataCatalog;
+    this.lineage = lineage;
     this.registry = registry;
   }
 
@@ -78,6 +81,21 @@ public class CatalogController {
               + " processes, the event feed and the archive. 404 when the model is not applied.")
   public ApiResponse<DataCatalogService.Catalog> dataCatalog(@PathVariable String model) {
     return ApiResponse.success(dataCatalog.of(registry.require(model)));
+  }
+
+  @GetMapping("/{model}/data-lineage")
+  @Operation(
+      summary = "Where each field of an applied model comes from and goes to",
+      description =
+          "One entry per field with its version of the model. origins: input (a role that may write"
+              + " the entity, with its scope), default, reference (the entity it points to), unit,"
+              + " file and renamed_from (the field name in the version before). uses: the rules that"
+              + " read the field: required_when, require and when (a process action), owner and"
+              + " unit_scope. destinations: history (the line written when the value changes), feed,"
+              + " webhook and archive. The core does not transform values, so no entry is a"
+              + " transformation. 404 when the model is not applied.")
+  public ApiResponse<LineageService.Lineage> dataLineage(@PathVariable String model) {
+    return ApiResponse.success(lineage.of(registry.require(model)));
   }
 
   @GetMapping("/templates")

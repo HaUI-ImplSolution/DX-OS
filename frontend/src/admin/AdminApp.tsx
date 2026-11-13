@@ -55,9 +55,9 @@ const modelTitle = (name: string) => name.replace(/_/g, " ").replace(/^./, (firs
 
 function Brand() {
   return (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 1, mr: 2, pr: 2, borderRight: 1, borderColor: "divider" }}>
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1, mr: { xs: 1, sm: 2 }, pr: { xs: 0, sm: 2 }, borderRight: { sm: 1 }, borderColor: "divider" }}>
       <HubIcon color="primary" />
-      <Typography sx={{ fontWeight: 800, letterSpacing: 0.3 }} color="primary">
+      <Typography sx={{ fontWeight: 800, letterSpacing: 0.3, display: { xs: "none", sm: "block" } }} color="primary">
         DX-OS
       </Typography>
     </Box>

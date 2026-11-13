@@ -12,7 +12,7 @@ Sản phẩm này sử dụng phần mềm của bên thứ ba, giữ nguyên gi
 - PostgreSQL (PostgreSQL License).
 - React, react-admin, Material UI (MIT).
 - caniuse-lite, dữ liệu của Can I Use (CC-BY-4.0), chỉ dùng lúc dựng trang tài liệu.
-- ClamAV (GPL-2.0), chạy nguyên bản thành dịch vụ riêng khi bật quét mã độc; image của nó kèm libclamunrar theo giấy phép UnRAR, nạp lúc chạy và không do dự án này phân phối.
+- ClamAV (GPL-2.0), chạy nguyên bản thành dịch vụ riêng để quét mã độc; image của nó kèm libclamunrar theo giấy phép UnRAR, nạp lúc chạy và không do dự án này phân phối.
 
 Danh sách thành phần đầy đủ ở DEPENDENCIES.txt; SBOM CycloneDX ở thư mục sbom/.
 Bản build của ứng dụng web và của trang tài liệu đóng gói thư viện npm, nên mỗi bản build kèm tệp third-party-licenses.txt ở gốc, chép nguyên thông báo bản quyền của từng thư viện.

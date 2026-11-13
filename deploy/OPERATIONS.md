@@ -278,7 +278,7 @@ Số đo trên máy chủ 8 CPU, 7 GB RAM, đã xóa stack cũ và năm image `d
 | `dxos av on`: tải ClamAV, khởi động lại backend | 32 giây |
 | `dxos demo`: bốn tài khoản thử và 40 hồ sơ mẫu | 98 giây |
 
-Từ tệp mô hình đến hệ thống chạy mất khoảng ba phút; image của bên thứ ba (`postgres`, `apisix`, `seaweedfs`) đã có sẵn trên máy nên không nằm trong số này.
+Từ tệp mô hình đến hệ thống chạy mất khoảng ba phút khi quét mã độc còn tắt, và bản cài mặc định thêm ClamAV nên lâu hơn khoảng 32 giây; image của bên thứ ba (`postgres`, `apisix`, `seaweedfs`) đã có sẵn trên máy nên không nằm trong số này.
 
 ## Tài nguyên và số bản sao
 
@@ -294,7 +294,7 @@ Số đo trên máy 12 CPU, 31 GB RAM, với stack tám service (không bật `c
 | `seaweedfs` | 75 |
 | `frontend`, `portal` | 11 mỗi service |
 
-Cả stack dùng khoảng 1,8 GiB RAM, CPU gần 0 lúc rảnh.
+Cả stack dùng khoảng 1,8 GiB RAM, CPU gần 0 lúc rảnh; số này chưa gồm `clamav` (khoảng 1 GB RAM, bật sẵn, `dxos av off` để bỏ).
 Số nhân và RAM cần cho một số người dùng đồng thời nhất định, và cách đo lại trên máy của bạn, ở [`docs/SIZING.md`](../docs/SIZING.md).
 Image chiếm khoảng 3,5 GiB đĩa (kích thước `docker images` của tám service); cơ sở dữ liệu 12 MB.
 
@@ -354,18 +354,20 @@ CI chạy một lượt backup và verify trên Postgres thật có một mô h�
 
 ## Quét mã độc tệp tải lên
 
-Khi bật, mọi tệp đính kèm được ClamAV quét trước khi xử lý và lưu.
+Mọi tệp đính kèm được ClamAV quét trước khi xử lý và lưu.
 Tệp nhiễm bị từ chối với HTTP 422 `ERR_FILE_INFECTED` và lần chặn được ghi vào `audit_log` (`FILE_INFECTED`, kèm tên mẫu mã độc).
-ClamAV không trả lời thì tệp không được lưu và người dùng nhận HTTP 503 `ERR_SCAN_UNAVAILABLE`, vì tệp chưa quét không được coi là sạch.
-Tắt mặc định vì ClamAV cần khoảng 1 GB RAM.
-Bật bằng `dxos av on`, tắt bằng `dxos av off`: lệnh sửa `COMPOSE_PROFILES` và `STORAGE_SCAN_HOST` trong `.env`, rồi khởi động hoặc gỡ ClamAV và tạo lại backend nếu stack đang chạy.
-Không dùng `dxos` thì đặt `COMPOSE_PROFILES=app,av` (bỏ `app` ở chế độ lõi) và bỏ dấu `#` ở `STORAGE_SCAN_HOST=clamav` trong `deploy/.env`, rồi `docker compose up -d`.
+ClamAV không trả lời thì tệp không được lưu và người dùng nhận HTTP 503 `ERR_SCAN_UNAVAILABLE`, vì tệp chưa quét không được coi là sạch (fail-closed).
+`deploy/.env` sinh từ `.env.example` có sẵn `av` trong `COMPOSE_PROFILES` và `STORAGE_SCAN_HOST=clamav`, nên quét bật ngay từ lần cài đầu; ClamAV cần khoảng 1 GB RAM.
+`dxos av off` tắt quét và `dxos av on` bật lại: lệnh sửa `COMPOSE_PROFILES` và `STORAGE_SCAN_HOST` trong `.env`, rồi khởi động hoặc gỡ ClamAV và tạo lại backend nếu stack đang chạy.
+Không dùng `dxos` thì sửa hai biến đó bằng tay (`COMPOSE_PROFILES` bỏ hoặc có `av`, `STORAGE_SCAN_HOST` để trống hoặc `clamav`) rồi `docker compose up -d`.
+Quét tắt thì tệp nhiễm được lưu bình thường, và `dxos doctor` báo `WARN`.
+`install.sh --upgrade` giữ nguyên lựa chọn của bản đã cài: bản chưa từng bật quét vẫn tắt, bật bằng `dxos av on`.
 Chữ ký virus tải về lần đầu mất vài phút và được giữ trong volume `clamav_data`.
 Image chính thức tự cập nhật chữ ký một lần mỗi ngày từ mạng phân phối của ClamAV; không dùng `curl` hay script riêng để tải chúng, vì ClamAV có thể giới hạn hoặc chặn cách tải đó.
 Mã 429 trong log của `clamav` là bị giới hạn tốc độ (hay gặp ở IP máy chủ đám mây dùng chung), và chữ ký cũ vẫn dùng được cho đến lần cập nhật sau.
 ClamAV chặn tải chữ ký với phiên bản đã hết hỗ trợ, nên nâng image `clamav/clamav` trong `deploy/docker-compose.yml` khi bản đang ghim tới hạn (chính sách ở https://docs.clamav.net/faq/faq-eol.html).
 Mỗi lần clamd nạp lại chữ ký (hằng ngày và sau khi khởi động) nó không quét được khoảng 10 giây, và người dùng gặp 503 trong lúc đó; chờ rồi tải lại.
-Thử bằng tệp EICAR (chuỗi kiểm thử chuẩn của ngành diệt virus): tệp chỉ gồm đúng chuỗi đó, đổi tên `.pdf` rồi đính vào một yêu cầu; `deploy/dev/check_demo.py` tự làm bước này khi `STORAGE_SCAN_HOST` có giá trị.
+Thử bằng tệp EICAR (chuỗi kiểm thử chuẩn của ngành diệt virus): tệp chỉ gồm đúng chuỗi đó, đổi tên `.pdf` rồi đính vào một yêu cầu; `deploy/dev/check_demo.py` tự làm bước này khi `STORAGE_SCAN_HOST` có giá trị, cùng với tệp sạch và tệp tải lên lúc ClamAV dừng, và nhóm chế độ lõi của job `API end-to-end` chạy nó trong CI.
 
 ## Dữ liệu cá nhân ra nước ngoài
 

@@ -45,7 +45,7 @@ The current version is `2.0.0`, and the changes of each version are in [`CHANGEL
 - **Archive of old records.** Records closed long ago are written to an archive store on a daily schedule, the data in use stays as it is, and the copy can be checked and queried directly with DuckDB.
 - **An inbox that updates itself.** When a record changes, the inbox, the lists and the detail page that are open refresh without reloading the page.
 - **Try it at once.** One command creates a trial account for each role and sample records in several states, so a visitor who signs in finds a system with work in it.
-- **Simple to install and run.** One command installs and one starts; backups can be checked, services restart on their own, and attachments are virus-scanned when enabled.
+- **Simple to install and run.** One command installs and one starts; backups can be checked, services restart on their own, and attachments are virus-scanned.
 - **Single sign-on.** Through Keycloak, and administrators can be required to enter a one-time code as well.
 
 Each feature and the test that proves it are matched in the [evidence matrix](https://haui-implsolution.github.io/DX-OS/docs/evidence-matrix) (Vietnamese).

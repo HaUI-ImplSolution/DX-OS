@@ -14,6 +14,8 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Lõi chạy ngầm
 
+- Quét mã độc tệp tải lên bật sẵn trong `.env` sinh từ `.env.example` (`av` trong `COMPOSE_PROFILES`, `STORAGE_SCAN_HOST=clamav`); `dxos av off` tắt và `dxos doctor` báo `WARN` khi tắt. `install.sh --upgrade` giữ quét tắt ở bản chưa từng bật.
+- Nhóm chế độ lõi của job `API end-to-end` chạy với ClamAV: `check_demo.py` kiểm tệp sạch tải lên và tải về, tệp EICAR bị từ chối 422 và không lưu, tệp bị từ chối 503 khi ClamAV dừng, rồi tải lại được khi ClamAV chạy lại. `DXOS_REQUIRE_SCAN=1` làm script hỏng khi stack không quét.
 - `dxos start --core` chỉ chạy Tầng 1 (cổng vào, Keycloak, dịch vụ lõi, PostgreSQL, kho tệp); `dxos start --full` chạy đủ, và các lệnh `stop`, `status`, `update`, `reconcile` giữ chế độ đã lưu ở `DXOS_MODE`.
 - Dịch vụ lõi không kèm Swagger UI; đặc tả OpenAPI ở `/v3/api-docs` và `/api/v1/meta/models/{model}/openapi`.
 - Keycloak Admin Console mặc định không mở ra gateway; đặt `KEYCLOAK_ADMIN_CONSOLE=true` trong `deploy/.env` để mở.

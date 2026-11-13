@@ -57,6 +57,6 @@ Vai `ADMIN` của nền tảng không cấp ở tab này mà cấp ở Keycloak 
 - **Sao lưu:** `dxos backup` chụp bản mã hóa của cơ sở dữ liệu và tệp; cất mật khẩu sao lưu ở nơi khác máy chủ.
 - **Lịch sử chống sửa:** `dxos history verify` kiểm chuỗi lịch sử của hồ sơ chưa bị sửa.
 - **Lưu trữ dài hạn:** `dxos archive` ghi hồ sơ đã đóng ra tệp để lưu và kiểm lại.
-- **Quét mã độc tệp tải lên:** `dxos av on` để bật.
+- **Quét mã độc tệp tải lên:** bật sẵn; `dxos av off` để tắt, `dxos av` để xem trạng thái.
 - **Cập nhật:** `dxos update` cài bản mới, giữ cấu hình và dữ liệu.
 - **Kéo từ git:** `dxos gitops` kéo hạ tầng từ một kho DX-OS và các tệp mô hình từ một kho của bạn, rồi báo lệch, chờ bạn duyệt hoặc tự áp dụng; cách cấu hình ở mục Kéo từ git của `deploy/OPERATIONS.md`.

@@ -7,7 +7,7 @@ Khung kiểm gốc là tám mục "Thế nào là đạt" ở [`docs/dynamic-cor
 ## Chuẩn bị trước ngày trình diễn
 
 1. Cài bản `2.0.0` trên máy chủ công khai bằng `dxos-install.sh`, rồi `dxos start` kèm tệp `onestop.yaml` ở [`backend/dx-engine/src/main/resources/templates/`](../backend/dx-engine/src/main/resources/templates/onestop.yaml).
-2. `dxos av on` để quét mã độc của tệp tải lên, và `dxos doctor` phải không báo lỗi.
+2. `dxos doctor` phải không báo lỗi, kể cả dòng quét mã độc của tệp tải lên.
 3. `dxos demo` để có bốn tài khoản thử và khoảng 40 hồ sơ mẫu; mật khẩu in ra một lần, ghi lại ngay.
    Chạy lệnh này sớm: hạn xử lý của một cửa sinh viên là 72 giờ và không thể làm trễ qua API, nên hồ sơ quá hạn chỉ xuất hiện khi các hồ sơ đã nộp đủ ba ngày.
 4. Đặt mật khẩu cho tài khoản quản trị bằng `dxos admin` (tài khoản `admin`, bắt buộc đổi mật khẩu ở lần đầu).

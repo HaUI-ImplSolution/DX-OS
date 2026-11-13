@@ -8,7 +8,8 @@ Mã nguồn do nhóm tự viết được cấp phép theo Apache License 2.0 (x
 
 Sản phẩm này sử dụng phần mềm của bên thứ ba, giữ nguyên giấy phép gốc:
 
-- Spring Boot, Flowable, Keycloak, Apache APISIX, SeaweedFS, Flyway, pgschema (Apache-2.0).
+- Spring Boot, Flowable, Keycloak, Apache APISIX, SeaweedFS, Flyway, pgschema, Apache PDFBox (Apache-2.0).
+- Noto Sans, phông nhúng trong PDF của mẫu in (SIL Open Font License 1.1).
 - PostgreSQL (PostgreSQL License).
 - React, react-admin, Material UI (MIT).
 - caniuse-lite, dữ liệu của Can I Use (CC-BY-4.0), chỉ dùng lúc dựng trang tài liệu.

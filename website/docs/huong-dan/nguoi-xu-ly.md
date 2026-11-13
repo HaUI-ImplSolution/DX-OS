@@ -23,6 +23,11 @@ Mỗi nghiệp vụ chọn một họ quy trình để bắt đầu:
 Từ chối và yêu cầu bổ sung bắt buộc có lý do; người nộp đọc lý do đó ở lịch sử.
 Nghiệp vụ có thể thêm hoặc đổi hành động, và có hành động chỉ hiện khi hồ sơ đạt điều kiện, ví dụ số tiền vượt mức thì phải chuyển lên cấp duyệt cao hơn.
 
+## In giấy tờ
+
+Nếu nghiệp vụ có mẫu in, trang chi tiết hồ sơ hiện nút **In** ở những trạng thái mẫu cho phép; ví dụ giấy xác nhận chỉ in được khi hồ sơ đã duyệt.
+Bấm nút để tải tệp PDF của hồ sơ.
+
 ## Nhận và giao việc
 
 Hồ sơ chưa giao thì cả vai xử lý đều làm được.

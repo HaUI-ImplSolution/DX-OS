@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.model;
 
+import HaUI.ImplSolution.dxos.model.Model.Document;
 import HaUI.ImplSolution.dxos.model.Model.Entity;
 import HaUI.ImplSolution.dxos.model.Model.Field;
 import HaUI.ImplSolution.dxos.model.Model.Process;
@@ -65,6 +66,10 @@ public final class ModelParser {
           "decided_at",
           "handle_by",
           "overdue");
+
+  // The columns a record of an entity with a process has besides its fields.
+  private static final List<String> PROCESS_COLUMNS =
+      List.of("id", "status", "created_at", "updated_at", "decided_at");
 
   private final List<Problem> problems = new ArrayList<>();
 
@@ -321,7 +326,8 @@ public final class ModelParser {
       return null;
     }
     Map<String, Node> keys =
-        mapping(map, Set.of("label", "fields", "access", "process", "owner_via", "ui"));
+        mapping(
+            map, Set.of("label", "fields", "access", "process", "owner_via", "ui", "documents"));
 
     Map<String, Field> fields = readFields(map, keys.get("fields"), entityNames);
     Map<String, Scope> access = readAccess(map, keys.get("access"), roleNames);
@@ -349,9 +355,206 @@ public final class ModelParser {
       }
     }
     Ui ui = readUi(keys.get("ui"), fields, process != null);
+    List<Document> documents = readDocuments(keys.get("documents"), fields, process);
     Node label = keys.get("label");
     return new Entity(
-        name, label == null ? name : scalar(label), fields, access, process, ownerVia, ui);
+        name,
+        label == null ? name : scalar(label),
+        fields,
+        access,
+        process,
+        ownerVia,
+        ui,
+        documents);
+  }
+
+  // The print templates of an entity. A placeholder names a field of the entity or one of the
+  // columns every record has, so a template never reaches data outside the record.
+  private List<Document> readDocuments(Node node, Map<String, Field> fields, Process process) {
+    if (node == null) {
+      return List.of();
+    }
+    if (!(node instanceof MappingNode map)) {
+      problem(node, "documents is a mapping of document names to templates");
+      return List.of();
+    }
+    Set<String> known = new LinkedHashSet<>(fields.keySet());
+    known.addAll(process == null ? List.of("id", "created_at", "updated_at") : PROCESS_COLUMNS);
+    if (map.getValue().size() > Document.MAX_PER_ENTITY) {
+      problem(node, "an entity has at most " + Document.MAX_PER_ENTITY + " documents");
+    }
+    List<Document> documents = new ArrayList<>();
+    Set<String> names = new LinkedHashSet<>();
+    for (NodeTuple tuple : map.getValue()) {
+      String name = scalar(tuple.getKeyNode());
+      if (!NAME.matcher(name).matches()) {
+        problem(
+            tuple.getKeyNode(),
+            "document name must match [a-z][a-z0-9_]* and be at most 40 characters");
+      } else if (!names.add(name)) {
+        problem(tuple.getKeyNode(), "document " + name + " is declared twice");
+      } else {
+        Document document = readDocument(name, tuple.getValueNode(), known, process);
+        if (document != null) {
+          documents.add(document);
+        }
+      }
+    }
+    return documents;
+  }
+
+  private Document readDocument(String name, Node node, Set<String> known, Process process) {
+    if (!(node instanceof MappingNode map)) {
+      problem(node, "a document is a mapping with label, file, when, title and body");
+      return null;
+    }
+    Map<String, Node> keys = mapping(map, Set.of("label", "file", "when", "title", "body"));
+    String label = readDocumentText(keys.get("label"), name, known);
+    if (Document.PLACEHOLDER.matcher(label).find()) {
+      problem(keys.get("label"), "label holds no placeholders");
+    }
+    String file = readDocumentText(keys.get("file"), name, known);
+    if (!Document.PLACEHOLDER.matcher(file).replaceAll("").matches("[A-Za-z0-9._-]*")) {
+      problem(
+          keys.get("file"),
+          "file may hold letters, digits, dot, dash, underscore and placeholders only");
+    }
+    if (file.length() > Document.MAX_FILE) {
+      problem(keys.get("file"), "file is at most " + Document.MAX_FILE + " characters");
+    }
+    List<String> when = List.of();
+    Node whenNode = keys.get("when");
+    if (whenNode != null) {
+      if (process == null) {
+        problem(whenNode, "when names states, and this entity has no process");
+      } else {
+        when = readNames(whenNode, "when");
+        List<String> states =
+            process.definition().states().stream().map(ProcessFamily.State::name).toList();
+        for (String state : when) {
+          if (!states.contains(state)) {
+            problem(
+                whenNode,
+                "when names the state "
+                    + state
+                    + " that the process does not have, use "
+                    + String.join(", ", states));
+          }
+        }
+      }
+    }
+    String title =
+        keys.get("title") == null ? null : readDocumentText(keys.get("title"), null, known);
+    List<Document.Block> body = readBlocks(keys.get("body"), known);
+    if (keys.get("body") == null) {
+      problem(node, "document " + name + " needs a body");
+    }
+    return new Document(
+        name, label.isEmpty() ? name : label, file.isEmpty() ? name : file, when, title, body);
+  }
+
+  private List<Document.Block> readBlocks(Node node, Set<String> known) {
+    if (node == null) {
+      return List.of();
+    }
+    if (!(node instanceof SequenceNode sequence) || sequence.getValue().isEmpty()) {
+      problem(node, "body is a list of blocks: heading, text, fields or signatures");
+      return List.of();
+    }
+    if (sequence.getValue().size() > Document.MAX_BLOCKS) {
+      problem(node, "body has at most " + Document.MAX_BLOCKS + " blocks");
+    }
+    List<Document.Block> blocks = new ArrayList<>();
+    for (Node item : sequence.getValue()) {
+      if (!(item instanceof MappingNode block) || block.getValue().size() != 1) {
+        problem(item, "a block is a mapping with one key: heading, text, fields or signatures");
+        continue;
+      }
+      NodeTuple tuple = block.getValue().get(0);
+      Node value = tuple.getValueNode();
+      switch (scalar(tuple.getKeyNode())) {
+        case "heading" -> blocks.add(new Document.Heading(readDocumentText(value, null, known)));
+        case "text" -> blocks.add(new Document.Text(readDocumentText(value, null, known)));
+        case "fields" -> {
+          List<String> names = readDocumentNames(value, known, "fields", Integer.MAX_VALUE);
+          if (!names.isEmpty()) {
+            blocks.add(new Document.Fields(names));
+          }
+        }
+        case "signatures" -> {
+          List<String> captions = new ArrayList<>();
+          if (value instanceof SequenceNode list
+              && !list.getValue().isEmpty()
+              && list.getValue().size() <= Document.MAX_SIGNATURES) {
+            list.getValue()
+                .forEach(caption -> captions.add(readDocumentText(caption, null, known)));
+            blocks.add(new Document.Signatures(captions));
+          } else {
+            problem(value, "signatures is a list of 1 to " + Document.MAX_SIGNATURES + " captions");
+          }
+        }
+        default ->
+            problem(
+                tuple.getKeyNode(),
+                "unknown block "
+                    + scalar(tuple.getKeyNode())
+                    + ", use heading, text, fields or signatures");
+      }
+    }
+    return blocks;
+  }
+
+  private List<String> readDocumentNames(Node node, Set<String> known, String key, int max) {
+    if (!(node instanceof SequenceNode list)
+        || list.getValue().isEmpty()
+        || list.getValue().size() > max) {
+      problem(node, key + " is a list of field names");
+      return List.of();
+    }
+    List<String> names = new ArrayList<>();
+    for (Node item : list.getValue()) {
+      String field = scalar(item);
+      if (!known.contains(field)) {
+        problem(item, key + " names " + field + ", which is not a field of this entity");
+      } else if (!names.contains(field)) {
+        names.add(field);
+      }
+    }
+    return names;
+  }
+
+  // A text of a template: a scalar without control characters other than line breaks whose
+  // placeholders name known fields.
+  private String readDocumentText(Node node, String fallback, Set<String> known) {
+    if (node == null) {
+      return fallback == null ? "" : fallback;
+    }
+    if (!(node instanceof ScalarNode scalar)) {
+      problem(node, "this is a text");
+      return fallback == null ? "" : fallback;
+    }
+    String text = scalar.getValue();
+    if (text.length() > Document.MAX_TEXT) {
+      problem(node, "a text is at most " + Document.MAX_TEXT + " characters");
+    }
+    if (text.chars().anyMatch(c -> Character.isISOControl(c) && c != '\n')) {
+      problem(node, "a text holds no control characters other than line breaks");
+    }
+    var placeholder = Document.PLACEHOLDER.matcher(text);
+    while (placeholder.find()) {
+      if (!known.contains(placeholder.group(1))) {
+        problem(
+            node,
+            "placeholder {{"
+                + placeholder.group(1)
+                + "}} is not a field of this entity or one of its columns");
+      }
+    }
+    String rest = Document.PLACEHOLDER.matcher(text).replaceAll("");
+    if (rest.contains("{{") || rest.contains("}}")) {
+      problem(node, "a placeholder is written {{field_name}}");
+    }
+    return text;
   }
 
   private Map<String, Field> readFields(Node parent, Node node, Set<String> entityNames) {

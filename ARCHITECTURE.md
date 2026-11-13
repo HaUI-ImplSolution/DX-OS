@@ -82,7 +82,7 @@ Mô hình đi qua một đường duy nhất, từ hệ thống rỗng hay từ 
 - Thay đổi theo ba mức, do `ModelDiff` so sánh hai phiên bản mô hình: `SAFE`, `MIGRATION`, `LOSS`; đổi kiểu trường và đổi họ mẫu quy trình bị từ chối.
 - Dòng đang vi phạm quy tắc mới, kèm một phần id.
   Siết hoặc thêm `min`, `max`, `pattern` hay danh sách lựa chọn của trường `multiple` trên bảng có dòng vi phạm là `MIGRATION` kèm số dòng (quy tắc `MIN`, `MAX`, `PATTERN`, `ELEMENTS`) và bị từ chối cho đến khi dữ liệu được sửa; nới hoặc bỏ là `SAFE`.
-- Đổi `required_when` hay khối `ui:` là thay đổi `SAFE`, không đụng dữ liệu; `ui:` không thuộc luật quy trình nên không bị chặn khi còn hồ sơ đang xử lý.
+- Đổi `required_when`, khối `ui:` hay khối `documents:` là thay đổi `SAFE`, không đụng dữ liệu; `ui:` và `documents:` không thuộc luật quy trình nên không bị chặn khi còn hồ sơ đang xử lý.
 - Số hồ sơ đang xử lý của các quy trình bị ảnh hưởng.
 - Các câu lệnh sẽ chạy, do pgschema lập từ trạng thái đích mà `DdlGenerator` sinh ra.
 
@@ -202,6 +202,12 @@ Trạng thái của hồ sơ chỉ đổi qua quy trình.
 - Trường kiểu `file` gắn tệp qua `AttachmentService`: byte ở SeaweedFS, siêu dữ liệu ở `engine.attachment`, quét ClamAV, quyền theo quyền của bản ghi.
 - `AttachmentProcessor` chỉ nhận các phần mở rộng đã cấu hình, `AttachmentService` giữ mỗi hồ sơ tối đa số tệp đã cấu hình, và link tải luôn ở dạng đính kèm.
 - `AttachmentCleaner` xóa đối tượng khỏi kho khi tệp hoặc hồ sơ bị gỡ, qua thông điệp `file.delete` trong outbox sau một khoảng trễ, để bản sao lưu luôn có đủ tệp của mọi dòng trong bản dump.
+
+## 8b. Mẫu in
+
+- Khối `documents` của thực thể là các mẫu in có cấu trúc, đọc và kiểm bởi `ModelParser` (chỗ trống chỉ gồm trường của thực thể và các cột của hồ sơ, trạng thái `when` phải có trong quy trình).
+- `DocumentService` đọc hồ sơ bằng `DataService.get`, nên người không đọc được hồ sơ cũng không in được; nó kiểm trạng thái, điền chỗ trống, ghi `audit_log` rồi trả PDF.
+- `DocumentRenderer` và `PdfPages` dàn trang bằng Apache PDFBox với phông Noto Sans nhúng; mẫu không có điều kiện, vòng lặp hay biểu thức, nên không có gì để chạy.
 
 ## 9. Quản trị người dùng và nhật ký
 

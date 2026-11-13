@@ -53,7 +53,6 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 | Webhook dạng `chat` | README và `deploy/INTEGRATIONS.md` nêu Mattermost nhận `{"text": ...}` nhưng chưa có lần thử nào với Mattermost thật, và bản cài không kèm Mattermost; thử một lần với một Mattermost dựng riêng rồi ghi kết quả vào `INTEGRATIONS.md` |
 | Số đo theo định dạng Prometheus | Giám sát mới là màn hình riêng: chưa có endpoint số đo cho Prometheus và Grafana (hồ sơ theo trạng thái và quá hạn, độ trễ hàng đợi sự kiện, số lần áp dụng); đề xuất chờ chốt, lý do và rủi ro ở `DANH_GIA.md` mục 7.1 |
 | Mã hồ sơ đọc được | Hồ sơ chỉ có id là số tăng dần: chưa có kiểu trường sinh mã theo khuôn khai báo (tiền tố, năm, số thứ tự) để đọc, in và tra; đề xuất chờ chốt, lý do và rủi ro ở `DANH_GIA.md` mục 7.2 |
-| Mẫu in khai báo | Chưa có khóa `documents:` để trộn một hồ sơ vào mẫu và trả PDF theo quyền đọc của hồ sơ; đề xuất chờ chốt, lý do và rủi ro ở `DANH_GIA.md` mục 7.2 |
 
 ## 4. Giới hạn chấp nhận
 

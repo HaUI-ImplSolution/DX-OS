@@ -76,6 +76,8 @@ export interface EntityMeta {
   // Names of the process actions the roles of the user may take.
   handlerActions?: string[];
   ui?: EntityUi | null;
+  // The print templates of the entity; when lists the states a template is limited to.
+  documents?: { name: string; label: string; when: string[] }[];
 }
 
 export interface UnitMeta {
@@ -105,6 +107,13 @@ export interface RecordEvent {
   to_status: string | null;
   note: string | null;
   detail: string | null;
+}
+
+export interface PrintableDocument {
+  name: string;
+  label: string;
+  file: string;
+  available: boolean;
 }
 
 export interface AttachmentItem {

@@ -24,6 +24,12 @@ Mở hồ sơ rồi thêm tệp vào phần tệp đính kèm.
 Một số loại tệp bị từ chối, ví dụ tệp HTML.
 Chỉ người đã thêm một tệp mới gỡ được tệp đó.
 
+## In giấy tờ
+
+Nghiệp vụ có thể khai báo mẫu in, ví dụ giấy xác nhận.
+Khi hồ sơ ở trạng thái mẫu cho phép, trang chi tiết hiện nút **In** (hoặc **In: tên mẫu** khi chỉ có một mẫu) và bấm vào là tải tệp PDF của hồ sơ.
+Chỉ người xem được hồ sơ mới in được.
+
 ## Theo dõi hồ sơ
 
 - Trạng thái của hồ sơ hiện ở danh sách và ở đầu trang chi tiết.

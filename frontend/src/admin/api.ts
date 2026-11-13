@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
-import { json, request } from "../shell/api";
-import type { AttachmentItem, EntityMeta, InboxItem, ModelMeta, Page, Person, RecordEvent } from "./types";
+import { json, request, requestFile } from "../shell/api";
+import type { AttachmentItem, EntityMeta, InboxItem, ModelMeta, Page, Person, PrintableDocument, RecordEvent } from "./types";
 
 export const listModels = () => request<ModelMeta[]>("/meta/models");
 
@@ -47,6 +47,12 @@ export const uploadFile = (model: string, entity: string, id: number | string, f
     body: form,
   });
 };
+
+export const listDocuments = (model: string, entity: string, id: number | string) =>
+  request<PrintableDocument[]>(`${recordPath(model, entity, id)}/documents`);
+
+export const printDocument = (model: string, entity: string, id: number | string, name: string) =>
+  requestFile(`${recordPath(model, entity, id)}/documents/${encodeURIComponent(name)}`);
 
 export const fileLink = (model: string, entity: string, id: number | string, fileId: number) =>
   request<{ name: string; url: string }>(`${recordPath(model, entity, id)}/files/${fileId}/link`);

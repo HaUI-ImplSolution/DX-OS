@@ -229,6 +229,51 @@ Nhóm Keycloak phải có sẵn; thiếu thì thông điệp xem được ở ta
 Trường người dùng hoặc nhóm để trống thì thao tác bị bỏ qua và hồ sơ có thêm dòng lịch sử `completion_skipped` kèm lý do.
 Ví dụ ở [`itaccess.yaml`](../backend/dx-engine/src/main/resources/templates/itaccess.yaml).
 
+## Tài liệu in
+
+Khóa `documents` của một thực thể khai báo các mẫu in; mỗi mẫu biến một hồ sơ thành một tệp PDF.
+Một mẫu có tên (`[a-z][a-z0-9_]*`), và các khóa `label`, `file`, `when`, `title` và `body`.
+
+```yaml
+documents:
+  confirmation:
+    label: Giấy xác nhận
+    file: giay-xac-nhan-{{id}}
+    when: approved
+    title: GIẤY XÁC NHẬN
+    body:
+      - heading: Thông tin chung
+      - text: "Xác nhận {{full_name}} đã nộp hồ sơ số {{id}}."
+      - fields: [full_name, created_at]
+      - signatures: [Người nộp, Cán bộ phụ trách]
+```
+
+- `label` là tên mẫu ở màn hình hồ sơ; không có chỗ trống.
+- `file` là tên tệp tải về không kèm `.pdf`; chữ có dấu thành chữ không dấu, và ký tự ngoài chữ, số, `.`, `-`, `_` thành `_`.
+- `when` là một trạng thái hoặc danh sách trạng thái của quy trình mà hồ sơ phải ở trong đó mới in được; bỏ đi thì in ở mọi trạng thái, và thực thể không có quy trình thì không dùng `when`.
+- `title` in ở giữa đầu trang đầu.
+- `body` là danh sách các khối, mỗi khối có đúng một khóa:
+  - `heading`: dòng tiêu đề đậm.
+  - `text`: văn bản; mỗi dòng xuống dòng là một dòng của trang và dòng trống là một khoảng cách.
+  - `fields`: bảng nhãn và giá trị cho từng trường được kể tên; giá trị rỗng in `—`.
+  - `signatures`: từ một đến bốn tiêu đề ký, đặt cạnh nhau trên một khoảng trống để ký.
+
+Chỗ trống `{{tên}}` trong `file`, `title`, `heading`, `text` và `signatures` được thay bằng giá trị của hồ sơ.
+Tên là một trường của thực thể, hoặc một cột mọi hồ sơ có: `id`, `created_at`, `updated_at`, và với thực thể có quy trình thêm `status` và `decided_at`.
+Mẫu không có điều kiện, vòng lặp hay biểu thức, và không đọc dữ liệu ngoài hồ sơ đang in.
+
+Giá trị in như sau: ngày `dd/MM/yyyy`, thời điểm `dd/MM/yyyy HH:mm` theo múi giờ của máy chủ, có hoặc không thành `Có` hoặc `Không`, trạng thái bằng nhãn của nó, đơn vị bằng nhãn đơn vị, trường nhiều lựa chọn cách nhau bằng dấu phẩy.
+Trường tham chiếu và trường người dùng in giá trị lưu của chúng.
+Nhãn của cột `id`, `status`, `created_at`, `updated_at` và `decided_at` trong bảng là `Mã`, `Trạng thái`, `Ngày tạo`, `Cập nhật lần cuối` và `Ngày quyết định`.
+
+Mỗi thực thể có tối đa 10 mẫu, mỗi mẫu tối đa 60 khối, mỗi văn bản tối đa 2000 ký tự và mỗi tài liệu tối đa 50 trang.
+`plan` và `apply` từ chối mẫu có chỗ trống không phải trường, trạng thái không có trong quy trình, khối lạ hay quá giới hạn, kèm dòng và cột.
+Một mẫu đổi là thay đổi mức `SAFE` (`CHANGE_DOCUMENTS`).
+
+`GET /api/v1/data/{model}/{entity}/{id}/documents` liệt kê các mẫu của hồ sơ, tên tệp và việc hồ sơ in được ở trạng thái hiện tại hay không.
+`GET /api/v1/data/{model}/{entity}/{id}/documents/{tên}` trả tệp PDF dạng đính kèm.
+Cả hai chỉ cho người đọc được hồ sơ, như màn hình hồ sơ; mẫu ngoài trạng thái cho phép trả 409 với lý do `DOCUMENT_NOT_AVAILABLE`, và mỗi lần in được ghi vào `audit_log` (`DOCUMENT_PRINTED`).
+
 ## Tệp đính kèm
 
 Trường `type: file`; tải lên bằng `POST /api/v1/data/{model}/{entity}/{id}/files`, quyền theo quyền của bản ghi.

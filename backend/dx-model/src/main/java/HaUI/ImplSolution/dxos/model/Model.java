@@ -5,6 +5,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 // A parsed and validated model file.
 // webhook names the target the history of the records goes to, or is null for the default target.
@@ -21,7 +22,8 @@ public record Model(
   // An organisational unit; its members are the Keycloak group of the same name.
   public record Unit(String name, String label) {}
 
-  // ui is how the entity looks on screen, or null when the model file has no ui block.
+  // ui is how the entity looks on screen, or null when the model file has no ui block. documents
+  // are the print templates of the entity, empty when the model file declares none.
   public record Entity(
       String name,
       String label,
@@ -29,9 +31,14 @@ public record Model(
       Map<String, Scope> access,
       Process process,
       String ownerVia,
-      Ui ui) {
+      Ui ui,
+      List<Document> documents) {
 
-    // An entity without a ui block.
+    public Entity {
+      documents = documents == null ? List.of() : List.copyOf(documents);
+    }
+
+    // An entity without a ui block and without documents.
     public Entity(
         String name,
         String label,
@@ -39,7 +46,7 @@ public record Model(
         Map<String, Scope> access,
         Process process,
         String ownerVia) {
-      this(name, label, fields, access, process, ownerVia, null);
+      this(name, label, fields, access, process, ownerVia, null, List.of());
     }
 
     public Optional<Field> field(String fieldName) {
@@ -49,6 +56,47 @@ public record Model(
     // The field that names the unit a record belongs to.
     public Optional<Field> unitField() {
       return fields.values().stream().filter(f -> f.type() == FieldType.UNIT).findFirst();
+    }
+  }
+
+  // A print template: the PDF a record becomes. when lists the states in which the record can be
+  // printed, any state when empty. file is the name of the download without .pdf, and file, title
+  // and the texts hold placeholders written {{field}}, filled from the record.
+  public record Document(
+      String name, String label, String file, List<String> when, String title, List<Block> body) {
+
+    public static final int MAX_PER_ENTITY = 10;
+    public static final int MAX_BLOCKS = 60;
+    public static final int MAX_TEXT = 2000;
+    public static final int MAX_FILE = 80;
+    public static final int MAX_SIGNATURES = 4;
+    public static final Pattern PLACEHOLDER = Pattern.compile("\\{\\{([a-z][a-z0-9_]*)}}");
+
+    public Document {
+      when = List.copyOf(when);
+      body = List.copyOf(body);
+    }
+
+    // One part of the page, written as a mapping with one key: heading, text, fields or signatures.
+    public sealed interface Block permits Heading, Text, Fields, Signatures {}
+
+    public record Heading(String text) implements Block {}
+
+    // Paragraphs separated by a blank line.
+    public record Text(String text) implements Block {}
+
+    // A table of label and value for each named field.
+    public record Fields(List<String> fields) implements Block {
+      public Fields {
+        fields = List.copyOf(fields);
+      }
+    }
+
+    // Captions of the people who sign, side by side, each over a blank space.
+    public record Signatures(List<String> captions) implements Block {
+      public Signatures {
+        captions = List.copyOf(captions);
+      }
     }
   }
 

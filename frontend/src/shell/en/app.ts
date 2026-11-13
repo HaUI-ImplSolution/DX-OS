@@ -133,6 +133,9 @@ export const app: Record<string, string> = {
   "Chưa có đơn vị": "No unit",
   // Record screens
   "Sửa": "Edit",
+  "In": "Print",
+  "In: {name}": "Print: {name}",
+  "Không in được": "Could not print",
   "Mã": "ID",
   "Tạo {when}": "Created {when}",
   "Thông tin": "Details",

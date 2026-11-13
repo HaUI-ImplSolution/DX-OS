@@ -24,6 +24,7 @@ Script `deploy/dev/check_docs.py` kiểm mọi đường dẫn nêu ở đây c�
 | `POST .../{id}/assign`, `GET .../{id}/handlers` | Giao việc và danh sách người giao được |
 | `GET .../{id}/events` | Dòng lịch sử của bản ghi; `detail` của dòng `updated` là JSON `{"trường": ["cũ", "mới"]}` với giá trị dạng chuỗi hoặc `null`, cắt ở 200 ký tự |
 | `.../{id}/files` | Tải lên, liệt kê, lấy link tải có hạn (`/{fileId}/link`) và gỡ tệp đính kèm |
+| `GET .../{id}/documents`, `GET .../{id}/documents/{tên}` | Các mẫu in của hồ sơ và việc in được ở trạng thái hiện tại; tệp PDF của một mẫu, cho người đọc được hồ sơ (409 `DOCUMENT_NOT_AVAILABLE` khi trạng thái không cho in) |
 | `GET /api/v1/inbox` | Hồ sơ đang chờ người gọi, trên mọi mô hình; `page`, `size` |
 | `GET /api/v1/inbox/stream` | Kênh sự kiện `text/event-stream` cho người đã đăng nhập: sau khi một dòng lịch sử hồ sơ ghi xong ở bất kỳ mô hình nào, kênh gửi khung `event: changed` với dữ liệu `{}`, không kèm nội dung và giống nhau với mọi người, để client đọc lại hộp việc; dòng chú thích `: ping` mỗi 20 giây; server đóng kênh sau 10 phút nên client nối lại với token mới; một người giữ tối đa 8 kênh và mở thêm thì kênh cũ nhất bị đóng; 503 khi server đã giữ hết số kênh phục vụ được; kênh nằm trong bộ giới hạn 300 lượt mở mỗi phút mỗi người |
 | `GET /api/v1/events` | Dòng lịch sử theo đúng dạng của webhook, từ sau một `eventId` (`after`, `size`, `model`) (ADMIN) |

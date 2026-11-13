@@ -5,6 +5,7 @@
 const sidebars = {
   docs: [
     'intro',
+    'hinh-anh',
     {
       type: 'category',
       label: 'Hướng dẫn sử dụng',

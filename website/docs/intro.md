@@ -29,6 +29,7 @@ Lõi nhận một tệp mô hình khai báo thực thể, trường, vai, quyề
 
 ## Các mục trên trang này
 
+- **Hình ảnh và video:** ảnh các màn hình của sản phẩm và hai đoạn video ngắn.
 - **Hướng dẫn sử dụng:** ba trang theo vai: người nộp hồ sơ, người xử lý hồ sơ và người triển khai.
 - **Đánh giá:** ma trận bằng chứng cho từng tính năng và bảng rà soát PoF theo đề thi.
 - **Cuộc thi:** câu hỏi hội đồng, thành phần được chọn và không chọn.

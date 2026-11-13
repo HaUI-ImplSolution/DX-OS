@@ -13,7 +13,7 @@
 
 Bài dự thi **OLP Phần mềm nguồn mở 2026**, khối thi DX-OS (VFOSSA), của đội **HaUI-ImplSolution**, Trường Công nghệ Thông tin và Truyền thông, Đại học Công nghiệp Hà Nội.
 
-**Đọc nhanh:** [Giới thiệu](#giới-thiệu) · [Tính năng](#tính-năng) · [Cách hoạt động](#cách-hoạt-động) · [Đối chiếu với đề thi](#đối-chiếu-với-đề-thi) · [Chạy thử](#chạy-thử) · [Tài liệu](#tài-liệu) · [Cấu trúc](#cấu-trúc-repository) · [Đóng góp](#đóng-góp) · [Giấy phép](#giấy-phép)
+**Đọc nhanh:** [Giới thiệu](#giới-thiệu) · [Tính năng](#tính-năng) · [Hình ảnh](#hình-ảnh) · [Cách hoạt động](#cách-hoạt-động) · [Đối chiếu với đề thi](#đối-chiếu-với-đề-thi) · [Chạy thử](#chạy-thử) · [Tài liệu](#tài-liệu) · [Cấu trúc](#cấu-trúc-repository) · [Đóng góp](#đóng-góp) · [Giấy phép](#giấy-phép)
 
 ## Giới thiệu
 
@@ -51,6 +51,36 @@ Phiên bản hiện tại là `2.0.0`, thay đổi theo từng phiên bản ở 
 - **Đăng nhập một lần.** Qua Keycloak, và có thể bắt quản trị viên nhập thêm mã một lần.
 
 Bảng đối chiếu từng tính năng với bài kiểm của nó ở [ma trận bằng chứng](https://haui-implsolution.github.io/DX-OS/docs/evidence-matrix).
+
+## Hình ảnh
+
+Các màn hình dưới đây chụp từ hệ thống đang chạy với dữ liệu mẫu, tên người và hồ sơ đều là giả.
+
+Từ một yêu cầu gửi đi đến khi hồ sơ được duyệt và in ra:
+
+![Cán bộ mở một hồ sơ trong hộp việc, duyệt và in giấy xác nhận](website/docs/images/video/request-flow.gif)
+
+Sửa tệp mô hình, xem kế hoạch thay đổi rồi áp dụng; hệ thống chuyển sang phiên bản mới mà dữ liệu cũ vẫn còn:
+
+![Sửa tệp mô hình, xem kế hoạch và áp dụng](website/docs/images/video/model-change.gif)
+
+Bảng điều khiển của người triển khai: soạn tệp mô hình, xem trước tác động và sơ đồ quy trình.
+
+![Màn hình kế hoạch trong bảng điều khiển](website/docs/images/vi/plan.png)
+
+Hộp việc của người xử lý và trang chi tiết một hồ sơ, có lịch sử từng bước.
+
+![Hộp việc](website/docs/images/vi/inbox.png)
+
+![Chi tiết hồ sơ](website/docs/images/vi/detail.png)
+
+Lịch đặt phòng và báo cáo theo trường.
+
+![Lịch đặt phòng](website/docs/images/vi/calendar.png)
+
+![Thống kê và báo cáo theo trường](website/docs/images/vi/report.png)
+
+Đủ bộ ảnh, gồm cả giao diện điện thoại, danh mục dữ liệu và màn hình giám sát, cùng hai đoạn video ở [trang tài liệu](https://haui-implsolution.github.io/DX-OS/docs/hinh-anh).
 
 ## Cách hoạt động
 
@@ -156,6 +186,7 @@ Trang tài liệu: <https://haui-implsolution.github.io/DX-OS/>.
 
 | Cần gì | Xem |
 |---|---|
+| Ảnh màn hình và video | [trang hình ảnh](https://haui-implsolution.github.io/DX-OS/docs/hinh-anh) |
 | Dùng hệ thống theo vai | [người nộp](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-nop), [người xử lý](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-xu-ly), [người triển khai](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-trien-khai) |
 | Viết tệp mô hình | [`docs/MODEL.md`](./docs/MODEL.md) |
 | Gọi API | [`docs/API.md`](./docs/API.md) và đặc tả OpenAPI (`/v3/api-docs`) của backend đang chạy |

@@ -66,6 +66,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Các mức leo thang hiện ở ghi chú dưới sơ đồ quy trình, ở dòng lịch sử của hồ sơ kèm vai được báo và lần nhắc, và ở kế hoạch khi tệp đổi các mức này; trình soạn YAML gợi ý các khóa `escalate`, `after`, `to` và `repeat`.
 - Ở màn hình điện thoại, hộp việc và danh sách hồ sơ hiện mỗi hồ sơ là một thẻ, và thanh đầu giữ chỗ cho tên trang; bài `e2e/tests/phone.spec.ts` kiểm bảng điều khiển và hộp việc không rộng hơn màn hình 390 px.
 - Trường `code` không có ô nhập ở biểu mẫu; trang hồ sơ nêu mã trên đầu kèm nút sao chép, danh sách có cột mã đầu tiên và ô tìm theo một phần của mã.
+- Ở màn hình lịch, ô lượt đặt và các nút chuyển chế độ xem bo góc vừa phải thay vì thành hình quả trứng.
 - Bộ lọc dạng khoảng ngày (`từ`, `đến`) và tìm theo một phần của mã gửi đúng `filter.<trường>.<phép>` tới API.
 
 ### Tài liệu
@@ -74,6 +75,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Bài so sánh luồng ticket cơ bản ở `examples/effort-benchmark/`: mã API/xử lý của Lab với khai báo Core, cách đếm tái lập và kết quả kiểm API/UI.
 - `docs/TARGETS.md` ghi cách đo và kết quả của các chỉ số mục tiêu: mức 1, 2 và 3 của một hệ thống, quy tắc đếm mã tự viết (`deploy/dev/count_own_code.py`), thời gian dựng và đổi, bài thử có hướng dẫn kèm một bản mô phỏng người mới, và chi phí hạ tầng của cấu hình tham chiếu.
 - Ba trang hướng dẫn sử dụng theo vai ở trang docs: người nộp hồ sơ, người xử lý hồ sơ và người triển khai.
+- Ảnh màn hình và hai video ngắn của sản phẩm (từ yêu cầu đến hồ sơ được duyệt và in; đổi mô hình và áp dụng): mục Hình ảnh trong `README.md` và `README_EN.md`, và trang Hình ảnh và video ở trang docs với đủ bộ ảnh tiếng Việt và tiếng Anh, giao diện điện thoại và giao diện tối.
 - `ROADMAP.md` nêu hướng phát triển theo nhóm, và `docs/COMPATIBILITY.md` nêu cách giữ tương thích giữa các bản cho API, tệp mô hình, webhook và cơ sở dữ liệu, kèm cách báo trước khi bỏ một phần.
 - `README.md` và `README_EN.md` có mục đối chiếu với đề thi theo bốn không gian H, P, D, I, cột Tầng trong bảng cấu trúc repository và đoạn nói DX-OS khác Supabase, Strapi, Directus ở chỗ nào.
 - `website/docs/dependencies.md` ghi giấy phép của Supabase, Directus và Strapi và lý do không dùng làm nền.

@@ -13,9 +13,10 @@ Closes #
 ## Đã kiểm tra
 
 - [ ] `./mvnw spotless:check` và `./mvnw verify` (backend)
-- [ ] `npx tsc --noEmit` (web)
+- [ ] `npx tsc --noEmit` (frontend)
 - [ ] `npm run build` trong `website/` (trang docs)
 - [ ] `python3 .github/scripts/check_licenses.py`
+- [ ] `reuse lint` (mọi file có header SPDX hoặc khai trong `REUSE.toml`)
 
 ## Danh sách kiểm
 

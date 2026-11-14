@@ -12,11 +12,7 @@ Mọi việc dưới đây giữ hướng đó: thêm nghiệp vụ là thêm t�
 ## Tiếp theo
 
 - **Chứng minh lõi phục vụ ứng dụng bên ngoài:** một ứng dụng mẫu có giao diện riêng chỉ gọi lõi qua API; một ví dụ cho thấy tệp mô hình sống trong git, chạy kế hoạch trên pull request và áp dụng khi gộp.
-- **Tài liệu sản phẩm:** cách viết tệp mô hình, API, vận hành và mở rộng ngay trên trang docs, thay cho liên kết sang GitHub.
-- **Hình ảnh sản phẩm:** ảnh bảng điều khiển, màn hình kế hoạch, hộp việc và lịch, cùng một đoạn video ngắn.
-- **Dữ liệu:** truy vấn trực tiếp trên kho lưu trữ dài hạn; phả hệ dữ liệu đến từng trường.
-- **Kiểm dịch mã độc:** kiểm tệp thử EICAR trong CI.
-- **Giao diện trên điện thoại:** kiểm và sửa cho màn hình nhỏ.
+- **Dữ liệu:** truy vấn trực tiếp trên kho lưu trữ dài hạn.
 
 ## Sau đó
 

@@ -9,21 +9,32 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Giấy phép
 
+- `DEPENDENCIES.txt` khai thêm công cụ cần có trên máy chạy (Docker Engine, Docker Compose v2, curl, jq, Git, OpenSSH, Python) và draw.io, kèm trang chủ và mã nguồn của các thành phần ngoài SBOM.
+- Mã, tài liệu, ảnh chụp màn hình, video và sơ đồ cùng theo Apache-2.0; `CODE_OF_CONDUCT.md` viết bằng lời của dự án vì Contributor Covenant theo CC BY 4.0, giấy phép không thuộc danh sách OSI; `check_licenses.py` chặn giấy phép ngoài danh sách OSI trong `REUSE.toml`.
 - Mọi tệp mã và cấu hình (CSS, HTML, `Dockerfile`, `pom.xml`, `nginx.conf`, `.env.example`, `.gitleaks.toml`) có dòng `SPDX-License-Identifier`; `REUSE.toml` và `LICENSES/` khai giấy phép và bản quyền cho tệp không chèn được chú thích, và job `Check licenses` chạy `reuse lint`.
-- Mã Java của backend định dạng bằng google-java-format (Apache-2.0) qua Spotless, chạy `./mvnw spotless:apply`; giấy phép duy nhất của kho là Apache-2.0.
+- Mã Java của backend định dạng bằng google-java-format (Apache-2.0) qua Spotless, chạy `./mvnw spotless:apply`; mã của kho theo Apache-2.0.
+- `check_upstream_licenses.py` đọc giấy phép của dự án gốc ở đúng phiên bản đang dùng của từng image và bản tải về (tag của image, hoặc `ARG` của Dockerfile), và làm job đỏ khi giấy phép khác bản đã khai, ngoài danh sách OSI, không xác định được hoặc không đọc được; mục không đọc được theo cách đó khai `refs`, `text` hoặc `unverified` trong `component-catalog.json`.
+- `check_licenses.py sbom <tệp>` kiểm giấy phép của SBOM sinh lại từ pull request ở job SBOM của Compliance và của Dependencies, nên bản mới của một thư viện được kiểm trước khi `sbom/` được sinh lại; `python3 -m unittest discover -s .github/scripts` chạy các ca kiểm của hai script.
 
 ### Lõi chạy ngầm
 
+- SpotBugs với find-sec-bugs chạy ở bước `verify` của backend và làm hỏng build khi có phát hiện mà `backend/spotbugs-exclude.xml` chưa giải thích; workflow `Backend` in số phát hiện của từng module.
+- Số đo vận hành theo định dạng Prometheus ở `GET /actuator/prometheus` của dịch vụ lõi: hồ sơ theo trạng thái và quá hạn của từng thực thể có quy trình, tuổi và số sự kiện chưa chuyển trong hàng đợi, số lần áp dụng mô hình thành công hoặc thất bại. Endpoint chỉ đọc được trong mạng Docker, đòi mật khẩu `METRICS_PASSWORD` (người dùng `metrics`), và nhãn chỉ gồm tên mô hình, thực thể, trạng thái và kết quả nên số chuỗi không tăng theo dữ liệu. Cách đọc, cấu hình scrape, truy vấn Grafana và quy tắc cảnh báo ở `docs/MONITORING.md`.
+- `dxos lint <tệp>...` kiểm tệp mô hình bằng bộ đọc của backend mà không cần hệ thống đang chạy, in `tệp:dòng:cột: nội dung` và thoát 0, 1 hoặc 2. Nó chạy `dxos-lint.jar` trong image backend, hoặc trên Java 21 qua `DXOS_LINT_JAR`; Release kèm `dxos-lint.jar`.
+- `dxos conformance <mô hình>` chạy các kiểm rào chắn của lõi trên hệ thống đang chạy và từ chối stack có `PUBLIC_HOST` khác `localhost` khi thiếu `--allow-test-users`.
+- `examples/model-repo` có workflow `model-lint.yml` kiểm tệp mô hình trên runner của GitHub bằng `dxos-lint.jar`.
+- Quét mã độc tệp tải lên bật sẵn trong `.env` sinh từ `.env.example` (`av` trong `COMPOSE_PROFILES`, `STORAGE_SCAN_HOST=clamav`); `dxos av off` tắt và `dxos doctor` báo `WARN` khi tắt. `install.sh --upgrade` giữ quét tắt ở bản chưa từng bật.
+- Nhóm chế độ lõi của job `API end-to-end` chạy với ClamAV: `check_demo.py` kiểm tệp sạch tải lên và tải về, tệp EICAR bị từ chối 422 và không lưu, tệp bị từ chối 503 khi ClamAV dừng, rồi tải lại được khi ClamAV chạy lại. `DXOS_REQUIRE_SCAN=1` làm script hỏng khi stack không quét.
 - `dxos start --core` chỉ chạy Tầng 1 (cổng vào, Keycloak, dịch vụ lõi, PostgreSQL, kho tệp); `dxos start --full` chạy đủ, và các lệnh `stop`, `status`, `update`, `reconcile` giữ chế độ đã lưu ở `DXOS_MODE`.
 - Dịch vụ lõi không kèm Swagger UI; đặc tả OpenAPI ở `/v3/api-docs` và `/api/v1/meta/models/{model}/openapi`.
 - Keycloak Admin Console mặc định không mở ra gateway; đặt `KEYCLOAK_ADMIN_CONSOLE=true` trong `deploy/.env` để mở.
-- Job `Gateway surface` của workflow `Platform` kiểm bằng `deploy/dev/check_surface.py` rằng cả hai chế độ không trả Swagger UI hay Admin Console, và nhóm kiểm API chạy thêm trên chế độ lõi.
+- Job `Gateway surface` của workflow `Platform` kiểm bằng `e2e/api/check_surface.py` rằng cả hai chế độ không trả Swagger UI hay Admin Console, và nhóm kiểm API chạy thêm trên chế độ lõi.
 - Portal bỏ thẻ Keycloak Admin và Swagger, thêm thẻ Bảng điều khiển.
 - `dxos gitops` kéo hạ tầng và tệp mô hình từ git. Nguồn hạ tầng so `deploy/`, cấu hình cổng vào và tag image của bản cài với một kho DX-OS, rồi nâng cấp bằng luồng của `dxos update`; `auto` cho hạ tầng chỉ nhận commit có chữ ký hợp lệ. Nguồn mô hình so từng tệp với mô hình đang chạy. Cả hai báo lệch, chờ `dxos gitops approve` hoặc tự áp dụng; `dxos gitops install` chạy mỗi 5 phút bằng systemd user timer và `dxos doctor` kiểm các biến `GITOPS_*`.
 - `dxos plan --check` thoát với mã 0 khi mô hình đang chạy giống tệp, 2 khi kế hoạch có thay đổi và 1 khi bị từ chối.
 - `examples/model-repo` là kho tệp mô hình mẫu, kèm workflow dán kế hoạch vào pull request.
 - Kế hoạch (`POST /api/v1/models/plan`, `dxos plan`) của một mô hình chưa chạy không để lại schema `m_<mô hình>` trong PostgreSQL; schema chỉ có khi áp dụng.
-- `deploy/dev/load_test.py` đo thông lượng, p50, p95, p99 và lỗi của API chung ở nhiều mức người dùng đồng thời, và đo đăng nhập riêng; `deploy/dev/load_override.yml` ghim mọi dịch vụ vào N nhân và đặt giới hạn bộ nhớ để một máy đóng vai máy nhỏ hơn. Kết quả theo số nhân và cấu hình nhỏ nhất đạt ngưỡng nằm ở `docs/SIZING.md`.
+- `e2e/api/load_test.py` đo thông lượng, p50, p95, p99 và lỗi của API chung ở nhiều mức người dùng đồng thời, và đo đăng nhập riêng; `e2e/api/load_override.yml` ghim mọi dịch vụ vào N nhân và đặt giới hạn bộ nhớ để một máy đóng vai máy nhỏ hơn. Kết quả theo số nhân và cấu hình nhỏ nhất đạt ngưỡng nằm ở `docs/SIZING.md`.
 - Flowable dùng id UUID sinh trong bộ nhớ, nên lấy id không cần thêm kết nối cơ sở dữ liệu và backend không còn treo khi có từ 50 người dùng đồng thời.
 - Hành động của quy trình có thêm khóa `check: <tên đích>`: dịch vụ riêng được hỏi trước khi trạng thái đổi và có thể từ chối (403, `CHECK_DENIED`). Đích có `on_error` (`deny` mặc định hoặc `allow`) cho lúc dịch vụ không trả lời (503, `CHECK_UNAVAILABLE`, hồ sơ giữ nguyên) và `bypass` cho vận hành. Lịch sử ghi `check_denied`, `check_unavailable`, `check_skipped`.
 
@@ -36,6 +47,8 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Tệp mô hình
 
+- Kiểu trường `code` sinh mã hồ sơ đọc được theo khuôn `format`, ví dụ `HS-{year}-{seq:5}`: chữ cố định, năm tạo và số thứ tự có độ dài cố định, đếm riêng theo mô hình, thực thể và trường, và đếm lại mỗi năm khi khuôn có `{year}`. Mã gán một lần lúc tạo hồ sơ, không ghi hay sửa được, tra bằng `filter.<trường>`; thêm trường vào thực thể đã có hồ sơ là thay đổi `MIGRATION` và điền mã cho hồ sơ cũ.
+- Thực thể khai báo mẫu in bằng khóa `documents`: tiêu đề, đoạn văn, bảng trường và khối chữ ký với chỗ trống `{{trường}}`, kèm tên tệp và trạng thái cho in. `GET /api/v1/data/{model}/{entity}/{id}/documents` liệt kê mẫu và `.../documents/{tên}` trả PDF tiếng Việt cho người đọc được hồ sơ; mỗi lần in vào `audit_log`, và màn hình hồ sơ có nút In.
 - Format hiện hành là `1`; lõi tự nâng format `0` trong bộ nhớ, API `/models/upgrade` và `dxos model upgrade` cho xem diff trước khi tùy chọn ghi nguyên tử, còn format tương lai hoặc thiếu bước migration bị từ chối.
 - Lần áp dụng đầu của tệp đã nâng format tạo thêm một phiên bản không đổi bảng hay quyền nào, và `dxos plan --check` trả 2 cho đến lúc đó.
 - Mẫu trống và đặc tả cho trình soạn YAML của bảng điều khiển (`model-v1.schema.json`) dùng format `1`; tệp format `0` dán vào vẫn lập được kế hoạch, chỉ bị trình soạn gạch chân dòng `format`.
@@ -47,24 +60,35 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 ### Dữ liệu
 
 - `GET /api/v1/data/{model}/{entity}/quality` đo chất lượng các dòng người gọi được xem (ADMIN đo mọi dòng của thực thể và chỉ nhận số đếm): độ điền của từng trường, số bản ghi thiếu trường bắt buộc có điều kiện, số giá trị vi phạm lựa chọn, `min`, `max` hay `pattern`, và độ mới theo `staleDays`; mỗi thực thể trong tab Danh mục dữ liệu có mục Chất lượng dữ liệu kèm thời điểm đo và số bản ghi được xét, và ô chọn số ngày cho độ mới.
+- `GET /api/v1/models/{model}/data-lineage` nêu cho từng trường của mô hình đang chạy nơi giá trị đi vào, các quy tắc đọc nó và nơi nó đi ra (ADMIN); tab Danh mục dữ liệu hiện phả hệ này ở mục Nguồn gốc của từng trường.
+- `GET /api/v1/data/{model}/{entity}/report` nhóm các dòng người gọi được xem theo một trường lựa chọn, đơn vị, đúng/sai, trạng thái hoặc tháng của một ngày và tính đếm, tổng, trung bình, nhỏ nhất, lớn nhất trên trường số, với cùng bộ lọc và quyền theo dòng như `stats`; trường hoặc phép tính mô hình không cho phép là 400 và số nhóm bị giới hạn. Trang Thống kê có mục Báo cáo theo trường.
 
 ### Giao diện
 
 - Lưu biểu mẫu bỏ trường tệp khỏi dữ liệu tạo/sửa hồ sơ, giữ tệp đính kèm hiện có khi sửa thông tin khác.
 - Trình sửa mô hình chọn `default` của trường nhiều lựa chọn từ danh sách `options`, và trình soạn YAML không còn cảnh báo khi `default` là danh sách.
 - Các mức leo thang hiện ở ghi chú dưới sơ đồ quy trình, ở dòng lịch sử của hồ sơ kèm vai được báo và lần nhắc, và ở kế hoạch khi tệp đổi các mức này; trình soạn YAML gợi ý các khóa `escalate`, `after`, `to` và `repeat`.
+- Ở màn hình điện thoại, hộp việc và danh sách hồ sơ hiện mỗi hồ sơ là một thẻ, và thanh đầu giữ chỗ cho tên trang; bài `e2e/tests/phone.spec.ts` kiểm bảng điều khiển và hộp việc không rộng hơn màn hình 390 px.
+- Trường `code` không có ô nhập ở biểu mẫu; trang hồ sơ nêu mã trên đầu kèm nút sao chép, danh sách có cột mã đầu tiên và ô tìm theo một phần của mã.
+- Ở màn hình lịch, ô lượt đặt và các nút chuyển chế độ xem bo góc vừa phải thay vì thành hình quả trứng.
+- Bộ lọc dạng khoảng ngày (`từ`, `đến`) và tìm theo một phần của mã gửi đúng `filter.<trường>.<phép>` tới API.
 
 ### Tài liệu
 
-- `docs/TARGETS.md` ghi cách đo và kết quả của các chỉ số mục tiêu: mức 1, 2 và 3 của một hệ thống, quy tắc đếm mã tự viết (`deploy/dev/count_own_code.py`), thời gian dựng và đổi, bài thử có hướng dẫn kèm một bản mô phỏng người mới, và chi phí hạ tầng của cấu hình tham chiếu.
+- `CONTRIBUTING.md` ghi rõ tính năng mới đi kèm kiểm tự động (test backend hoặc mục kiểm trong `e2e/api/check_*.py`) và issue, pull request viết được bằng tiếng Việt hoặc tiếng Anh; README có huy hiệu OpenSSF Best Practices mức passing.
+- `docs/INTEGRATIONS.md` ghi cấu hình và kết quả kiểm webhook `chat` với Mattermost Team Edition 11.7.15: thông báo, hiển thị tiếng Việt, gửi lại khi lỗi và khả năng trùng tin.
+- Bài so sánh luồng ticket cơ bản ở `examples/effort-benchmark/`: mã API/xử lý của Lab với khai báo Core, cách đếm tái lập và kết quả kiểm API/UI.
+- `docs/TARGETS.md` ghi cách đo và kết quả của các chỉ số mục tiêu: mức 1, 2 và 3 của một hệ thống, quy tắc đếm mã tự viết (`tools/count_own_code.py`), thời gian dựng và đổi, bài thử có hướng dẫn kèm một bản mô phỏng người mới, và chi phí hạ tầng của cấu hình tham chiếu.
 - Ba trang hướng dẫn sử dụng theo vai ở trang docs: người nộp hồ sơ, người xử lý hồ sơ và người triển khai.
+- Trang docs có tài liệu sản phẩm: viết tệp mô hình, API, cài đặt và vận hành, giám sát, tích hợp, báo cáo, điểm mở rộng, kiến trúc (kèm sơ đồ), tương thích giữa các bản và kịch bản trình diễn; chúng được chép từ `docs/` và `deploy/` mỗi lần dựng trang, nên mỗi tài liệu chỉ có một nơi để sửa, và workflow Docs chạy lại khi các tệp đó đổi.
+- Ảnh màn hình và hai video ngắn của sản phẩm (từ yêu cầu đến hồ sơ được duyệt và in; đổi mô hình và áp dụng): mục Hình ảnh trong `README.md` và `README_EN.md`, và trang Hình ảnh và video ở trang docs với đủ bộ ảnh tiếng Việt và tiếng Anh, giao diện điện thoại và giao diện tối.
 - `ROADMAP.md` nêu hướng phát triển theo nhóm, và `docs/COMPATIBILITY.md` nêu cách giữ tương thích giữa các bản cho API, tệp mô hình, webhook và cơ sở dữ liệu, kèm cách báo trước khi bỏ một phần.
 - `README.md` và `README_EN.md` có mục đối chiếu với đề thi theo bốn không gian H, P, D, I, cột Tầng trong bảng cấu trúc repository và đoạn nói DX-OS khác Supabase, Strapi, Directus ở chỗ nào.
 - `website/docs/dependencies.md` ghi giấy phép của Supabase, Directus và Strapi và lý do không dùng làm nền.
-- Hướng dẫn kết nối công cụ báo cáo bằng `report_ro` ở `deploy/REPORTING.md`: giữ PostgreSQL trong mạng riêng, kết nối Apache Superset, xoay mật khẩu và truy vấn dữ liệu xuyên hai mô hình.
-- Mục Dữ liệu cá nhân ra nước ngoài ở `deploy/OPERATIONS.md` nêu khi nào cấu hình làm phát sinh nghĩa vụ đánh giá tác động theo Luật 91/2025/QH15 và Nghị định 356/2025/NĐ-CP, đối chiếu với bản đăng trên Công báo.
+- Hướng dẫn kết nối công cụ báo cáo bằng `report_ro` ở `docs/REPORTING.md`: giữ PostgreSQL trong mạng riêng, kết nối Apache Superset, xoay mật khẩu và truy vấn dữ liệu xuyên hai mô hình.
+- Mục Dữ liệu cá nhân ra nước ngoài ở `docs/OPERATIONS.md` nêu khi nào cấu hình làm phát sinh nghĩa vụ đánh giá tác động theo Luật 91/2025/QH15 và Nghị định 356/2025/NĐ-CP, đối chiếu với bản đăng trên Công báo.
 - Hướng dẫn phát triển dịch vụ, bên nhận webhook, giao diện và trang mở rộng ở `docs/EXTENSIONS.md`: quyền, gateway, chạy local, kiểm thử, đóng gói, nâng cấp và ranh giới hỗ trợ hiện tại.
-- Điều kiện tải chữ ký virus của ClamAV và hạn hỗ trợ của image đang ghim ở `DEPENDENCIES.txt` và `deploy/OPERATIONS.md`.
+- Điều kiện tải chữ ký virus của ClamAV và hạn hỗ trợ của image đang ghim ở `DEPENDENCIES.txt` và `docs/OPERATIONS.md`.
 
 ## [2.0.0] - 2026-11-11
 

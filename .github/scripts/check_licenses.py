@@ -1,10 +1,14 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 """Check the licensing of the repository.
 
     python3 .github/scripts/check_licenses.py
+    python3 .github/scripts/check_licenses.py sbom FILE...   # only the licenses of the SBOMs given
 
-1. Every tracked source file starts with an SPDX license line that names Apache-2.0, unless REUSE.toml
-   states the license of that file itself (an override annotation: third-party files and released migrations).
+1. Every tracked source file starts with an SPDX copyright line and an SPDX license line that names Apache-2.0,
+   unless REUSE.toml states the license of that file itself (an override annotation: third-party files)
+   or the file is a released database migration, which Flyway checks byte for byte,
+   or the model that examples/effort-benchmark/results.json pins by its sha256.
    `reuse lint` checks the rest of the tree.
 2. Every package in sbom/*.cdx.json has a license that is allowed below or
    an entry in .github/dependency-exceptions.json that gives the reason.
@@ -13,6 +17,8 @@
    `docker run` command of a workflow or a script, or a script variable such as DUCKDB="duckdb/duckdb:1.4.1"), every release downloaded with ADD
    and every tracked weight, archive or document file is declared
    in .github/component-catalog.json with an allowed license, and DEPENDENCIES.txt names each entry.
+5. Every license that REUSE.toml gives to a file of the repository, and every text in LICENSES/, is an allowed one
+   (or OFL-1.1, the license of the Noto Sans files), so no file of the project is under a license outside the OSI list.
 
 Several license entries on one package are alternatives, as in an SPDX OR expression.
 The exit status is 1 when anything fails.
@@ -34,6 +40,11 @@ SOURCE_NAMES = {"Dockerfile"}
 HEADER_LINES = 6
 # REUSE-IgnoreStart
 SPDX_LINE = re.compile(r"SPDX-License-Identifier: *([\w.\-+]+)")
+COPYRIGHT_LINE = re.compile(r"SPDX-FileCopyrightText: *\S")
+# Flyway checks the checksum of every applied migration, so a migration keeps its license line alone.
+MIGRATION_PATH = "/db/migration/"
+# The model that examples/effort-benchmark/results.json measured: the record names its sha256, so its bytes stay as they were.
+PINNED_FILES = {"examples/effort-benchmark/support.yaml"}
 # REUSE-IgnoreEnd
 
 # Licenses approved by the OSI. Data under CC-BY-4.0 or CC0-1.0 is not on that list,
@@ -122,6 +133,25 @@ def check_headers() -> list[str]:
         found = next((m.group(1) for m in map(SPDX_LINE.search, head) if m), None)
         if found != wanted:
             problems.append(f"{rel}: license header is {found or 'missing'}, expected {wanted}")
+        elif MIGRATION_PATH not in rel and rel not in PINNED_FILES and not any(COPYRIGHT_LINE.search(line) for line in head):
+            problems.append(f"{rel}: the SPDX-FileCopyrightText line is missing")
+    return problems
+
+
+# The licenses a file of the repository may carry: the allowed ones and the license of the Noto Sans files.
+OWN_LICENSES = ALLOWED | {"OFL-1.1"}
+
+
+def check_own_licenses() -> list[str]:
+    problems = []
+    annotations = tomllib.loads((ROOT / "REUSE.toml").read_text(encoding="utf-8")).get("annotations", [])
+    for annotation in annotations:
+        expression = annotation.get("SPDX-License-Identifier", "")
+        if not expression_allowed(expression, OWN_LICENSES):
+            problems.append(f"REUSE.toml: {annotation.get('path')} is under {expression}, which is not an allowed license")
+    for text in sorted((ROOT / "LICENSES").glob("*.txt")):
+        if text.stem not in OWN_LICENSES:
+            problems.append(f"LICENSES/{text.name}: {text.stem} is not an allowed license")
     return problems
 
 
@@ -162,10 +192,11 @@ def expression_allowed(expression: str, allowed: set[str]) -> bool:
     return parse_or()
 
 
-def check_sboms() -> list[str]:
+def check_sboms(files: list[Path] | None = None) -> list[str]:
+    """The licenses of the packages of the SBOMs given, or of the committed ones in sbom/."""
     exceptions = json.loads((ROOT / ".github/dependency-exceptions.json").read_text(encoding="utf-8"))
     problems = []
-    for sbom in sorted((ROOT / "sbom").glob("*.cdx.json")):
+    for sbom in sorted(files if files is not None else (ROOT / "sbom").glob("*.cdx.json")):
         allowed = ALLOWED
         for component in json.loads(sbom.read_text(encoding="utf-8")).get("components", []):
             label = f"{component.get('group', '')}:{component['name']}".strip(":")
@@ -190,9 +221,9 @@ def image_name(reference: str) -> str:
     return "/".join(parts)
 
 
-def referenced_images() -> dict[str, str]:
-    """Image name to the file that uses it. Images built by this repository are skipped."""
-    found: dict[str, str] = {}
+def referenced_references() -> dict[str, list[tuple[str, str]]]:
+    """Image name to the (file, reference) pairs that use it. Images built by this repository are skipped."""
+    found: dict[str, list[tuple[str, str]]] = {}
     for rel in tracked_files():
         path = ROOT / rel
         if not path.is_file():
@@ -212,8 +243,13 @@ def referenced_images() -> dict[str, str]:
         else:
             continue
         for reference in references:
-            found.setdefault(image_name(reference), rel)
+            found.setdefault(image_name(reference), []).append((rel, reference))
     return found
+
+
+def referenced_images() -> dict[str, str]:
+    """Image name to the first file that uses it."""
+    return {name: uses[0][0] for name, uses in referenced_references().items()}
 
 
 def referenced_downloads() -> dict[str, str]:
@@ -265,7 +301,15 @@ def check_bundled() -> list[str]:
 
 
 def main() -> int:
-    problems = check_headers() + check_sboms() + check_catalog() + check_bundled()
+    # `sbom FILE...` checks the licenses of SBOMs generated from the pull request, which can differ from
+    # the committed ones until they are generated again.
+    if sys.argv[1:2] == ["sbom"]:
+        problems = check_sboms([Path(name) for name in sys.argv[2:]])
+        for problem in problems:
+            print(problem)
+        print(f"{len(problems)} problem(s)")
+        return 1 if problems else 0
+    problems = check_headers() + check_own_licenses() + check_sboms() + check_catalog() + check_bundled()
     for problem in problems:
         print(problem)
     print(f"{len(problems)} problem(s)")

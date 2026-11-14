@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.engine.data;
 
@@ -39,16 +40,19 @@ public class DataController {
   private final DataService service;
   private final IdempotencyService idempotency;
   private final DataQualityService quality;
+  private final ReportService report;
 
   public DataController(
       ModelRegistry registry,
       DataService service,
       IdempotencyService idempotency,
-      DataQualityService quality) {
+      DataQualityService quality,
+      ReportService report) {
     this.registry = registry;
     this.service = service;
     this.idempotency = idempotency;
     this.quality = quality;
+    this.report = report;
   }
 
   @GetMapping
@@ -90,6 +94,32 @@ public class DataController {
       @RequestParam Map<String, String> params) {
     Model m = registry.require(model);
     return ApiResponse.success(service.stats(m, entity(m, entity), params));
+  }
+
+  @GetMapping("/report")
+  @Operation(
+      summary = "Group the records the caller can see and compute figures over them",
+      description =
+          "Takes the filter.<field> parameters of the list, and groupBy, metrics and limit. groupBy"
+              + " is one field: a choice, unit or boolean field (not one with several values), status"
+              + " for an entity with a process, or a date or datetime field and created_at by month"
+              + " as field:month (months are in UTC). metrics is a comma separated list of count,"
+              + " sum(field), avg(field), min(field) and max(field) over number fields, count by"
+              + " default and at most 6. limit is the number of groups, 50 by default and at most 200;"
+              + " truncated is true when there are more. Each group has its key (null for the rows with"
+              + " no value) and a value per metric, ordered by key; totals has the same values over all"
+              + " the rows. A sum, avg, min or max ignores empty values and is null when a group has"
+              + " none; count counts rows. With no groupBy only totals is given. The same rows as the"
+              + " list with the same filters: a role sees figures of the rows its access reaches"
+              + " only, and 403 when no role of the caller reaches the entity. Nothing of the request"
+              + " becomes SQL as written; a field or figure the model does not allow is 400. A query"
+              + " that runs longer than 10 seconds is cut.")
+  public ApiResponse<Map<String, Object>> report(
+      @PathVariable String model,
+      @PathVariable String entity,
+      @RequestParam Map<String, String> params) {
+    Model m = registry.require(model);
+    return ApiResponse.success(report.report(m, entity(m, entity), params));
   }
 
   @GetMapping("/quality")

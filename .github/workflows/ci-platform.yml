@@ -1,3 +1,4 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 name: Platform
 
@@ -60,8 +61,8 @@ jobs:
             for admin in false true; do
               args=(--mode "$mode")
               if [[ "$admin" == true ]]; then args+=(--admin-console); fi
-              python3 deploy/apisix/check_routes.py "${args[@]}"
-              python3 deploy/apisix/check_routes.py "${args[@]}" --local deploy/apisix/local.example.yaml
+              python3 e2e/api/check_routes.py "${args[@]}"
+              python3 e2e/api/check_routes.py "${args[@]}" --local deploy/apisix/local.example.yaml
             done
           done
 
@@ -88,7 +89,7 @@ jobs:
                       else:
                           local["routes"][0][key] = value
                   path.write_text(json.dumps(local))
-                  result = subprocess.run(["python3", "deploy/apisix/check_routes.py", "--local", str(path)])
+                  result = subprocess.run(["python3", "e2e/api/check_routes.py", "--local", str(path)])
                   assert result.returncode != 0, f"accepted invalid installation route: {change}"
           PYTHON
 
@@ -157,6 +158,9 @@ jobs:
       - name: Create an env file with random secrets
         run: deploy/make_env.sh deploy/.env
 
+      - name: Leave the virus scan out
+        run: sed -i 's/^COMPOSE_PROFILES=.*/COMPOSE_PROFILES=app/; s/^STORAGE_SCAN_HOST=.*/STORAGE_SCAN_HOST=/' deploy/.env
+
       - name: Start Postgres and SeaweedFS and put some data in them
         working-directory: deploy
         run: |
@@ -216,13 +220,13 @@ jobs:
         include:
           # Each group runs on its own empty stack; the scripts of a group depend only on the ones before them in it.
           - group: model and process
-            checks: api recovery case change process booking demo guards users docs conformance cli browser
+            checks: api recovery case change process booking documents codes demo guards users docs conformance cli browser
           - group: events and bootstrap
             checks: events bootstrap
           # Core mode runs tier 1 only: no web app, portal or monitor.
           - group: core mode
             mode: core
-            checks: api recovery case change process booking demo guards users docs conformance cli browser
+            checks: api recovery case change process booking documents codes demo guards users docs conformance cli browser
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -230,13 +234,18 @@ jobs:
       - name: Create an env file with random secrets
         run: deploy/make_env.sh deploy/.env
 
+      # Only the core mode run of the API end-to-end job keeps the scan: ClamAV needs about 1 GB and the other runs do not test it.
+      - name: Leave the virus scan out
+        if: matrix.mode != 'core'
+        run: sed -i 's/^COMPOSE_PROFILES=.*/COMPOSE_PROFILES=app/; s/^STORAGE_SCAN_HOST=.*/STORAGE_SCAN_HOST=/' deploy/.env
+
       # The scripts reach the Keycloak Admin API through the gateway, which closes /admin by default.
       - name: Open the Keycloak Admin Console for the scripts
         run: sed -i 's/^KEYCLOAK_ADMIN_CONSOLE=.*/KEYCLOAK_ADMIN_CONSOLE=true/' deploy/.env
 
       - name: Run core mode
         if: matrix.mode == 'core'
-        run: sed -i 's/^DXOS_MODE=.*/DXOS_MODE=core/; s/^COMPOSE_PROFILES=.*/COMPOSE_PROFILES=/' deploy/.env
+        run: sed -i 's/^DXOS_MODE=.*/DXOS_MODE=core/; s/^COMPOSE_PROFILES=.*/COMPOSE_PROFILES=av/' deploy/.env
 
       - name: Build the images of this commit
         working-directory: deploy
@@ -246,18 +255,24 @@ jobs:
         working-directory: deploy
         run: |
           docker compose up -d
+          ready=false
           for _ in $(seq 1 90); do
-            curl -sf http://localhost:9080/api/v1/system/status > /dev/null && exit 0
+            if curl -sf http://localhost:9080/api/v1/system/status > /dev/null; then ready=true; break; fi
             sleep 5
           done
-          docker compose ps; exit 1
+          $ready || { docker compose ps; exit 1; }
+          # ClamAV loads its signatures after the backend is up, and uploads are refused until it answers.
+          if [ -n "$(docker compose ps -q clamav)" ]; then docker compose up -d --wait --wait-timeout 300 clamav; fi
 
       - name: Run the checks in the order of docs/TESTING.md
+        env:
+          # The core mode run keeps the virus scan, so its stack must have it.
+          DXOS_REQUIRE_SCAN: ${{ matrix.mode == 'core' && '1' || '' }}
         run: |
           for check in ${{ matrix.checks }}; do
             echo "::group::check_$check.py"
             started=$SECONDS
-            python3 "deploy/dev/check_$check.py"
+            python3 "e2e/api/check_$check.py"
             echo "check_$check.py took $((SECONDS - started)) s"
             echo "::endgroup::"
             echo "check_$check.py: $((SECONDS - started)) s" >> "$GITHUB_STEP_SUMMARY"
@@ -303,6 +318,9 @@ jobs:
       - name: Create an env file with random secrets
         run: deploy/make_env.sh deploy/.env
 
+      - name: Leave the virus scan out
+        run: sed -i 's/^COMPOSE_PROFILES=.*/COMPOSE_PROFILES=app/; s/^STORAGE_SCAN_HOST=.*/STORAGE_SCAN_HOST=/' deploy/.env
+
       - name: Run core mode
         if: matrix.mode == 'core'
         run: sed -i 's/^DXOS_MODE=.*/DXOS_MODE=core/; s/^COMPOSE_PROFILES=.*/COMPOSE_PROFILES=/' deploy/.env
@@ -322,7 +340,7 @@ jobs:
           docker compose ps; exit 1
 
       - name: The default install serves no Swagger UI and no Admin Console
-        run: python3 deploy/dev/check_surface.py
+        run: python3 e2e/api/check_surface.py
 
       - name: KEYCLOAK_ADMIN_CONSOLE=true opens the Admin Console
         working-directory: deploy
@@ -331,7 +349,7 @@ jobs:
           docker compose up -d apisix-config
           docker compose restart apisix
           sleep 10
-          python3 dev/check_surface.py
+          python3 ../e2e/api/check_surface.py
 
       - name: Logs of the services
         if: failure()
@@ -351,10 +369,13 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-          cache-dependency-path: e2e/package-lock.json
+          cache-dependency-path: e2e/web/package-lock.json
 
       - name: Create an env file with random secrets
         run: deploy/make_env.sh deploy/.env
+
+      - name: Leave the virus scan out
+        run: sed -i 's/^COMPOSE_PROFILES=.*/COMPOSE_PROFILES=app/; s/^STORAGE_SCAN_HOST=.*/STORAGE_SCAN_HOST=/' deploy/.env
 
       # The script that creates the account reaches the Keycloak Admin API through the gateway, which closes /admin by default.
       - name: Open the Keycloak Admin Console for the script
@@ -375,10 +396,10 @@ jobs:
           docker compose ps; exit 1
 
       - name: Create the account the browser signs in with
-        run: python3 -c "import sys; sys.path.insert(0, 'deploy/dev'); import kc; kc.ensure_user('ui_admin', ['ADMIN'])"
+        run: python3 -c "import sys; sys.path.insert(0, 'e2e/api'); import kc; kc.ensure_user('ui_admin', ['ADMIN'])"
 
       - name: Install the browser
-        working-directory: e2e
+        working-directory: e2e/web
         run: |
           npm ci --no-audit --no-fund --ignore-scripts
           # The apt mirror of the runner is sometimes unreachable. Try the full install three times, then
@@ -391,7 +412,7 @@ jobs:
           npx playwright install chromium
 
       - name: Sign in, apply a template and walk through the console
-        working-directory: e2e
+        working-directory: e2e/web
         run: npx playwright test
 
       - name: Keep the screenshots
@@ -399,7 +420,7 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: console-screenshots-${{ github.run_attempt }}
-          path: e2e/screenshots
+          path: e2e/web/screenshots
           if-no-files-found: ignore
 
       - name: Keep the trace of a failed test
@@ -407,7 +428,7 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: console-trace-${{ github.run_attempt }}
-          path: e2e/test-results
+          path: e2e/web/test-results
           if-no-files-found: ignore
 
       - name: Logs of the services

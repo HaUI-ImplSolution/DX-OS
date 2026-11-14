@@ -1,4 +1,5 @@
 // @ts-check
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import {themes as prismThemes} from 'prism-react-renderer';
 
@@ -21,6 +22,7 @@ const config = {
   onBrokenAnchors: 'throw',
   markdown: {
     format: 'detect',
+    mermaid: true,
     hooks: {
       onBrokenMarkdownLinks: 'throw',
     },
@@ -30,6 +32,8 @@ const config = {
     defaultLocale: 'vi',
     locales: ['vi'],
   },
+
+  themes: ['@docusaurus/theme-mermaid'],
 
   presets: [
     [

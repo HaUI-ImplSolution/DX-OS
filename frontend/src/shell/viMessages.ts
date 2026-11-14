@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 // The text react-admin shows by itself, in Vietnamese. Vietnamese has one plural form, so each entry is one string.
 const viMessages = {

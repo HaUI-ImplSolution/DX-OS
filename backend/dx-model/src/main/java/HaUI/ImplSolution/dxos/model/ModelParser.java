@@ -1,6 +1,8 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.model;
 
+import HaUI.ImplSolution.dxos.model.Model.Document;
 import HaUI.ImplSolution.dxos.model.Model.Entity;
 import HaUI.ImplSolution.dxos.model.Model.Field;
 import HaUI.ImplSolution.dxos.model.Model.Process;
@@ -65,6 +67,10 @@ public final class ModelParser {
           "decided_at",
           "handle_by",
           "overdue");
+
+  // The columns a record of an entity with a process has besides its fields.
+  private static final List<String> PROCESS_COLUMNS =
+      List.of("id", "status", "created_at", "updated_at", "decided_at");
 
   private final List<Problem> problems = new ArrayList<>();
 
@@ -321,9 +327,13 @@ public final class ModelParser {
       return null;
     }
     Map<String, Node> keys =
-        mapping(map, Set.of("label", "fields", "access", "process", "owner_via", "ui"));
+        mapping(
+            map, Set.of("label", "fields", "access", "process", "owner_via", "ui", "documents"));
 
     Map<String, Field> fields = readFields(map, keys.get("fields"), entityNames);
+    if (fields.values().stream().filter(field -> field.type() == FieldType.CODE).count() > 1) {
+      problem(keys.get("fields"), "an entity has one code field at most");
+    }
     Map<String, Scope> access = readAccess(map, keys.get("access"), roleNames);
     accessNodes.put(name, keys.get("access"));
     Process process = readProcess(keys.get("process"), roleNames, access, fields);
@@ -349,9 +359,206 @@ public final class ModelParser {
       }
     }
     Ui ui = readUi(keys.get("ui"), fields, process != null);
+    List<Document> documents = readDocuments(keys.get("documents"), fields, process);
     Node label = keys.get("label");
     return new Entity(
-        name, label == null ? name : scalar(label), fields, access, process, ownerVia, ui);
+        name,
+        label == null ? name : scalar(label),
+        fields,
+        access,
+        process,
+        ownerVia,
+        ui,
+        documents);
+  }
+
+  // The print templates of an entity. A placeholder names a field of the entity or one of the
+  // columns every record has, so a template never reaches data outside the record.
+  private List<Document> readDocuments(Node node, Map<String, Field> fields, Process process) {
+    if (node == null) {
+      return List.of();
+    }
+    if (!(node instanceof MappingNode map)) {
+      problem(node, "documents is a mapping of document names to templates");
+      return List.of();
+    }
+    Set<String> known = new LinkedHashSet<>(fields.keySet());
+    known.addAll(process == null ? List.of("id", "created_at", "updated_at") : PROCESS_COLUMNS);
+    if (map.getValue().size() > Document.MAX_PER_ENTITY) {
+      problem(node, "an entity has at most " + Document.MAX_PER_ENTITY + " documents");
+    }
+    List<Document> documents = new ArrayList<>();
+    Set<String> names = new LinkedHashSet<>();
+    for (NodeTuple tuple : map.getValue()) {
+      String name = scalar(tuple.getKeyNode());
+      if (!NAME.matcher(name).matches()) {
+        problem(
+            tuple.getKeyNode(),
+            "document name must match [a-z][a-z0-9_]* and be at most 40 characters");
+      } else if (!names.add(name)) {
+        problem(tuple.getKeyNode(), "document " + name + " is declared twice");
+      } else {
+        Document document = readDocument(name, tuple.getValueNode(), known, process);
+        if (document != null) {
+          documents.add(document);
+        }
+      }
+    }
+    return documents;
+  }
+
+  private Document readDocument(String name, Node node, Set<String> known, Process process) {
+    if (!(node instanceof MappingNode map)) {
+      problem(node, "a document is a mapping with label, file, when, title and body");
+      return null;
+    }
+    Map<String, Node> keys = mapping(map, Set.of("label", "file", "when", "title", "body"));
+    String label = readDocumentText(keys.get("label"), name, known);
+    if (Document.PLACEHOLDER.matcher(label).find()) {
+      problem(keys.get("label"), "label holds no placeholders");
+    }
+    String file = readDocumentText(keys.get("file"), name, known);
+    if (!Document.PLACEHOLDER.matcher(file).replaceAll("").matches("[A-Za-z0-9._-]*")) {
+      problem(
+          keys.get("file"),
+          "file may hold letters, digits, dot, dash, underscore and placeholders only");
+    }
+    if (file.length() > Document.MAX_FILE) {
+      problem(keys.get("file"), "file is at most " + Document.MAX_FILE + " characters");
+    }
+    List<String> when = List.of();
+    Node whenNode = keys.get("when");
+    if (whenNode != null) {
+      if (process == null) {
+        problem(whenNode, "when names states, and this entity has no process");
+      } else {
+        when = readNames(whenNode, "when");
+        List<String> states =
+            process.definition().states().stream().map(ProcessFamily.State::name).toList();
+        for (String state : when) {
+          if (!states.contains(state)) {
+            problem(
+                whenNode,
+                "when names the state "
+                    + state
+                    + " that the process does not have, use "
+                    + String.join(", ", states));
+          }
+        }
+      }
+    }
+    String title =
+        keys.get("title") == null ? null : readDocumentText(keys.get("title"), null, known);
+    List<Document.Block> body = readBlocks(keys.get("body"), known);
+    if (keys.get("body") == null) {
+      problem(node, "document " + name + " needs a body");
+    }
+    return new Document(
+        name, label.isEmpty() ? name : label, file.isEmpty() ? name : file, when, title, body);
+  }
+
+  private List<Document.Block> readBlocks(Node node, Set<String> known) {
+    if (node == null) {
+      return List.of();
+    }
+    if (!(node instanceof SequenceNode sequence) || sequence.getValue().isEmpty()) {
+      problem(node, "body is a list of blocks: heading, text, fields or signatures");
+      return List.of();
+    }
+    if (sequence.getValue().size() > Document.MAX_BLOCKS) {
+      problem(node, "body has at most " + Document.MAX_BLOCKS + " blocks");
+    }
+    List<Document.Block> blocks = new ArrayList<>();
+    for (Node item : sequence.getValue()) {
+      if (!(item instanceof MappingNode block) || block.getValue().size() != 1) {
+        problem(item, "a block is a mapping with one key: heading, text, fields or signatures");
+        continue;
+      }
+      NodeTuple tuple = block.getValue().get(0);
+      Node value = tuple.getValueNode();
+      switch (scalar(tuple.getKeyNode())) {
+        case "heading" -> blocks.add(new Document.Heading(readDocumentText(value, null, known)));
+        case "text" -> blocks.add(new Document.Text(readDocumentText(value, null, known)));
+        case "fields" -> {
+          List<String> names = readDocumentNames(value, known, "fields", Integer.MAX_VALUE);
+          if (!names.isEmpty()) {
+            blocks.add(new Document.Fields(names));
+          }
+        }
+        case "signatures" -> {
+          List<String> captions = new ArrayList<>();
+          if (value instanceof SequenceNode list
+              && !list.getValue().isEmpty()
+              && list.getValue().size() <= Document.MAX_SIGNATURES) {
+            list.getValue()
+                .forEach(caption -> captions.add(readDocumentText(caption, null, known)));
+            blocks.add(new Document.Signatures(captions));
+          } else {
+            problem(value, "signatures is a list of 1 to " + Document.MAX_SIGNATURES + " captions");
+          }
+        }
+        default ->
+            problem(
+                tuple.getKeyNode(),
+                "unknown block "
+                    + scalar(tuple.getKeyNode())
+                    + ", use heading, text, fields or signatures");
+      }
+    }
+    return blocks;
+  }
+
+  private List<String> readDocumentNames(Node node, Set<String> known, String key, int max) {
+    if (!(node instanceof SequenceNode list)
+        || list.getValue().isEmpty()
+        || list.getValue().size() > max) {
+      problem(node, key + " is a list of field names");
+      return List.of();
+    }
+    List<String> names = new ArrayList<>();
+    for (Node item : list.getValue()) {
+      String field = scalar(item);
+      if (!known.contains(field)) {
+        problem(item, key + " names " + field + ", which is not a field of this entity");
+      } else if (!names.contains(field)) {
+        names.add(field);
+      }
+    }
+    return names;
+  }
+
+  // A text of a template: a scalar without control characters other than line breaks whose
+  // placeholders name known fields.
+  private String readDocumentText(Node node, String fallback, Set<String> known) {
+    if (node == null) {
+      return fallback == null ? "" : fallback;
+    }
+    if (!(node instanceof ScalarNode scalar)) {
+      problem(node, "this is a text");
+      return fallback == null ? "" : fallback;
+    }
+    String text = scalar.getValue();
+    if (text.length() > Document.MAX_TEXT) {
+      problem(node, "a text is at most " + Document.MAX_TEXT + " characters");
+    }
+    if (text.chars().anyMatch(c -> Character.isISOControl(c) && c != '\n')) {
+      problem(node, "a text holds no control characters other than line breaks");
+    }
+    var placeholder = Document.PLACEHOLDER.matcher(text);
+    while (placeholder.find()) {
+      if (!known.contains(placeholder.group(1))) {
+        problem(
+            node,
+            "placeholder {{"
+                + placeholder.group(1)
+                + "}} is not a field of this entity or one of its columns");
+      }
+    }
+    String rest = Document.PLACEHOLDER.matcher(text).replaceAll("");
+    if (rest.contains("{{") || rest.contains("}}")) {
+      problem(node, "a placeholder is written {{field_name}}");
+    }
+    return text;
   }
 
   private Map<String, Field> readFields(Node parent, Node node, Set<String> entityNames) {
@@ -412,7 +619,8 @@ public final class ModelParser {
                     field.min(),
                     field.max(),
                     field.pattern(),
-                    condition));
+                    condition,
+                    field.format()));
           }
         });
     return fields;
@@ -435,7 +643,8 @@ public final class ModelParser {
                 "min",
                 "max",
                 "pattern",
-                "required_when"));
+                "required_when",
+                "format"));
     Node typeNode = keys.get("type");
     if (typeNode == null) {
       problem(spec, "field " + name + " has no type");
@@ -447,7 +656,8 @@ public final class ModelParser {
           typeNode,
           "unknown type "
               + scalar(typeNode)
-              + ", use text, number, datetime, date, boolean, choice, reference, user, unit or file");
+              + ", use text, number, datetime, date, boolean, choice, reference, user, unit, file"
+              + " or code");
       return null;
     }
     List<String> options = List.of();
@@ -473,8 +683,14 @@ public final class ModelParser {
     } else if (keys.get("to") != null) {
       problem(keys.get("to"), "to only applies to a reference field");
     }
+    String format = null;
+    if (type == FieldType.CODE) {
+      format = readCodeFormat(spec, keys);
+    } else if (keys.get("format") != null) {
+      problem(keys.get("format"), "format only applies to a code field");
+    }
     boolean required = flag(keys.get("required"), "required");
-    boolean unique = flag(keys.get("unique"), "unique");
+    boolean unique = flag(keys.get("unique"), "unique") || type == FieldType.CODE;
     boolean multiple = flag(keys.get("multiple"), "multiple");
     if (multiple && type != FieldType.CHOICE) {
       problem(keys.get("multiple"), "multiple only applies to a choice field");
@@ -493,7 +709,10 @@ public final class ModelParser {
               + " give it a default instead");
     }
     String renamedFrom = readRenamedFrom(name, keys.get("renamed_from"));
-    String defaultValue = readDefault(type, options, unique, multiple, keys.get("default"));
+    String defaultValue =
+        type == FieldType.CODE
+            ? null
+            : readDefault(type, options, unique, multiple, keys.get("default"));
     String min = readBound(type, keys.get("min"), "min");
     String max = readBound(type, keys.get("max"), "max");
     if (min != null && max != null && compareBounds(type, min, max) > 0) {
@@ -516,7 +735,41 @@ public final class ModelParser {
         min,
         max,
         pattern,
-        null);
+        null,
+        format);
+  }
+
+  // The format of a code field. The system assigns the value, so nothing that describes a value
+  // given by a person applies.
+  private String readCodeFormat(MappingNode spec, Map<String, Node> keys) {
+    for (String key :
+        List.of(
+            "required",
+            "unique",
+            "options",
+            "to",
+            "renamed_from",
+            "default",
+            "multiple",
+            "min",
+            "max",
+            "pattern",
+            "required_when")) {
+      if (keys.get(key) != null) {
+        problem(keys.get(key), key + " does not apply to a code field, which the system assigns");
+      }
+    }
+    Node node = keys.get("format");
+    if (node == null) {
+      problem(spec, "a code field needs a format such as HS-{year}-{seq:5}");
+      return null;
+    }
+    try {
+      return CodeFormat.parse(scalar(node)).text();
+    } catch (IllegalArgumentException e) {
+      problem(node, e.getMessage());
+      return null;
+    }
   }
 
   // The bound of a number or date field, in the canonical text of the value.
@@ -979,6 +1232,8 @@ public final class ModelParser {
         String name = scalar(field);
         if (!fields.containsKey(name)) {
           problem(field, "field " + name + " is not a field of this entity");
+        } else if (fields.get(name).type() == FieldType.CODE) {
+          problem(field, "field " + name + " is a code the system assigns, so it has no input");
         } else if (!placed.add(name)) {
           problem(field, "field " + name + " is in two groups");
         } else {

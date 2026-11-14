@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.model;
 
@@ -15,7 +16,8 @@ public enum FieldType {
   UNIT,
   FILE,
   BOOLEAN,
-  DATE;
+  DATE,
+  CODE;
 
   public String key() {
     return name().toLowerCase(Locale.ROOT);

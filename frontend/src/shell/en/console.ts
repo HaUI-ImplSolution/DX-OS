@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 // The control panel: models, editor, plan, users, outbox and the guides.
 export const console: Record<string, string> = {
@@ -10,7 +11,26 @@ export const console: Record<string, string> = {
   "chủ sở hữu theo": "owner through",
   "Chưa có": "None yet",
   "Danh mục dữ liệu": "Data catalog",
-  "Danh mục này đọc thẳng từ mô hình đang chạy: dữ liệu nằm ở đâu, ai được xem, tham chiếu lẫn nhau ra sao, đi vào từ đâu và đi ra đâu.": "This catalog is read straight from the running model: where the data lives, who may see it, how entities refer to each other, where it comes from and where it goes.",
+  "Danh mục này đọc thẳng từ mô hình đang chạy: dữ liệu nằm ở đâu, ai được xem, tham chiếu lẫn nhau ra sao, đi vào từ đâu và đi ra đâu, đến từng trường.": "This catalog is read straight from the running model: where the data lives, who may see it, how entities refer to each other, where it comes from and where it goes, down to each field.",
+  "Nguồn gốc của từng trường": "Origin of each field",
+  "Đọc từ mô hình: lõi giữ nguyên giá trị người dùng nhập, không biến đổi qua bước nào.": "Read from the model: the core keeps the value as entered and does not transform it in any step.",
+  "Đi vào từ": "Comes in from",
+  "Được dùng bởi": "Used by",
+  "Đi ra tới": "Goes out to",
+  "Nhập bởi vai {name} ({scope})": "Entered by the role {name} ({scope})",
+  "Giá trị mặc định: {name}": "Default value: {name}",
+  "Lấy từ hồ sơ của {name}": "Taken from a record of {name}",
+  "Chọn từ các đơn vị: {name}": "Chosen from the units: {name}",
+  "Tệp lưu ở kho tệp": "File kept in the file store",
+  "Sinh khi tạo hồ sơ: {name}": "Made when the record is created: {name}",
+  "Trước đây là trường {name}": "Formerly the field {name}",
+  "Quyết định trường {name} có bắt buộc không ({detail})": "Decides whether the field {name} is required ({detail})",
+  "Hành động {name} đòi phải có giá trị": "The action {name} requires a value",
+  "Điều kiện của hành động {name} ({detail})": "Condition of the action {name} ({detail})",
+  "Xác định chủ sở hữu qua {name}": "Defines the owner through {name}",
+  "Vai {name} chỉ xem hồ sơ cùng đơn vị": "The role {name} sees only records of its own unit",
+  "Dòng lịch sử mỗi khi giá trị đổi": "A history line each time the value changes",
+  "Gửi tới hệ thống ngoài: {name}": "Sent to an outside system: {name}",
   "Dữ liệu đi vào từ": "Data comes in from",
   "Dữ liệu đi ra tới": "Data goes out to",
   "Liên kết giữa các thực thể": "Links between entities",

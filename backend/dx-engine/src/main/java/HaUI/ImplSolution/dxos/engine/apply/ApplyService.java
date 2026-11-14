@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.engine.apply;
 
@@ -7,12 +8,14 @@ import HaUI.ImplSolution.dxos.core.api.exception.InvalidStateException;
 import HaUI.ImplSolution.dxos.core.identity.KeycloakAdminClient;
 import HaUI.ImplSolution.dxos.engine.apply.ModelDiff.Change;
 import HaUI.ImplSolution.dxos.engine.apply.ModelDiff.Level;
+import HaUI.ImplSolution.dxos.engine.data.RecordCodes;
 import HaUI.ImplSolution.dxos.engine.event.AdminEventPublisher;
 import HaUI.ImplSolution.dxos.engine.event.WebhookTargets;
 import HaUI.ImplSolution.dxos.engine.files.AttachmentCleaner;
 import HaUI.ImplSolution.dxos.engine.process.ProcessDeployer;
 import HaUI.ImplSolution.dxos.engine.registry.ModelClient;
 import HaUI.ImplSolution.dxos.engine.registry.ModelRegistry;
+import HaUI.ImplSolution.dxos.model.FieldType;
 import HaUI.ImplSolution.dxos.model.Model;
 import HaUI.ImplSolution.dxos.model.Model.Entity;
 import HaUI.ImplSolution.dxos.model.Model.Role;
@@ -113,6 +116,7 @@ public class ApplyService {
   private final AdminEventPublisher events;
   private final AuditRecorder audit;
   private final ProcessDeployer processes;
+  private final RecordCodes codes;
   private final String reportPassword;
   // Kind of step that fails on purpose, so that a stopped apply can be produced in tests.
   private final String faultStep;
@@ -128,6 +132,7 @@ public class ApplyService {
       AdminEventPublisher events,
       AuditRecorder audit,
       ProcessDeployer processes,
+      RecordCodes codes,
       @Value("${engine.report-db-password:}") String reportPassword,
       @Value("${engine.fault.apply-step:}") String faultStep) {
     this.jdbc = jdbc;
@@ -140,6 +145,7 @@ public class ApplyService {
     this.events = events;
     this.audit = audit;
     this.processes = processes;
+    this.codes = codes;
     this.reportPassword = reportPassword;
     this.faultStep = faultStep.strip();
   }
@@ -1065,6 +1071,20 @@ public class ApplyService {
               }
               schemaTool.apply(model, plan);
             }));
+    // A code field added to an entity that has records gives each of them a code.
+    diff.changes.stream()
+        .filter(change -> "ADD_FIELD".equals(change.kind()))
+        .forEach(
+            change -> {
+              Entity entity = model.entities().get(change.entity());
+              Model.Field field = entity == null ? null : entity.fields().get(change.field());
+              if (field != null && field.type() == FieldType.CODE) {
+                steps.add(
+                    new Step(
+                        new PlannedStep("FILL_CODES", change.entity() + "." + change.field()),
+                        () -> codes.fill(model, entity, field)));
+              }
+            });
     diff.changes.stream()
         .filter(change -> "DROP_ENTITY".equals(change.kind()))
         .forEach(

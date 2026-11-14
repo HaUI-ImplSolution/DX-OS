@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import { useNavigate, useParams } from "react-router-dom";
 import { alpha, Box, Card, Chip, Typography, useTheme } from "@mui/material";
@@ -113,8 +114,8 @@ export default function CalendarPage({ byResource }: { byResource: Record<string
             "--fc-button-active-border-color": theme.palette.primary.dark,
           },
           "& .fc .fc-toolbar-title": { fontSize: 18, fontWeight: 700 },
-          "& .fc .fc-button": { textTransform: "none", fontWeight: 600, borderRadius: 8 },
-          "& .fc .fc-event": { borderRadius: 6, border: "none", padding: "1px 4px" },
+          "& .fc .fc-button": { textTransform: "none", fontWeight: 600, borderRadius: "8px" },
+          "& .fc .fc-event": { borderRadius: "4px", border: "none", padding: "1px 4px" },
         }}
       >
         <FullCalendar

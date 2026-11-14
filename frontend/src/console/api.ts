@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import { translateBackend } from "../shell/backendMessages";
 import { json, queryString, request } from "../shell/api";
@@ -205,6 +206,28 @@ export interface DataCatalog {
   }[];
 }
 
+export interface LineageEdge {
+  kind: string;
+  name: string;
+  detail: string | null;
+}
+
+export interface FieldLineage {
+  entity: string;
+  field: string;
+  label: string;
+  type: string;
+  origins: LineageEdge[];
+  uses: LineageEdge[];
+  destinations: LineageEdge[];
+}
+
+export interface DataLineage {
+  model: string;
+  version: number;
+  fields: FieldLineage[];
+}
+
 export interface DataQuality {
   model: string;
   entity: string;
@@ -232,6 +255,7 @@ const query = (params: Record<string, string | number | undefined>) => {
 export const listApplied = () => request<AppliedModel[]>("/models");
 export const getSchema = () => request<Record<string, unknown>>("/models/schema");
 export const getDataCatalog = (model: string) => request<DataCatalog>(`/models/${model}/data-catalog`);
+export const getDataLineage = (model: string) => request<DataLineage>(`/models/${model}/data-lineage`);
 export const getDataQuality = (model: string, entity: string, staleDays: number) =>
   request<DataQuality>(`/data/${model}/${entity}/quality${query({ staleDays })}`);
 export const listFamilies =() => request<Family[]>("/models/families");

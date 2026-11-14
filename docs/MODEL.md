@@ -2,7 +2,7 @@
 
 Một tệp YAML khai báo thực thể, trường, vai, quyền và quy trình của một nghiệp vụ.
 Lõi dựng bảng dữ liệu, vai Keycloak, API và giao diện từ tệp này, nên đổi nghiệp vụ là đổi tệp, không đổi mã.
-Đặc tả hiện hành cho trình soạn thảo ở [`model-v1.schema.json`](../backend/dx-model/src/main/resources/schema/model-v1.schema.json), và tệp sai mẫu dùng cho kiểm tự động ở [`models/invalid/`](../models/invalid).
+Đặc tả hiện hành cho trình soạn thảo ở [`model-v1.schema.json`](../backend/dx-model/src/main/resources/schema/model-v1.schema.json), và tệp sai mẫu dùng cho kiểm tự động ở [`e2e/fixtures/invalid-models/`](../e2e/fixtures/invalid-models).
 
 ## Ví dụ
 
@@ -41,13 +41,27 @@ Sau khi đọc diff, chạy `dxos model upgrade --write <tệp>` để thay tệ
 Chạy lại trên format hiện hành không đổi nội dung.
 Hệ thống nhận ra tệp đổi theo nội dung chữ, nên lần áp dụng đầu của tệp đã nâng tạo thêm một phiên bản không đổi bảng hay quyền nào, và `dxos plan --check` trả 2 cho đến lúc đó.
 
-File tạm nằm cùng thư mục với tệp gốc (với liên kết mềm là thư mục của tệp đích), giữ quyền, chủ sở hữu và nhóm của tệp.
-Nếu migration, API, trích xuất kết quả hoặc ghi file tạm lỗi thì tệp gốc giữ nguyên; nếu tiến trình dừng trước rename thì xóa file `.dxos-model-upgrade.*` còn sót và chạy lại.
-Sau rename, dùng lịch sử Git hoặc bản sao lưu để quay lại nếu không muốn giữ kết quả.
+Tệp tạm nằm cùng thư mục với tệp gốc và giữ quyền, chủ sở hữu, nhóm của tệp.
+Lỗi ở bước migration hay ghi tệp tạm thì tệp gốc giữ nguyên; tiến trình dừng trước rename thì xóa tệp `.dxos-model-upgrade.*` còn sót rồi chạy lại.
+Muốn quay lại sau rename, dùng lịch sử Git hoặc bản sao lưu.
+
+## Kiểm tệp trước khi áp dụng
+
+`dxos lint <tệp>...` đọc tệp bằng đúng bộ đọc của backend và không cần hệ thống đang chạy.
+Mỗi lỗi in một dòng `tệp:dòng:cột: nội dung`, hoặc `tệp: nội dung` khi lỗi không có một vị trí.
+Mã thoát là 0 khi mọi tệp hợp lệ, 1 khi có lỗi và 2 khi không đọc được tệp.
+Trên bản cài, lệnh chạy trong image backend đã cài, không mở mạng và không đổi tệp nào.
+Trên máy không có DX-OS, tải `dxos-lint.jar` ở trang Release và chạy `java -jar dxos-lint.jar <tệp>...` với Java 21; đặt `DXOS_LINT_JAR` thì `dxos lint` dùng tệp này thay cho image.
+Ví dụ workflow CI cho kho mô hình ở [`examples/model-repo`](../examples/model-repo).
+
+Lint chỉ kiểm tệp, nên `dxos plan` còn so tệp với mô hình đang chạy, đích webhook và dữ liệu hiện có.
+Kết quả lint hợp lệ không có nghĩa là `apply` thành công; kết quả lint có lỗi thì `plan` cũng từ chối đúng những lỗi đó.
+
+`dxos conformance <mô hình>` chạy trên hệ thống đang chạy và kiểm các rào chắn của lõi cho mô hình đã áp dụng; cách chạy và điều kiện ở [`docs/OPERATIONS.md`](OPERATIONS.md#kiểm-tệp-mô-hình-và-rào-chắn-của-lõi).
 
 ## Trường và đơn vị
 
-- Kiểu trường: `text`, `number`, `datetime`, `date`, `boolean`, `choice`, `reference`, `user`, `unit`.
+- Kiểu trường: `text`, `number`, `datetime`, `date`, `boolean`, `choice`, `reference`, `user`, `unit`, `code` (mục [Mã hồ sơ đọc được](#mã-hồ-sơ-đọc-được)).
 - Trường `date` giữ một ngày dạng `YYYY-MM-DD`, còn `datetime` giữ một thời điểm kèm múi giờ.
 - Trường `boolean` là đúng hoặc sai (`true`, `false`); không đặt `required` hay `unique`, muốn có giá trị ban đầu thì đặt `default`.
 - Trường `choice` kèm `multiple: true` giữ nhiều lựa chọn trong `options`.
@@ -58,11 +72,32 @@ Sau rename, dùng lịch sử Git hoặc bản sao lưu để quay lại nếu k
 - Đơn vị khai báo ở `units`, mỗi đơn vị là một nhóm Keycloak; trường kiểu `unit` cho biết hồ sơ thuộc đơn vị nào.
   Ví dụ đầy đủ ở [`onestop.yaml`](../backend/dx-engine/src/main/resources/templates/onestop.yaml).
 
+## Mã hồ sơ đọc được
+
+Trường `type: code` cho mỗi hồ sơ một mã ngắn để đọc, in và tra, ví dụ `HS-2026-00007`.
+
+```yaml
+fields:
+  ma_ho_so: {type: code, format: "HS-{year}-{seq:5}"}
+```
+
+- `format` gồm chữ cố định (chữ, số và `.` `_` `/` `-`), `{year}` là năm hồ sơ được tạo (4 chữ số, giờ Việt Nam) và đúng một `{seq:N}` là số thứ tự viết đủ `N` chữ số, từ 1 đến 9, thêm số 0 ở đầu.
+- Mỗi thực thể có tối đa một trường `code`; trường này luôn duy nhất và không đi cùng `required`, `unique`, `default`, `renamed_from` hay các ràng buộc giá trị.
+- Hệ thống gán mã một lần khi tạo hồ sơ; ghi hay sửa mã qua API bị từ chối (400), và sửa hồ sơ không đổi mã.
+- Số thứ tự đếm riêng cho từng mô hình, thực thể và trường; khuôn có `{year}` thì mỗi năm đếm lại từ 1, khuôn không có thì đếm tiếp mãi.
+  Hai hồ sơ tạo cùng lúc không bao giờ trùng mã, và hồ sơ tạo không thành không làm mất số.
+- Hết số (ví dụ `{seq:3}` đã đến 999) thì hồ sơ mới bị từ chối với 422 `ERR_CODE_EXHAUSTED`; tăng `N` trong khuôn.
+- Tra theo mã bằng `filter.<trường>=<mã>` hoặc `filter.<trường>.like=<một phần của mã>`; metadata ghi `type: code` kèm `format`, và OpenAPI của mô hình đánh dấu trường chỉ đọc.
+- Thêm trường `code` vào thực thể đã có hồ sơ là thay đổi `MIGRATION`: khi áp dụng, hồ sơ cũ nhận mã theo thứ tự `id`, đếm theo năm hồ sơ được tạo, và hồ sơ mới nối tiếp.
+- Đổi `format` là thay đổi `SAFE`: chỉ hồ sơ mới theo khuôn mới, số vẫn nối tiếp và mã cũ giữ nguyên.
+- Bỏ trường `code` rồi thêm lại (hoặc thêm trường khác cùng tên) thì số vẫn nối tiếp từ số cuối đã dùng, vì bộ đếm gắn với mô hình, thực thể và tên trường.
+
 ## Ràng buộc giá trị
 
 - `min` và `max` giới hạn một trường `number` hoặc `date`, cả hai đầu đều nhận giá trị: `qty: {type: number, min: 1, max: 100}`.
 - `pattern` là biểu thức chính quy của một trường `text`, và phải khớp toàn bộ giá trị: `code: {type: text, pattern: "[A-Z]{3}-[0-9]+"}`.
-  Biểu thức chỉ gồm ký tự, dấu chấm, lớp ký tự `[...]`, nhóm `(...)`, `|` và các lượng từ `*`, `+`, `?`, `{n}`, `{n,m}` với số lặp tối đa 255; không có `^`, `$`, `\d`, `(?` hay lượng từ lười.
+  Biểu thức chỉ gồm ký tự, dấu chấm, lớp ký tự `[...]`, nhóm `(...)`, `|` và các lượng từ `*`, `+`, `?`, `{n}`, `{n,m}` với số lặp tối đa 255.
+  Không có `^`, `$`, `\d`, `(?` hay lượng từ lười.
   Một nhóm có lượng từ bên trong không được lặp bằng `*`, `+` hay `{n,m}`, như `([a-z]+)*`, vì kiểu viết đó có thể làm phép khớp chạy rất lâu.
   Giá trị được kiểm bằng `pattern` dài tối đa 1000 ký tự, và phép khớp chỉ được đọc một số ký tự nhất định; quá số đó thì giá trị bị từ chối với `is too complex to check against the pattern`.
 - Giá trị vi phạm bị API từ chối kèm tên trường, và bảng có ràng buộc `CHECK` nên ghi thẳng vào cơ sở dữ liệu cũng bị chặn.
@@ -161,8 +196,9 @@ Ví dụ đầy đủ ở [`asset_register.yaml`](../backend/dx-engine/src/main/
   Hành động không đạt điều kiện trả 409 `ERR_INVALID_STATE` với `data.reason` là `CONDITION_NOT_MET`.
   `check: <tên đích>` cho một dịch vụ riêng quyết định hành động trước khi hồ sơ chuyển trạng thái.
   Tên đích khai trong `deploy/webhooks/targets.yml` như đích của `webhook`; tên chưa có trong tệp thì mô hình bị từ chối.
-  Dịch vụ được hỏi sau khi mọi quy tắc của quy trình đã đạt và trước khi trạng thái đổi; hành động bị từ chối trả 403 `ERR_ACTION_NOT_ALLOWED` với `data.reason` là `CHECK_DENIED` và `data.code` là mã dịch vụ trả về.
-  Dịch vụ không trả lời hoặc trả lời sai thì cách xử lý do `on_error` của đích quyết định, cách khai và giao thức ở [`deploy/INTEGRATIONS.md`](../deploy/INTEGRATIONS.md#kiểm-tra-trước-khi-chuyển-trạng-thái).
+  Dịch vụ được hỏi sau khi mọi quy tắc của quy trình đã đạt và trước khi trạng thái đổi.
+  Hành động bị từ chối trả 403 `ERR_ACTION_NOT_ALLOWED` với `data.reason` là `CHECK_DENIED` và `data.code` là mã dịch vụ trả về.
+  Dịch vụ không trả lời hoặc trả lời sai thì cách xử lý do `on_error` của đích quyết định, cách khai và giao thức ở [`docs/INTEGRATIONS.md`](INTEGRATIONS.md#kiểm-tra-trước-khi-chuyển-trạng-thái).
   Hành động tự đóng của `auto_close` không hỏi dịch vụ.
 - Khi có `family`, mục khai báo ghi đè từng khóa của khung; viết `null` để bỏ một trạng thái hoặc hành động của khung.
 - `withdraw` và trạng thái `withdrawn` là tên dành riêng: khai `withdraw: {from: [...]}` thì nền tảng tự thêm trạng thái `withdrawn`, và hành động này luôn do người nộp thực hiện.
@@ -215,6 +251,51 @@ Nhóm Keycloak phải có sẵn; thiếu thì thông điệp xem được ở ta
 Trường người dùng hoặc nhóm để trống thì thao tác bị bỏ qua và hồ sơ có thêm dòng lịch sử `completion_skipped` kèm lý do.
 Ví dụ ở [`itaccess.yaml`](../backend/dx-engine/src/main/resources/templates/itaccess.yaml).
 
+## Tài liệu in
+
+Khóa `documents` của một thực thể khai báo các mẫu in; mỗi mẫu biến một hồ sơ thành một tệp PDF.
+Một mẫu có tên (`[a-z][a-z0-9_]*`), và các khóa `label`, `file`, `when`, `title` và `body`.
+
+```yaml
+documents:
+  confirmation:
+    label: Giấy xác nhận
+    file: giay-xac-nhan-{{id}}
+    when: approved
+    title: GIẤY XÁC NHẬN
+    body:
+      - heading: Thông tin chung
+      - text: "Xác nhận {{full_name}} đã nộp hồ sơ số {{id}}."
+      - fields: [full_name, created_at]
+      - signatures: [Người nộp, Cán bộ phụ trách]
+```
+
+- `label` là tên mẫu ở màn hình hồ sơ; không có chỗ trống.
+- `file` là tên tệp tải về không kèm `.pdf`; chữ có dấu thành chữ không dấu, và ký tự ngoài chữ, số, `.`, `-`, `_` thành `_`.
+- `when` là một trạng thái hoặc danh sách trạng thái của quy trình mà hồ sơ phải ở trong đó mới in được; bỏ đi thì in ở mọi trạng thái, và thực thể không có quy trình thì không dùng `when`.
+- `title` in ở giữa đầu trang đầu.
+- `body` là danh sách các khối, mỗi khối có đúng một khóa:
+  - `heading`: dòng tiêu đề đậm.
+  - `text`: văn bản; mỗi dòng xuống dòng là một dòng của trang và dòng trống là một khoảng cách.
+  - `fields`: bảng nhãn và giá trị cho từng trường được kể tên; giá trị rỗng in `—`.
+  - `signatures`: từ một đến bốn tiêu đề ký, đặt cạnh nhau trên một khoảng trống để ký.
+
+Chỗ trống `{{tên}}` trong `file`, `title`, `heading`, `text` và `signatures` được thay bằng giá trị của hồ sơ.
+Tên là một trường của thực thể, hoặc một cột mọi hồ sơ có: `id`, `created_at`, `updated_at`, và với thực thể có quy trình thêm `status` và `decided_at`.
+Mẫu không có điều kiện, vòng lặp hay biểu thức, và không đọc dữ liệu ngoài hồ sơ đang in.
+
+Giá trị in như sau: ngày `dd/MM/yyyy`, thời điểm `dd/MM/yyyy HH:mm` theo múi giờ của máy chủ, có hoặc không thành `Có` hoặc `Không`, trạng thái bằng nhãn của nó, đơn vị bằng nhãn đơn vị, trường nhiều lựa chọn cách nhau bằng dấu phẩy.
+Trường tham chiếu và trường người dùng in giá trị lưu của chúng.
+Nhãn của cột `id`, `status`, `created_at`, `updated_at` và `decided_at` trong bảng là `Mã`, `Trạng thái`, `Ngày tạo`, `Cập nhật lần cuối` và `Ngày quyết định`.
+
+Mỗi thực thể có tối đa 10 mẫu, mỗi mẫu tối đa 60 khối, mỗi văn bản tối đa 2000 ký tự và mỗi tài liệu tối đa 50 trang.
+`plan` và `apply` từ chối mẫu có chỗ trống không phải trường, trạng thái không có trong quy trình, khối lạ hay quá giới hạn, kèm dòng và cột.
+Một mẫu đổi là thay đổi mức `SAFE` (`CHANGE_DOCUMENTS`).
+
+`GET /api/v1/data/{model}/{entity}/{id}/documents` liệt kê các mẫu của hồ sơ, tên tệp và việc hồ sơ in được ở trạng thái hiện tại hay không.
+`GET /api/v1/data/{model}/{entity}/{id}/documents/{tên}` trả tệp PDF dạng đính kèm.
+Cả hai chỉ cho người đọc được hồ sơ, như màn hình hồ sơ; mẫu ngoài trạng thái cho phép trả 409 với lý do `DOCUMENT_NOT_AVAILABLE`, và mỗi lần in được ghi vào `audit_log` (`DOCUMENT_PRINTED`).
+
 ## Tệp đính kèm
 
 Trường `type: file`; tải lên bằng `POST /api/v1/data/{model}/{entity}/{id}/files`, quyền theo quyền của bản ghi.
@@ -235,4 +316,4 @@ Tin của dòng `escalated` có thêm `level` (mức, từ 1) và `round` (lần
 - `default` điền giá trị cho trường bắt buộc mới trên bảng đã có dòng; trường nhiều lựa chọn nhận một danh sách.
 - Đổi kiểu của một trường đang có (kể cả từ một lựa chọn sang nhiều lựa chọn) bị từ chối; thêm một trường mới thay vì đổi kiểu.
 - Đổi tên một trường có `min`, `max` hay `pattern` giữ nguyên dữ liệu và đổi tên cả các ràng buộc của nó.
-- Xem trước, áp dụng, quay về và các lệnh liên quan ở [`deploy/OPERATIONS.md`](../deploy/OPERATIONS.md#cài-đặt-và-lệnh-dxos) và [`API.md`](./API.md).
+- Xem trước, áp dụng, quay về và các lệnh liên quan ở [`docs/OPERATIONS.md`](OPERATIONS.md#cài-đặt-và-lệnh-dxos) và [`API.md`](./API.md).

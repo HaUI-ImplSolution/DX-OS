@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.engine.apply;
 
@@ -284,7 +285,7 @@ public final class DdlGenerator {
 
   public static String sqlType(FieldType type) {
     return switch (type) {
-      case TEXT, CHOICE, USER, UNIT, FILE -> "TEXT";
+      case TEXT, CHOICE, USER, UNIT, FILE, CODE -> "TEXT";
       case NUMBER -> "NUMERIC";
       case DATETIME -> "TIMESTAMPTZ";
       case REFERENCE -> "BIGINT";

@@ -1,0 +1,24 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
+# SPDX-License-Identifier: Apache-2.0
+# Formatting of the files of the repository; Java is formatted by Spotless (google-java-format), which agrees with this file.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+[*.py]
+indent_size = 4
+
+[*.lua]
+indent_size = 4
+
+[pom.xml]
+indent_style = tab
+
+[*.{bat,cmd}]
+end_of_line = crlf

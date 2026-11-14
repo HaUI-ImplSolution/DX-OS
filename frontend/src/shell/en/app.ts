@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 // The sign-in flow, the record screens, the inbox, the calendar and the statistics.
 export const app: Record<string, string> = {
@@ -133,6 +134,27 @@ export const app: Record<string, string> = {
   "Chưa có đơn vị": "No unit",
   // Record screens
   "Sửa": "Edit",
+  "Sao chép mã": "Copy the code",
+  "Đã sao chép mã": "Code copied",
+  "Không sao chép được": "Could not copy",
+  "Báo cáo theo trường": "Report by field",
+  "{label}, theo tháng": "{label}, by month",
+  "Ngày tạo, theo tháng": "Created, by month",
+  "Tổng của {label}": "Sum of {label}",
+  "Trung bình của {label}": "Average of {label}",
+  "Nhỏ nhất của {label}": "Smallest {label}",
+  "Lớn nhất của {label}": "Largest {label}",
+  "Không đọc được báo cáo": "Could not read the report",
+  "Nhóm theo": "Group by",
+  "Tính": "Compute",
+  "Nhóm": "Group",
+  "Số hồ sơ": "Records",
+  "Chưa có giá trị": "No value",
+  "Tất cả": "All",
+  "Chỉ hiện {n} nhóm đầu.": "Only the first {n} groups are shown.",
+  "In": "Print",
+  "In: {name}": "Print: {name}",
+  "Không in được": "Could not print",
   "Mã": "ID",
   "Tạo {when}": "Created {when}",
   "Thông tin": "Details",

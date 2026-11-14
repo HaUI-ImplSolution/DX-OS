@@ -1,9 +1,10 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 version = 1
 SPDX-PackageName = "DX-OS"
 SPDX-PackageDownloadLocation = "https://github.com/HaUI-ImplSolution/DX-OS"
 
-# Every file belongs to the team; a file keeps the license line it carries and takes the notice from here.
+# Every file belongs to the team; a file keeps the SPDX lines it carries and takes the notice from here when it has none.
 [[annotations]]
 path = "**"
 precedence = "aggregate"
@@ -27,3 +28,13 @@ path = [
 precedence = "override"
 SPDX-FileCopyrightText = "2026 HaUI-ImplSolution"
 SPDX-License-Identifier = "Apache-2.0"
+
+# Noto Sans, embedded in the PDFs of the print templates; unmodified, from github.com/notofonts.
+[[annotations]]
+path = [
+  "backend/dx-engine/src/main/resources/fonts/NotoSans-Regular.ttf",
+  "backend/dx-engine/src/main/resources/fonts/NotoSans-Bold.ttf",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "2022 The Noto Project Authors"
+SPDX-License-Identifier = "OFL-1.1"

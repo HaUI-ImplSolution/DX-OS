@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import { HttpError, type DataProvider } from "react-admin";
 import { ApiError, json, queryString, request } from "../shell/api";
@@ -37,7 +38,7 @@ function body(meta: EntityMeta | undefined, data: Row) {
   const payload: Row = {};
   Object.entries(data).forEach(([name, value]) => {
     const field = meta?.fields.find((field) => field.name === name);
-    if (!SYSTEM_FIELDS.includes(name) && field?.type !== "file") {
+    if (!SYSTEM_FIELDS.includes(name) && field?.type !== "file" && field?.type !== "code") {
       payload[name] = toApiValue(meta, name, value);
     }
   });
@@ -63,13 +64,17 @@ async function call<T>(action: () => Promise<T>): Promise<T> {
   }
 }
 
+// A filter input named field.op (a range end, a search by part) reaches the provider as {field: {op: value}}.
+function addFilter(params: Record<string, string>, name: string, value: unknown) {
+  if (value === undefined || value === null || value === "") return;
+  if (Array.isArray(value)) params[`filter.${name}.in`] = value.join(",");
+  else if (typeof value === "object") Object.entries(value).forEach(([op, inner]) => addFilter(params, `${name}.${op}`, inner));
+  else params[`filter.${name}`] = String(value);
+}
+
 function filterParams(filter: Row | undefined, extra: Row = {}) {
   const params: Record<string, string> = {};
-  Object.entries({ ...filter, ...extra }).forEach(([name, value]) => {
-    if (value === undefined || value === null || value === "") return;
-    if (Array.isArray(value)) params[`filter.${name}.in`] = value.join(",");
-    else params[`filter.${name}`] = String(value);
-  });
+  Object.entries({ ...filter, ...extra }).forEach(([name, value]) => addFilter(params, name, value));
   return params;
 }
 

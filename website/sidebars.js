@@ -1,15 +1,34 @@
 // @ts-check
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 
 /** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */
 const sidebars = {
   docs: [
     'intro',
+    'hinh-anh',
     {
       type: 'category',
       label: 'Hướng dẫn sử dụng',
       collapsed: false,
       items: ['huong-dan/nguoi-nop', 'huong-dan/nguoi-xu-ly', 'huong-dan/nguoi-trien-khai'],
+    },
+    {
+      type: 'category',
+      label: 'Tài liệu sản phẩm',
+      collapsed: false,
+      items: [
+        'tai-lieu/viet-mo-hinh',
+        'tai-lieu/api',
+        'tai-lieu/van-hanh',
+        'tai-lieu/giam-sat',
+        'tai-lieu/tich-hop',
+        'tai-lieu/bao-cao',
+        'tai-lieu/mo-rong',
+        'tai-lieu/kien-truc',
+        'tai-lieu/tuong-thich',
+        'tai-lieu/trinh-dien',
+      ],
     },
     {
       type: 'category',

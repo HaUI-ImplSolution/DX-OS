@@ -1,3 +1,4 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 format: 1
 name: onestop
@@ -19,6 +20,7 @@ entities:
   request:
     label: Hồ sơ
     fields:
+      number: {type: code, label: Số hồ sơ, format: "HS-{year}-{seq:5}"}
       reason: {type: text, label: Lý do, required: true}
       kind: {type: choice, label: Loại hồ sơ, required: true, options: [Giấy xác nhận, Phúc khảo, Hoãn thi]}
       department: {type: unit, label: Đơn vị xử lý, required: true}
@@ -26,6 +28,17 @@ entities:
       evidence: {type: file, label: Minh chứng}
     access: {STUDENT: own, OFFICER: unit, SUPERVISOR: read}
     process: {family: approval, handler: OFFICER, deadline: 72h}
+    documents:
+      confirmation:
+        label: Giấy xác nhận
+        file: giay-xac-nhan-{{id}}
+        when: approved
+        title: GIẤY XÁC NHẬN
+        body:
+          - heading: Thông tin hồ sơ
+          - text: "Hồ sơ số {{id}} đã được duyệt."
+          - fields: [kind, reason, department, status, created_at]
+          - signatures: [Người nộp, Cán bộ phụ trách]
   request_note:
     label: Ghi chú hồ sơ
     fields:

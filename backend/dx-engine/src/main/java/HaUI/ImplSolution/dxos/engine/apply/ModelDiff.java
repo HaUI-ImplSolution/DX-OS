@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.engine.apply;
 
@@ -181,8 +182,15 @@ public final class ModelDiff {
   }
 
   private void addField(Entity entity, Field field) {
-    Level level = field.required() ? Level.MIGRATION : Level.SAFE;
-    changes.add(new Change(level, "ADD_FIELD", entity.name(), field.name(), null));
+    boolean code = field.type() == FieldType.CODE;
+    Level level = field.required() || code ? Level.MIGRATION : Level.SAFE;
+    changes.add(
+        new Change(
+            level,
+            "ADD_FIELD",
+            entity.name(),
+            field.name(),
+            code ? "Existing records receive a code" : null));
     if (field.required() && field.defaultValue() == null) {
       checks.add(new RowCheck(entity.name(), field.name(), null, Rule.NEW_REQUIRED, List.of()));
     }
@@ -226,6 +234,9 @@ public final class ModelDiff {
               + " not supported; add a new field instead");
     }
     String column = before.name();
+    if (field.type() == FieldType.CODE && !Objects.equals(before.format(), field.format())) {
+      changes.add(new Change(Level.SAFE, "CHANGE_FORMAT", entity.name(), name, field.format()));
+    }
     if (field.required() && !before.required()) {
       changes.add(new Change(Level.MIGRATION, "ADD_REQUIRED", entity.name(), name, null));
       checks.add(new RowCheck(entity.name(), name, column, Rule.REQUIRED, List.of()));
@@ -334,6 +345,9 @@ public final class ModelDiff {
     }
     if (!Objects.equals(old.ui(), entity.ui())) {
       changes.add(new Change(Level.SAFE, "CHANGE_UI", entity.name(), null, null));
+    }
+    if (!old.documents().equals(entity.documents())) {
+      changes.add(new Change(Level.SAFE, "CHANGE_DOCUMENTS", entity.name(), null, null));
     }
     Process before = old.process();
     Process after = entity.process();

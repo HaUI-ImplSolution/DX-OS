@@ -1,3 +1,4 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 name: Dependencies
 
@@ -11,7 +12,7 @@ on:
       - 'backend/**/pom.xml'
       - 'frontend/package-lock.json'
       - 'website/package-lock.json'
-      - 'e2e/package-lock.json'
+      - 'e2e/web/package-lock.json'
       - 'sbom/*.cdx.json'
       - 'deploy/docker-compose.yml'
       - '.trivyignore'
@@ -27,7 +28,7 @@ on:
       - 'backend/**/pom.xml'
       - 'frontend/package-lock.json'
       - 'website/package-lock.json'
-      - 'e2e/package-lock.json'
+      - 'e2e/web/package-lock.json'
       - 'sbom/*.cdx.json'
       - 'deploy/docker-compose.yml'
       - '.trivyignore'
@@ -110,6 +111,10 @@ jobs:
 
       - name: The committed SBOM lists the same packages
         run: python3 .github/scripts/check_sbom_fresh.py sbom sbom/backend.cdx.json backend/target/backend.cdx.json
+
+      # The SBOM the pull request would have, which a bot has not generated again, so a new version is read.
+      - name: The resolved packages have open licenses
+        run: python3 .github/scripts/check_licenses.py sbom backend/target/backend.cdx.json
 
       - name: Fail on a fixable HIGH or CRITICAL vulnerability in the resolved dependencies
         run: >

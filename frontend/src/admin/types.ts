@@ -1,10 +1,11 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import type { EscalationLevel } from "../console/api";
 
 export interface FieldMeta {
   name: string;
   label: string;
-  type: "text" | "number" | "boolean" | "date" | "datetime" | "choice" | "reference" | "user" | "unit" | "file";
+  type: "text" | "number" | "boolean" | "date" | "datetime" | "choice" | "reference" | "user" | "unit" | "file" | "code";
   required: boolean;
   unique: boolean;
   options: string[];
@@ -17,6 +18,8 @@ export interface FieldMeta {
   pattern?: string | null;
   // The field is required while the comparison holds.
   requiredWhen?: ProcessCondition | null;
+  // The pattern a code field is made from, such as HS-{year}-{seq:5}.
+  format?: string | null;
 }
 
 // How an entity looks on screen, as the model file declares it; every part is optional.
@@ -76,6 +79,8 @@ export interface EntityMeta {
   // Names of the process actions the roles of the user may take.
   handlerActions?: string[];
   ui?: EntityUi | null;
+  // The print templates of the entity; when lists the states a template is limited to.
+  documents?: { name: string; label: string; when: string[] }[];
 }
 
 export interface UnitMeta {
@@ -105,6 +110,13 @@ export interface RecordEvent {
   to_status: string | null;
   note: string | null;
   detail: string | null;
+}
+
+export interface PrintableDocument {
+  name: string;
+  label: string;
+  file: string;
+  available: boolean;
 }
 
 export interface AttachmentItem {

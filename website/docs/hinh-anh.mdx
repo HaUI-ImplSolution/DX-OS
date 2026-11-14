@@ -1,0 +1,175 @@
+---
+title: Hình ảnh và video
+---
+
+# Hình ảnh và video
+
+Các màn hình dưới đây chụp từ hệ thống đang chạy với dữ liệu mẫu; tên người, hồ sơ, thiết bị và phòng đều là giả.
+Phần lớn ảnh chụp ở giao diện tiếng Việt; bộ ảnh giao diện tiếng Anh ở cuối trang.
+
+## Video
+
+Từ một yêu cầu gửi đi đến khi hồ sơ được duyệt và in ra: cán bộ mở hồ sơ trong hộp việc, duyệt, rồi in giấy xác nhận.
+
+<video controls muted loop playsInline width="100%" poster={require('./images/vi/inbox.png').default}>
+  <source src={require('./images/video/request-flow.mp4').default} type="video/mp4" />
+</video>
+
+Đổi nghiệp vụ: sửa tệp mô hình, xem kế hoạch thay đổi, áp dụng; hệ thống chuyển sang phiên bản mới và dữ liệu cũ vẫn còn.
+
+<video controls muted loop playsInline width="100%" poster={require('./images/vi/plan.png').default}>
+  <source src={require('./images/video/model-change.mp4').default} type="video/mp4" />
+</video>
+
+## Đăng nhập
+
+Mọi ứng dụng dùng chung một trang đăng nhập; đăng nhập một lần là vào được những gì vai của tài khoản cho phép.
+
+![Trang đăng nhập](./images/vi/login.png)
+
+## Người triển khai
+
+Bảng điều khiển: các mô hình đang chạy, thư viện mẫu, soạn và áp dụng, hàng đợi sự kiện, người dùng, ứng dụng ngoài và danh mục dữ liệu.
+
+![Bảng điều khiển](./images/vi/console.png)
+
+Thư viện mẫu cho chọn một mô hình có sẵn và đổi tiếp.
+
+![Thư viện mẫu](./images/vi/templates.png)
+
+Soạn bằng form: chỉ sửa những chỗ được đổi, các dòng chú thích trong tệp được giữ, và sơ đồ quy trình vẽ theo mô hình đang soạn.
+
+![Soạn bằng form](./images/vi/editor-form.png)
+
+Soạn tệp mô hình, xem kế hoạch (mức an toàn, thực thể và trường bị ảnh hưởng, câu lệnh SQL sẽ chạy) và sơ đồ quy trình vẽ theo tệp đang soạn.
+
+![Soạn, xem kế hoạch và áp dụng](./images/vi/plan.png)
+
+Hàng đợi sự kiện: thông điệp gửi tới hệ thống ngoài sau mỗi thay đổi đã lưu.
+Thông điệp lỗi được thử lại dần, kèm lỗi gần nhất và nút thử lại ngay.
+
+![Hàng đợi sự kiện, thông điệp lỗi](./images/vi/outbox-error.png)
+
+![Hàng đợi sự kiện, thông điệp đã gửi](./images/vi/outbox-sent.png)
+
+Người dùng: tìm, tạo và quản lý tài khoản, vai và đơn vị.
+
+![Người dùng](./images/vi/users.png)
+
+Ứng dụng ngoài: mỗi ứng dụng có mã riêng và giữ đúng một vai của một mô hình.
+
+![Ứng dụng ngoài](./images/vi/apps.png)
+
+![Đăng ký ứng dụng ngoài](./images/vi/apps-dialog.png)
+
+Danh mục dữ liệu: dữ liệu của mỗi mô hình nằm ở đâu, ai được xem, trường nào sinh tự động và dữ liệu đi vào từ đâu.
+
+![Danh mục dữ liệu](./images/vi/data-catalog.png)
+
+Nguồn gốc của từng trường: giá trị đi vào từ đâu, quy tắc nào đọc nó và nó đi ra đâu.
+
+![Nguồn gốc của từng trường](./images/vi/catalog-lineage.png)
+
+Chất lượng dữ liệu: độ điền theo trường và độ mới của hồ sơ.
+
+![Chất lượng dữ liệu](./images/vi/catalog-quality.png)
+
+Màn hình giám sát: tình trạng dịch vụ, đăng nhập sai và các bất thường.
+
+![Màn hình giám sát](./images/vi/monitor.png)
+
+## Người xử lý và người nộp
+
+Hộp việc của người xử lý; giao diện tối bật bằng nút ở thanh trên.
+
+![Hộp việc](./images/vi/inbox.png)
+
+![Hộp việc, giao diện tối](./images/vi/inbox-dark.png)
+
+Người nộp tạo hồ sơ bằng form; trường bắt buộc, danh sách lựa chọn và đơn vị xử lý lấy từ tệp mô hình.
+
+![Tạo hồ sơ](./images/vi/create.png)
+
+Danh sách hồ sơ và trang chi tiết một hồ sơ có lịch sử từng bước và nút in giấy.
+
+![Danh sách hồ sơ](./images/vi/list.png)
+
+Bảng theo trạng thái xếp hồ sơ thành các cột; nút ở thanh công cụ đổi giữa danh sách và bảng.
+
+![Bảng theo trạng thái](./images/vi/board.png)
+
+![Chi tiết hồ sơ](./images/vi/detail.png)
+
+Giấy in dựng từ mẫu của thực thể, điền số liệu của hồ sơ đã duyệt.
+
+![Giấy in](./images/vi/print-form.png)
+
+Trang thống kê, lịch đặt phòng và báo cáo theo trường.
+
+![Thống kê](./images/vi/stats.png)
+
+![Lịch đặt phòng](./images/vi/calendar.png)
+
+![Báo cáo theo trường](./images/vi/report.png)
+
+Cổng vào gom các ứng dụng của hệ thống.
+
+![Cổng vào](./images/vi/portal.png)
+
+## Trên điện thoại
+
+Giao diện co lại thành thẻ trên màn hình hẹp.
+
+![Hộp việc trên điện thoại](./images/vi/phone-inbox.png)
+
+![Danh sách trên điện thoại](./images/vi/phone-list.png)
+
+![Chi tiết trên điện thoại](./images/vi/phone-detail.png)
+
+## Giao diện tiếng Anh
+
+Chữ của giao diện đổi theo nút chọn ngôn ngữ; chữ do tệp mô hình định nghĩa (tên thực thể, nhãn trường, nội dung mẫu in) giữ nguyên như tệp khai báo.
+
+![Bảng điều khiển, tiếng Anh](./images/en/console.png)
+
+![Màn hình kế hoạch, tiếng Anh](./images/en/plan.png)
+
+![Thư viện mẫu, tiếng Anh](./images/en/templates.png)
+
+![Soạn bằng form, tiếng Anh](./images/en/editor-form.png)
+
+![Hàng đợi sự kiện, thông điệp lỗi, tiếng Anh](./images/en/outbox-error.png)
+
+![Hàng đợi sự kiện, thông điệp đã gửi, tiếng Anh](./images/en/outbox-sent.png)
+
+![Người dùng, tiếng Anh](./images/en/users.png)
+
+![Ứng dụng ngoài, tiếng Anh](./images/en/apps.png)
+
+![Đăng ký ứng dụng ngoài, tiếng Anh](./images/en/apps-dialog.png)
+
+![Danh mục dữ liệu, tiếng Anh](./images/en/data-catalog.png)
+
+![Nguồn gốc của từng trường, tiếng Anh](./images/en/catalog-lineage.png)
+
+![Chất lượng dữ liệu, tiếng Anh](./images/en/catalog-quality.png)
+
+![Cổng vào, tiếng Anh](./images/en/portal.png)
+
+![Tạo hồ sơ, tiếng Anh](./images/en/create.png)
+
+![Danh sách hồ sơ, tiếng Anh](./images/en/list.png)
+
+![Bảng theo trạng thái, tiếng Anh](./images/en/board.png)
+
+![Thống kê, tiếng Anh](./images/en/stats.png)
+
+![Hộp việc, tiếng Anh](./images/en/inbox.png)
+
+![Chi tiết hồ sơ, tiếng Anh](./images/en/detail.png)
+
+![Lịch đặt phòng, tiếng Anh](./images/en/calendar.png)
+
+![Báo cáo theo trường, tiếng Anh](./images/en/report.png)
+
+![Hộp việc trên điện thoại, tiếng Anh](./images/en/phone-inbox.png)

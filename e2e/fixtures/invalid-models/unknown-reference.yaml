@@ -1,0 +1,11 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
+# SPDX-License-Identifier: Apache-2.0
+format: 0
+name: broken
+roles:
+  - name: STAFF
+entities:
+  ticket:
+    fields:
+      asset: {type: reference, to: missing_entity}
+    access: {STAFF: all}

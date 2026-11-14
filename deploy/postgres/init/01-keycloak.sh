@@ -1,4 +1,5 @@
 #!/bin/bash
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 # Creates the role and the database of Keycloak when the data directory is first initialised.
 set -euo pipefail

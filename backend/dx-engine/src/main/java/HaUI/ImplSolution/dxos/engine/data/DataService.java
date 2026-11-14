@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.engine.data;
 
@@ -100,6 +101,7 @@ public class DataService {
   private final AttachmentCleaner attachments;
   private final ActionCheck checks;
   private final TransactionTemplate separate;
+  private final RecordCodes codes;
 
   public DataService(
       NamedParameterJdbcTemplate jdbc,
@@ -111,6 +113,7 @@ public class DataService {
       KeycloakAdminClient keycloak,
       AttachmentCleaner attachments,
       ActionCheck checks,
+      RecordCodes codes,
       PlatformTransactionManager transactions) {
     this.jdbc = jdbc;
     this.user = user;
@@ -121,6 +124,7 @@ public class DataService {
     this.keycloak = keycloak;
     this.attachments = attachments;
     this.checks = checks;
+    this.codes = codes;
     this.separate = new TransactionTemplate(transactions);
     this.separate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
   }
@@ -209,6 +213,20 @@ public class DataService {
       requireRead(access);
       where.add(scope(model, entity, access.reads(), values));
     }
+    filters(entity, params, where, values);
+    return new Rows(
+        " FROM " + table(model, entity) + " WHERE " + String.join(" AND ", where), values);
+  }
+
+  // The rows the roles of the caller reach, narrowed by the filter.<field> parameters, as the tail
+  // of a query: what stats and report read. An administrator with no role in the model reaches
+  // none.
+  Rows readableRows(Model model, Entity entity, Map<String, String> params) {
+    Access access = access(model, entity);
+    requireRead(access);
+    MapSqlParameterSource values = new MapSqlParameterSource();
+    List<String> where = new ArrayList<>();
+    where.add(scope(model, entity, access.reads(), values));
     filters(entity, params, where, values);
     return new Rows(
         " FROM " + table(model, entity) + " WHERE " + String.join(" AND ", where), values);
@@ -356,6 +374,11 @@ public class DataService {
     requireReachableParent(model, entity, access, values);
     requireCreatableUnit(entity, access, values);
     bookings.check(model, entity, values, null);
+    for (Field field : entity.fields().values()) {
+      if (field.type() == FieldType.CODE) {
+        values.put(field.name(), codes.next(model, entity, field));
+      }
+    }
     MapSqlParameterSource params = new MapSqlParameterSource("created_by", user.currentUserId());
     List<String> names = new ArrayList<>(List.of("created_by"));
     List<String> markers = new ArrayList<>(List.of(":created_by"));
@@ -1106,6 +1129,7 @@ public class DataService {
         where.add(column + " IN (:" + name + ")");
       } else if ("like".equals(operator)) {
         if (type != FieldType.TEXT
+            && type != FieldType.CODE
             && type != FieldType.CHOICE
             && type != FieldType.USER
             && type != FieldType.UNIT) {
@@ -1182,6 +1206,10 @@ public class DataService {
       Field field = entity.fields().get(name);
       if (field == null) {
         errors.put(name, "unknown field");
+        continue;
+      }
+      if (field.type() == FieldType.CODE) {
+        errors.put(name, "is assigned by the system");
         continue;
       }
       Object value = item.getValue();
@@ -1303,6 +1331,7 @@ public class DataService {
       case BOOLEAN -> parseBoolean(String.valueOf(value));
       case DATE -> parseLocalDate(String.valueOf(value));
       case FILE -> throw new IllegalArgumentException("is set by uploading a file");
+      case CODE -> throw new IllegalArgumentException("is assigned by the system");
     };
   }
 

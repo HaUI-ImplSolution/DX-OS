@@ -24,8 +24,10 @@ Hai nơi đó được máy kiểm ở mỗi pull request, tài liệu này ch�
 | PostgreSQL | PostgreSQL License | Dữ liệu có cấu trúc, hàng đợi outbox | Một cơ sở dữ liệu cho dữ liệu nghiệp vụ, lịch sử, outbox và quy trình, nên giao dịch bao trùm được việc ghi hồ sơ và đổi trạng thái | Image chính thức `postgres:16-bookworm` ghim digest; mỗi mô hình một schema |
 | SeaweedFS | Apache-2.0 | Dữ liệu phi cấu trúc | API tương thích S3, nên đổi sang kho S3 khác chỉ đổi địa chỉ | Image chính thức ghim digest; truy cập qua AWS SDK |
 | Flowable 8 | Apache-2.0 | Động cơ luồng công việc | Động cơ BPMN trưởng thành, chạy nhúng trong tiến trình và dùng chung giao dịch với việc ghi hồ sơ | Nhúng bằng `flowable-spring`; người dùng không viết BPMN, đội cung cấp ba họ mẫu có tham số |
+| Apache PDFBox 3 | Apache-2.0 | Ghi PDF của mẫu in | Thư viện PDF nguồn mở của Apache chỉ ghi tệp, không có bộ dịch HTML hay script nên mẫu không chạy được mã | Mẫu in là khai báo có cấu trúc trong tệp mô hình; DX-OS tự dàn trang rồi gọi PDFBox |
+| Noto Sans | OFL-1.1 | Phông nhúng trong PDF | Phủ đủ chữ tiếng Việt, và giấy phép của phông cho phép nhúng vào tài liệu | Hai tệp (thường và đậm) nằm trong resource của backend, mỗi PDF nhúng phần chữ nó dùng |
 | pgschema 1.13 | Apache-2.0 | So sánh và đổi lược đồ | Khai báo trạng thái đích rồi tính câu lệnh cần chạy, giống Terraform | Binary lấy từ image chính thức ghim digest; lõi đổi tên cột trước và chặn mọi thao tác xóa mà mô hình không yêu cầu |
-| ClamAV | GPL-2.0 | Quét mã độc tệp tải lên | Bộ quét nguồn mở sẵn có | Chạy ở container riêng, bật bằng profile `av`; lõi chỉ gọi qua mạng. Image của ClamAV kèm `libclamunrar` (giải nén RAR) theo giấy phép UnRAR, không phải mã mở; nạp lúc chạy, không liên kết với `libclamav`, và dự án không sửa hay phân phối lại nó |
+| ClamAV | GPL-2.0 | Quét mã độc tệp tải lên | Bộ quét nguồn mở sẵn có | Chạy ở container riêng, bật sẵn bằng profile `av`; lõi chỉ gọi qua mạng. Image của ClamAV kèm `libclamunrar` (giải nén RAR) theo giấy phép UnRAR, không phải mã mở; nạp lúc chạy, không liên kết với `libclamav`, và dự án không sửa hay phân phối lại nó |
 | Spring Boot, Java 21 | Apache-2.0, GPL-2.0 with Classpath Exception | Khung dịch vụ lõi | Khung phổ biến, có sẵn bảo mật OAuth2, Flyway và kiểm dữ liệu; ranh giới module kiểm được lúc biên dịch | Eclipse Temurin chạy nguyên bản |
 | react-admin, MUI | MIT | Giao diện dựng từ metadata | Có sẵn danh sách, form và trường cho các kiểu trường của mô hình; một mô hình nạp lúc chạy không cần build lại giao diện | Chỉ dùng phần MIT, không dùng gói Enterprise |
 | Monaco Editor, monaco-yaml | MIT | Trình soạn mô hình | Gợi ý và báo lỗi YAML theo JSON Schema của tệp mô hình | Chạy trong trình duyệt |
@@ -36,7 +38,7 @@ Hai nơi đó được máy kiểm ở mỗi pull request, tài liệu này ch�
 | reuse | Apache-2.0, GPL-3.0-or-later (mã); CC0-1.0, CC-BY-SA-4.0 (tài liệu) | Kiểm giấy phép và bản quyền của từng tệp theo chuẩn REUSE trong CI | Công cụ nguồn mở, chạy bằng `pipx run`, không đóng gói vào sản phẩm | `.github/workflows/ci-compliance.yml` |
 
 
-ClamAV được giữ vì đề thi yêu cầu kiểm dịch mã độc ngay tại cửa ngõ, và nó tắt mặc định.
+ClamAV được giữ vì đề thi yêu cầu kiểm dịch mã độc ngay tại cửa ngõ, và nó bật mặc định.
 Dự án kéo image chính thức nguyên bản khi chạy, không đóng gói và không phân phối lại nó.
 `libclamunrar` nạp lúc chạy, không liên kết với `libclamav`; thiếu nó thì ClamAV vẫn chạy, chỉ không giải nén RAR.
 
@@ -51,7 +53,7 @@ Dự án kéo image chính thức nguyên bản khi chạy, không đóng gói v
 | Frappe | Chỉ lấy ý tưởng | Một mô hình là nguồn sự thật cho bảng, form và quyền; không dùng làm nền vì đề yêu cầu lõi không có giao diện |
 | Trình thiết kế BPMN kéo thả | Không làm | Người triển khai nhập tham số, hệ thống sinh quy trình từ họ mẫu |
 | Mattermost | Đã gỡ khỏi cây mã | Giấy phép bản Team Edition bị tranh cãi (MIT cho bản build, AGPL cho mã nguồn) và bản 11 giới hạn 250 người dùng; thông báo chat đi qua webhook dạng `chat` nên đổi sang Zulip, Slack hay dịch vụ khác chỉ đổi địa chỉ |
-| Superset | Đã gỡ khỏi cây mã | Gỡ cùng các ứng dụng cũ; vai `report_ro` chỉ đọc dành cho công cụ báo cáo do người vận hành cấp; Superset (Apache-2.0) chỉ là ví dụ trong `deploy/REPORTING.md`, cài riêng và không thuộc stack |
+| Superset | Đã gỡ khỏi cây mã | Gỡ cùng các ứng dụng cũ; vai `report_ro` chỉ đọc dành cho công cụ báo cáo do người vận hành cấp; Superset (Apache-2.0) chỉ là ví dụ trong `docs/REPORTING.md`, cài riêng và không thuộc stack |
 | Qwen2.5 | Đã gỡ | Trọng số Apache-2.0 nhưng dữ liệu huấn luyện không công khai, không đạt định nghĩa Open Source AI |
 | Reranker mMARCO | Đã gỡ | Thẻ mô hình ghi Apache-2.0 nhưng MS MARCO, bộ dữ liệu nó dựa trên, chỉ cho nghiên cứu phi thương mại |
 | Redis, Langfuse | Đã gỡ | Redis theo RSALv2 hoặc SSPLv1; Langfuse có phần EE riêng; cả hai chỉ phục vụ bộ đánh giá RAG đã bỏ |
@@ -67,6 +69,8 @@ Mã của bản trước (hai ứng dụng nghiệp vụ viết tay, Superset, M
 | Mọi tệp mã có header SPDX; mọi tệp có giấy phép và bản quyền theo chuẩn REUSE | `.github/scripts/check_licenses.py`, `reuse lint` với `REUSE.toml` | Job `Check licenses` của workflow `Compliance` |
 | Mọi gói trong SBOM có giấy phép cho phép, ngoại lệ có lý do | `check_licenses.py`, `.github/dependency-exceptions.json` | Cùng job |
 | Image, mô hình và tệp dữ liệu khai báo giấy phép | `.github/component-catalog.json` | Cùng job |
+| Giấy phép của từng image và bản tải về ở đúng phiên bản đang dùng đúng như đã khai và thuộc danh sách OSI; không xác định được thì đỏ | `.github/scripts/check_upstream_licenses.py` | Job `Check upstream licenses` của workflow `Compliance`, mỗi pull request và mỗi tuần |
+| Giấy phép của gói Maven và npm ở phiên bản mà pull request đề xuất | `check_licenses.py sbom` trên SBOM sinh lại | Job `Check SBOMs against lockfiles` và `Scan the backend SBOM` |
 | Không bí mật trong cây mã và lịch sử | gitleaks | Job `Scan for secrets` của workflow `Compliance` |
 | Không dependency có lỗ hổng HIGH hoặc CRITICAL đã có bản vá | Trivy, SBOM của Maven | workflow `Dependencies`, chạy cả theo lịch |
 | Không có `vendor/`, `node_modules/`, `third_party/` trong Git | `git ls-files \| grep -E '(^\|/)(vendor\|third_party\|node_modules)/'` | Chạy tay |

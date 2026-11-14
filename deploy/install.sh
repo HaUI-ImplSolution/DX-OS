@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 # Installs the stack into a directory of its own, so it runs without the source tree.
 #
 #   ./install.sh [--upgrade] [prefix] [image-tag]
 #
 # [prefix] defaults to $DXOS_HOME or ~/.dxos; [image-tag] is latest (default) or a release tag such as v2.0.0.
-# Copies deploy/ and what its compose file mounts (sso/) into <prefix>, keeping their relative layout,
+# Copies deploy/, what its compose file mounts (sso/) and the scripts that dxos conformance runs (e2e/api/) into <prefix>, keeping their relative layout,
 # writes <prefix>/deploy/.env with random secrets and links the dxos command into ~/.local/bin.
 # --upgrade replaces runtime files, keeps .env, data/ and apisix/local.yaml, adds the variables
 # a newer .env.example brings and sets the image tag.
@@ -51,9 +52,9 @@ if [[ ! -e "$ENV_FILE" && "$UPGRADE" == true ]]; then
 fi
 
 # Runtime files, relative to the source root: everything in deploy/ but local state and env files
-# (.env.example stays), and the realm file.
+# (.env.example stays), the realm file, and the three scripts that dxos conformance runs.
 runtime_files() {
-  (cd "$SOURCE" && find deploy sso/realm-dxos.json \
+  (cd "$SOURCE" && find deploy sso/realm-dxos.json e2e/api/kc.py e2e/api/check_api.py e2e/api/check_conformance.py \
     \( -path deploy/data -o -path deploy/backups -o -name __pycache__ \) -prune -o \
     -type f ! \( -name '.env*' ! -name '.env.example' \) ! -name 'VPS.md' \
     ! -path deploy/apisix/local.yaml -print) | LC_ALL=C sort
@@ -94,6 +95,8 @@ if [[ "$UPGRADE" == true ]]; then
   while IFS= read -r line; do
     key="${line%%=*}"
     if [[ "$line" =~ ^[A-Za-z0-9_]+= ]] && ! grep -q "^$key=" "$ENV_FILE"; then
+      # An install that never chose the virus scan keeps it off: the scan host without the profile av would refuse every upload.
+      [[ "$key" == STORAGE_SCAN_HOST ]] && line="STORAGE_SCAN_HOST="
       printf '%s\n' "$line" >> "$ENV_FILE"
       echo "    added $key"
     fi

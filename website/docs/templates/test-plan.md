@@ -36,7 +36,7 @@ _Gợi ý nhóm case: happy path, âm tính, phân quyền theo role và theo cl
 
 **Theo mô hình** (chỉ giữ mô hình mà phase đụng tới)
 
-- [ ] `python3 deploy/dev/check_conformance.py <tên mô hình>` đạt.
+- [ ] `python3 e2e/api/check_conformance.py <tên mô hình>` đạt.
 - [ ] {hồi quy riêng của mô hình}.
 
 ## 4. Tiêu chí đạt của phase (exit criteria)

@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.engine.meta;
 
@@ -29,7 +30,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class MetaController {
 
   // multiple, min, max, pattern and requiredWhen are null (multiple false) when the field does not
-  // declare them; min and max are text, a number as written or a date as YYYY-MM-DD.
+  // declare them; min and max are text, a number as written or a date as YYYY-MM-DD. format is the
+  // shape of the code of a code field.
   public record FieldMeta(
       String name,
       String label,
@@ -42,7 +44,8 @@ public class MetaController {
       String min,
       String max,
       String pattern,
-      ProcessFamily.Condition requiredWhen) {}
+      ProcessFamily.Condition requiredWhen,
+      String format) {}
 
   public record EntityMeta(
       String name,
@@ -56,7 +59,11 @@ public class MetaController {
       boolean canHandle,
       boolean canAssign,
       List<String> handlerActions,
-      Model.Ui ui) {}
+      Model.Ui ui,
+      List<DocumentMeta> documents) {}
+
+  // A print template as the screens need it: when is empty for a template of any state.
+  public record DocumentMeta(String name, String label, List<String> when) {}
 
   // held is true for a model that is being applied or needs reconciliation; it has no entities
   // then.
@@ -140,7 +147,8 @@ public class MetaController {
                         f.min(),
                         f.max(),
                         f.pattern(),
-                        f.requiredWhen()))
+                        f.requiredWhen(),
+                        f.format()))
             .toList();
     ProcessInfo process =
         entity.process() == null
@@ -169,7 +177,10 @@ public class MetaController {
         data.canHandle(model, entity),
         data.canAssign(model, entity),
         handlerActions(model, entity),
-        entity.ui());
+        entity.ui(),
+        entity.documents().stream()
+            .map(d -> new DocumentMeta(d.name(), d.label(), d.when()))
+            .toList());
   }
 
   // The actions the roles of the caller may take on a record, as the process rules decide them.

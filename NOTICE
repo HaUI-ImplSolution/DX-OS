@@ -5,14 +5,40 @@ Sản phẩm dự thi OLP Phần mềm nguồn mở 2026 (khối thi DX-OS, VFOS
 phát triển tại Trường Công nghệ Thông tin và Truyền thông, Đại học Công nghiệp Hà Nội.
 
 Mã nguồn do nhóm tự viết được cấp phép theo Apache License 2.0 (xem LICENSE).
+Tài liệu, ảnh chụp màn hình, video và sơ đồ do nhóm tạo cũng được cấp phép theo Apache License 2.0.
+
+MỤC ĐÍCH CỦA GIẤY PHÉP
+----------------------
+
+Nhóm chọn Apache License 2.0 để mọi tổ chức tiếp nhận DX-OS, nhất là trường học, khoa, doanh nghiệp nhỏ và cơ quan không có ngân sách mua bản quyền phần mềm, đều được tự do:
+
+  1. Dùng cho mọi mục đích, kể cả thương mại, không phải trả phí.
+  2. Đọc, nghiên cứu và sửa mã nguồn để hợp với nghiệp vụ của mình.
+  3. Phân phối lại bản gốc hoặc bản đã sửa.
+  4. Đóng góp trở lại cho dự án.
+
+Giấy phép còn cấp quyền dùng sáng chế của người đóng góp (mục 3 của giấy phép), nên người dùng không bị kiện vì sáng chế nằm trong phần mã họ nhận.
+
+Đây là giấy phép cho phép chứ không bắt phải mở lại mã phái sinh, vì DX-OS lắp ghép nhiều phần mềm nguồn mở có giấy phép khác nhau.
+Giấy phép này không xung đột với chúng, và các thành phần copyleft chỉ chạy thành dịch vụ riêng, giao tiếp qua mạng (xem DEPENDENCIES.txt).
+
+Toàn văn giấy phép ở tệp LICENSE.
+Mỗi tệp mã có dòng SPDX-FileCopyrightText và dòng SPDX-License-Identifier ở đầu; tệp không chèn được dòng đó (tài liệu, ảnh, JSON, phông) được khai trong REUSE.toml theo chuẩn REUSE, và `reuse lint` kiểm cả cây.
 
 Sản phẩm này sử dụng phần mềm của bên thứ ba, giữ nguyên giấy phép gốc:
 
-- Spring Boot, Flowable, Keycloak, Apache APISIX, SeaweedFS, Flyway, pgschema (Apache-2.0).
+- Spring Boot, Flowable, Keycloak, Apache APISIX, SeaweedFS, Flyway, pgschema, Apache PDFBox (Apache-2.0).
+- Noto Sans, phông nhúng trong PDF của mẫu in (SIL Open Font License 1.1).
+- Maven Wrapper (backend/mvnw, backend/mvnw.cmd, backend/.mvn/wrapper/maven-wrapper.properties), chép nguyên từ Apache Maven, không sửa (Apache-2.0, bản quyền của The Apache Software Foundation).
 - PostgreSQL (PostgreSQL License).
 - React, react-admin, Material UI (MIT).
 - caniuse-lite, dữ liệu của Can I Use (CC-BY-4.0), chỉ dùng lúc dựng trang tài liệu.
-- ClamAV (GPL-2.0), chạy nguyên bản thành dịch vụ riêng khi bật quét mã độc; image của nó kèm libclamunrar theo giấy phép UnRAR, nạp lúc chạy và không do dự án này phân phối.
+- ClamAV (GPL-2.0), chạy nguyên bản thành dịch vụ riêng để quét mã độc; image của nó kèm libclamunrar theo giấy phép UnRAR, nạp lúc chạy và không do dự án này phân phối.
+
+Ảnh chụp màn hình, video và sơ đồ trong repository do nhóm tạo từ hệ thống đang chạy với dữ liệu giả, và được cấp phép Apache-2.0.
+Ảnh có thể hiện giao diện của phần mềm bên thứ ba, ví dụ trang đăng nhập của Keycloak (Apache-2.0); phần đó thuộc giấy phép và nhãn hiệu của chủ sở hữu, và chỉ dùng để minh họa.
+
+Mọi giấy phép của dự án và của thành phần dùng trong sản phẩm được OSI công nhận; vài gói dữ liệu chỉ đọc lúc dựng trang tài liệu là ngoại lệ, nêu tên và lý do ở mục 7 của DEPENDENCIES.txt.
 
 Danh sách thành phần đầy đủ ở DEPENDENCIES.txt; SBOM CycloneDX ở thư mục sbom/.
 Bản build của ứng dụng web và của trang tài liệu đóng gói thư viện npm, nên mỗi bản build kèm tệp third-party-licenses.txt ở gốc, chép nguyên thông báo bản quyền của từng thư viện.

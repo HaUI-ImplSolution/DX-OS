@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 # Encrypted backup of everything that cannot be rebuilt from the repository: every Postgres
 # database (business data, Keycloak accounts), the object store files and attachments. Uses restic (deduplicated, encrypted),
@@ -8,7 +9,7 @@
 #   ./backup.sh verify          restore the latest snapshot into a scratch Postgres and SeaweedFS and check
 #                               that every model has its tables and every attachment its file
 #   ./backup.sh snapshots       list the snapshots
-#   ./backup.sh restore <dir>   restore the latest snapshot into <dir> (see deploy/OPERATIONS.md)
+#   ./backup.sh restore <dir>   restore the latest snapshot into <dir> (see docs/OPERATIONS.md)
 #
 # Settings in deploy/.env (ENV_FILE=other.env picks another file):
 #   BACKUP_PASSWORD     encrypts the repository; lose it and the backups are unreadable

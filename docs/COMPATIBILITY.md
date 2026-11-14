@@ -1,6 +1,6 @@
 # Tương thích giữa các bản
 
-Tài liệu này nói bên dùng DX-OS được trông cậy vào điều gì khi lên bản mới: ứng dụng gọi API, bên nhận webhook, tệp mô hình và cơ sở dữ liệu.
+Tài liệu này nói bên dùng DX-OS được trông cậy vào điều gì khi lên bản mới: ứng dụng gọi API, bên nhận webhook, tệp mô hình, cơ sở dữ liệu và số đo vận hành.
 Mỗi thay đổi người dùng thấy được ghi ở [`CHANGELOG.md`](../CHANGELOG.md), theo từng bản.
 
 ## Đánh số bản
@@ -27,6 +27,12 @@ Bên gọi nên bỏ qua trường mà mình không biết.
 
 Đặc tả đầy đủ ở OpenAPI (`/v3/api-docs`) của backend đang chạy.
 
+## Số đo vận hành
+
+Tên, kiểu và nhãn của các số đo `dxos_*` ở `/actuator/prometheus` (bảng ở [`docs/MONITORING.md`](MONITORING.md)) được giữ trong cùng bản chính; thêm số đo hoặc thêm giá trị cho một nhãn được phép ở bản nhỏ.
+Bỏ hoặc đổi tên một số đo, đổi kiểu hoặc đổi nghĩa của nó, và thêm nhãn mới cho một số đo đã có chỉ làm ở bản chính tiếp theo.
+Các số đo chuẩn của JVM, cơ sở dữ liệu và HTTP do thư viện sinh ra và theo bản của thư viện, nên bảng của DX-OS không nói tới chúng.
+
 ## Tệp mô hình
 
 Tệp mô hình ghi `format` là số của định dạng; hiện là `1`.
@@ -35,6 +41,7 @@ Tệp mô hình ghi `format` là số của định dạng; hiện là `1`.
 - Đổi định dạng theo cách làm tệp cũ không còn hợp lệ thì tăng `format`, và ghi cách chuyển ở `CHANGELOG.md`.
 - Trong cùng bản chính, một tệp hợp lệ ở bản trước vẫn hợp lệ.
 - Lõi tự nâng tệp format cũ trong bộ nhớ khi đọc; `dxos model upgrade` xem trước và ghi tệp đã nâng (xem `docs/MODEL.md`).
+- `dxos lint` đọc tệp bằng cùng bộ đọc nên nhận cùng các format như lõi, và từ chối format mới hơn bản lõi (xem `docs/MODEL.md`).
 
 Đổi một mô hình đang chạy đi qua kế hoạch: lõi nói trước thay đổi nào chuyển được dữ liệu, thay đổi nào bị từ chối và vì sao (xem [`docs/MODEL.md`](./MODEL.md)).
 
@@ -46,7 +53,7 @@ Mỗi thông điệp có `schemaVersion`, hiện là `1`.
 - Bỏ hoặc đổi nghĩa một trường thì tăng `schemaVersion` ở bản chính tiếp theo.
 - Bên nhận nên bỏ qua trường lạ và đọc `schemaVersion` trước khi hiểu nội dung.
 
-Chữ ký `X-Dxos-Signature` và quy ước khử trùng theo `eventId` giữ nguyên trong cùng bản chính; chi tiết ở [`deploy/INTEGRATIONS.md`](../deploy/INTEGRATIONS.md).
+Chữ ký `X-Dxos-Signature` và quy ước khử trùng theo `eventId` giữ nguyên trong cùng bản chính; chi tiết ở [`docs/INTEGRATIONS.md`](INTEGRATIONS.md).
 
 ## Cơ sở dữ liệu
 

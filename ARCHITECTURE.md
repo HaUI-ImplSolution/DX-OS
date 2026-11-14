@@ -228,3 +228,64 @@ Flowable đặt `search_path` của kết nối nó dùng về `engine` và khô
 | Hội tụ dữ liệu hành chính (IT) và vận hành (OT) | Chương trình giả lập thiết bị tạo hồ sơ sự cố qua API (`examples/itot-simulator`), cùng quy trình, quyền và lịch sử với hồ sơ hành chính |
 | Quản trị dữ liệu, phả hệ và nguồn gốc | Tệp mô hình là danh mục dữ liệu; danh mục, số đo chất lượng và phả hệ từng trường đọc từ đó (mục 11); lịch sử hồ sơ chống sửa |
 | Zero-Trust, GitOps, kiểm dịch mã độc, tự phục hồi | Token kiểm ở gateway và backend; ClamAV từ chối tệp khi chưa quét được; `dxos gitops` kéo hạ tầng và mô hình từ git; `dxos reconcile` và `restart: unless-stopped` |
+
+## 14. Quyết định đã chốt
+
+Mỗi quyết định ghi theo mẫu: bối cảnh, phương án, quyết định, hệ quả.
+Lý do chọn từng công cụ ở [trang thành phần](https://haui-implsolution.github.io/DX-OS/docs/dependencies); mục này chỉ ghi các quyết định về cấu trúc.
+
+### QĐ-1: API chung đọc mô hình lúc chạy
+
+- **Bối cảnh:** lõi phải phục vụ nhiều nghiệp vụ mà không biết trước thực thể nào, và đổi mô hình khi hệ thống đang chạy.
+- **Phương án:** sinh mã cho từng thực thể; dùng một nền dựng backend từ bảng có sẵn (Supabase, Strapi, Directus); một API chung đọc mô hình lúc chạy.
+- **Quyết định:** API chung đọc mô hình đang chạy rồi mới dựng truy vấn.
+- **Hệ quả:** không có mã sinh ra để bảo trì, và đổi thực thể chỉ cần đổi mô hình; đổi lại, việc chống chèn SQL, quyền theo dòng và hiệu năng nằm trong mã tự viết (mục 5).
+
+### QĐ-2: Một PostgreSQL cho dữ liệu, lịch sử, hàng đợi và quy trình
+
+- **Bối cảnh:** ghi một hồ sơ, đổi trạng thái và ghi sự kiện phải thành công hoặc hỏng cùng nhau.
+- **Phương án:** mỗi thành phần một kho riêng; một cơ sở dữ liệu cho tất cả.
+- **Quyết định:** một PostgreSQL, mỗi mô hình một schema, Flowable dùng chung (mục 11); Keycloak giữ cơ sở dữ liệu riêng.
+- **Hệ quả:** một giao dịch bao trùm cả ba việc; đổi lại, PostgreSQL là điểm lỗi đơn, và sao lưu phải chụp cả dữ liệu lẫn kho tệp (mục 10).
+
+### QĐ-3: Flowable nhúng, BPMN sinh từ khai báo
+
+- **Bối cảnh:** người triển khai cần quy trình duyệt mà không viết BPMN, và quy trình không được đi vòng quy tắc của lõi.
+- **Phương án:** trình thiết kế BPMN kéo thả; nạp tệp BPMN tự viết; họ mẫu có tham số hoặc `states` và `actions` khai báo.
+- **Quyết định:** Flowable chạy nhúng trong `dx-engine`; lõi sinh BPMN từ họ mẫu hoặc từ khai báo (mục 6).
+- **Hệ quả:** mọi quy trình chịu cùng bộ quy tắc bất biến; đổi lại, không nạp được BPMN tự viết và không có trình kéo thả.
+
+### QĐ-4: Áp dụng mô hình theo kế hoạch có thứ tự, không giao dịch chung
+
+- **Bối cảnh:** một lần đổi mô hình chạm PostgreSQL, Keycloak, Flowable và SeaweedFS, mà bốn thành phần không chung một giao dịch.
+- **Phương án:** một giao dịch phân tán; đổi tay từng thành phần; xem trước một kế hoạch rồi chạy từng bước.
+- **Quyết định:** xem trước, rồi áp dụng từng bước ghi vào `engine.apply_step`, mỗi bước chạy lại được an toàn (mục 4).
+- **Hệ quả:** lần áp dụng dừng giữa chừng thì lõi giữ mô hình, và quản trị viên chọn tiếp tục hoặc hủy bỏ; lõi không tự thử lại và không tự quay lui.
+
+### QĐ-5: Trục sự kiện bằng bảng outbox, không có message broker
+
+- **Bối cảnh:** hệ thống ngoài cần biết hồ sơ đổi, mà việc gửi không được làm hỏng hay chặn thay đổi.
+- **Phương án:** một message broker; gọi thẳng hệ thống ngoài trong giao dịch; ghi sự kiện vào bảng cùng giao dịch rồi gửi sau.
+- **Quyết định:** bảng `engine.outbox` trong PostgreSQL, gửi webhook có chữ ký, thử lại khi bên nhận lỗi, và API kéo sự kiện theo `eventId` (mục 7).
+- **Hệ quả:** không mất sự kiện khi bên nhận lỗi; đổi lại, giao ít nhất một lần nên bên nhận phải khử trùng theo `eventId`.
+
+### QĐ-6: Vai theo từng mô hình, đơn vị dùng chung
+
+- **Bối cảnh:** hai mô hình có thể dùng cùng tên vai, còn đơn vị là cơ cấu tổ chức chung của cả hệ thống.
+- **Phương án:** vai và đơn vị cùng chung toàn hệ thống; cả hai riêng từng mô hình; vai riêng từng mô hình, đơn vị chung.
+- **Quyết định:** vai của mỗi mô hình nằm trong client `dxos-m-<mô hình>`; đơn vị là nhóm Keycloak theo tên, chỉ cho phạm vi dòng (mục 3 và 4).
+- **Hệ quả:** hai mô hình dùng cùng tên vai không va nhau; đổi vai hay đơn vị có hiệu lực sau tối đa khoảng 5 phút vì đọc từ token đã ký.
+
+### QĐ-7: Lịch sử chống sửa bằng chuỗi hash và điểm neo ngoài cơ sở dữ liệu
+
+- **Bối cảnh:** lịch sử hồ sơ phải cho thấy khi bị sửa, kể cả bởi người có quyền trên cơ sở dữ liệu.
+- **Phương án:** chặn mọi quyền sửa; nối các dòng thành một chuỗi hash; chuỗi hash cộng điểm neo lưu ở nơi khác.
+- **Quyết định:** các dòng `engine.record_event` nối thành chuỗi hash, và mỗi giờ lõi ghi một điểm neo vào kho đối tượng, ngoài PostgreSQL (mục 10).
+- **Hệ quả:** chuỗi phát hiện chứ không ngăn việc sửa; bên nhận webhook giữ `hash` của tin đã nhận thì có thêm một điểm neo ngoài máy chủ.
+
+### QĐ-8: Thành phần nguồn mở dùng nguyên bản, giấy phép OSI
+
+- **Bối cảnh:** đề thi đòi sản phẩm nguồn mở, và lõi không được phụ thuộc vào một nhà cung cấp.
+- **Phương án:** viết lại các thành phần; sửa hoặc vá mã thượng nguồn; dùng nguyên bản và cấu hình.
+- **Quyết định:** image chính thức ghim tag và digest, không sửa mã thượng nguồn, mọi giấy phép thuộc danh sách OSI và được máy kiểm ở mỗi pull request.
+- **Hệ quả:** thay một thành phần là đổi cấu hình hoặc địa chỉ; đổi lại, phần dự án cần mà thượng nguồn không có phải tự viết ở lớp nối.

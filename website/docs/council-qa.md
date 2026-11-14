@@ -42,7 +42,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - Dùng phần mềm nguồn mở trưởng thành cho từng việc: Keycloak cho định danh, APISIX cho cổng, PostgreSQL cho dữ liệu, SeaweedFS cho tệp, Flowable cho quy trình, pgschema để đổi lược đồ.
   Đội tự viết phần nối chúng theo một tệp mô hình.
 - Java 21 và Spring Boot vì ranh giới giữa các module kiểm được lúc biên dịch.
-- Mã của đội theo Apache-2.0, repository chỉ có một giấy phép.
+- Mã, tài liệu, ảnh, video và sơ đồ của đội theo Apache-2.0, hai tệp phông Noto Sans theo OFL-1.1; cả hai giấy phép đều được OSI công nhận và không xung đột.
   Mọi thành phần khác đều theo giấy phép OSI; không dùng BUSL, SSPL, RSAL, MSCL hay phần Enterprise.
 - **Bằng chứng:** [Thành phần được chọn và không chọn](./dependencies.md); `DEPENDENCIES.txt`; `sbom/`; job `Check licenses` của workflow `Compliance`.
 
@@ -190,7 +190,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 ## 18. Giấy phép tuân thủ thế nào?
 
 - Mã của đội theo Apache-2.0, có `LICENSE` toàn văn, `NOTICE` và dòng SPDX ở đầu mỗi tệp mã.
-- Repository chỉ có một giấy phép, Apache-2.0; không có thành phần AGPL nào trong cây mã.
+- Mã, tài liệu và ảnh của repository theo Apache-2.0, hai tệp phông theo OFL-1.1; không có thành phần AGPL nào trong cây mã.
 - Mỗi bản phát hành có gói `.tar.gz` kèm `.sha256` và SBOM CycloneDX; không dùng định dạng đóng.
 - Job `Check licenses` của workflow `Compliance` chạy ở mọi pull request: kiểm header, giấy phép của từng gói trong SBOM, danh mục image.
 - Cam kết của đội chặt hơn thể lệ: cả công cụ, mô hình AI (khi có) và dữ liệu đều phải mở; thành phần không đạt đã gỡ khỏi bản phát hành.

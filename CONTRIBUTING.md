@@ -28,6 +28,8 @@ cd ../frontend && npm install && npm run dev
    Đặt tên nhánh `<loại>/<số issue>-<mô tả ngắn>`, ví dụ `feat/272-prometheus-metrics`, với loại là `feat`, `fix`, `docs`, `refactor`, `test` hoặc `chore`.
    Thành viên nhóm tạo nhánh thẳng trên repository; người ngoài nhóm fork repository, tạo nhánh trên bản fork và gửi pull request từ đó.
 2. Sửa nhỏ, mỗi thay đổi một mục đích.
+   Tính năng mới đi kèm kiểm tự động: một test backend ở `backend/*/src/test`, hoặc một mục kiểm trong script `deploy/dev/check_*.py` khi tính năng chỉ chạy trên stack thật.
+   Sửa lỗi thì thêm kiểm bắt đúng lỗi đó khi làm được.
 3. Chạy các lệnh kiểm ở bảng dưới trước khi gửi.
 4. Gửi pull request vào `Khuong/main` và điền danh sách kiểm trong mẫu, kèm `Closes #<số issue>` khi pull request đủ đóng issue.
    Pull request vào `main` phải có các check xanh theo ruleset ở [`.github/rulesets/README.md`](./.github/rulesets/README.md).
@@ -51,6 +53,7 @@ cd ../frontend && npm install && npm run dev
 - **Mã:** Java 21, định dạng theo google-java-format (chạy `./mvnw spotless:apply`); comment ngắn, nêu hành vi hiện tại, tiếng Anh.
 - **API:** mô tả `@Operation` bằng tiếng Anh; mọi response bọc trong `ApiResponse`.
 - **Tài liệu:** tiếng Việt, mỗi câu một dòng, chỉ ghi trạng thái hiện tại.
+- **Issue và pull request:** viết bằng tiếng Việt hoặc tiếng Anh; nhóm đọc và trả lời cả hai.
 - **Thông báo của backend:** viết bằng tiếng Anh kèm `errorCode`; mỗi thông báo mới cần thêm một mẫu dịch ở `frontend/src/shell/backendMessages.ts`, nếu không giao diện hiện nguyên văn tiếng Anh.
 - **Mã lõi không chứa tên thực thể, vai hay luồng của một lĩnh vực**; nghiệp vụ nằm trong tệp mô hình.
 - **Header giấy phép:** dòng `SPDX-License-Identifier` với `Apache-2.0` ở đầu mọi file mã nguồn; file không chèn được chú thích (hoặc đã phát hành, như migration SQL) khai trong `REUSE.toml`; `reuse lint` kiểm cả hai.
@@ -81,8 +84,8 @@ cd ../frontend && npm install && npm run dev
 
 ## Giấy phép của phần đóng góp
 
-Phần đóng góp được cấp phép theo Apache License 2.0 như cả dự án (mục 5 của giấy phép), trừ khi bạn nêu rõ khác ngay trong pull request.
-Mã hay tài liệu lấy từ nơi khác phải có giấy phép OSI tương thích, được khai ở [`DEPENDENCIES.txt`](./DEPENDENCIES.txt) hoặc `REUSE.toml`, và nêu nguồn trong mô tả pull request.
+Phần đóng góp, gồm mã, tài liệu, ảnh, video và sơ đồ, được cấp phép theo Apache License 2.0 như cả dự án (mục 5 của giấy phép), trừ khi bạn nêu rõ khác ngay trong pull request.
+Mã, tài liệu hay ảnh lấy từ nơi khác phải có giấy phép được OSI công nhận và tương thích với Apache-2.0, được khai ở [`DEPENDENCIES.txt`](./DEPENDENCIES.txt) hoặc `REUSE.toml`, và nêu nguồn trong mô tả pull request.
 
 ## Phát hành
 

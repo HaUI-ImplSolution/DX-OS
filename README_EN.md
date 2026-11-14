@@ -11,6 +11,7 @@
 [![Platform](https://github.com/HaUI-ImplSolution/DX-OS/actions/workflows/ci-platform.yml/badge.svg)](https://github.com/HaUI-ImplSolution/DX-OS/actions/workflows/ci-platform.yml)
 [![Compliance](https://github.com/HaUI-ImplSolution/DX-OS/actions/workflows/ci-compliance.yml/badge.svg)](https://github.com/HaUI-ImplSolution/DX-OS/actions/workflows/ci-compliance.yml)
 [![Docs](https://github.com/HaUI-ImplSolution/DX-OS/actions/workflows/docs.yml/badge.svg)](https://haui-implsolution.github.io/DX-OS/)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/16682/badge)](https://www.bestpractices.dev/projects/16682)
 
 Entry of the **OLP Open Source Software 2026** contest, DX-OS track (VFOSSA), by team **HaUI-ImplSolution**, School of Information and Communication Technology, Hanoi University of Industry.
 
@@ -298,7 +299,8 @@ The documents on writing a model file, the API, operation, monitoring, integrati
 
 ## License
 
-Apache License 2.0, see [`LICENSE`](./LICENSE).
+The source code, documents, screenshots, videos and diagrams are under the Apache License 2.0, see [`LICENSE`](./LICENSE).
+Every license of the project and of the components it uses is approved by the OSI, except a few data packages read only while the docs site is built; they are named with the reason in [`DEPENDENCIES.txt`](./DEPENDENCIES.txt), section 7.
 The license of each third-party component is in [`DEPENDENCIES.txt`](./DEPENDENCIES.txt).
 
 References: [contest topic](https://vfossa.vn/tin-tuc/gioi-thieu-mo-hinh-dx-os-va-chu-de-cuoc-thi-phan-mem-nguon-mo-olp-2026-761.html) · [DX-OS textbook](https://opendigitransform.gitbook.io/dx-os)

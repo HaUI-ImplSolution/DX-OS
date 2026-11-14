@@ -6,20 +6,22 @@ Mỗi dòng ghi yêu cầu, bằng chứng, lệnh tự kiểm và mức trừ n
 
 Số liệu tính trên nhánh `Khuong/main`.
 Số GitHub lấy từ API công khai, không đăng nhập, nên cũng là những gì giám khảo nhìn thấy.
-Hồ sơ nộp (báo cáo kỹ thuật, slide, video) không nằm trong bảng này; mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./evidence-matrix.md).
+Thư gửi bài (thành viên, người hướng dẫn, đường dẫn kho, cam kết bản quyền) không nằm trong bảng này; đề không đòi báo cáo kỹ thuật, slide hay video.
+Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./evidence-matrix.md).
 
 Ký hiệu: ✅ đạt, ⚠️ còn thiếu hoặc chưa kiểm được, ❌ chưa có.
+Một tiêu chí chỉ được ✅ khi mọi dòng của nó và mọi điều kiện ở mục 2 liên quan đến nó đều ✅.
 
 ## 1. Tóm tắt
 
-| Tiêu chí PoF | Điểm | Tình trạng |
-| --- | --- | --- |
-| 1. Kho mã nguồn và lịch sử phát triển | 5 | ✅ |
-| 2. Giấy phép và tính tương thích | 10 | ✅ |
-| 3. Release và quản lý phiên bản | 5 | ✅ |
-| 4. Build và cài đặt từ mã nguồn | 10 | ⚠️ |
-| 5. Thư viện, phụ thuộc, nguồn gốc | 10 | ✅ |
-| 6. Tài liệu, quản lý lỗi, giao tiếp | 10 | ✅ |
+| Tiêu chí PoF | Điểm | Tình trạng | Điều còn mở |
+| --- | --- | --- | --- |
+| 1. Kho mã nguồn và lịch sử phát triển | 5 | ⚠️ | Lịch sử issue mỏng so với số pull request |
+| 2. Giấy phép và tính tương thích | 10 | ✅ | |
+| 3. Release và quản lý phiên bản | 5 | ⚠️ | `main` chậm 40 commit so với `Khuong/main`; bản `v2.0.0` chưa chứa phần mới |
+| 4. Build và cài đặt từ mã nguồn | 10 | ⚠️ | Bài dựng từ bản clone chưa chạy lại trên máy sạch |
+| 5. Thư viện, phụ thuộc, nguồn gốc | 10 | ✅ | |
+| 6. Tài liệu, quản lý lỗi, giao tiếp | 10 | ⚠️ | Chưa kiểm được private vulnerability reporting |
 
 Không có lỗi loại trừ: repository công khai, có `LICENSE`, đã có release (hiện đến `v2.0.0`), không phát hiện bí mật.
 
@@ -59,8 +61,8 @@ git shortlog -sn                                             # đóng góp có n
 |---|---|---|---|
 | ✅ | Giấy phép được OSI công nhận | `LICENSE` Apache-2.0 | điều kiện loại trừ |
 | ✅ | Ghi giấy phép trong từng tệp mã | Dòng `SPDX-License-Identifier` ở đầu mọi tệp Java, TypeScript, JavaScript, Python, shell, YAML: `Apache-2.0`; `check_licenses.py` báo 0 vấn đề | −5 |
-| ✅ | Không xung đột giấy phép giữa các thành phần | `DEPENDENCIES.txt`; repository chỉ có một giấy phép, Apache-2.0; job `Check licenses` của workflow `Compliance` kiểm giấy phép của từng gói trong `sbom/`, ngoại lệ có lý do ở `.github/dependency-exceptions.json` | −5 |
-| ✅ | Có thông báo về mục đích của giấy phép | `NOTICE` | −5 |
+| ✅ | Không xung đột giấy phép giữa các thành phần | `DEPENDENCIES.txt`; mã, tài liệu, ảnh, video và sơ đồ theo Apache-2.0, hai tệp phông theo OFL-1.1, đều được OSI công nhận và tương thích nhau; job `Check licenses` của workflow `Compliance` kiểm giấy phép của từng gói trong `sbom/`, ngoại lệ có lý do ở `.github/dependency-exceptions.json` | −5 |
+| ✅ | Có thông báo về mục đích của giấy phép | `NOTICE`, mục "Mục đích của giấy phép": vì sao chọn Apache-2.0, bốn quyền tự do, quyền sáng chế, và cách khai giấy phép của từng tệp | −5 |
 | ✅ | Có bản sao toàn văn giấy phép | `LICENSE` | −5 |
 | ✅ | Mọi giấy phép được OSI công nhận | `check_licenses.py` chỉ cho phép giấy phép OSI; hai gói ngoại lệ (dữ liệu CC-BY-4.0 và CC0-1.0 chỉ dùng lúc dựng trang docs) nêu tên kèm lý do ở `.github/dependency-exceptions.json` | |
 | ✅ | GitHub nhận một giấy phép | `LICENSE` là Apache-2.0 và là tệp duy nhất mà tab License liệt kê; các tệp thành phần tên `DEPENDENCIES.txt`, `component-catalog.json`, `dependency-exceptions.json` không chứa chữ license hay copyright để GitHub không coi là giấy phép thứ hai | |
@@ -75,7 +77,7 @@ head -3 LICENSE                                # toàn văn, không phải liên
 | Trạng thái | Yêu cầu | Bằng chứng | Mức trừ nếu thiếu |
 |---|---|---|---|
 | ✅ | Có ít nhất một release trước hạn nộp | Trang Releases: `v1.0.0`, `v1.0.1`, `v1.0.2`, `v1.0.3`, `v1.1.0`, `v1.1.1`, `v2.0.0` | −5 |
-| ⚠️ | Release là sản phẩm dự thi | Tag `v2.0.0` đã tạo (11/11); các việc gộp vào `Khuong/main` sau đó (#270 đến #295: Prometheus, mã hồ sơ, mẫu in, phả hệ dữ liệu, lint mô hình, điện thoại, quét mã độc e2e...) chưa nằm trong bản tag nào, cần một bản phát hành mới trước khi nộp | −5 |
+| ⚠️ | Release là sản phẩm dự thi | Tag `v2.0.0` đã tạo (11/11); các việc gộp vào `Khuong/main` sau đó (#270 đến #295: Prometheus, mã hồ sơ, mẫu in, phả hệ dữ liệu, lint mô hình, điện thoại, quét mã độc e2e...) chưa nằm trong bản tag nào; nhánh mặc định `main` chậm 40 commit so với `Khuong/main` (kiểm 14/11), nên cần một pull request vào `main` rồi một bản phát hành mới trước khi nộp | −5 |
 | ✅ | Phát hành theo phiên bản | Thẻ SemVer; `CHANGELOG.md` theo Keep a Changelog có mục cho mọi bản và `[Unreleased]` | −3 |
 | ✅ | Định dạng mở cho gói phát hành | Workflow `Release Package` chạy khi đẩy tag `v*`, đính kèm `dx-os-X.Y.Z.tar.gz`, `.sha256` và SBOM `.cdx.json`; không có `.zip` | −3 |
 | ✅ | Gói được kiểm trước khi đăng | `check_archive.sh` kiểm gói có `LICENSE`, `NOTICE`, `DEPENDENCIES.txt`, `README.md`, `CHANGELOG.md` và không có tệp giống bí mật; chạy ở job `Install from the release archive` của workflow `Platform` của mọi pull request và trong `Release Package` trước khi đăng | |
@@ -133,7 +135,7 @@ git ls-files | grep -E '(^|/)(vendor|third_party|node_modules)/|\.patch$' && ech
 | ✅ | Có README và hướng dẫn | `README.md`, `README_EN.md`; `ARCHITECTURE.md`; `docs/TESTING.md`; `deploy/OPERATIONS.md`; API qua đặc tả OpenAPI và `check_docs.py` kiểm tài liệu khớp OpenAPI; job `Check required files and scripts` báo lỗi nếu thiếu một tài liệu bắt buộc hoặc `CHANGELOG.md` mất mục `[Unreleased]`; job `Build the docs site` dựng trang docs, trong đó có các tài liệu của `docs/` và `deploy/` chép lại mỗi lần dựng, và dừng khi có liên kết hỏng | −5 |
 | ✅ | Hướng dẫn đóng góp | `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, mẫu pull request | |
 | ✅ | Chính sách bảo mật | `SECURITY.md` | |
-| ⚠️ | Bảo vệ nhánh và tag | `.github/rulesets/main.json` (cấm xóa, cấm ghi đè lịch sử, chỉ nhận pull request gộp bằng merge, 16 check phải xanh) và `tags.json` (cấm sửa và xóa tag `v*`) có sẵn để nhập; chỉ có hiệu lực khi chủ repository nhập vào Settings → Rules | Nhập hai ruleset vào GitHub |
+| ✅ | Bảo vệ nhánh và tag | Hai ruleset đang `active` (API GitHub, 14/11): `main` (cấm xóa, cấm ghi đè lịch sử, bắt buộc pull request, 16 check phải xanh; một đối tượng được bỏ qua) và `tags-v-immutable` (cấm sửa và xóa tag `v*`); khớp với `.github/rulesets/main.json` và `tags.json` | |
 | ⚠️ | Private vulnerability reporting | Cần quyền chủ repository nên chưa kiểm được từ bên ngoài | Kiểm ở Settings của repository |
 
 ## 9. Lộ bí mật và dữ liệu cá nhân

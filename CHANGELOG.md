@@ -9,13 +9,16 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Giấy phép
 
+- `DEPENDENCIES.txt` khai thêm công cụ cần có trên máy chạy (Docker Engine, Docker Compose v2, curl, jq, Git, OpenSSH, Python) và draw.io, kèm trang chủ và mã nguồn của các thành phần ngoài SBOM.
+- Mã, tài liệu, ảnh chụp màn hình, video và sơ đồ cùng theo Apache-2.0; `CODE_OF_CONDUCT.md` viết bằng lời của dự án vì Contributor Covenant theo CC BY 4.0, giấy phép không thuộc danh sách OSI; `check_licenses.py` chặn giấy phép ngoài danh sách OSI trong `REUSE.toml`.
 - Mọi tệp mã và cấu hình (CSS, HTML, `Dockerfile`, `pom.xml`, `nginx.conf`, `.env.example`, `.gitleaks.toml`) có dòng `SPDX-License-Identifier`; `REUSE.toml` và `LICENSES/` khai giấy phép và bản quyền cho tệp không chèn được chú thích, và job `Check licenses` chạy `reuse lint`.
-- Mã Java của backend định dạng bằng google-java-format (Apache-2.0) qua Spotless, chạy `./mvnw spotless:apply`; giấy phép duy nhất của kho là Apache-2.0.
+- Mã Java của backend định dạng bằng google-java-format (Apache-2.0) qua Spotless, chạy `./mvnw spotless:apply`; mã của kho theo Apache-2.0.
 - `check_upstream_licenses.py` đọc giấy phép của dự án gốc ở đúng phiên bản đang dùng của từng image và bản tải về (tag của image, hoặc `ARG` của Dockerfile), và làm job đỏ khi giấy phép khác bản đã khai, ngoài danh sách OSI, không xác định được hoặc không đọc được; mục không đọc được theo cách đó khai `refs`, `text` hoặc `unverified` trong `component-catalog.json`.
 - `check_licenses.py sbom <tệp>` kiểm giấy phép của SBOM sinh lại từ pull request ở job SBOM của Compliance và của Dependencies, nên bản mới của một thư viện được kiểm trước khi `sbom/` được sinh lại; `python3 -m unittest discover -s .github/scripts` chạy các ca kiểm của hai script.
 
 ### Lõi chạy ngầm
 
+- SpotBugs với find-sec-bugs chạy ở bước `verify` của backend và làm hỏng build khi có phát hiện mà `backend/spotbugs-exclude.xml` chưa giải thích; workflow `Backend` in số phát hiện của từng module.
 - Số đo vận hành theo định dạng Prometheus ở `GET /actuator/prometheus` của dịch vụ lõi: hồ sơ theo trạng thái và quá hạn của từng thực thể có quy trình, tuổi và số sự kiện chưa chuyển trong hàng đợi, số lần áp dụng mô hình thành công hoặc thất bại. Endpoint chỉ đọc được trong mạng Docker, đòi mật khẩu `METRICS_PASSWORD` (người dùng `metrics`), và nhãn chỉ gồm tên mô hình, thực thể, trạng thái và kết quả nên số chuỗi không tăng theo dữ liệu. Cách đọc, cấu hình scrape, truy vấn Grafana và quy tắc cảnh báo ở `deploy/MONITORING.md`.
 - `dxos lint <tệp>...` kiểm tệp mô hình bằng bộ đọc của backend mà không cần hệ thống đang chạy, in `tệp:dòng:cột: nội dung` và thoát 0, 1 hoặc 2. Nó chạy `dxos-lint.jar` trong image backend, hoặc trên Java 21 qua `DXOS_LINT_JAR`; Release kèm `dxos-lint.jar`.
 - `dxos conformance <mô hình>` chạy các kiểm rào chắn của lõi trên hệ thống đang chạy và từ chối stack có `PUBLIC_HOST` khác `localhost` khi thiếu `--allow-test-users`.
@@ -72,6 +75,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Tài liệu
 
+- `CONTRIBUTING.md` ghi rõ tính năng mới đi kèm kiểm tự động (test backend hoặc mục kiểm trong `deploy/dev/check_*.py`) và issue, pull request viết được bằng tiếng Việt hoặc tiếng Anh; README có huy hiệu OpenSSF Best Practices mức passing.
 - `deploy/INTEGRATIONS.md` ghi cấu hình và kết quả kiểm webhook `chat` với Mattermost Team Edition 11.7.15: thông báo, hiển thị tiếng Việt, gửi lại khi lỗi và khả năng trùng tin.
 - Bài so sánh luồng ticket cơ bản ở `examples/effort-benchmark/`: mã API/xử lý của Lab với khai báo Core, cách đếm tái lập và kết quả kiểm API/UI.
 - `docs/TARGETS.md` ghi cách đo và kết quả của các chỉ số mục tiêu: mức 1, 2 và 3 của một hệ thống, quy tắc đếm mã tự viết (`deploy/dev/count_own_code.py`), thời gian dựng và đổi, bài thử có hướng dẫn kèm một bản mô phỏng người mới, và chi phí hạ tầng của cấu hình tham chiếu.

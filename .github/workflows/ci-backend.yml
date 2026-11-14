@@ -48,3 +48,11 @@ jobs:
       # Persistence tests start PostgreSQL through Testcontainers (Docker is available on the runner).
       - name: Build and Test
         run: mvn --batch-mode verify
+
+      # SpotBugs with find-sec-bugs runs in the verify phase and fails the build on a finding that backend/spotbugs-exclude.xml does not explain.
+      - name: Summarize the SpotBugs findings
+        if: always()
+        run: |
+          for report in */target/spotbugsXml.xml; do
+            echo "$report: $(grep -o '<BugInstance' "$report" | wc -l) findings"
+          done

@@ -52,7 +52,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
   Thư viện mẫu có bảy mô hình, từ mượn thiết bị, cấp quyền IT, đặt phòng đến bàn một cửa của sinh viên, phủ cả ba họ quy trình và cùng chạy trên một lõi.
 - Đưa một mô hình thuộc họ khác vào thì chạy được mà không sửa mã lõi, không build lại giao diện.
 - Hai mô hình dùng cùng tên vai vẫn không vào được dữ liệu của nhau, vì mỗi mô hình có Keycloak client riêng cho vai của nó.
-- **Bằng chứng:** `backend/dx-engine/src/main/resources/templates/`; `python3 deploy/dev/check_demo.py` (tiêu chí 6); `python3 deploy/dev/check_conformance.py` (cách ly giữa mô hình).
+- **Bằng chứng:** `backend/dx-engine/src/main/resources/templates/`; `python3 e2e/api/check_demo.py` (tiêu chí 6); `python3 e2e/api/check_conformance.py` (cách ly giữa mô hình).
 
 ## 4. Định danh, cổng API, dữ liệu và luồng công việc được cung cấp dùng chung thế nào?
 
@@ -64,7 +64,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 | Dữ liệu phi cấu trúc | SeaweedFS qua API S3, trường `file` của mô hình, quét ClamAV, link tải có hạn |
 | Luồng công việc | Flowable nhúng; ba họ mẫu `approval`, `work_item`, `reservation`; trạng thái hồ sơ chỉ đổi qua quy trình |
 
-- **Bằng chứng:** `ARCHITECTURE.md` mục 3 đến 6 và 13; `python3 deploy/apisix/check_routes.py`; `python3 deploy/dev/check_api.py`.
+- **Bằng chứng:** `ARCHITECTURE.md` mục 3 đến 6 và 13; `python3 e2e/api/check_routes.py`; `python3 e2e/api/check_api.py`.
 
 ## 5. Điểm nào thể hiện H-P-D-I thay vì một dashboard CRUD?
 
@@ -72,7 +72,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - **P, rào chắn và luồng tự động:** trạng thái chỉ đổi qua quy trình (gọi thẳng API để đổi bị chặn); từ chối và trả lại bắt buộc có lý do; người tạo không tự quyết hồ sơ của mình; hạn xử lý, quá hạn lên đầu hộp việc; việc sau khi duyệt chạy qua hàng đợi và được thử lại.
 - **D, một nguồn sự thật:** dữ liệu nghiệp vụ, lịch sử và hàng đợi cùng nằm ở PostgreSQL; lịch sử hồ sơ nối thành chuỗi hash; mọi thay đổi báo ra ngoài bằng webhook có chữ ký.
 - **I, trí tuệ:** chưa làm (xem câu 6 và 11).
-- **Bằng chứng:** `python3 deploy/dev/check_demo.py` (tám tiêu chí của kịch bản trình diễn); `check_case.py`, `check_process.py`, `check_events.py`.
+- **Bằng chứng:** `python3 e2e/api/check_demo.py` (tám tiêu chí của kịch bản trình diễn); `check_case.py`, `check_process.py`, `check_events.py`.
 
 ## 6. AI nằm ở đâu, dữ liệu và giới hạn là gì?
 
@@ -110,12 +110,12 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - Backend chạy một bản.
   Thử hai bản sau gateway cho thấy cả hai nhận lưu lượng, nhưng sau một lần áp dụng mô hình, danh sách mô hình và trạng thái giữ lệch nhau giữa hai bản; vì vậy đây là giới hạn đã ghi, không phải khả năng đã có.
 - Mỗi mô hình có khóa riêng khi áp dụng nên các mô hình áp dụng song song; dữ liệu của mỗi mô hình nằm ở schema riêng.
-- **Bằng chứng:** `docs/TESTING.md` (cách kiểm); `deploy/OPERATIONS.md` (tài nguyên từng dịch vụ); [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md) mục giới hạn chấp nhận.
+- **Bằng chứng:** `docs/TESTING.md` (cách kiểm); `docs/OPERATIONS.md` (tài nguyên từng dịch vụ); [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md) mục giới hạn chấp nhận.
 
 ## 10. Cộng đồng muốn đóng góp thì làm thế nào?
 
 - Thêm một nghiệp vụ là thêm một tệp mô hình: đặt vào `backend/dx-engine/src/main/resources/templates/` và khai trong `index.json` để hiện ở thư viện mẫu; kiểm bằng `POST /api/v1/models/plan` hoặc `dxos plan`.
-  Đặc tả cho trình soạn thảo là `model-v1.schema.json`; tệp sai mẫu ở `models/invalid/`.
+  Đặc tả cho trình soạn thảo là `model-v1.schema.json`; tệp sai mẫu ở `e2e/fixtures/invalid-models/`.
 - Thêm họ mẫu quy trình mới là thêm một `ProcessFamily` và tệp BPMN cùng tên trong `dx-engine`.
 - `CONTRIBUTING.md` nêu quy trình nhánh, pull request, kiểm trước khi gửi; có mẫu issue và pull request ở `.github/`; CI chạy riêng cho backend, web, nền tảng (kiểm đầu-cuối), phụ thuộc và tuân thủ.
 - **Bằng chứng:** `CONTRIBUTING.md`; `.github/ISSUE_TEMPLATE/`; `.github/workflows/`.
@@ -167,7 +167,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - Trong lúc áp dụng, mô hình bị giữ; lỗi giữa chừng thì áp dụng lại để làm tiếp hoặc hủy bỏ; có quay về phiên bản trước.
 - Đổi luật quy trình chỉ được khi thực thể không còn hồ sơ đang xử lý; vai `ADMIN` của nền tảng không khai báo được.
 - Giới hạn: không có người thứ hai duyệt thay đổi mô hình, đây là chính sách tùy bản triển khai.
-- **Bằng chứng:** `python3 deploy/dev/check_change.py` (65 kiểm), `check_guards.py` (61), `check_recovery.py` (19); `ARCHITECTURE.md` mục 4.
+- **Bằng chứng:** `python3 e2e/api/check_change.py` (65 kiểm), `check_guards.py` (61), `check_recovery.py` (19); `ARCHITECTURE.md` mục 4.
 
 ## 16. Lịch sử hồ sơ có chống sửa lén không?
 
@@ -175,7 +175,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - Chuỗi chỉ phát hiện, không ngăn sửa: người sửa được cả cơ sở dữ liệu lẫn kho đối tượng của cùng máy chủ có thể tính lại cả chuỗi và các điểm neo cho khớp nhau.
 - Vì vậy bên nhận webhook giữ cặp `eventId` và `hash` của các tin đã nhận, rồi so với hệ thống bằng `examples/history-witness/witness.py`; sửa lại cả chuỗi vẫn bị lộ vì hash bên nhận đã giữ không đổi.
 - Dòng `updated` ghi cả giá trị cũ và mới của từng trường.
-- **Bằng chứng:** `python3 deploy/dev/check_events.py` (kiểm sửa một dòng thì `firstBreak` chỉ đúng dòng đó); `examples/history-witness/README.md`; `docs/TESTING.md` mục 4.
+- **Bằng chứng:** `python3 e2e/api/check_events.py` (kiểm sửa một dòng thì `firstBreak` chỉ đúng dòng đó); `examples/history-witness/README.md`; `docs/TESTING.md` mục 4.
 
 ## 17. Bảo mật: gọi thẳng API để lách quy trình thì sao?
 
@@ -185,7 +185,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - Token kiểm ở gateway và ở backend; không có token thì 401; người giữ vai của mô hình này không đọc được dữ liệu của mô hình khác.
 - Thay đổi tài khoản và áp dụng mô hình đều ghi `audit_log` kèm người thực hiện; mật khẩu không bao giờ được ghi; mật khẩu tạm do hệ thống sinh và phải đổi ở lần đăng nhập đầu.
 - Quét mã độc tệp tải lên bật mặc định và chặn tệp khi chưa quét được; bí mật sinh ngẫu nhiên và gitleaks quét ở mọi pull request.
-- **Bằng chứng:** `python3 deploy/dev/check_conformance.py`, `check_demo.py` (tiêu chí 4), `check_users.py`; job `Scan for secrets` của workflow `Compliance`.
+- **Bằng chứng:** `python3 e2e/api/check_conformance.py`, `check_demo.py` (tiêu chí 4), `check_users.py`; job `Scan for secrets` của workflow `Compliance`.
 
 ## 18. Giấy phép tuân thủ thế nào?
 

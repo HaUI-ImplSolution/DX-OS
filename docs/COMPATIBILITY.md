@@ -29,7 +29,7 @@ Bên gọi nên bỏ qua trường mà mình không biết.
 
 ## Số đo vận hành
 
-Tên, kiểu và nhãn của các số đo `dxos_*` ở `/actuator/prometheus` (bảng ở [`deploy/MONITORING.md`](../deploy/MONITORING.md)) được giữ trong cùng bản chính; thêm số đo hoặc thêm giá trị cho một nhãn được phép ở bản nhỏ.
+Tên, kiểu và nhãn của các số đo `dxos_*` ở `/actuator/prometheus` (bảng ở [`docs/MONITORING.md`](MONITORING.md)) được giữ trong cùng bản chính; thêm số đo hoặc thêm giá trị cho một nhãn được phép ở bản nhỏ.
 Bỏ hoặc đổi tên một số đo, đổi kiểu hoặc đổi nghĩa của nó, và thêm nhãn mới cho một số đo đã có chỉ làm ở bản chính tiếp theo.
 Các số đo chuẩn của JVM, cơ sở dữ liệu và HTTP do thư viện sinh ra và theo bản của thư viện, nên bảng của DX-OS không nói tới chúng.
 
@@ -53,7 +53,7 @@ Mỗi thông điệp có `schemaVersion`, hiện là `1`.
 - Bỏ hoặc đổi nghĩa một trường thì tăng `schemaVersion` ở bản chính tiếp theo.
 - Bên nhận nên bỏ qua trường lạ và đọc `schemaVersion` trước khi hiểu nội dung.
 
-Chữ ký `X-Dxos-Signature` và quy ước khử trùng theo `eventId` giữ nguyên trong cùng bản chính; chi tiết ở [`deploy/INTEGRATIONS.md`](../deploy/INTEGRATIONS.md).
+Chữ ký `X-Dxos-Signature` và quy ước khử trùng theo `eventId` giữ nguyên trong cùng bản chính; chi tiết ở [`docs/INTEGRATIONS.md`](INTEGRATIONS.md).
 
 ## Cơ sở dữ liệu
 

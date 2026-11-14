@@ -135,7 +135,7 @@ Why Supabase, Strapi and Directus were read for ideas or not used as a base is o
 | Operating system | Linux | With Docker and Docker Compose v2 |
 | Source code | Not needed with the installer | Only to build it yourself |
 | JDK, Node | 21, 22 | Only to build and test outside Docker |
-| RAM | About 1.8 GiB for the eight services when idle | Measured numbers in [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md#tài-nguyên-và-số-bản-sao) (Vietnamese); ClamAV adds about 1 GB, turn it off with `dxos av off` |
+| RAM | About 1.8 GiB for the eight services when idle | Measured numbers in [`docs/OPERATIONS.md`](./docs/OPERATIONS.md#tài-nguyên-và-số-bản-sao) (Vietnamese); ClamAV adds about 1 GB, turn it off with `dxos av off` |
 | Disk | About 3.5 GiB for the images | The database and the attachments grow with the data |
 
 `dxos doctor` (or `deploy/doctor.sh`) checks Docker, RAM, disk, `deploy/.env` and the ports before you run.
@@ -154,7 +154,7 @@ The installer downloads the latest release, checks its SHA-256 and installs it i
 `dxos start` downloads the images the first time, waits until every service is ready, creates the account `admin` with a temporary password printed on screen, and prints the addresses.
 Sign in at `http://localhost:9080/console` as `admin`, change the password, pick a template on the Template library tab, preview the plan and apply it.
 If you already have a model file, `dxos start <file>` takes it in at once; list every file after `dxos start` when there are several.
-If you only need the API platform for outside applications, run `dxos start --core`: no web application, portal or monitoring, see [Core-only mode](./deploy/OPERATIONS.md#chế-độ-chỉ-lõi) (Vietnamese).
+If you only need the API platform for outside applications, run `dxos start --core`: no web application, portal or monitoring, see [Core-only mode](./docs/OPERATIONS.md#chế-độ-chỉ-lõi) (Vietnamese).
 
 ### From source
 
@@ -216,7 +216,7 @@ The `dxos` commands used most:
 | Cannot sign in with a trial account | `dxos demo` resets the password and prints the new one |
 | After an apply, one `backend` copy answers 404 | Run a single `backend` copy, or restart both |
 
-Install, every `dxos` command, backup, restore and incident response are in [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md); monitoring and logs are in [`deploy/MONITORING.md`](./deploy/MONITORING.md) (both Vietnamese).
+Install, every `dxos` command, backup, restore and incident response are in [`docs/OPERATIONS.md`](./docs/OPERATIONS.md); monitoring and logs are in [`docs/MONITORING.md`](./docs/MONITORING.md) (both Vietnamese).
 
 ## Against the brief
 
@@ -248,10 +248,10 @@ The documents on writing a model file, the API, operation, monitoring, integrati
 | Building extension services, webhooks, and custom UIs | [`docs/EXTENSIONS.md`](./docs/EXTENSIONS.md) (Vietnamese) |
 | Architecture and the decisions made | [`ARCHITECTURE.md`](./ARCHITECTURE.md) |
 | Glossary | [`docs/GLOSSARY.md`](./docs/GLOSSARY.md) (Vietnamese) |
-| Install, the `dxos` commands, backup, incident response | [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md) |
-| Monitoring, logs, access audit | [`deploy/MONITORING.md`](./deploy/MONITORING.md) |
-| Webhooks, tamper-evident history, long-term archive | [`deploy/INTEGRATIONS.md`](./deploy/INTEGRATIONS.md) |
-| Connecting a reporting tool | [`deploy/REPORTING.md`](./deploy/REPORTING.md) (Vietnamese) |
+| Install, the `dxos` commands, backup, incident response | [`docs/OPERATIONS.md`](./docs/OPERATIONS.md) |
+| Monitoring, logs, access audit | [`docs/MONITORING.md`](./docs/MONITORING.md) |
+| Webhooks, tamper-evident history, long-term archive | [`docs/INTEGRATIONS.md`](./docs/INTEGRATIONS.md) |
+| Connecting a reporting tool | [`docs/REPORTING.md`](./docs/REPORTING.md) (Vietnamese) |
 | Testing | [`docs/TESTING.md`](./docs/TESTING.md), [`e2e/README.md`](./e2e/README.md) |
 | Verified targets and self-hosting cost | [`docs/TARGETS.md`](./docs/TARGETS.md) |
 | The 15-minute demonstration script | [`docs/DEMO.md`](./docs/DEMO.md) |
@@ -270,14 +270,14 @@ The documents on writing a model file, the API, operation, monitoring, integrati
 | `backend/dx-engine` | Core | The core service: applying models, the common API, Flowable |
 | `backend/dx-monitor` | Apps | The monitoring and tracing screen |
 | `frontend` | Apps | A react-admin interface built from metadata, in Vietnamese and English |
-| `deploy` | Shared | Compose, the APISIX gateway, the installer and the `dxos` command, operation scripts, check scripts in `deploy/dev` |
-| `sso`, `seaweedfs` | Core | The Keycloak realm, file storage |
+| `deploy` | Shared | Compose, the APISIX gateway, the installer and the `dxos` command, operation scripts |
+| `sso` | Core | The Keycloak realm |
 | `portal` | Apps | The page that links the addresses and the state of the services |
-| `models` | Models | Invalid model files for automatic checks; usable sample models are in `backend/dx-engine/src/main/resources/templates/` |
 | `examples` | Outside the core | Sample programs: a receiver that keeps history hashes ([`history-witness`](./examples/history-witness/README.md)), an IT/OT system simulator ([`itot-simulator`](./examples/itot-simulator/README.md)) |
-| `e2e` | Testing | Browser tests of the web interface (Playwright) |
+| `tools` | Tools | Developer tools, such as counting hand-written code |
+| `e2e` | Testing | Automatic checks on a running stack: the API (`api/`), the web interface with Playwright (`web/`) and invalid model files (`fixtures/`) |
 | `website` | Documentation | The docs site (Docusaurus), published on GitHub Pages |
-| `docs` | Documentation | The testing guide, the model file and the API; the design is in `dynamic-core/` |
+| `docs` | Documentation | The testing guide, the model file, the API, operation, monitoring, integration, reporting and file storage; the design is in `dynamic-core/` |
 | `sbom` | Licenses | CycloneDX component lists of the backend, the web interface and the docs site |
 | `LICENSES` | Licenses | The full text of the licenses of the repository, as the REUSE specification asks |
 | `.github` | Shared | CI workflows, issue and pull request templates, branch rules, check scripts |

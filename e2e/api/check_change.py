@@ -2,7 +2,7 @@
 """Checks of changing a model that already holds data.
 
 Run after check_case.py on the same stack:
-    python3 deploy/dev/check_change.py
+    python3 e2e/api/check_change.py
 """
 import sys
 

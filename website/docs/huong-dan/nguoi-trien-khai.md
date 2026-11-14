@@ -1,7 +1,7 @@
 # Hướng dẫn cho người triển khai
 
 Trang này dành cho người cài DX-OS lên máy chủ, chọn hoặc viết tệp mô hình nghiệp vụ, cấp tài khoản và vận hành.
-Từng lệnh và tùy chọn có ở [`deploy/OPERATIONS.md`](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/deploy/OPERATIONS.md); trang này chỉ vạch đường đi.
+Từng lệnh và tùy chọn có ở [`docs/OPERATIONS.md`](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/OPERATIONS.md); trang này chỉ vạch đường đi.
 
 ## Cài và chạy
 
@@ -46,10 +46,10 @@ Vai `ADMIN` của nền tảng không cấp ở tab này mà cấp ở Keycloak 
 
 ## Nối hệ thống khác
 
-- **Webhook:** mọi thay đổi của hồ sơ được báo tới địa chỉ web hoặc kênh chat, có chữ ký để bên nhận kiểm tra; chi tiết ở [`deploy/INTEGRATIONS.md`](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/deploy/INTEGRATIONS.md).
+- **Webhook:** mọi thay đổi của hồ sơ được báo tới địa chỉ web hoặc kênh chat, có chữ ký để bên nhận kiểm tra; chi tiết ở [`docs/INTEGRATIONS.md`](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/INTEGRATIONS.md).
 - **Ứng dụng ngoài:** tab **Ứng dụng ngoài** hoặc `dxos client add` đăng ký một ứng dụng gọi API với đúng một vai của một mô hình.
 - **Hàng đợi sự kiện:** tab cùng tên cho xem việc chờ gửi và thử lại khi lỗi.
-- **Công cụ báo cáo:** nối bằng vai chỉ đọc `report_ro`; xem [`deploy/REPORTING.md`](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/deploy/REPORTING.md).
+- **Công cụ báo cáo:** nối bằng vai chỉ đọc `report_ro`; xem [`docs/REPORTING.md`](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/REPORTING.md).
 
 ## Dữ liệu và an toàn
 
@@ -60,4 +60,4 @@ Vai `ADMIN` của nền tảng không cấp ở tab này mà cấp ở Keycloak 
 - **Quét mã độc tệp tải lên:** bật sẵn; `dxos av off` để tắt, `dxos av` để xem trạng thái.
 - **Kiểm tệp mô hình:** `dxos lint <tệp>` báo lỗi theo dòng và cột mà không cần hệ thống đang chạy; `dxos conformance <mô hình>` kiểm các rào chắn của lõi trên stack đang chạy.
 - **Cập nhật:** `dxos update` cài bản mới, giữ cấu hình và dữ liệu.
-- **Kéo từ git:** `dxos gitops` kéo hạ tầng từ một kho DX-OS và các tệp mô hình từ một kho của bạn, rồi báo lệch, chờ bạn duyệt hoặc tự áp dụng; cách cấu hình ở mục Kéo từ git của `deploy/OPERATIONS.md`.
+- **Kéo từ git:** `dxos gitops` kéo hạ tầng từ một kho DX-OS và các tệp mô hình từ một kho của bạn, rồi báo lệch, chờ bạn duyệt hoặc tự áp dụng; cách cấu hình ở mục Kéo từ git của `docs/OPERATIONS.md`.

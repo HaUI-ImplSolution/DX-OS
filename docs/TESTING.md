@@ -12,7 +12,7 @@ Mức hoàn thiện của từng tính năng và bài kiểm của nó ở [`web
 | Docker và Docker Compose v2 | Backend `verify` dùng Testcontainers nên cần Docker chạy |
 | JDK 21 | Dùng Maven wrapper trong repo; đặt `JAVA_HOME` về JDK 21 nếu máy mặc định bản khác |
 | Node 22 trở lên | Cho `frontend`, `website` và `e2e` |
-| Python 3 | Cho các script kiểm ở `deploy/dev` |
+| Python 3 | Cho các script kiểm ở `e2e/api` |
 
 ## 2. Các loại kiểm
 
@@ -23,16 +23,16 @@ Mức hoàn thiện của từng tính năng và bài kiểm của nó ở [`web
 | Giấy phép và header | `python3 .github/scripts/check_licenses.py`; `pipx run --spec reuse==6.3.0 reuse lint` | `Check licenses` của `Compliance` |
 | Giấy phép của phiên bản đang dùng | `GITHUB_TOKEN=... python3 .github/scripts/check_upstream_licenses.py`; `python3 -m unittest discover -s .github/scripts` | `Check upstream licenses` và `Check licenses` của `Compliance` |
 | SBOM khớp tệp khóa | `python3 .github/scripts/check_sbom_fresh.py` | `Check SBOMs against lockfiles` của `Compliance` |
-| Route của gateway | `python3 deploy/apisix/check_routes.py` | `Validate the gateway routes` của `Platform` |
+| Route của gateway | `python3 e2e/api/check_routes.py` | `Validate the gateway routes` của `Platform` |
 | Compose hợp lệ, dừng khi thiếu bí mật | `docker compose config` trong `deploy/` | `Validate the Compose file` của `Platform` |
 | Gói phát hành và bộ cài | `.github/scripts/check_archive.sh <gói> <phiên bản>` | `Install from the release archive` của `Platform` |
 | Sao lưu và khôi phục | `deploy/backup.sh` rồi `verify` | `Back up and restore` của `Platform` |
-| API trên stack thật | Các script `deploy/dev/check_*.py`, mục 4 | `API end-to-end` của `Platform`, ba nhóm, một nhóm chạy ở chế độ lõi và giữ quét mã độc |
-| Bề mặt của gateway | `python3 deploy/dev/check_surface.py` | `Gateway surface` của `Platform`, hai chế độ |
+| API trên stack thật | Các script `e2e/api/check_*.py`, mục 4 | `API end-to-end` của `Platform`, ba nhóm, một nhóm chạy ở chế độ lõi và giữ quét mã độc |
+| Bề mặt của gateway | `python3 e2e/api/check_surface.py` | `Gateway surface` của `Platform`, hai chế độ |
 | Trình duyệt | Xem [`e2e/README.md`](../e2e/README.md) | `Browser end-to-end` của `Platform` |
 | Trích dẫn giữa các tài liệu | `python3 .github/scripts/check_doc_refs.py` | `Build the docs site` của `Docs` |
 | Trang tài liệu | `cd website && npm ci && npm run build` | `Build the docs site` của `Docs` |
-| Tải đồng thời và cấu hình nhỏ nhất | `python3 deploy/dev/load_test.py` trên stack tạm; các bước và kết quả ở [`SIZING.md`](SIZING.md) | Không |
+| Tải đồng thời và cấu hình nhỏ nhất | `python3 e2e/api/load_test.py` trên stack tạm; các bước và kết quả ở [`SIZING.md`](SIZING.md) | Không |
 | Kiểm tay | Mục 6 | Không |
 
 Sau khi đổi tài nguyên nên chạy `./mvnw clean verify`: tài nguyên cũ còn trong `target/` làm Flyway thấy hai migration cùng phiên bản.
@@ -69,15 +69,15 @@ Mỗi script phụ thuộc các script đứng trước trong cùng nhóm, nên 
 
 ```bash
 for c in api recovery case change process booking demo guards users docs conformance cli browser; do
-  python3 deploy/dev/check_$c.py
+  python3 e2e/api/check_$c.py
 done
 ```
 
 `check_events.py` và `check_bootstrap.py` khởi động lại backend nhiều lần, nên chạy ở một stack rỗng khác, theo thứ tự này:
 
 ```bash
-python3 deploy/dev/check_events.py
-python3 deploy/dev/check_bootstrap.py
+python3 e2e/api/check_events.py
+python3 e2e/api/check_bootstrap.py
 ```
 
 | Script | Kiểm gì |
@@ -115,7 +115,7 @@ Mỗi kiểm in một dòng `PASS` hoặc `FAIL` kèm nhãn, cuối script in `N
 
 ## 5. Trình duyệt
 
-Bài Playwright của bảng điều khiển nằm ở `e2e/`; cách chạy, biến cấu hình và nơi có ảnh chụp ở [`e2e/README.md`](../e2e/README.md).
+Bài Playwright của bảng điều khiển nằm ở `e2e/web/`; cách chạy, biến cấu hình và nơi có ảnh chụp ở [`e2e/README.md`](../e2e/README.md).
 Bài `phone.spec.ts` chạy ở cỡ điện thoại 390 px và kiểm bảng điều khiển cùng hộp việc không rộng hơn màn hình.
 CI chạy bài này ở job `Browser end-to-end` của workflow `Platform`.
 
@@ -191,7 +191,7 @@ Mỗi mục nêu điều phải thấy; lệnh và biến cấu hình chi tiết
     Tạo một hồ sơ: kênh nhận lần lượt "Việc mới", "Sắp đến hạn xử lý", "Quá hạn xử lý" với đúng mã hồ sơ, mỗi loại một lần, outbox ghi đã giao.
     Tạm dừng Mattermost hơn 5 giây rồi tạo hồ sơ: API vẫn thành công, outbox ghi lỗi, tiếp tục thì outbox tự gửi lại (có thể trùng một tin).
     Địa chỉ hook sai (404) thì outbox ghi lỗi mà hồ sơ vẫn lưu; trả địa chỉ đúng thì thông báo tự được giao.
-32. **Số đo Prometheus** (stack có `onestop` và hồ sơ của `dxos demo`): `/actuator/prometheus` trong container `backend` theo [`deploy/MONITORING.md`](../deploy/MONITORING.md): không mật khẩu hoặc sai thì 401, đúng `METRICS_PASSWORD` thì 200 có dòng `dxos_*`; qua cổng `9080` không trả số đo; `METRICS_PASSWORD` trống thì mọi lần đọc trả 401.
+32. **Số đo Prometheus** (stack có `onestop` và hồ sơ của `dxos demo`): `/actuator/prometheus` trong container `backend` theo [`docs/MONITORING.md`](MONITORING.md): không mật khẩu hoặc sai thì 401, đúng `METRICS_PASSWORD` thì 200 có dòng `dxos_*`; qua cổng `9080` không trả số đo; `METRICS_PASSWORD` trống thì mọi lần đọc trả 401.
     `dxos_records{status=...}` cộng lại bằng số hồ sơ ở danh sách, `dxos_records_overdue` bằng số quá hạn ở Thống kê, nộp thêm một hồ sơ thì tăng một sau tối đa `METRICS_REFRESH_MS`.
     Đích webhook sai làm `dxos_outbox_pending` và `dxos_outbox_oldest_age_seconds` tăng, sửa thì về 0; áp dụng tệp mô hình sai làm `dxos_model_applies_total{result="failed"}` tăng một; không có nhãn nào ngoài `model`, `entity`, `status`, `result`.
 33. **Thống kê theo vai:** với vai `unit` và `own`, có và không có bộ lọc, `total` và tổng `byStatus` bằng số dòng của danh sách cùng bộ lọc.
@@ -202,7 +202,7 @@ Mỗi mục nêu điều phải thấy; lệnh và biến cấu hình chi tiết
 
 Kiểm bằng đúng các lệnh và thao tác trong tài liệu.
 
-36. **[`deploy/REPORTING.md`](../deploy/REPORTING.md)** (stack có `onestop` và `equipment`): kết nối bằng `report_ro` thì thấy bảng của `m_onestop` và `m_equipment`; truy vấn nối hai mô hình trả một dòng mỗi người; `UPDATE` bị từ chối với `permission denied for table request` và đọc `engine.outbox` bị từ chối; `ALTER ROLE` đổi mật khẩu thì mật khẩu cũ bị từ chối và áp dụng lại mô hình không đặt lại mật khẩu.
+36. **[`docs/REPORTING.md`](REPORTING.md)** (stack có `onestop` và `equipment`): kết nối bằng `report_ro` thì thấy bảng của `m_onestop` và `m_equipment`; truy vấn nối hai mô hình trả một dòng mỗi người; `UPDATE` bị từ chối với `permission denied for table request` và đọc `engine.outbox` bị từ chối; `ALTER ROLE` đổi mật khẩu thì mật khẩu cũ bị từ chối và áp dụng lại mô hình không đặt lại mật khẩu.
 37. **[`docs/EXTENSIONS.md`](EXTENSIONS.md):**
     - `dxos client add`, lấy token từ tệp secret, tải OpenAPI đúng như lệnh trong tài liệu; mô hình khác và API quản trị trả 403; hai lần tạo cùng `Idempotency-Key` và nội dung trả cùng `id`, khác nội dung trả 409.
     - `deploy/apisix/local.yaml` với upstream và route mẫu: `docker compose run --rm --no-deps apisix-config --check` đạt với mẫu, và từ chối route thiếu token check, trùng id hoặc đường dẫn lõi, plugin hay schema sai, tham chiếu thiếu.
@@ -211,7 +211,7 @@ Kiểm bằng đúng các lệnh và thao tác trong tài liệu.
 38. **Mẫu Đặt lịch khám và Đổi trả hàng** (tài khoản thử, dữ liệu giả): ở Thư viện mẫu bấm Dùng mẫu này rồi áp dụng từng mẫu.
     - `clinic`: người đặt chỉ thấy lịch của mình; trùng giờ cùng phòng bị từ chối lúc đặt, phòng khác thì nhận; người tiếp nhận đi qua xác nhận, tiếp nhận khám và hoàn tất.
     - `retail`: số lượng dưới 1 và thiếu lý do bị từ chối; nhân viên trả phiếu về kèm ghi chú, khách nộp lại rồi nhân viên duyệt; khách không tự duyệt và không đọc được phiếu của người khác.
-    - `python3 deploy/dev/check_conformance.py clinic retail` đạt.
+    - `python3 e2e/api/check_conformance.py clinic retail` đạt.
 
 ### Lệnh `dxos` ngoài stack kiểm
 

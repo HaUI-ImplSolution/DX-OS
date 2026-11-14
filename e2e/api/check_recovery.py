@@ -2,7 +2,7 @@
 """Recovery checks: a decision that fails after the process step, and an apply interrupted by Keycloak.
 
 Run after check_api.py on the same stack:
-    python3 deploy/dev/check_recovery.py
+    python3 e2e/api/check_recovery.py
 """
 import os
 import subprocess

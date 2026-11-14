@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # Pins the whole stack to the first N cores and caps the memory of every service, so one machine
 # can stand for a smaller one when measuring with load_test.py. Used on a throwaway stack:
-#   LOAD_CPUSET=0-3 docker compose -p dxscratch -f docker-compose.yml -f dev/load_override.yml \
+#   LOAD_CPUSET=0-3 docker compose -p dxscratch -f docker-compose.yml -f ../e2e/api/load_override.yml \
 #     up -d --force-recreate
 # LOAD_CPUSET is a cpuset such as 0-3 (four cores); the memory variables default to the values below.
 services:

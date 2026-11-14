@@ -149,7 +149,7 @@ Trạng thái của hồ sơ chỉ đổi qua quy trình.
 - Hành động khai `check: <tên đích>` hỏi đích đó trước khi trạng thái đổi, trong giao dịch giữ khóa hồ sơ; đích từ chối hoặc không trả lời theo `on_error` thì hồ sơ giữ nguyên và dòng `check_denied` hoặc `check_unavailable` được ghi.
 - Khi mô hình có đích webhook (khóa `webhook` hoặc `DXOS_WEBHOOK_URL`), mỗi dòng lịch sử có thêm một thông điệp `record.event` trong outbox cùng giao dịch, gửi kèm chữ ký và giao theo thứ tự trong một hồ sơ.
   Việc áp dụng mô hình và thay đổi tài khoản đi qua chủ đề `admin.event`; bên nhận lỡ tin kéo lại bằng `GET /api/v1/events`.
-  Cấu trúc thông điệp, chữ ký, thử lại và đích dạng `chat` ở [`deploy/INTEGRATIONS.md`](./deploy/INTEGRATIONS.md).
+  Cấu trúc thông điệp, chữ ký, thử lại và đích dạng `chat` ở [`docs/INTEGRATIONS.md`](./docs/INTEGRATIONS.md).
 
 ## 8. Tệp đính kèm và mẫu in
 
@@ -166,7 +166,7 @@ Trạng thái của hồ sơ chỉ đổi qua quy trình.
 - Mỗi thay đổi tài khoản thành công và mỗi lần áp dụng, quay về, tiếp tục hay hủy bỏ mô hình ghi một bản ghi `audit_log` kèm người thực hiện lấy từ token; ghi audit lỗi chỉ để lại dòng log, thay đổi vẫn thành công.
   `GET /api/v1/audit-logs` lọc được theo đối tượng (`targetType`, `targetId`).
 - Thay đổi làm thẳng ở Keycloak Admin Console không đi qua đây; sự kiện quản trị của Keycloak (giữ 90 ngày) là nơi tra cứu.
-- Các hành động ghi và cách tra cứu ở [`deploy/MONITORING.md`](./deploy/MONITORING.md).
+- Các hành động ghi và cách tra cứu ở [`docs/MONITORING.md`](./docs/MONITORING.md).
 
 ## 10. Toàn vẹn và phục hồi
 
@@ -179,7 +179,7 @@ Trạng thái của hồ sơ chỉ đổi qua quy trình.
 - **GitOps:** `dxos gitops` kéo theo chu kỳ hạ tầng (`deploy/`, cấu hình cổng vào, tag image) từ một kho DX-OS và các tệp mô hình từ một kho của người triển khai, xác minh chữ ký commit nếu bật, rồi báo lệch, chờ duyệt hoặc tự áp dụng.
   Nâng cấp hạ tầng đi qua `install.sh --upgrade` và `update.sh`.
 - **Sao lưu:** `deploy/backup.sh` chụp bản sao lưu mã hóa của Postgres và kho tệp; `verify` nạp bản dump vào Postgres tạm và kiểm mọi tệp đính kèm đều có.
-- Cách dùng từng việc ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md) và [`deploy/INTEGRATIONS.md`](./deploy/INTEGRATIONS.md).
+- Cách dùng từng việc ở [`docs/OPERATIONS.md`](./docs/OPERATIONS.md) và [`docs/INTEGRATIONS.md`](./docs/INTEGRATIONS.md).
 
 ## 11. Dữ liệu
 
@@ -194,7 +194,7 @@ Trạng thái của hồ sơ chỉ đổi qua quy trình.
 Flowable đặt `search_path` của kết nối nó dùng về `engine` và không trả lại, nên truy vấn vào bảng ngoài `engine` luôn ghi rõ schema.
 
 - **Ghi và đọc:** dịch vụ lõi là kết nối ghi duy nhất vào dữ liệu nghiệp vụ.
-  Vai `report_ro` chỉ đọc, thấy mọi dòng của mọi bảng nghiệp vụ và không áp quyền `own`, `unit`, `assigned` của người xem, nên chỉ cấp cho công cụ báo cáo của người vận hành; cách kết nối ở [`deploy/REPORTING.md`](./deploy/REPORTING.md).
+  Vai `report_ro` chỉ đọc, thấy mọi dòng của mọi bảng nghiệp vụ và không áp quyền `own`, `unit`, `assigned` của người xem, nên chỉ cấp cho công cụ báo cáo của người vận hành; cách kết nối ở [`docs/REPORTING.md`](./docs/REPORTING.md).
 - **Số liệu theo quyền:** các API dưới đây dùng cùng dòng và bộ lọc với danh sách, nên quyền theo dòng được áp dụng; công cụ báo cáo cần quyền theo dòng dùng chúng thay cho `report_ro`.
   - `GET /api/v1/data/{model}/{entity}/stats`: số liệu tổng quan.
   - `.../report`: nhóm theo một trường và tính đếm, tổng, trung bình, nhỏ nhất, lớn nhất trên trường số; tên trường và phép tính được kiểm theo mô hình nên không phần nào của yêu cầu thành SQL.
@@ -207,9 +207,9 @@ Flowable đặt `search_path` của kết nối nó dùng về `engine` và khô
 - Compose chạy lõi (`postgres`, `keycloak`, `seaweedfs`, `backend`, `apisix`) và Tầng 2 (`frontend`, `portal`, `monitor`); `clamav` chạy với profile `av`, có sẵn trong cấu hình mặc định.
 - `dxos start --core` chỉ chạy lõi: không có Tầng 2 và gateway không có route của nó.
   Keycloak Admin Console mặc định không mở ra gateway.
-- Gateway kiểm token cho mọi route API; các route không kiểm token nằm trong danh sách công khai kiểm bởi `deploy/apisix/check_routes.py`.
+- Gateway kiểm token cho mọi route API; các route không kiểm token nằm trong danh sách công khai kiểm bởi `e2e/api/check_routes.py`.
 - `dxos start <tệp>...` đưa các tệp mô hình vào qua `deploy/model/` và in kết quả của `ModelBootstrap` cho từng tệp.
-- Chi tiết vận hành ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md), log và audit ở [`deploy/MONITORING.md`](./deploy/MONITORING.md), webhook và lịch sử chống sửa ở [`deploy/INTEGRATIONS.md`](./deploy/INTEGRATIONS.md).
+- Chi tiết vận hành ở [`docs/OPERATIONS.md`](./docs/OPERATIONS.md), log và audit ở [`docs/MONITORING.md`](./docs/MONITORING.md), webhook và lịch sử chống sửa ở [`docs/INTEGRATIONS.md`](./docs/INTEGRATIONS.md).
 
 ## 13. Đối chiếu với yêu cầu của đề
 

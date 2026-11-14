@@ -253,8 +253,8 @@ dxos plan model.yaml   # xem trước sau khi sửa model.yaml
 dxos apply model.yaml  # áp dụng
 ```
 
-Bộ cài và các lệnh `dxos` ở [`deploy/OPERATIONS.md`](../../deploy/OPERATIONS.md#cài-đặt-và-lệnh-dxos); `dxos plan` và `dxos apply` đưa tệp mô hình vào hệ thống đang chạy với cùng kế hoạch và mức xác nhận như bảng điều khiển.
-`dxos start --core` chỉ chạy Tầng 1 làm nền tảng API, xem [chế độ chỉ lõi](../../deploy/OPERATIONS.md#chế-độ-chỉ-lõi).
+Bộ cài và các lệnh `dxos` ở [`docs/OPERATIONS.md`](../OPERATIONS.md#cài-đặt-và-lệnh-dxos); `dxos plan` và `dxos apply` đưa tệp mô hình vào hệ thống đang chạy với cùng kế hoạch và mức xác nhận như bảng điều khiển.
+`dxos start --core` chỉ chạy Tầng 1 làm nền tảng API, xem [chế độ chỉ lõi](../OPERATIONS.md#chế-độ-chỉ-lõi).
 `dxos demo` tạo bốn tài khoản thử và khoảng 40 hồ sơ mẫu của mô hình Một cửa sinh viên; kịch bản trình diễn 15 phút ở [`docs/DEMO.md`](../DEMO.md).
 
 
@@ -325,7 +325,7 @@ Thêm năng lực mới nghĩa là thêm provider, không phải sửa lõi.
 | Vòng đời mô hình             | Git, phần điều khiển                  | **Phần tự viết chính**                                      |
 | Trục sự kiện                   | Bảng outbox trong PostgreSQL             | Webhook theo mô hình, API kéo sự kiện theo `eventId`, thông điệp của việc áp dụng mô hình và của tài khoản (chỉ qua webhook); kênh sự kiện `GET /api/v1/inbox/stream` báo cho giao diện khi hồ sơ đổi |
 | Thông báo                       | Mattermost hoặc Slack do người triển khai cấp | Đích webhook dạng `chat`: việc mới, sắp đến hạn, quá hạn, leo thang |
-| Báo cáo | Công cụ báo cáo do người triển khai cấp | Vai `report_ro` chỉ đọc các bảng nghiệp vụ, cách kết nối ở [`deploy/REPORTING.md`](../../deploy/REPORTING.md) |
+| Báo cáo | Công cụ báo cáo do người triển khai cấp | Vai `report_ro` chỉ đọc các bảng nghiệp vụ, cách kết nối ở [`docs/REPORTING.md`](../REPORTING.md) |
 | AI | Mô hình ngôn ngữ và embedding mở hoàn toàn | Khai báo nguồn tri thức và tác tử |
 | Vận hành                        | `dx-monitor`, `deploy/backup.sh`          | Giữ nguyên                                                    |
 
@@ -442,7 +442,7 @@ Trạng thái hồ sơ không thể bị đi vòng:
 
 - Flowable là nơi duy nhất được đổi trạng thái hồ sơ.
 - API chung từ chối mọi yêu cầu ghi cột trạng thái.
-- Dịch vụ lõi là kết nối ghi duy nhất vào dữ liệu nghiệp vụ; công cụ báo cáo dùng vai `report_ro` chỉ có quyền đọc, cách kết nối ở [`deploy/REPORTING.md`](../../deploy/REPORTING.md).
+- Dịch vụ lõi là kết nối ghi duy nhất vào dữ liệu nghiệp vụ; công cụ báo cáo dùng vai `report_ro` chỉ có quyền đọc, cách kết nối ở [`docs/REPORTING.md`](../REPORTING.md).
 - Flowable chạy nhúng trong dịch vụ lõi dùng chung cơ sở dữ liệu, để đổi trạng thái và ghi hồ sơ nằm trong một giao dịch.
 
 Quy tắc khai báo được API chung kiểm để báo lỗi rõ và biên dịch thành ràng buộc trong cơ sở dữ liệu.
@@ -527,7 +527,7 @@ Phần này là giả thuyết về khách hàng.
 - **Chưa phục vụ:** tổ chức không có ai vận hành máy chủ, lập trình viên muốn toàn quyền kiểm soát mã, doanh nghiệp cần ERP đầy đủ.
 - **Đối thủ thật:** bảng tính và thuê làm riêng; với người muốn trọn gói tự cài thì là Frappe.
 - **Lý do chọn:** thay đổi an toàn trên toàn hệ thống, dữ liệu ở máy chủ của mình, không tính phí theo đầu người.
-- **Pháp lý:** [Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15](https://congbao.chinhphu.vn/van-ban/luat-so-91-2025-qh15-45578.htm) và [Nghị định 356/2025/NĐ-CP](https://congbao.chinhphu.vn/van-ban/nghi-dinh-so-356-2025-nd-cp-468371.htm) có hiệu lực từ 2026-01-01; chuyển dữ liệu ra nước ngoài phải lập hồ sơ đánh giá tác động và gửi cơ quan chuyên trách trong 60 ngày (Điều 20 luật), chi tiết ở [`deploy/OPERATIONS.md`](../../deploy/OPERATIONS.md#dữ-liệu-cá-nhân-ra-nước-ngoài).
+- **Pháp lý:** [Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15](https://congbao.chinhphu.vn/van-ban/luat-so-91-2025-qh15-45578.htm) và [Nghị định 356/2025/NĐ-CP](https://congbao.chinhphu.vn/van-ban/nghi-dinh-so-356-2025-nd-cp-468371.htm) có hiệu lực từ 2026-01-01; chuyển dữ liệu ra nước ngoài phải lập hồ sơ đánh giá tác động và gửi cơ quan chuyên trách trong 60 ngày (Điều 20 luật), chi tiết ở [`docs/OPERATIONS.md`](../OPERATIONS.md#dữ-liệu-cá-nhân-ra-nước-ngoài).
 - **Đo công sức:** mười hệ thống mẫu cần 252 dòng khai báo và không dòng mã nào, hệ thống đề nghị mua sắm ba vai cần 23 dòng, còn phần Lab viết tay gồm 5.792 dòng Java, 4.524 dòng giao diện và 8 migration; số đo và cách đo ở [`docs/TARGETS.md`](../TARGETS.md).
 
 Mục tiêu:

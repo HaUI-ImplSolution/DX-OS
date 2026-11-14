@@ -45,7 +45,7 @@ Không nhận wildcard, user info, fragment, host hoặc cổng sai; `CORS_ALLOW
 
 `dxos client browser list` liệt kê client trình duyệt.
 `dxos client browser remove partner-ui` xóa client nhưng giữ origin trong allowlist vì giao diện khác có thể dùng chung; xóa origin không còn dùng khỏi `CORS_ALLOWED_ORIGINS` rồi tạo lại backend.
-Hướng dẫn cấu hình ứng dụng từ đầu đến cuối ở [`docs/EXTENSIONS.md`](../docs/EXTENSIONS.md#giao-diện-ngoài).
+Hướng dẫn cấu hình ứng dụng từ đầu đến cuối ở [`docs/EXTENSIONS.md`](EXTENSIONS.md#giao-diện-ngoài).
 
 ## Cài đặt và lệnh `dxos`
 
@@ -54,9 +54,9 @@ curl -fsSL https://github.com/HaUI-ImplSolution/DX-OS/releases/latest/download/d
 dxos start
 ```
 
-Bộ cài ([`get.sh`](./get.sh), phát hành kèm mỗi bản với tên `dxos-install.sh`) tải gói của bản phát hành, so với SHA-256 trong `dx-os-X.Y.Z.sha256`, rồi chạy [`install.sh`](./install.sh) của gói đó.
+Bộ cài ([`get.sh`](../deploy/get.sh), phát hành kèm mỗi bản với tên `dxos-install.sh`) tải gói của bản phát hành, so với SHA-256 trong `dx-os-X.Y.Z.sha256`, rồi chạy [`install.sh`](../deploy/install.sh) của gói đó.
 Gói sai SHA-256 thì không cài gì.
-`install.sh` chép `deploy/` và `sso/realm-dxos.json` vào `~/.dxos` (đổi bằng `--prefix` hoặc biến `DXOS_HOME`), sinh `deploy/.env` bằng [`make_env.sh`](./make_env.sh), đặt `COMPOSE_PROJECT_NAME=dxos` cùng image GHCR của bản đó, và tạo liên kết `~/.local/bin/dxos`.
+`install.sh` chép `deploy/`, `sso/realm-dxos.json` và ba script `e2e/api/` mà `dxos conformance` chạy vào `~/.dxos` (đổi bằng `--prefix` hoặc biến `DXOS_HOME`), sinh `deploy/.env` bằng [`make_env.sh`](../deploy/make_env.sh), đặt `COMPOSE_PROJECT_NAME=dxos` cùng image GHCR của bản đó, và tạo liên kết `~/.local/bin/dxos`.
 Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằng `--file dx-os-X.Y.Z.tar.gz`.
 
 | Lệnh | Việc |
@@ -84,7 +84,7 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 | `dxos uninstall [--purge]` | Xóa container và lệnh `dxos`; `--purge` xóa cả dữ liệu và thư mục cài, phải gõ xác nhận |
 
 File route riêng `deploy/apisix/local.yaml` được giữ khi cập nhật và ghép với cấu hình lõi mới sau khi kiểm; cấu hình xung đột làm cập nhật dừng trước khi thay container.
-Cách khai báo và nạp lại ở [Route riêng trong APISIX](../docs/EXTENSIONS.md#route-riêng-trong-apisix).
+Cách khai báo và nạp lại ở [Route riêng trong APISIX](EXTENSIONS.md#route-riêng-trong-apisix).
 
 ### Tệp mô hình lúc khởi động
 
@@ -120,10 +120,10 @@ Xóa file `.dxos-model-upgrade.*` còn sót sau khi máy bị dừng đột ng�
 
 ### Kiểm tệp mô hình và rào chắn của lõi
 
-`dxos lint <tệp>...` chạy được khi chưa có `deploy/.env`; hợp đồng đầu vào, đầu ra và mã thoát ở [`docs/MODEL.md`](../docs/MODEL.md#kiểm-tệp-trước-khi-áp-dụng).
+`dxos lint <tệp>...` chạy được khi chưa có `deploy/.env`; hợp đồng đầu vào, đầu ra và mã thoát ở [`docs/MODEL.md`](MODEL.md#kiểm-tệp-trước-khi-áp-dụng).
 Nó chạy `dxos-lint.jar` trong image backend, hoặc trên Java 21 của máy khi đặt `DXOS_LINT_JAR`.
 
-`dxos conformance <mô hình>` chạy `deploy/dev/check_conformance.py` trên stack này, cho một mô hình đã áp dụng:
+`dxos conformance <mô hình>` chạy `e2e/api/check_conformance.py` trên stack này, cho một mô hình đã áp dụng:
 - Trạng thái của hồ sơ có quy trình không ghi được qua API dữ liệu (403).
 - Yêu cầu không có token bị từ chối (401).
 - Người dùng của mô hình không chạm tới dữ liệu của mô hình khác.
@@ -273,7 +273,7 @@ Mở Admin Console khi cần vận hành:
 3. Mở `<địa chỉ>/admin/` và đăng nhập bằng `KEYCLOAK_ADMIN_USERNAME` và `KEYCLOAK_ADMIN_PASSWORD`; `dxos status` in địa chỉ này khi cờ đang bật.
 
 Đặt lại `false` rồi làm lại bước 2 để đóng.
-Các script kiểm ở `deploy/dev` gọi Keycloak Admin API qua gateway nên cần cờ này bật (xem [`docs/TESTING.md`](../docs/TESTING.md)).
+Các script kiểm ở `e2e/api` gọi Keycloak Admin API qua gateway nên cần cờ này bật (xem [`docs/TESTING.md`](TESTING.md)).
 
 ## Kiểm tra trước khi chạy
 
@@ -312,7 +312,7 @@ Số đo trên máy 12 CPU, 31 GB RAM, với stack tám service (không bật `c
 | `frontend`, `portal` | 11 mỗi service |
 
 Cả stack dùng khoảng 1,8 GiB RAM, CPU gần 0 lúc rảnh; số này chưa gồm `clamav` (khoảng 1 GB RAM, bật sẵn, `dxos av off` để bỏ).
-Số nhân và RAM cần cho một số người dùng đồng thời nhất định, và cách đo lại trên máy của bạn, ở [`docs/SIZING.md`](../docs/SIZING.md).
+Số nhân và RAM cần cho một số người dùng đồng thời nhất định, và cách đo lại trên máy của bạn, ở [`docs/SIZING.md`](SIZING.md).
 Image chiếm khoảng 3,5 GiB đĩa (kích thước `docker images` của tám service); cơ sở dữ liệu 12 MB.
 
 Dựng stack rỗng khi image đã có trên máy, với một tệp mô hình: stack lên và mô hình áp dụng xong sau khoảng 1 phút, và tài khoản ADMIN đầu tiên (`dxos admin`) thêm vài giây.
@@ -418,7 +418,7 @@ Image chính thức tự cập nhật chữ ký một lần mỗi ngày từ m�
 Mã 429 trong log của `clamav` là bị giới hạn tốc độ (hay gặp ở IP máy chủ đám mây dùng chung), và chữ ký cũ vẫn dùng được cho đến lần cập nhật sau.
 ClamAV chặn tải chữ ký với phiên bản đã hết hỗ trợ, nên nâng image `clamav/clamav` trong `deploy/docker-compose.yml` khi bản đang ghim tới hạn (chính sách ở https://docs.clamav.net/faq/faq-eol.html).
 Mỗi lần clamd nạp lại chữ ký (hằng ngày và sau khi khởi động) nó không quét được khoảng 10 giây, và người dùng gặp 503 trong lúc đó; chờ rồi tải lại.
-Thử bằng tệp EICAR (chuỗi kiểm thử chuẩn của ngành diệt virus): tệp chỉ gồm đúng chuỗi đó, đổi tên `.pdf` rồi đính vào một yêu cầu; `deploy/dev/check_demo.py` tự làm bước này khi `STORAGE_SCAN_HOST` có giá trị, cùng với tệp sạch và tệp tải lên lúc ClamAV dừng, và nhóm chế độ lõi của job `API end-to-end` chạy nó trong CI.
+Thử bằng tệp EICAR (chuỗi kiểm thử chuẩn của ngành diệt virus): tệp chỉ gồm đúng chuỗi đó, đổi tên `.pdf` rồi đính vào một yêu cầu; `e2e/api/check_demo.py` tự làm bước này khi `STORAGE_SCAN_HOST` có giá trị, cùng với tệp sạch và tệp tải lên lúc ClamAV dừng, và nhóm chế độ lõi của job `API end-to-end` chạy nó trong CI.
 
 ## Dữ liệu cá nhân ra nước ngoài
 

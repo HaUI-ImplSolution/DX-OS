@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { expect, test, type Page } from "@playwright/test";
 
-// A test account made by deploy/dev/kc.py (kc.ensure_user): ADMIN, no second factor, the project's test password.
+// A test account made by e2e/api/kc.py (kc.ensure_user): ADMIN, no second factor, the project's test password.
 const USER = process.env.E2E_USER ?? "ui_admin";
 const PASSWORD = process.env.E2E_PASSWORD ?? "Test1234!";
 

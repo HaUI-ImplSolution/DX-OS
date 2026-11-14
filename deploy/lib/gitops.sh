@@ -202,7 +202,7 @@ gitops_models() {
 
 # The files an install keeps as runtime files; the same selection as runtime_files in install.sh.
 gitops_runtime_files() {
-  (cd "$1" && find deploy sso/realm-dxos.json \
+  (cd "$1" && find deploy sso/realm-dxos.json e2e/api/kc.py e2e/api/check_api.py e2e/api/check_conformance.py \
     \( -path deploy/data -o -path deploy/backups -o -path deploy/gitops -o -name __pycache__ \) -prune -o \
     -type f ! \( -name '.env*' ! -name '.env.example' \) ! -name 'VPS.md' \
     ! -path deploy/apisix/local.yaml -print) | LC_ALL=C sort

@@ -80,4 +80,4 @@ Ngoài phạm vi:
 - Dependabot đề xuất cập nhật dependency.
 - Mỗi bản phát hành kèm gói `.tar.gz`, `.sha256` và SBOM; bộ cài kiểm SHA-256 trước khi cài.
 - Giấy phép của mọi gói, kể cả gói gián tiếp, được kiểm ở mỗi pull request ([`CONTRIBUTING.md`](./CONTRIBUTING.md)).
-- Chi tiết mô hình phân quyền, giới hạn tốc độ, ghi vết và sao lưu ở [`ARCHITECTURE.md`](./ARCHITECTURE.md), [`deploy/MONITORING.md`](./deploy/MONITORING.md) (giới hạn tốc độ và ghi vết) và [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md) (sao lưu và ứng phó sự cố).
+- Chi tiết mô hình phân quyền, giới hạn tốc độ, ghi vết và sao lưu ở [`ARCHITECTURE.md`](./ARCHITECTURE.md), [`docs/MONITORING.md`](./docs/MONITORING.md) (giới hạn tốc độ và ghi vết) và [`docs/OPERATIONS.md`](./docs/OPERATIONS.md) (sao lưu và ứng phó sự cố).

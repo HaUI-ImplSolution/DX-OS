@@ -2,7 +2,7 @@
 """Checks of the readable record codes: how they are given, kept apart, and found again.
 
 They apply models of their own, so they need nothing from the scripts before them:
-    python3 deploy/dev/check_codes.py
+    python3 e2e/api/check_codes.py
 """
 import re
 import sys
@@ -148,7 +148,7 @@ def main():
     rt.check("CD-22 and nothing was saved for it", status == 200 and body["data"]["totalElements"] == 9, str(body)[:200])
 
     for fixture, needle in [("code-without-sequence", "line 10"), ("code-with-default", "line 10")]:
-        status, body = kc.api(admin, "POST", "/models/plan", rt.read(f"models/invalid/{fixture}.yaml"), YAML)
+        status, body = kc.api(admin, "POST", "/models/plan", rt.read(f"e2e/fixtures/invalid-models/{fixture}.yaml"), YAML)
         rt.check(f"CD-23 {fixture}", status == 400 and needle in body["data"][0], f"{status} {body.get('data')}")
 
     failed = [case for case, ok in rt.results if not ok]

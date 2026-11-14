@@ -55,7 +55,7 @@ _Gợi ý: ghi thêm đề mục nào của đề thi và hạng mục rubric n�
 - Demo được: {kịch bản ngắn, ai làm gì, thấy gì}.
 - Sản phẩm bàn giao: {code, tài liệu, sơ đồ, dữ liệu mẫu}.
 - Tiêu chí đo được: {số hoặc điều kiện đúng/sai, ví dụ "tài khoản vai X gọi API Y bằng client Z bị 403"}.
-- Với mỗi tệp mô hình mà phase đụng tới: áp dụng được vào hệ thống rỗng, áp dụng lại cùng tệp thì không làm gì, và `python3 deploy/dev/check_conformance.py <tên mô hình>` đạt mà không phải sửa mã lõi.
+- Với mỗi tệp mô hình mà phase đụng tới: áp dụng được vào hệ thống rỗng, áp dụng lại cùng tệp thì không làm gì, và `python3 e2e/api/check_conformance.py <tên mô hình>` đạt mà không phải sửa mã lõi.
 - Bằng chứng: {link log, ảnh, video, test report}.
 
 ## 7. Phụ thuộc và thứ tự

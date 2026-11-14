@@ -10,7 +10,7 @@ Three kinds of reference break without anyone noticing, because the site still b
   The section number must be a section of that file, and every «Title» must be the bold title of a
   numbered item of that section.
 - A check script named as `check_<name>.py` must exist somewhere in the repository.
-- A check label such as CLI-19 or QL-03 must appear in a script of deploy/dev.
+- A check label such as CLI-19 or QL-03 must appear in a script of e2e/api.
   Only prefixes that the scripts themselves use are checked, so the placeholders of the phase
   templates are left alone.
 
@@ -23,7 +23,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 TESTING = ROOT / "docs" / "TESTING.md"
-SCRIPTS = ROOT / "deploy" / "dev"
+SCRIPTS = ROOT / "e2e" / "api"
 
 CITE = re.compile(r"TESTING\.md`?,?\s+mục\s+(\d+)((?:,?\s*(?:và\s+|đến\s+)?«[^»]+»)*)")
 TITLE = re.compile(r"«([^»]+)»")
@@ -92,11 +92,11 @@ def main() -> int:
         for script in sorted(set(SCRIPT_NAME.findall(body))):
             if script not in script_names:
                 problems.append(f"{name}: names {script}, which is not in the repository")
-        if name in ("website/docs/evidence-matrix.md", "docs/TESTING.md", "docs/MODEL.md", "deploy/OPERATIONS.md"):
+        if name in ("website/docs/evidence-matrix.md", "docs/TESTING.md", "docs/MODEL.md", "docs/OPERATIONS.md"):
             for prefix, digits in LABEL.findall(body):
                 label = f"{prefix}-{digits}"
                 if prefix in label_prefixes and label not in labels_in_scripts:
-                    problems.append(f"{name}: names the check {label}, which no script of deploy/dev has")
+                    problems.append(f"{name}: names the check {label}, which no script of e2e/api has")
 
     for problem in sorted(set(problems)):
         print(problem)

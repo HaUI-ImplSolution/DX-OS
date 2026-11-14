@@ -134,7 +134,7 @@ Lý do đọc hoặc không dùng làm nền với Supabase, Strapi và Directus
 | Hệ điều hành | Linux | Có Docker và Docker Compose v2 |
 | Mã nguồn | Không cần khi dùng bộ cài | Chỉ cần khi tự build |
 | JDK, Node | 21, 22 | Chỉ cần để build và kiểm thử ngoài Docker |
-| RAM | Khoảng 1,8 GiB cho tám service lúc rảnh | Số đo thật ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md#tài-nguyên-và-số-bản-sao); ClamAV thêm khoảng 1 GB, tắt bằng `dxos av off` |
+| RAM | Khoảng 1,8 GiB cho tám service lúc rảnh | Số đo thật ở [`docs/OPERATIONS.md`](./docs/OPERATIONS.md#tài-nguyên-và-số-bản-sao); ClamAV thêm khoảng 1 GB, tắt bằng `dxos av off` |
 | Đĩa | Khoảng 3,5 GiB cho image | Cơ sở dữ liệu và tệp đính kèm tăng theo dữ liệu |
 
 `dxos doctor` (hoặc `deploy/doctor.sh`) kiểm Docker, RAM, ổ đĩa, `deploy/.env` và các cổng trước khi chạy.
@@ -153,7 +153,7 @@ Bộ cài tải bản phát hành mới nhất, kiểm SHA-256 rồi cài vào `
 `dxos start` tải image ở lần đầu, chờ mọi dịch vụ sẵn sàng, tạo tài khoản `admin` với mật khẩu tạm in ra màn hình, rồi in các địa chỉ.
 Đăng nhập `http://localhost:9080/console` bằng `admin`, đổi mật khẩu, chọn một mẫu ở tab Thư viện mẫu, xem kế hoạch rồi áp dụng.
 Đã có tệp mô hình thì `dxos start <tệp>` đưa tệp vào luôn; có nhiều tệp thì liệt kê hết sau `dxos start`.
-Chỉ cần nền tảng API cho ứng dụng bên ngoài thì chạy `dxos start --core`: không có ứng dụng web, portal và giám sát, xem [Chế độ chỉ lõi](./deploy/OPERATIONS.md#chế-độ-chỉ-lõi).
+Chỉ cần nền tảng API cho ứng dụng bên ngoài thì chạy `dxos start --core`: không có ứng dụng web, portal và giám sát, xem [Chế độ chỉ lõi](./docs/OPERATIONS.md#chế-độ-chỉ-lõi).
 
 ### Từ mã nguồn
 
@@ -215,7 +215,7 @@ Các lệnh hay dùng của `dxos`:
 | Không đăng nhập được tài khoản thử | `dxos demo` đặt lại mật khẩu và in mật khẩu mới |
 | Sau lần áp dụng, một bản `backend` trả 404 | Chỉ chạy một bản `backend`, hoặc khởi động lại cả hai |
 
-Cài đặt, mọi lệnh `dxos`, sao lưu, khôi phục và ứng phó sự cố ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md); giám sát và log ở [`deploy/MONITORING.md`](./deploy/MONITORING.md).
+Cài đặt, mọi lệnh `dxos`, sao lưu, khôi phục và ứng phó sự cố ở [`docs/OPERATIONS.md`](./docs/OPERATIONS.md); giám sát và log ở [`docs/MONITORING.md`](./docs/MONITORING.md).
 
 ## Đối chiếu với đề thi
 
@@ -246,10 +246,10 @@ Các tài liệu về viết tệp mô hình, API, vận hành, giám sát, tíc
 | Phát triển dịch vụ, webhook và giao diện mở rộng | [`docs/EXTENSIONS.md`](./docs/EXTENSIONS.md) |
 | Kiến trúc và các quyết định đã chốt | [`ARCHITECTURE.md`](./ARCHITECTURE.md) |
 | Thuật ngữ | [`docs/GLOSSARY.md`](./docs/GLOSSARY.md) |
-| Cài đặt, lệnh `dxos`, sao lưu, ứng phó sự cố | [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md) |
-| Giám sát, log, nhật ký truy cập | [`deploy/MONITORING.md`](./deploy/MONITORING.md) |
-| Webhook, lịch sử chống sửa, lưu trữ dài hạn | [`deploy/INTEGRATIONS.md`](./deploy/INTEGRATIONS.md) |
-| Kết nối công cụ báo cáo | [`deploy/REPORTING.md`](./deploy/REPORTING.md) |
+| Cài đặt, lệnh `dxos`, sao lưu, ứng phó sự cố | [`docs/OPERATIONS.md`](./docs/OPERATIONS.md) |
+| Giám sát, log, nhật ký truy cập | [`docs/MONITORING.md`](./docs/MONITORING.md) |
+| Webhook, lịch sử chống sửa, lưu trữ dài hạn | [`docs/INTEGRATIONS.md`](./docs/INTEGRATIONS.md) |
+| Kết nối công cụ báo cáo | [`docs/REPORTING.md`](./docs/REPORTING.md) |
 | Kiểm thử | [`docs/TESTING.md`](./docs/TESTING.md), [`e2e/README.md`](./e2e/README.md) |
 | Kiểm chứng chỉ số mục tiêu, chi phí tự cài | [`docs/TARGETS.md`](./docs/TARGETS.md) |
 | Kịch bản trình diễn 15 phút | [`docs/DEMO.md`](./docs/DEMO.md) |
@@ -268,14 +268,14 @@ Các tài liệu về viết tệp mô hình, API, vận hành, giám sát, tíc
 | `backend/dx-engine` | Lõi | Dịch vụ lõi: áp dụng mô hình, API chung, Flowable |
 | `backend/dx-monitor` | Ứng dụng | Màn hình giám sát và truy vết |
 | `frontend` | Ứng dụng | Giao diện react-admin dựng từ metadata, có tiếng Việt và tiếng Anh |
-| `deploy` | Dùng chung | Compose, gateway APISIX, bộ cài và lệnh `dxos`, script vận hành, script kiểm tra ở `deploy/dev` |
-| `sso`, `seaweedfs` | Lõi | Keycloak realm, lưu trữ tệp |
+| `deploy` | Dùng chung | Compose, gateway APISIX, bộ cài và lệnh `dxos`, script vận hành |
+| `sso` | Lõi | Keycloak realm |
 | `portal` | Ứng dụng | Trang liên kết các địa chỉ và trạng thái dịch vụ |
-| `models` | Mô hình | Tệp mô hình sai mẫu cho kiểm tự động; mô hình mẫu dùng được ở `backend/dx-engine/src/main/resources/templates/` |
 | `examples` | Ngoài lõi | Chương trình mẫu: bên nhận sự kiện giữ hash lịch sử ([`history-witness`](./examples/history-witness/README.md)), giả lập hệ thống IT/OT ([`itot-simulator`](./examples/itot-simulator/README.md)) |
-| `e2e` | Kiểm thử | Kiểm giao diện web trên trình duyệt (Playwright) |
+| `tools` | Công cụ | Công cụ của người phát triển, như đếm mã tự viết |
+| `e2e` | Kiểm thử | Kiểm tự động trên stack đang chạy: API (`api/`), giao diện web bằng Playwright (`web/`) và tệp mô hình sai mẫu (`fixtures/`) |
 | `website` | Tài liệu | Trang tài liệu (Docusaurus), đăng lên GitHub Pages |
-| `docs` | Tài liệu | Hướng dẫn kiểm thử, tệp mô hình, API; hướng thiết kế ở `dynamic-core/` |
+| `docs` | Tài liệu | Hướng dẫn kiểm thử, tệp mô hình, API, vận hành, giám sát, tích hợp, báo cáo, lưu trữ tệp; hướng thiết kế ở `dynamic-core/` |
 | `sbom` | Giấy phép | Danh mục thành phần CycloneDX của backend, web, và trang tài liệu |
 | `LICENSES` | Giấy phép | Toàn văn giấy phép của kho theo chuẩn REUSE |
 | `.github` | Dùng chung | Workflow CI, mẫu issue và pull request, quy tắc nhánh, script kiểm tra |

@@ -2,7 +2,7 @@
 
 Một tệp YAML khai báo thực thể, trường, vai, quyền và quy trình của một nghiệp vụ.
 Lõi dựng bảng dữ liệu, vai Keycloak, API và giao diện từ tệp này, nên đổi nghiệp vụ là đổi tệp, không đổi mã.
-Đặc tả hiện hành cho trình soạn thảo ở [`model-v1.schema.json`](../backend/dx-model/src/main/resources/schema/model-v1.schema.json), và tệp sai mẫu dùng cho kiểm tự động ở [`models/invalid/`](../models/invalid).
+Đặc tả hiện hành cho trình soạn thảo ở [`model-v1.schema.json`](../backend/dx-model/src/main/resources/schema/model-v1.schema.json), và tệp sai mẫu dùng cho kiểm tự động ở [`e2e/fixtures/invalid-models/`](../e2e/fixtures/invalid-models).
 
 ## Ví dụ
 
@@ -57,7 +57,7 @@ Ví dụ workflow CI cho kho mô hình ở [`examples/model-repo`](../examples/m
 Lint chỉ kiểm tệp, nên `dxos plan` còn so tệp với mô hình đang chạy, đích webhook và dữ liệu hiện có.
 Kết quả lint hợp lệ không có nghĩa là `apply` thành công; kết quả lint có lỗi thì `plan` cũng từ chối đúng những lỗi đó.
 
-`dxos conformance <mô hình>` chạy trên hệ thống đang chạy và kiểm các rào chắn của lõi cho mô hình đã áp dụng; cách chạy và điều kiện ở [`deploy/OPERATIONS.md`](../deploy/OPERATIONS.md#kiểm-tệp-mô-hình-và-rào-chắn-của-lõi).
+`dxos conformance <mô hình>` chạy trên hệ thống đang chạy và kiểm các rào chắn của lõi cho mô hình đã áp dụng; cách chạy và điều kiện ở [`docs/OPERATIONS.md`](OPERATIONS.md#kiểm-tệp-mô-hình-và-rào-chắn-của-lõi).
 
 ## Trường và đơn vị
 
@@ -198,7 +198,7 @@ Ví dụ đầy đủ ở [`asset_register.yaml`](../backend/dx-engine/src/main/
   Tên đích khai trong `deploy/webhooks/targets.yml` như đích của `webhook`; tên chưa có trong tệp thì mô hình bị từ chối.
   Dịch vụ được hỏi sau khi mọi quy tắc của quy trình đã đạt và trước khi trạng thái đổi.
   Hành động bị từ chối trả 403 `ERR_ACTION_NOT_ALLOWED` với `data.reason` là `CHECK_DENIED` và `data.code` là mã dịch vụ trả về.
-  Dịch vụ không trả lời hoặc trả lời sai thì cách xử lý do `on_error` của đích quyết định, cách khai và giao thức ở [`deploy/INTEGRATIONS.md`](../deploy/INTEGRATIONS.md#kiểm-tra-trước-khi-chuyển-trạng-thái).
+  Dịch vụ không trả lời hoặc trả lời sai thì cách xử lý do `on_error` của đích quyết định, cách khai và giao thức ở [`docs/INTEGRATIONS.md`](INTEGRATIONS.md#kiểm-tra-trước-khi-chuyển-trạng-thái).
   Hành động tự đóng của `auto_close` không hỏi dịch vụ.
 - Khi có `family`, mục khai báo ghi đè từng khóa của khung; viết `null` để bỏ một trạng thái hoặc hành động của khung.
 - `withdraw` và trạng thái `withdrawn` là tên dành riêng: khai `withdraw: {from: [...]}` thì nền tảng tự thêm trạng thái `withdrawn`, và hành động này luôn do người nộp thực hiện.
@@ -316,4 +316,4 @@ Tin của dòng `escalated` có thêm `level` (mức, từ 1) và `round` (lần
 - `default` điền giá trị cho trường bắt buộc mới trên bảng đã có dòng; trường nhiều lựa chọn nhận một danh sách.
 - Đổi kiểu của một trường đang có (kể cả từ một lựa chọn sang nhiều lựa chọn) bị từ chối; thêm một trường mới thay vì đổi kiểu.
 - Đổi tên một trường có `min`, `max` hay `pattern` giữ nguyên dữ liệu và đổi tên cả các ràng buộc của nó.
-- Xem trước, áp dụng, quay về và các lệnh liên quan ở [`deploy/OPERATIONS.md`](../deploy/OPERATIONS.md#cài-đặt-và-lệnh-dxos) và [`API.md`](./API.md).
+- Xem trước, áp dụng, quay về và các lệnh liên quan ở [`docs/OPERATIONS.md`](OPERATIONS.md#cài-đặt-và-lệnh-dxos) và [`API.md`](./API.md).

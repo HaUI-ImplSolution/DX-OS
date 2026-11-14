@@ -22,7 +22,7 @@ Mức nói một hệ thống xây trên DX-OS cần viết gì ngoài tệp mô
 - Mức của một tệp mô hình suy ra từ những khóa nó dùng: `check` là mức 3; `states`, `actions`, `when`, `escalate`, `auto_close`, `after`, `require` hoặc `role` là mức 2; còn lại là mức 1.
 - Khóa `webhook` không tự nâng mức; bên nhận tự viết, dịch vụ hoặc giao diện riêng tính là mã tự viết khi nằm trong thư mục của hệ thống.
 
-Cách chạy: `python3 deploy/dev/count_own_code.py <thư mục>` (thêm `--json` để lấy dạng máy đọc).
+Cách chạy: `python3 tools/count_own_code.py <thư mục>` (thêm `--json` để lấy dạng máy đọc).
 
 ## Mã tự viết
 
@@ -68,7 +68,7 @@ Mục tiêu "dưới 10 phút" đạt khi máy đã có image; lần đầu còn
 Dành cho một người chưa biết hệ thống, có máy Linux cài Docker; người quan sát không giúp trừ khi bị hỏi và ghi mọi lần giúp.
 
 - **Việc giao:** dựng hệ thống "Đề nghị mua sắm": nhân viên nộp đề nghị có tiêu đề và số tiền; trưởng nhóm duyệt đề nghị đến 5 triệu đồng, đề nghị lớn hơn phải chuyển lên giám đốc duyệt.
-- **Tài liệu cho phép:** `README.md`, `docs/MODEL.md`, `deploy/OPERATIONS.md`, và các trang trong bảng điều khiển.
+- **Tài liệu cho phép:** `README.md`, `docs/MODEL.md`, `docs/OPERATIONS.md`, và các trang trong bảng điều khiển.
 - **Hoàn thành khi:** hệ thống chạy; có ba tài khoản thuộc ba vai; một đề nghị 3 triệu được trưởng nhóm duyệt; một đề nghị 20 triệu bị trưởng nhóm từ chối duyệt thẳng, chuyển lên rồi được giám đốc duyệt.
 - **Ghi lại:** thời điểm bắt đầu và xong, từng lỗi gặp (thông báo, cách vượt), từng lần cần hỗ trợ, thời gian đọc tài liệu, và người thử có cho rằng mình tự làm được không.
 
@@ -131,7 +131,7 @@ Giá thuê tháng tra ngày 2026-11-12 từ các trang tổng hợp giá, chưa 
 | DigitalOcean Basic, 4 vCPU dùng chung, 8 GB | khoảng 48 USD ([getdeploying](https://getdeploying.com/digitalocean)) | khoảng 576 USD |
 
 - Chưa tính: sao lưu ngoài máy, tên miền, thuế, và công người vận hành.
-- Công người vận hành chưa đo; các việc định kỳ nằm ở [`deploy/OPERATIONS.md`](../deploy/OPERATIONS.md) (cập nhật bản phát hành, sao lưu, kiểm tra lịch sử).
+- Công người vận hành chưa đo; các việc định kỳ nằm ở [`docs/OPERATIONS.md`](OPERATIONS.md) (cập nhật bản phát hành, sao lưu, kiểm tra lịch sử).
 - Với 100 người dùng một năm, các giải pháp thuê bao theo đầu người ở `docs/dynamic-core/README.md` từ 12.000 đến 26.400 USD; lõi tự cài chỉ cộng tiền máy chủ ở bảng trên và công vận hành.
 
 ## Chưa làm

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Counts the code a person writes for a system built on DX-OS, by the public rules of docs/TARGETS.md.
 
-    python3 deploy/dev/count_own_code.py <directory> [--json]
+    python3 tools/count_own_code.py <directory> [--json]
 
 The directory holds the model files of one system and anything written beside them. A model file is
 a YAML file with a top-level `entities:` and `format:`. Its level follows from what it declares:

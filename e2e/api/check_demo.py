@@ -2,7 +2,7 @@
 """The eight criteria of the demonstration, from docs/dynamic-core/README.md ("Thế nào là đạt").
 
 Run on a stack that has the earlier checks behind it, or a clean one:
-    python3 deploy/dev/check_demo.py
+    python3 e2e/api/check_demo.py
 Criterion 3 needs the virus scan (docker compose --profile av) to see an infected file blocked;
 without it that part is not run, unless DXOS_REQUIRE_SCAN is set, which makes a stack without the scan fail.
 """

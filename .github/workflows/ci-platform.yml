@@ -60,8 +60,8 @@ jobs:
             for admin in false true; do
               args=(--mode "$mode")
               if [[ "$admin" == true ]]; then args+=(--admin-console); fi
-              python3 deploy/apisix/check_routes.py "${args[@]}"
-              python3 deploy/apisix/check_routes.py "${args[@]}" --local deploy/apisix/local.example.yaml
+              python3 e2e/api/check_routes.py "${args[@]}"
+              python3 e2e/api/check_routes.py "${args[@]}" --local deploy/apisix/local.example.yaml
             done
           done
 
@@ -88,7 +88,7 @@ jobs:
                       else:
                           local["routes"][0][key] = value
                   path.write_text(json.dumps(local))
-                  result = subprocess.run(["python3", "deploy/apisix/check_routes.py", "--local", str(path)])
+                  result = subprocess.run(["python3", "e2e/api/check_routes.py", "--local", str(path)])
                   assert result.returncode != 0, f"accepted invalid installation route: {change}"
           PYTHON
 
@@ -271,7 +271,7 @@ jobs:
           for check in ${{ matrix.checks }}; do
             echo "::group::check_$check.py"
             started=$SECONDS
-            python3 "deploy/dev/check_$check.py"
+            python3 "e2e/api/check_$check.py"
             echo "check_$check.py took $((SECONDS - started)) s"
             echo "::endgroup::"
             echo "check_$check.py: $((SECONDS - started)) s" >> "$GITHUB_STEP_SUMMARY"
@@ -339,7 +339,7 @@ jobs:
           docker compose ps; exit 1
 
       - name: The default install serves no Swagger UI and no Admin Console
-        run: python3 deploy/dev/check_surface.py
+        run: python3 e2e/api/check_surface.py
 
       - name: KEYCLOAK_ADMIN_CONSOLE=true opens the Admin Console
         working-directory: deploy
@@ -348,7 +348,7 @@ jobs:
           docker compose up -d apisix-config
           docker compose restart apisix
           sleep 10
-          python3 dev/check_surface.py
+          python3 ../e2e/api/check_surface.py
 
       - name: Logs of the services
         if: failure()
@@ -368,7 +368,7 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-          cache-dependency-path: e2e/package-lock.json
+          cache-dependency-path: e2e/web/package-lock.json
 
       - name: Create an env file with random secrets
         run: deploy/make_env.sh deploy/.env
@@ -395,10 +395,10 @@ jobs:
           docker compose ps; exit 1
 
       - name: Create the account the browser signs in with
-        run: python3 -c "import sys; sys.path.insert(0, 'deploy/dev'); import kc; kc.ensure_user('ui_admin', ['ADMIN'])"
+        run: python3 -c "import sys; sys.path.insert(0, 'e2e/api'); import kc; kc.ensure_user('ui_admin', ['ADMIN'])"
 
       - name: Install the browser
-        working-directory: e2e
+        working-directory: e2e/web
         run: |
           npm ci --no-audit --no-fund --ignore-scripts
           # The apt mirror of the runner is sometimes unreachable. Try the full install three times, then
@@ -411,7 +411,7 @@ jobs:
           npx playwright install chromium
 
       - name: Sign in, apply a template and walk through the console
-        working-directory: e2e
+        working-directory: e2e/web
         run: npx playwright test
 
       - name: Keep the screenshots
@@ -419,7 +419,7 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: console-screenshots-${{ github.run_attempt }}
-          path: e2e/screenshots
+          path: e2e/web/screenshots
           if-no-files-found: ignore
 
       - name: Keep the trace of a failed test
@@ -427,7 +427,7 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: console-trace-${{ github.run_attempt }}
-          path: e2e/test-results
+          path: e2e/web/test-results
           if-no-files-found: ignore
 
       - name: Logs of the services

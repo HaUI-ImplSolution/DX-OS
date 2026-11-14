@@ -94,7 +94,7 @@ GitHub tự đính kèm `Source code (zip)` vào mỗi release và không xóa �
 | ✅ | Cấu hình được trước khi dịch | `deploy/make_env.sh` rồi mới `docker compose up -d --build` | −5 |
 | ✅ | Dịch bằng công cụ nguồn mở | Docker, Compose, Git, Maven wrapper, npm | −5 |
 | ✅ | Chạy được ngoài thư mục mã nguồn | `dxos-install.sh` cài vào `~/.dxos`, `install.sh` từ chối cài vào chính thư mục mã nguồn; job `Install from the release archive` của workflow `Platform` cài từ gói, gói sai SHA-256 bị từ chối, mọi tệp Compose mount đều có | −5 |
-| ✅ | Hệ thống dựng từ trạng thái rỗng dùng được qua trình duyệt | Job `Browser end-to-end`: dựng image của commit, khởi động stack rỗng, Playwright đăng nhập bằng Keycloak, áp dụng một mẫu và thấy mô hình chạy (`e2e/tests/console.spec.ts`) | |
+| ✅ | Hệ thống dựng từ trạng thái rỗng dùng được qua trình duyệt | Job `Browser end-to-end`: dựng image của commit, khởi động stack rỗng, Playwright đăng nhập bằng Keycloak, áp dụng một mẫu và thấy mô hình chạy (`e2e/web/tests/console.spec.ts`) | |
 | ✅ | Chạy lại chuỗi trên máy sạch | `dxos-install.sh` của release `v2.0.0` cài vào `~/.dxos` trên máy chủ không còn stack cũ, `dxos start` kéo image từ GHCR, áp dụng `onestop.yaml` và `dxos demo` chạy được | |
 
 Bài kiểm tra bắt buộc làm trước ngày chấm, giả lập thao tác của giám khảo:
@@ -132,7 +132,7 @@ git ls-files | grep -E '(^|/)(vendor|third_party|node_modules)/|\.patch$' && ech
 |---|---|---|---|
 | ✅ | Có bug tracker | GitHub Issues đã bật; mẫu `bug_report.yml`, `feature_request.yml`; 55 issue | −5 |
 | ✅ | Có changelog | `CHANGELOG.md` theo Keep a Changelog, mục `[Unreleased]` và mục cho mọi bản đến `[2.0.0]` | −5 |
-| ✅ | Có README và hướng dẫn | `README.md`, `README_EN.md`; `ARCHITECTURE.md`; `docs/TESTING.md`; `deploy/OPERATIONS.md`; API qua đặc tả OpenAPI và `check_docs.py` kiểm tài liệu khớp OpenAPI; job `Check required files and scripts` báo lỗi nếu thiếu một tài liệu bắt buộc hoặc `CHANGELOG.md` mất mục `[Unreleased]`; job `Build the docs site` dựng trang docs, trong đó có các tài liệu của `docs/` và `deploy/` chép lại mỗi lần dựng, và dừng khi có liên kết hỏng | −5 |
+| ✅ | Có README và hướng dẫn | `README.md`, `README_EN.md`; `ARCHITECTURE.md`; `docs/TESTING.md`; `docs/OPERATIONS.md`; API qua đặc tả OpenAPI và `check_docs.py` kiểm tài liệu khớp OpenAPI; job `Check required files and scripts` báo lỗi nếu thiếu một tài liệu bắt buộc hoặc `CHANGELOG.md` mất mục `[Unreleased]`; job `Build the docs site` dựng trang docs, trong đó có các tài liệu của `docs/` và `deploy/` chép lại mỗi lần dựng, và dừng khi có liên kết hỏng | −5 |
 | ✅ | Hướng dẫn đóng góp | `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, mẫu pull request | |
 | ✅ | Chính sách bảo mật | `SECURITY.md` | |
 | ✅ | Bảo vệ nhánh và tag | Hai ruleset đang `active` (API GitHub, 14/11): `main` (cấm xóa, cấm ghi đè lịch sử, bắt buộc pull request, 16 check phải xanh; một đối tượng được bỏ qua) và `tags-v-immutable` (cấm sửa và xóa tag `v*`); khớp với `.github/rulesets/main.json` và `tags.json` | |

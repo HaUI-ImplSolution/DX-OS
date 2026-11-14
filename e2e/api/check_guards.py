@@ -3,7 +3,7 @@
 a role, dropping an entity that has files or running work, and an apply that stopped halfway.
 
 Run after check_change.py on the same stack:
-    python3 deploy/dev/check_guards.py
+    python3 e2e/api/check_guards.py
 """
 import os
 import sys

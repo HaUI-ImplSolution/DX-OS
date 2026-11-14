@@ -14,7 +14,7 @@ Nội dung viết cho người quản lý không chuyên IT: biểu đồ là ch
 - Image build từ [`../Dockerfile`](../Dockerfile) với đích `monitor`: `docker build --target monitor backend`.
 - Service `monitor-init` và `monitor` khai báo trong [`../../deploy/docker-compose.yml`](../../deploy/docker-compose.yml).
 - Cấu hình ở [`src/main/resources/application.yaml`](./src/main/resources/application.yaml); biến môi trường ở mục Cấu hình bên dưới.
-- Log truy cập của gateway, sự kiện đăng nhập của Keycloak và giới hạn tốc độ nằm ở [`../../deploy/MONITORING.md`](../../deploy/MONITORING.md).
+- Log truy cập của gateway, sự kiện đăng nhập của Keycloak và giới hạn tốc độ nằm ở [`../../docs/MONITORING.md`](../../docs/MONITORING.md).
 
 ## Các khối trên màn hình
 

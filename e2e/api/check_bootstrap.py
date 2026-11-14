@@ -2,7 +2,7 @@
 """Checks of the model file the backend applies when it starts (dxos start <file>).
 
 Run on a stack that is up, after the other checks:
-    python3 deploy/dev/check_bootstrap.py
+    python3 e2e/api/check_bootstrap.py
 The script puts files in deploy/model/, restarts the backend with each of them, and reads the line
 "Model bootstrap: <result> <detail>" that every start writes. The model bootcheck stays applied; the
 files and the setting are removed at the end.

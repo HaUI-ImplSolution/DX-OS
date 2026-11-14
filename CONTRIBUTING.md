@@ -25,31 +25,50 @@ cd ../frontend && npm install && npm run dev
 ## Quy trình
 
 1. Tạo nhánh từ `Khuong/main`, nhánh tích hợp; `main` chỉ nhận bản đã phát hành.
+   Đặt tên nhánh `<loại>/<số issue>-<mô tả ngắn>`, ví dụ `feat/272-prometheus-metrics`, với loại là `feat`, `fix`, `docs`, `refactor`, `test` hoặc `chore`.
+   Thành viên nhóm tạo nhánh thẳng trên repository; người ngoài nhóm fork repository, tạo nhánh trên bản fork và gửi pull request từ đó.
 2. Sửa nhỏ, mỗi thay đổi một mục đích.
+   Tính năng mới đi kèm kiểm tự động: một test backend ở `backend/*/src/test`, hoặc một mục kiểm trong script `deploy/dev/check_*.py` khi tính năng chỉ chạy trên stack thật.
+   Sửa lỗi thì thêm kiểm bắt đúng lỗi đó khi làm được.
 3. Chạy các lệnh kiểm ở bảng dưới trước khi gửi.
-4. Gửi pull request vào `Khuong/main` và điền danh sách kiểm trong mẫu.
+4. Gửi pull request vào `Khuong/main` và điền danh sách kiểm trong mẫu, kèm `Closes #<số issue>` khi pull request đủ đóng issue.
    Pull request vào `main` phải có các check xanh theo ruleset ở [`.github/rulesets/README.md`](./.github/rulesets/README.md).
 
 | Phần đổi | Lệnh kiểm |
 |---|---|
 | Backend | `./mvnw spotless:check` rồi `./mvnw verify` trong `backend/` |
-| Web | `npx tsc --noEmit` trong `frontend/` |
+| Frontend | `npx tsc --noEmit` trong `frontend/` |
 | Toàn stack | Các script `deploy/dev/check_*.py` theo thứ tự ở [`docs/TESTING.md`](./docs/TESTING.md), mục 4, trên stack mới dựng |
 | Giấy phép | `python3 .github/scripts/check_licenses.py` |
+| Header giấy phép | `pipx run --spec reuse==6.3.0 reuse lint` |
 | Giấy phép của phiên bản đang dùng | `GITHUB_TOKEN=... python3 .github/scripts/check_upstream_licenses.py` và `python3 -m unittest discover -s .github/scripts` |
+| Trích dẫn giữa các tài liệu | `python3 .github/scripts/check_doc_refs.py` |
 | Trang docs | `npm run build` trong `website/` |
 | Giao diện trên trình duyệt | Xem [`e2e/README.md`](./e2e/README.md) |
 | Workflow | `docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.12` |
 
 ## Quy ước
 
-- **Commit:** tiếng Anh, thể mệnh lệnh, ví dụ `feat: add the approval template`.
+- **Commit:** tiếng Anh, thể mệnh lệnh, kèm số issue ở cuối tiêu đề, ví dụ `feat: add the approval template (#123)`.
 - **Mã:** Java 21, định dạng theo google-java-format (chạy `./mvnw spotless:apply`); comment ngắn, nêu hành vi hiện tại, tiếng Anh.
 - **API:** mô tả `@Operation` bằng tiếng Anh; mọi response bọc trong `ApiResponse`.
 - **Tài liệu:** tiếng Việt, mỗi câu một dòng, chỉ ghi trạng thái hiện tại.
+- **Issue và pull request:** viết bằng tiếng Việt hoặc tiếng Anh; nhóm đọc và trả lời cả hai.
 - **Thông báo của backend:** viết bằng tiếng Anh kèm `errorCode`; mỗi thông báo mới cần thêm một mẫu dịch ở `frontend/src/shell/backendMessages.ts`, nếu không giao diện hiện nguyên văn tiếng Anh.
 - **Mã lõi không chứa tên thực thể, vai hay luồng của một lĩnh vực**; nghiệp vụ nằm trong tệp mô hình.
 - **Header giấy phép:** dòng `SPDX-License-Identifier` với `Apache-2.0` ở đầu mọi file mã nguồn; file không chèn được chú thích (hoặc đã phát hành, như migration SQL) khai trong `REUSE.toml`; `reuse lint` kiểm cả hai.
+
+## Tình huống thường gặp
+
+| Tình huống | Cách xử lý |
+|---|---|
+| Nhánh bị tụt so với `Khuong/main` | `git fetch origin`, `git rebase origin/Khuong/main`, sửa xung đột, rồi `git push --force-with-lease` |
+| Lỡ mở pull request vào `main` | Bấm **Edit** cạnh tiêu đề và đổi nhánh đích sang `Khuong/main`; `main` chỉ nhận bản phát hành |
+| Xung đột ở tệp khóa (`package-lock.json`...) | Lấy bản của `Khuong/main`, chạy lại trình cài gói để sinh lại tệp khóa, rồi commit |
+| Sai commit message, chưa push | `git commit --amend` |
+| Sai commit message, đã push nhánh của mình | `git commit --amend` rồi `git push --force-with-lease`; không bao giờ làm trên `Khuong/main` hay `main` |
+| Lỡ commit bí mật | Đổi bí mật đó ngay vì coi như đã lộ, báo nhóm, rồi mới gỡ khỏi mã; gitleaks sẽ báo ở pull request |
+| Pull request đã gộp gây lỗi | Mở pull request `git revert <sha>` vào `Khuong/main`; không sửa lịch sử của `Khuong/main` và `main` |
 
 ## Dependency và dữ liệu
 
@@ -62,6 +81,11 @@ cd ../frontend && npm install && npm run dev
   Mục nào của danh mục không đọc được theo cách đó thì ghi cách xác minh ở mục ấy (`refs`, `text`) hoặc lý do ở `unverified`.
   `check_licenses.py sbom <tệp>` kiểm giấy phép của SBOM sinh lại từ pull request, nên bản mới của một thư viện Maven hay npm bị kiểm trước khi `sbom/` được sinh lại.
 - Không đưa mật khẩu, khóa hay dữ liệu thật vào kho mã; `deploy/.env` nằm ngoài Git.
+
+## Giấy phép của phần đóng góp
+
+Phần đóng góp, gồm mã, tài liệu, ảnh, video và sơ đồ, được cấp phép theo Apache License 2.0 như cả dự án (mục 5 của giấy phép), trừ khi bạn nêu rõ khác ngay trong pull request.
+Mã, tài liệu hay ảnh lấy từ nơi khác phải có giấy phép được OSI công nhận và tương thích với Apache-2.0, được khai ở [`DEPENDENCIES.txt`](./DEPENDENCIES.txt) hoặc `REUSE.toml`, và nêu nguồn trong mô tả pull request.
 
 ## Phát hành
 

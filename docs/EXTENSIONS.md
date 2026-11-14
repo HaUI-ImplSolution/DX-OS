@@ -214,9 +214,9 @@ Nêu nhiều `--redirect-uri` khi ứng dụng có callback và silent renew ri�
 Thay authority bằng địa chỉ gateway thật khi triển khai.
 Không đặt secret trong giao diện; client public không có secret.
 
-Redirect ngoài máy phát triển phải dùng HTTPS.
-HTTP chỉ nhận `localhost`, `127.0.0.1` hoặc `[::1]`; wildcard, user info, fragment, host hoặc cổng sai bị từ chối trước khi thay Keycloak.
-Allowlist `CORS_ALLOWED_ORIGINS` chỉ chứa các origin cách nhau bằng dấu phẩy, không có path, query hay dấu `/` cuối; backend kiểm lại cấu hình khi khởi động và `dxos doctor` báo trước giá trị sai.
+Redirect ngoài máy phát triển phải dùng HTTPS; HTTP chỉ nhận `localhost`, `127.0.0.1` hoặc `[::1]`.
+Wildcard, user info, fragment, host hoặc cổng sai bị từ chối trước khi thay Keycloak.
+`CORS_ALLOWED_ORIGINS` chỉ chứa các origin cách nhau bằng dấu phẩy, không có path, query hay dấu `/` cuối; backend kiểm lại khi khởi động và `dxos doctor` báo trước giá trị sai.
 
 Sau đăng nhập, gửi access token ở `Authorization: Bearer <token>` và đọc `/api/v1/meta/models/{model}/openapi` bằng chính người dùng đó.
 Tài liệu sinh ra chỉ chứa thực thể người dùng được xem, nên giao diện vẫn phải xử lý `403` khi quyền đổi và không tự suy quyền từ nút đang hiển thị.
@@ -267,11 +267,10 @@ routes:
     plugin_config_id: bearer-token
 ```
 
-File local nhận `upstreams`, `routes` và tùy chọn `public_routes`, với một tài liệu YAML, tối đa 1 MiB, không khóa trùng, anchor hoặc alias.
-Route phải có id riêng, tham chiếu hợp lệ và priority lớn hơn `-10` của web fallback; mặc định là `0`.
-Các đường dẫn chính xác, tiền tố `*` ở cuối và tham số `:name` được kiểm giao nhau với route lõi và route local khác; không nhận đường có `%`, đoạn `.` hoặc bắt đầu bằng `..`, dấu gạch chéo kép hay ký tự điều khiển.
-Chỉ web fallback `/*` được phép giao với route local; host, methods và priority không cho phép ghi đè đường dẫn của lõi.
-Tên và đường dẫn của lõi được giữ chỗ cả khi thành phần tương ứng tắt trong chế độ `core`.
+File local nhận `upstreams`, `routes` và tùy chọn `public_routes`, trong một tài liệu YAML tối đa 1 MiB, không khóa trùng, anchor hay alias.
+Route phải có id riêng, tham chiếu hợp lệ và priority lớn hơn `-10` của web fallback (mặc định `0`).
+Đường dẫn của route local không được giao với route lõi hay route local khác, trừ web fallback `/*`; đường có `%`, đoạn `.` hoặc `..`, dấu gạch chéo kép và ký tự điều khiển bị từ chối.
+Host, methods và priority không cho phép ghi đè đường dẫn của lõi, kể cả khi thành phần tương ứng tắt trong chế độ `core`.
 
 APISIX chuyển nguyên đường dẫn `/extensions/worker/...` tới dịch vụ.
 `bearer-token` xác thực token; dịch vụ mở rộng vẫn phải kiểm quyền nghiệp vụ.
@@ -286,23 +285,12 @@ docker compose run --rm --no-deps apisix-config
 ```
 
 Trình kiểm dùng cùng image APISIX đã ghim với gateway, không cần cài Python trên máy triển khai.
-Trong source tree có thể chạy `python3 deploy/apisix/check_routes.py --local <tệp>` bằng Python, PyYAML và Docker; dùng `--mode core` hoặc `--admin-console` để kiểm cấu hình tương ứng.
-Cấu hình hợp lệ được ghép theo thứ tự lõi rồi local và thay file đầu ra nguyên tử; APISIX đang chạy tự đọc lại file.
-Lỗi schema, plugin, tham chiếu hoặc xung đột giữ file đầu ra hợp lệ trước đó; lỗi chỉ nêu file/resource và loại lỗi.
-Sau khi thay container upstream, khởi động lại APISIX để làm mới địa chỉ: `docker compose restart apisix`.
+Trong source tree chạy được `python3 deploy/apisix/check_routes.py --local <tệp>` (cần Python, PyYAML và Docker; thêm `--mode core` hoặc `--admin-console` để kiểm cấu hình tương ứng).
+Cấu hình hợp lệ được ghép theo thứ tự lõi rồi local và thay tệp đầu ra nguyên tử, APISIX đang chạy tự đọc lại.
+Lỗi schema, plugin, tham chiếu hoặc xung đột giữ tệp đầu ra hợp lệ trước đó và chỉ nêu tệp, resource và loại lỗi.
+Sau khi thay container upstream, chạy `docker compose restart apisix` để làm mới địa chỉ.
 
-`dxos update` giữ nguyên file local và kiểm nó với `common.yaml` mới trước khi thay container.
-Xung đột với bản lõi mới làm cập nhật dừng để người triển khai sửa local; bước nâng bộ cài có thể đã thay các file runtime, nên đây không phải hoàn tác toàn bộ lần cập nhật.
-Bỏ file local rồi nạp lại để gỡ các route riêng.
-Cất bản sao file local cùng cấu hình triển khai; bản sao lưu Postgres/SeaweedFS hiện không chứa file này.
-
-## Danh sách kiểm trước khi phát hành phần mở rộng
-
-- Mã và image nằm ngoài lõi, có giấy phép và SBOM của chính nó.
-- Client chỉ có một vai của một mô hình; secret không nằm trong source, image hay log.
-- OpenAPI của mô hình đang chạy được lưu làm đầu vào kiểm thử hợp đồng.
-- Retry ghi dùng `Idempotency-Key`, có giới hạn và không biến `403` hay lỗi kiểm tra thành thành công.
-- Webhook kiểm chữ ký trên raw body, khử trùng trước `2xx` và đọc hết từng trang trước khi tăng cursor.
-- Giao diện dùng Authorization Code + PKCE, không có secret trong trình duyệt và không tự quyết định quyền.
-- Route có id, path, priority, xác thực và giới hạn lưu lượng rõ ràng.
-- Đã thử nâng trên môi trường tách biệt và có đường quay lại image cùng cấu hình trước đó.
+`dxos update` giữ nguyên tệp local và kiểm nó với `common.yaml` mới trước khi thay container.
+Xung đột với bản lõi mới làm cập nhật dừng để người triển khai sửa local; bước nâng bộ cài có thể đã thay các tệp runtime, nên đây không phải hoàn tác toàn bộ.
+Bỏ tệp local rồi nạp lại để gỡ các route riêng.
+Cất bản sao tệp local cùng cấu hình triển khai, vì sao lưu Postgres và SeaweedFS không chứa tệp này.

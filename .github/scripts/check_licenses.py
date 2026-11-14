@@ -14,6 +14,8 @@
    `docker run` command of a workflow or a script, or a script variable such as DUCKDB="duckdb/duckdb:1.4.1"), every release downloaded with ADD
    and every tracked weight, archive or document file is declared
    in .github/component-catalog.json with an allowed license, and DEPENDENCIES.txt names each entry.
+5. Every license that REUSE.toml gives to a file of the repository, and every text in LICENSES/, is an allowed one
+   (or OFL-1.1, the license of the Noto Sans files), so no file of the project is under a license outside the OSI list.
 
 Several license entries on one package are alternatives, as in an SPDX OR expression.
 The exit status is 1 when anything fails.
@@ -123,6 +125,23 @@ def check_headers() -> list[str]:
         found = next((m.group(1) for m in map(SPDX_LINE.search, head) if m), None)
         if found != wanted:
             problems.append(f"{rel}: license header is {found or 'missing'}, expected {wanted}")
+    return problems
+
+
+# The licenses a file of the repository may carry: the allowed ones and the license of the Noto Sans files.
+OWN_LICENSES = ALLOWED | {"OFL-1.1"}
+
+
+def check_own_licenses() -> list[str]:
+    problems = []
+    annotations = tomllib.loads((ROOT / "REUSE.toml").read_text(encoding="utf-8")).get("annotations", [])
+    for annotation in annotations:
+        expression = annotation.get("SPDX-License-Identifier", "")
+        if not expression_allowed(expression, OWN_LICENSES):
+            problems.append(f"REUSE.toml: {annotation.get('path')} is under {expression}, which is not an allowed license")
+    for text in sorted((ROOT / "LICENSES").glob("*.txt")):
+        if text.stem not in OWN_LICENSES:
+            problems.append(f"LICENSES/{text.name}: {text.stem} is not an allowed license")
     return problems
 
 
@@ -280,7 +299,7 @@ def main() -> int:
             print(problem)
         print(f"{len(problems)} problem(s)")
         return 1 if problems else 0
-    problems = check_headers() + check_sboms() + check_catalog() + check_bundled()
+    problems = check_headers() + check_own_licenses() + check_sboms() + check_catalog() + check_bundled()
     for problem in problems:
         print(problem)
     print(f"{len(problems)} problem(s)")

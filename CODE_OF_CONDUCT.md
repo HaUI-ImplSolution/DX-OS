@@ -1,78 +1,54 @@
-# Contributor Covenant Code of Conduct
+# Quy tắc ứng xử
 
-## Our Pledge
+DX-OS là dự án của một cộng đồng nhỏ làm việc cùng nhau, và ai tham gia cũng được đối xử tử tế.
+Quy tắc này áp dụng ở mọi nơi của dự án: issue, pull request, thảo luận, bình luận và các buổi họp trực tuyến.
 
-We as members, contributors, and leaders pledge to make participation in our community a harassment-free experience for everyone, regardless of age, body size, visible or invisible disability, ethnicity, sex, gender identity and expression, level of experience, education, socio-economic status, nationality, personal appearance, race, religion, or sexual identity and orientation.
+## Cam kết
 
-We pledge to act and interact in ways that contribute to an open, welcoming, diverse, inclusive, and healthy community.
+Chúng tôi giữ cho việc tham gia dự án không có quấy rối với mọi người, bất kể tuổi, vóc dáng, khuyết tật, dân tộc, giới tính, bản dạng giới, xu hướng tính dục, kinh nghiệm, học vấn, hoàn cảnh kinh tế, quốc tịch, ngoại hình, tôn giáo hay quan điểm.
+Chúng tôi cư xử sao cho cộng đồng cởi mở, thân thiện, đa dạng và lành mạnh.
 
-## Our Standards
+## Chuẩn mực
 
-Examples of behavior that contributes to a positive environment for our community include:
+Những việc giúp cộng đồng tốt hơn:
 
-* Demonstrating empathy and kindness toward other people
-* Being respectful of differing opinions, viewpoints, and experiences
-* Giving and gracefully accepting constructive feedback
-* Accepting responsibility and apologizing to those affected by our mistakes, and learning from the experience
-* Focusing on what is best not just for us as individuals, but for the overall community
+- Tôn trọng ý kiến, góc nhìn và kinh nghiệm khác mình.
+- Góp ý cụ thể và nhẹ nhàng, và nhận góp ý một cách cởi mở.
+- Nhận lỗi, xin lỗi người bị ảnh hưởng và rút kinh nghiệm.
+- Nghĩ đến lợi ích của cả cộng đồng, không chỉ của riêng mình.
 
-Examples of unacceptable behavior include:
+Những việc không chấp nhận:
 
-* The use of sexualized language or imagery, and sexual attention or advances of any kind
-* Trolling, insulting or derogatory comments, and personal or political attacks
-* Public or private harassment
-* Publishing others' private information, such as a physical or email address, without their explicit permission
-* Other conduct which could reasonably be considered inappropriate in a professional setting
+- Lời lẽ hay hình ảnh mang tính tình dục, và mọi sự gạ gẫm tình dục.
+- Chọc ghẹo, lăng mạ, miệt thị, công kích cá nhân hay chính trị.
+- Quấy rối, công khai hay riêng tư.
+- Đăng thông tin riêng tư của người khác, như địa chỉ nhà hay email, khi chưa được họ cho phép.
+- Hành vi khác mà trong một môi trường làm việc nghiêm túc bị coi là không phù hợp.
 
-## Enforcement Responsibilities
+## Trách nhiệm của người điều hành
 
-Community leaders are responsible for clarifying and enforcing our standards of acceptable behavior and will take appropriate and fair corrective action in response to any behavior that they deem inappropriate, threatening, offensive, or harmful.
+Người điều hành làm rõ và áp dụng các chuẩn mực trên, và chọn cách xử lý công bằng khi có vi phạm.
+Họ có quyền sửa, ẩn hoặc xóa bình luận, mã, wiki, issue, pull request và đóng góp khác không phù hợp với quy tắc này, và nêu lý do khi cần.
 
-Community leaders have the right and responsibility to remove, edit, or reject comments, commits, code, wiki edits, issues, and other contributions that are not aligned to this Code of Conduct, and will communicate reasons for moderation decisions when appropriate.
+## Phạm vi
 
-## Scope
+Quy tắc áp dụng trong mọi không gian của dự án, và cả khi một người đại diện cho dự án ở nơi công cộng, như dùng email chính thức của dự án, đăng bài bằng tài khoản của dự án hay có mặt ở một sự kiện với tư cách đại diện.
 
-This Code of Conduct applies within all community spaces, and also applies when an individual is officially representing the community in public spaces. Examples of representing our community include using an official e-mail address, posting via an official social media account, or acting as an appointed representative at an online or offline event.
+## Báo cáo
 
-## Enforcement
+Báo hành vi vi phạm cho người điều hành qua email: **pkhuong535@gmail.com**, **dinhkhanh19042006@gmail.com** hoặc **tung51652@gmail.com**.
+Mọi báo cáo được xem xét nhanh và công bằng, và người điều hành giữ kín danh tính người báo.
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the community leaders responsible for enforcement at **pkhuong535@gmail.com**, **dinhkhanh19042006@gmail.com** or **tung51652@gmail.com**; any one of them is enough, so a report never has to go to a person it concerns. All complaints will be reviewed and investigated promptly and fairly.
+## Cách xử lý
 
-All community leaders are obligated to respect the privacy and security of the reporter of any incident.
+Người điều hành chọn mức dưới đây theo mức độ vi phạm:
 
-## Enforcement Guidelines
+1. **Nhắc nhở:** lời nhắc riêng, nêu rõ việc đã sai và vì sao; có thể kèm lời xin lỗi công khai.
+2. **Cảnh cáo:** nêu hậu quả nếu tiếp tục, và người vi phạm không liên lạc với những người liên quan trong một thời gian, kể cả trong không gian của dự án và trên mạng xã hội.
+3. **Cấm tạm thời:** người vi phạm không được tham gia hay liên lạc công khai hoặc riêng tư với cộng đồng trong một thời gian; vi phạm trong thời gian này dẫn tới cấm vĩnh viễn.
+4. **Cấm vĩnh viễn:** áp dụng cho hành vi lặp lại, quấy rối nghiêm trọng hay công kích nhắm vào một nhóm người; người đó không được tham gia dự án nữa.
 
-Community leaders will follow these Community Impact Guidelines in determining the consequences for any action they deem in violation of this Code of Conduct:
+## Nguồn
 
-### 1. Correction
-
-**Community Impact**: Use of inappropriate language or other behavior deemed unprofessional or unwelcome in the community.
-
-**Consequence**: A private, written warning from community leaders, providing clarity around the nature of the violation and an explanation of why the behavior was inappropriate. A public apology may be requested.
-
-### 2. Warning
-
-**Community Impact**: A violation through a single incident or series of actions.
-
-**Consequence**: A warning with consequences for continued behavior. No interaction with the people involved, including unsolicited interaction with those enforcing the Code of Conduct, for a specified period of time. This includes avoiding interactions in community spaces as well as external channels like social media. Violating these terms may lead to a temporary or permanent ban.
-
-### 3. Temporary Ban
-
-**Community Impact**: A serious violation of community standards, including sustained inappropriate behavior.
-
-**Consequence**: A temporary ban from any sort of interaction or public communication with the community for a specified period of time. No public or private interaction with the people involved, including unsolicited interaction with those enforcing the Code of Conduct, is allowed during this period. Violating these terms may lead to a permanent ban.
-
-### 4. Permanent Ban
-
-**Community Impact**: Demonstrating a pattern of violation of community standards, including sustained inappropriate behavior, harassment of an individual, or aggression toward or disparagement of classes of individuals.
-
-**Consequence**: A permanent ban from any sort of public interaction within the community.
-
-## Attribution
-
-This Code of Conduct is adapted from the [Contributor Covenant][homepage], version 2.1, available at [https://www.contributor-covenant.org/version/2/1/code_of_conduct.html][v2.1].
-
-Community Impact Guidelines were inspired by [Mozilla's code of conduct enforcement ladder](https://github.com/mozilla/diversity).
-
-[homepage]: https://www.contributor-covenant.org
-[v2.1]: https://www.contributor-covenant.org/version/2/1/code_of_conduct.html
+Một số ý lấy cảm hứng từ [Contributor Covenant](https://www.contributor-covenant.org).
+Văn bản này do nhóm tự viết, không sao chép văn bản gốc, và theo Apache License 2.0 như cả dự án.

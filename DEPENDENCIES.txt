@@ -10,15 +10,18 @@ Danh mục đầy đủ theo phiên bản: thư mục sbom/ (CycloneDX).
 Bản build của ứng dụng web và của trang tài liệu kèm third-party-licenses.txt, chép thông báo bản quyền của từng thư viện npm đóng gói trong đó.
 Image khai báo ở .github/component-catalog.json; .github/scripts/check_licenses.py kiểm danh mục này ở mỗi pull request,
 và .github/scripts/check_upstream_licenses.py đọc giấy phép của dự án gốc ở đúng phiên bản đang dùng của từng image và bản tải về.
+Danh sách giấy phép được OSI công nhận: https://opensource.org/licenses.
 
-1. GIẤY PHÉP CỦA MÃ NGUỒN
-=========================
+1. GIẤY PHÉP CỦA DỰ ÁN
+======================
 
 +---------------------------------------------+-----------------------+----------------------------------------------+
 | Phần                                        | Giấy phép             | Ghi chú                                      |
 +=============================================+=======================+==============================================+
 | backend, frontend, website, deploy, portal, | Apache-2.0 (LICENSE)  | SPDX header ở mọi file mã nguồn              |
 | sso, seaweedfs, e2e, examples               |                       |                                              |
++---------------------------------------------+-----------------------+----------------------------------------------+
+| docs, tệp .md, ảnh, video, sơ đồ            | Apache-2.0 (LICENSE)  | Khai ở REUSE.toml vì tệp không có dòng SPDX  |
 +---------------------------------------------+-----------------------+----------------------------------------------+
 
 Header của file mã nguồn là một dòng SPDX-License-Identifier với giá trị Apache-2.0; `reuse lint` kiểm toàn bộ cây theo chuẩn REUSE.
@@ -85,6 +88,12 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 | spotless-maven-plugin [5]              | Apache-2.0; thư viện kèm theo:   | Chỉ khi build, kiểm định dạng mã Java  |
 |                                        | Apache-2.0, EPL-2.0,             |                                        |
 |                                        | BSD-3-Clause                     |                                        |
++----------------------------------------+----------------------------------+----------------------------------------+
+| SpotBugs (spotbugs-maven-plugin        | LGPL-2.1; plugin Apache-2.0      | Chỉ khi build, phân tích tĩnh mã Java  |
+| 4.10.5.0)                              |                                  |                                        |
++----------------------------------------+----------------------------------+----------------------------------------+
+| find-sec-bugs 1.14.0                   | LGPL-3.0                         | Chỉ khi build, luật bảo mật của        |
+|                                        |                                  | SpotBugs                               |
 +----------------------------------------+----------------------------------+----------------------------------------+
 | google-java-format                     | Apache-2.0                       | Chỉ khi build, bộ định dạng mã Java    |
 +----------------------------------------+----------------------------------+----------------------------------------+
@@ -165,10 +174,13 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 | chrislusf/seaweedfs:4.51)            |                                      | không sửa mã                         |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | ClamAV 1.5.4 (clamav/clamav) [1]     | GPL-2.0                              | Quét mã độc tệp tải lên; dịch vụ     |
-|                                      |                                      | riêng ở profile av, tắt mặc định     |
+|                                      |                                      | riêng ở profile av, bật mặc định     |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | Alpine Linux 3.24 (alpine:3.24)      | MIT, GPL-2.0 (nhiều gói)             | Image phụ trợ chạy script khi dựng   |
 |                                      |                                      | stack                                |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Maven Wrapper 3.3.4 [7] (mvnw,       | Apache-2.0                           | Chạy Maven ở phiên bản đã ghim;      |
+| mvnw.cmd, maven-wrapper.properties)  |                                      | chép nguyên từ Apache Maven          |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | Debian, Ubuntu (image nền)           | Giấy phép tự do của từng gói         | Nền của image APISIX (Debian) và     |
 |                                      |                                      | sso (Ubuntu), chạy nguyên bản        |
@@ -208,6 +220,20 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | reuse 6.3.0 (pipx run)               | Apache-2.0, GPL-3.0-or-later (mã);   | Kiểm chuẩn REUSE (reuse lint) trong  |
 |                                      | CC0-1.0, CC-BY-SA-4.0 (tài liệu)     | CI; không đóng gói vào sản phẩm      |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Docker Engine, Docker Compose v2 [8] | Apache-2.0                           | Chạy stack; cần trên máy chạy        |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| curl, jq                             | curl (giấy phép kiểu MIT), MIT       | Bộ cài và dxos gọi API, đọc JSON     |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Git, OpenSSH                         | GPL-2.0-only, BSD                    | Chỉ cho dxos gitops                  |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Python 3                             | Python-2.0.1                         | Thay jq trong dxos; chạy các script  |
+|                                      |                                      | kiểm                                 |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Bash, tar, coreutils, util-linux,    | GPL, LGPL (giấy phép tự do của từng  | Chạy dxos, giải nén gói, kiểm        |
+| systemd                              | gói)                                 | SHA-256, khóa, timer                 |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| draw.io (jgraph/drawio)              | Apache-2.0                           | Chỉ khi sửa sơ đồ ở docs/diagrams    |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | GitHub Actions (actions/*,           | MIT, Apache-2.0, ISC, 0BSD,          | Chỉ trong CI, ghim theo SHA          |
 | docker/*)                            | BlueOak-1.0.0                        |                                      |
@@ -250,3 +276,80 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
     Hai mã này trùng với mã của tệp cùng tên ở commit trên.
     OFL-1.1 là giấy phép được OSI công nhận; phông không khai tên bảo lưu, nên nhúng và phân phối cùng phần mềm được khi kèm thông báo bản quyền và giấy phép (có trong tệp phông, LICENSES/OFL-1.1.txt và NOTICE).
     Phông không được bán riêng, và bản sửa đổi phải giữ OFL; PDF chỉ nhúng một phần chữ của phông nên không chịu giấy phép này.
+
+[7] Maven Wrapper 3.3.4: backend/mvnw, backend/mvnw.cmd và backend/.mvn/wrapper/maven-wrapper.properties lấy nguyên từ Apache Maven và không sửa.
+    Bản quyền thuộc The Apache Software Foundation, khai ở REUSE.toml; giấy phép là Apache-2.0, giống giấy phép của dự án.
+    Wrapper tải Maven 3.10.0 từ repo.maven.apache.org khi chạy; Maven không nằm trong repository.
+
+[8] Docker Engine (moby) và Docker Compose v2 là phần mềm Apache-2.0.
+    Docker Desktop là sản phẩm riêng theo điều khoản thương mại của Docker, không thuộc OSI; DX-OS không cần nó, và trên Linux dùng Docker Engine.
+    Các công cụ ở dòng này là phần mềm cài sẵn trên máy chạy, DX-OS không đóng gói hay phân phối lại chúng.
+
+6. TRANG CHỦ VÀ NGUỒN
+=====================
+
+Trang chủ và mã nguồn của các thành phần không nằm trong SBOM (image, công cụ, phông, công cụ trên máy chạy).
+Gói Maven và npm: trang chủ và mã nguồn của từng gói nằm trong sbom/*.cdx.json (mục externalReferences).
+
+Thành phần       Trang chủ | Mã nguồn
+PostgreSQL       https://www.postgresql.org/ | https://github.com/postgres/postgres
+Keycloak         https://www.keycloak.org | https://github.com/keycloak/keycloak
+Apache APISIX    https://apisix.apache.org/ | https://github.com/apache/apisix
+SeaweedFS        https://seaweedfs.com | https://github.com/seaweedfs/seaweedfs
+ClamAV           https://www.clamav.net/ | https://github.com/Cisco-Talos/clamav
+Alpine Linux     https://alpinelinux.org/ | https://gitlab.alpinelinux.org/alpine/aports
+Debian           https://www.debian.org/ | https://salsa.debian.org/
+Ubuntu           https://ubuntu.com/ | https://launchpad.net/ubuntu
+Eclipse Temurin  https://adoptium.net/ | https://github.com/adoptium/temurin-build
+Node.js          https://nodejs.org | https://github.com/nodejs/node
+nginx            https://nginx.org/ | https://github.com/nginx/nginx
+Maven Wrapper    https://maven.apache.org/tools/wrapper | https://github.com/apache/maven-wrapper
+Noto Sans        https://notofonts.github.io/ | https://github.com/notofonts/notofonts.github.io
+pgschema         https://www.pgschema.com | https://github.com/pgplex/pgschema
+Flowable         https://www.flowable.org | https://github.com/flowable/flowable-engine
+Trivy            https://trivy.dev | https://github.com/aquasecurity/trivy
+gitleaks         https://gitleaks.io | https://github.com/gitleaks/gitleaks
+actionlint       https://rhysd.github.io/actionlint/ | https://github.com/rhysd/actionlint
+Playwright       https://playwright.dev | https://github.com/microsoft/playwright
+restic           https://restic.net | https://github.com/restic/restic
+DuckDB           https://duckdb.org | https://github.com/duckdb/duckdb
+DuckDB httpfs    https://duckdb.org/docs/current/core_extensions/httpfs/overview | https://github.com/duckdb/duckdb-httpfs
+DuckDB postgres  https://duckdb.org/docs/current/core_extensions/postgres | https://github.com/duckdb/duckdb-postgres
+CycloneDX        https://cyclonedx.org/ | https://github.com/CycloneDX/cyclonedx-node-npm, https://github.com/CycloneDX/cyclonedx-maven-plugin
+reuse            https://reuse.software | https://github.com/fsfe/reuse-tool
+GitHub Actions   https://docs.github.com/actions | https://github.com/actions, https://github.com/docker
+Docker Engine    https://docs.docker.com/engine/ | https://github.com/moby/moby
+Docker Compose   https://docs.docker.com/compose/ | https://github.com/docker/compose
+curl             https://curl.se | https://github.com/curl/curl
+jq               https://jqlang.org | https://github.com/jqlang/jq
+Git              https://git-scm.com | https://git.kernel.org/pub/scm/git/git.git
+OpenSSH          https://www.openssh.com | https://github.com/openssh/openssh-portable
+Python           https://www.python.org | https://github.com/python/cpython
+draw.io          https://www.drawio.com | https://github.com/jgraph/drawio
+SpotBugs         https://spotbugs.github.io/ | https://github.com/spotbugs/spotbugs
+find-sec-bugs    https://find-sec-bugs.github.io/ | https://github.com/find-sec-bugs/find-sec-bugs
+
+7. GIẤY PHÉP NGOÀI DANH SÁCH OSI
+================================
+
+Mọi giấy phép của dự án và của thành phần dùng đều thuộc danh sách của OSI (https://opensource.org/licenses), trừ các trường hợp dưới đây.
+.github/scripts/check_licenses.py chỉ nhận một giấy phép ngoài danh sách khi gói được nêu tên kèm lý do ở .github/dependency-exceptions.json, và chặn mọi giấy phép ngoài danh sách trong REUSE.toml.
+
+Dữ liệu chỉ đọc lúc dựng trang tài liệu, không có trong trang đã dựng:
+  - caniuse-lite: CC-BY-4.0.
+  - mdn-data: CC0-1.0.
+
+Công cụ không phân phối:
+  - reuse (pipx run, chỉ trong CI): mã theo Apache-2.0 và GPL-3.0-or-later; tài liệu của công cụ theo CC0-1.0 và CC-BY-SA-4.0, không dùng và không phân phối.
+  - Docker Desktop: sản phẩm riêng, không thuộc OSI, DX-OS không cần (xem [8]).
+
+Gói có nhiều giấy phép để chọn: dự án dùng phương án được OSI công nhận.
+  - HdrHistogram (backend): BSD-2-Clause hoặc CC0-1.0; dùng BSD-2-Clause.
+  - jakarta.annotation-api, jakarta.transaction-api: EPL-2.0 hoặc GPL-2.0 kèm ngoại lệ Classpath; dùng EPL-2.0.
+  - angus-mail: EPL-2.0, BSD-3-Clause hoặc GPL-2.0 kèm ngoại lệ Classpath; dùng BSD-3-Clause.
+  - type-fest (trang tài liệu): MIT hoặc CC0-1.0; dùng MIT.
+  - path-is-inside, opener (trang tài liệu): WTFPL hoặc MIT; dùng MIT.
+
+GPL-2.0-with-classpath-exception là tên cũ mà SBOM Java và .github/component-catalog.json còn dùng.
+Nó là GPL-2.0-only kèm ngoại lệ Classpath, tên SPDX hiện nay là GPL-2.0-only WITH Classpath-exception-2.0.
+GPL-2.0-only được OSI công nhận, và ngoại lệ chỉ thêm quyền; Eclipse Temurin (OpenJDK) dùng giấy phép này.

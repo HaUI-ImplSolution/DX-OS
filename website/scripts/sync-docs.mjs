@@ -3,6 +3,7 @@
 // The files in docs/ and deploy/ stay the only source; the copies are not committed.
 // A link to another published document becomes a link inside the site, a link to any other file or folder
 // of the repository becomes a link to it on GitHub, and a link to something that does not exist fails the run.
+// An image kept under website/docs/ is shown from there.
 import {existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync} from 'node:fs';
 import {dirname, join, posix, relative, resolve, sep} from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -24,6 +25,7 @@ export const DOCS = {
   'ARCHITECTURE.md': {page: 'kien-truc', label: 'Kiến trúc'},
   'docs/COMPATIBILITY.md': {page: 'tuong-thich', label: 'Tương thích giữa các bản'},
   'docs/DEMO.md': {page: 'trinh-dien', label: 'Kịch bản trình diễn'},
+  'docs/GLOSSARY.md': {page: 'thuat-ngu', label: 'Thuật ngữ'},
 };
 
 const problems = [];
@@ -70,10 +72,13 @@ function target(source, href) {
 // A link written with a file name as its text reads as the title of the page it now leads to.
 function convert(source, text) {
   return outsideFences(text, (line) =>
-    line.replace(/\[([^\]]*)\]\(([^)\s]+)\)/g, (_, label, href) => {
+    line.replace(/(!?)\[([^\]]*)\]\(([^)\s]+)\)/g, (_, bang, label, href) => {
       const repoPath = repoPathOf(source, href);
+      if (bang && repoPath !== null && repoPath.startsWith('website/docs/') && existsSync(join(root, ...repoPath.split('/')))) {
+        return `![${label}](${posix.relative('website/docs/tai-lieu', repoPath)})`;
+      }
       const named = repoPath !== null && DOCS[repoPath] && /^`[^`]*\.md`$/.test(label);
-      return `[${named ? DOCS[repoPath].label : label}](${target(source, href)})`;
+      return `${bang}[${named ? DOCS[repoPath].label : label}](${target(source, href)})`;
     }),
   );
 }

@@ -186,13 +186,15 @@ Chạy trên một bản sao tạm của `deploy/`, không bao giờ trên stack
 1. Sao chép `deploy/` (không kèm thư mục `data/`) ra một thư mục tạm và dựng `.env` của bản sao với `COMPOSE_PROJECT_NAME=dxscratch`, `APISIX_HOST_PORT=9180`, `POSTGRES_HOST_PORT=127.0.0.1:5532`, `KEYCLOAK_ADMIN_CONSOLE=true` và `RATE_LIMIT_ENABLED=false`.
 2. Nới các giá trị `limit-count` trong `apisix/common.yaml` của bản sao.
 3. Chuẩn bị sẵn image có cùng `DXOS_IMAGE_TAG`.
-4. Dựng stack với dải nhân của máy giả lập; đổi `LOAD_CPUSET` thì phải tạo lại container vì JVM đọc số nhân lúc khởi động. Chạy trong thư mục bản sao của `deploy/`:
+4. Dựng stack với dải nhân của máy giả lập, trong thư mục bản sao của `deploy/`.
+   Đổi `LOAD_CPUSET` thì phải tạo lại container vì JVM đọc số nhân lúc khởi động:
 
 ```
 LOAD_CPUSET=0-3 docker compose -p dxscratch -f docker-compose.yml -f dev/load_override.yml up -d --force-recreate
 ```
 
-5. Chạy bộ tạo tải từ gốc repository. Từ 8 nhân trở xuống, ghim bộ tạo tải ngoài dải nhân của stack bằng `taskset -c N-11` (N là số nhân):
+5. Chạy bộ tạo tải từ gốc repository.
+   Từ 8 nhân trở xuống, ghim bộ tạo tải ngoài dải nhân của stack bằng `taskset -c N-11` (N là số nhân):
 
 ```
 DXOS_ENV_FILE=<.env của bản sao> DXOS_BASE_URL=http://localhost:9180 DXOS_PROJECT=dxscratch \

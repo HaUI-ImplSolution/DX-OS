@@ -215,27 +215,25 @@ Khi áp dụng mô hình, hệ thống còn kiểm tra không có trạng thái 
 | Tham số của quy trình | Vai xử lý, số cấp duyệt (các trạng thái và hành động khai báo), độ dài hạn, các mức leo thang, vòng trả lại, quyền tự quyết của người tạo | Người triển khai, trong tệp mô hình hoặc trên bảng điều khiển |
 | Ràng buộc nghiệp vụ | Giới hạn số lần đặt, điều kiện riêng của tổ chức | Người triển khai, trong mô hình |
 
-Hạn không bắt buộc: mô hình có khai báo hạn thì quá hạn được ghi lại và nhắc.
-Mô hình khai thêm các mức `escalate` thì hồ sơ quá hạn lâu được báo tiếp cho vai khác, mỗi mức một thời điểm và có thể nhắc lại.
-Leo thang chỉ thông báo, không đổi trạng thái hay người giữ hồ sơ, và đổi các mức này được ngay cả khi còn hồ sơ đang xử lý.
+Hạn không bắt buộc: mô hình có khai báo hạn thì quá hạn được ghi lại và nhắc, và các mức `escalate` báo tiếp cho vai khác khi quá hạn lâu.
+Leo thang chỉ thông báo, không đổi trạng thái hay người giữ hồ sơ.
 Tham số của từng họ mẫu và cách tự khai báo quy trình ở [`docs/MODEL.md`](../MODEL.md#tự-khai-báo-hoặc-mở-rộng-quy-trình).
 
 **Quy trình nằm trong kế hoạch áp dụng:**
 
 - Một lần áp dụng sinh cả phần mềm lẫn quy trình từ cùng một tệp mô hình: lược đồ, vai Keycloak, quy trình và phiên bản mô hình nằm chung một kế hoạch.
+  Lược đồ và Keycloak nằm ngoài giao dịch của Flowable, nên "một lần" nghĩa là một kế hoạch có thứ tự, chạy lại được hoặc quay lui, không phải một giao dịch duy nhất.
 - Kế hoạch cho xem khác biệt của quy trình, kiểm tra không có trạng thái cụt và vai có thật, và báo số bản ghi đang chạy bị ảnh hưởng.
 - Luật của quy trình (người xử lý, hạn xử lý, quyền tự quyết, hành động hoàn tất, đặt chỗ) chỉ đổi được khi thực thể không còn hồ sơ đang xử lý, nên mỗi hồ sơ chỉ chịu một bộ luật từ lúc nộp đến lúc đóng.
-- Đổi họ mẫu của một thực thể bị từ chối; muốn đổi hình dạng quy trình thì thêm thực thể mới.
-- Hồ sơ đang chạy không được chuyển sang quy trình mới: phải hoàn tất hoặc rút hết hồ sơ trước.
-- Đổi lược đồ và vai Keycloak nằm ngoài giao dịch của Flowable, nên "một lần" nghĩa là một kế hoạch có thứ tự, chạy lại được hoặc quay lui, không phải một giao dịch duy nhất.
+  Đổi họ mẫu của một thực thể bị từ chối; muốn đổi hình dạng quy trình thì thêm thực thể mới.
 
 **Họ mẫu tùy biến:**
 
 - Người dùng nâng cao ghi đè từng trạng thái và hành động của một họ mẫu, hoặc khai báo toàn bộ `states` và `actions` mà không cần họ mẫu.
-- Hệ thống sinh BPMN riêng từ khai báo đó khi áp dụng; không nạp tệp BPMN tự viết và không có trình kéo thả.
-- Một hành động của người xử lý có thể kèm `when`, một phép so sánh trường với giá trị như `amount > 5000000`; hai hành động `when` loại trừ nhau từ cùng một trạng thái cho ra quy trình rẽ nhánh theo ngưỡng, và hồ sơ chưa đạt điều kiện bị từ chối.
+  Hệ thống sinh BPMN riêng từ khai báo đó khi áp dụng; không nạp tệp BPMN tự viết và không có trình kéo thả.
+- Một hành động của người xử lý có thể kèm `when`, ví dụ `amount > 5000000`; hai hành động `when` loại trừ nhau từ cùng một trạng thái cho ra quy trình rẽ nhánh theo ngưỡng.
 - Quy tắc bất biến nằm trong engine nên quy trình tự khai báo cũng phải chịu.
-- Khai báo bị kiểm khi áp dụng: mọi trạng thái tới được từ trạng thái đầu, không có trạng thái cụt, có ít nhất một trạng thái cuối, và không chạy mã tùy ý trong tiến trình của lõi.
+  Khai báo bị kiểm khi áp dụng: mọi trạng thái tới được từ trạng thái đầu, không có trạng thái cụt, có ít nhất một trạng thái cuối, và không chạy mã tùy ý trong tiến trình của lõi.
 
 ## Trải nghiệm người dùng
 
@@ -255,9 +253,9 @@ dxos plan model.yaml   # xem trước sau khi sửa model.yaml
 dxos apply model.yaml  # áp dụng
 ```
 
-Bộ cài và các lệnh vận hành của `dxos` mô tả ở [`deploy/OPERATIONS.md`](../../deploy/OPERATIONS.md#cài-đặt-và-lệnh-dxos); `dxos plan` và `dxos apply` đưa tệp mô hình vào hệ thống đang chạy với cùng kế hoạch và mức xác nhận như bảng điều khiển.
-`dxos start --core` chỉ chạy Tầng 1 làm nền tảng API cho ứng dụng bên ngoài, không có ứng dụng web, portal và giám sát; chi tiết ở [`deploy/OPERATIONS.md`](../../deploy/OPERATIONS.md#chế-độ-chỉ-lõi).
-`dxos demo` tạo bốn tài khoản thử theo vai của mô hình Một cửa sinh viên và nộp khoảng 40 hồ sơ mẫu qua API chung, để người xem đăng nhập là thấy hệ thống có việc đang chạy; kịch bản trình diễn 15 phút ở [`docs/DEMO.md`](../DEMO.md).
+Bộ cài và các lệnh `dxos` ở [`deploy/OPERATIONS.md`](../../deploy/OPERATIONS.md#cài-đặt-và-lệnh-dxos); `dxos plan` và `dxos apply` đưa tệp mô hình vào hệ thống đang chạy với cùng kế hoạch và mức xác nhận như bảng điều khiển.
+`dxos start --core` chỉ chạy Tầng 1 làm nền tảng API, xem [chế độ chỉ lõi](../../deploy/OPERATIONS.md#chế-độ-chỉ-lõi).
+`dxos demo` tạo bốn tài khoản thử và khoảng 40 hồ sơ mẫu của mô hình Một cửa sinh viên; kịch bản trình diễn 15 phút ở [`docs/DEMO.md`](../DEMO.md).
 
 
 | Trường hợp                                          | Hành vi                                                   |
@@ -284,11 +282,9 @@ Bảng điều khiển thuộc tầng 2, nằm ở tuyến `/console` của ứn
 - **Màn hình kế hoạch:** khác biệt, mức rủi ro, dòng vi phạm và xác nhận thay đổi mất dữ liệu.
 - **Lịch sử áp dụng:** từng phiên bản và từng bước của mỗi lần áp dụng, kèm quay về phiên bản trước.
 - **Sơ đồ quy trình:** trạng thái và hành động của quy trình mà thực thể dùng, vẽ cả từ tệp đang soạn, chỉ để xem.
-- **Người dùng:** tìm người dùng, xem vai theo từng ứng dụng, gán và gỡ vai và đơn vị, tạo người dùng với mật khẩu tạm, khóa và mở, đặt lại mật khẩu; mỗi thay đổi được ghi vào nhật ký với người thực hiện và hiện lại ở hộp thoại của người đó: ai đổi gì, lúc nào.
-  Tài khoản không khai báo trong tệp mô hình: tệp là cấu trúc và nằm trong git, còn người dùng là dữ liệu có email và mật khẩu, nên tài khoản nằm ở Keycloak.
-  Tab chỉ mở API mỏng trên Keycloak: chính sách mật khẩu, MFA, phiên và đăng nhập bằng nhà cung cấp ngoài để Keycloak lo.
-  Người dùng cuối tự đổi mật khẩu, bật OTP và xem phiên ở Account Console của Keycloak, mở từ mục "Tài khoản của tôi" trong menu người dùng.
-
+- **Người dùng:** tìm, gán và gỡ vai và đơn vị, tạo người dùng với mật khẩu tạm, khóa và mở, đặt lại mật khẩu; mỗi thay đổi được ghi vào nhật ký: ai đổi gì, lúc nào.
+  Tài khoản không khai báo trong tệp mô hình vì tệp là cấu trúc nằm trong git, còn người dùng là dữ liệu có email và mật khẩu, nên tài khoản nằm ở Keycloak.
+  Tab chỉ mở API mỏng trên Keycloak; chính sách mật khẩu, MFA và phiên để Keycloak lo, và người dùng cuối tự đổi ở Account Console, mở từ mục "Tài khoản của tôi".
 - **Ứng dụng ngoài:** đăng ký một ứng dụng với đúng một vai của một mô hình, hiện mã bí mật một lần, đổi mã, đổi vai và xóa; ứng dụng không gọi được bảng điều khiển hay quản trị người dùng.
 
 Bảng điều khiển đọc và ghi đúng tệp mô hình, và tệp luôn là nguồn sự thật.
@@ -299,7 +295,7 @@ Giao diện cho người dùng cuối do bộ dựng sinh từ metadata, đủ d
 ### Ranh giới các tầng
 
 - **Tầng 1, lõi:** chỉ có API, không có trang nào do đội viết.
-- **Tầng 2, ứng dụng minh họa:** bộ dựng giao diện đọc metadata, gồm danh sách, form, chi tiết, hộp việc cần xử lý, chế độ xem lịch cho thực thể có trường khoảng thời gian, trang thống kê của thực thể có quy trình (số hồ sơ theo trạng thái và đơn vị, thời gian xử lý, tỷ lệ đóng đúng hạn, báo cáo gộp theo một trường hoặc theo tháng), chọn người cho trường `user` theo tên, chọn cột và lưu bộ lọc của danh sách, hộp việc và danh sách tự làm mới khi hồ sơ đổi, giao diện tiếng Việt và tiếng Anh, màn hình xem kế hoạch và lịch sử áp dụng.
+- **Tầng 2, ứng dụng minh họa:** bộ dựng giao diện đọc metadata của mô hình đang chạy và dựng danh sách, form, chi tiết, hộp việc, lịch, thống kê, màn hình xem kế hoạch và lịch sử áp dụng, bằng tiếng Việt và tiếng Anh.
   Bộ dựng xây trên react-admin, đội chỉ viết lớp mỏng nối metadata với khung.
   Portal và màn hình giám sát cũng thuộc tầng này.
 - **Tầng 3, nghiệp vụ:** chỉ là tệp mô hình, không có mã.
@@ -366,31 +362,9 @@ Trần dưới đây giữ cho tệp mô hình không biến thành ngôn ngữ 
 
 Một năng lực mới chỉ được thêm khi cần ở ít nhất 3 lĩnh vực, khai báo được mà không cần cú pháp mới, và không làm hỏng các mô hình đã có.
 Không đạt thì đi qua điểm mở rộng.
-Các kiểu `boolean` và `date`, `multiple`, `min`, `max`, `pattern`, `required_when` và khối `ui:` là ngoại lệ có chủ đích của điều kiện không cần cú pháp mới: mỗi thứ cần ở nhiều lĩnh vực và là khóa tùy chọn nên mô hình cũ giữ nguyên; format hiện hành là `1`, còn format `0` được nâng tuần tự trong bộ nhớ.
+Các kiểu `boolean` và `date`, `multiple`, `min`, `max`, `pattern`, `required_when` và khối `ui:` là ngoại lệ có chủ đích: mỗi thứ cần ở nhiều lĩnh vực và là khóa tùy chọn nên mô hình cũ giữ nguyên.
 
-Ví dụ một tệp mô hình:
-
-```yaml
-format: 1
-name: onestop
-roles:
-  - name: STUDENT
-  - name: OFFICER
-    staff: true
-units:
-  - name: DAO_TAO
-    label: Phòng Đào tạo
-entities:
-  request:
-    label: Hồ sơ
-    fields:
-      kind: {type: choice, label: Loại hồ sơ, required: true, options: [Giấy xác nhận, Phúc khảo, Hoãn thi]}
-      reason: {type: text, label: Lý do, required: true}
-      department: {type: unit, label: Đơn vị xử lý, required: true}
-      evidence: {type: file, label: Minh chứng}
-    access: {STUDENT: own, OFFICER: unit}
-    process: {family: approval, handler: OFFICER, deadline: 72h}
-```
+Ví dụ đầy đủ ở [`onestop.yaml`](../../backend/dx-engine/src/main/resources/templates/onestop.yaml) và ví dụ rút gọn ở [`docs/MODEL.md`](../MODEL.md#ví-dụ).
 
 ## Ba tính năng đào sâu
 
@@ -417,10 +391,8 @@ Mỗi nguồn báo lệch, chờ duyệt hoặc tự áp dụng; mô hình tự 
 Thay đổi mô hình sai được xử lý như sau:
 
 - **Tệp sai:** bị chặn ở bước kiểm tra, hệ thống vẫn chạy phiên bản đang chạy.
-- **Áp dụng dở:** mỗi bước chạy lại được an toàn, và lõi giữ mô hình lại cho đến khi quản trị viên quyết định.
-  Người dùng chưa vào được mô hình đó, còn bảng điều khiển hiện nhãn "Đang dừng dở" và lịch sử ghi bước đã dừng.
-  **Tiếp tục** chạy lại từ nội dung, đổi tên và mức đã xác nhận mà lần áp dụng đó đã lưu, nên không cần tệp.
-  **Hủy bỏ** đưa các bảng về phiên bản đang chạy, hoặc xóa những gì lần áp dụng đầu đã tạo nếu mô hình chưa có phiên bản.
+- **Áp dụng dở:** mỗi bước chạy lại được an toàn, và lõi giữ mô hình lại cho đến khi quản trị viên quyết định; bảng điều khiển hiện nhãn "Đang dừng dở" và lịch sử ghi bước đã dừng.
+  **Tiếp tục** chạy lại từ nội dung và mức đã xác nhận mà lần áp dụng đó đã lưu, không cần tệp; **Hủy bỏ** đưa các bảng về phiên bản đang chạy.
   Lõi không tự thử lại và không tự quay lui.
 - **Hệ thống lệch khỏi tệp:** cột, ràng buộc, client, vai hoặc nhóm đơn vị bị xóa tay thì áp dụng lại cùng tệp báo `repair` và sửa lại, không tăng phiên bản.
   Bảng hoặc cột thừa bị từ chối, đổi kiểu cột hay bỏ ràng buộc thừa cần xác nhận mức `MIGRATION`, và lõi không tự sửa lúc khởi động.
@@ -496,15 +468,9 @@ Hướng dẫn từ đăng ký quyền, chạy local, kiểm thử, đóng gói 
 Mã dịch vụ và bên nhận webhook nằm ngoài lõi; trang hay thành phần form riêng hiện vẫn phải sửa source frontend và dựng lại image.
 
 
-| Nhu cầu | Cách làm hiện tại |
-|---|---|
-| API riêng | Dịch vụ ngoài gọi API bằng client đúng một vai của một mô hình, đổi vai bằng `dxos client role`; OpenAPI sinh từ mô hình đang chạy |
-| Phản ứng theo nghiệp vụ | Webhook nhận sự kiện sau khi thay đổi đã ghi; hành động khai `check` thì dịch vụ riêng được hỏi trước khi chuyển trạng thái và có thể từ chối |
-| Giao diện riêng hoàn toàn | Đăng ký public client OIDC dùng PKCE bằng `dxos client browser add`; origin chính xác vào `CORS_ALLOWED_ORIGINS`, không nhận wildcard |
-| Trang riêng trong ứng dụng Tầng 2 | Sửa và dựng lại frontend; chưa có registry plugin |
-| Họ mẫu quy trình riêng | Khai báo `states` và `actions` trong tệp mô hình; vẫn chịu quy tắc bất biến và bị kiểm khi áp dụng |
-| Thành phần riêng trong form | Chưa có điểm đăng ký; ưu tiên khối `ui:` của tệp mô hình |
-| Route riêng trong APISIX | Khai `deploy/apisix/local.yaml` của bản cài, kiểm rồi ghép với route lõi; giữ file riêng qua `dxos update` |
+Có sáu đường mở rộng, đều nằm ngoài lõi hoặc trong tệp mô hình:
+dịch vụ riêng gọi API bằng client đúng một vai, webhook và khóa `check` của hành động, giao diện riêng đăng nhập bằng OIDC với PKCE, quy trình tự khai báo, route riêng trong APISIX, và trang riêng trong ứng dụng Tầng 2 (phải sửa và dựng lại frontend).
+Mức hỗ trợ và ranh giới nâng cấp của từng đường ở bảng đầu [`docs/EXTENSIONS.md`](../EXTENSIONS.md#mức-hỗ-trợ-hiện-tại).
 
 Đổi tên trường có thể làm hỏng mã mở rộng đang dùng trường đó, nên kế hoạch nêu rõ các tên bị đổi.
 
@@ -606,29 +572,21 @@ Nơi lưu mã và máy chủ demo như GitHub, VPS, Cloudflare không thuộc s�
 
 ### Giấy phép của các thành phần
 
-
-| Thành phần                                                      | Giấy phép                                                                                                                                                                                                                                                    | Kết luận                                                        |
-| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| Keycloak, APISIX, SeaweedFS, Flowable, pgschema | Apache-2.0 | Đạt |
-| react-admin | MIT | Đạt; chỉ dùng phần MIT, không dùng gói Enterprise |
-| PostgreSQL                                                        | PostgreSQL License                                                                                                                                                                                                                                             | Đạt                                                             |
-| ClamAV | GPL-2.0 | Đạt |
-| cloudflared | Apache-2.0, nhưng Cloudflare Tunnel và Access là dịch vụ đóng | Ngoài repository: chỉ máy chủ công khai của đội dùng, tệp cấu hình giữ ngoài repository; hệ thống chạy được không cần |
+Mọi thành phần của bản phát hành đạt tiêu chuẩn trên; danh mục và giấy phép từng thành phần ở [`DEPENDENCIES.txt`](../../DEPENDENCIES.txt), kiểm tự động bằng `.github/scripts/check_licenses.py`.
+ClamAV (GPL-2.0) chạy thành dịch vụ riêng qua mạng, và react-admin chỉ dùng phần MIT, không dùng gói Enterprise.
+cloudflared (Apache-2.0) chỉ chạy ở máy chủ công khai của đội, còn Cloudflare Tunnel và Access là dịch vụ đóng, nên cấu hình giữ ngoài repository và hệ thống chạy được mà không cần chúng.
 
 ## Công cụ
 
-Số sao và giấy phép lấy từ GitHub API.
-
-
-| Vai trò                  | Dự án                                                                     | Giấy phép                    | Sao                | Ghi chú                                                                              |
-| --------------------------- | ----------------------------------------------------------------------------- | -------------------------------- | -------------------- | --------------------------------------------------------------------------------------- |
-| Luồng công việc        | [Flowable](https://github.com/flowable/flowable-engine)                     | Apache-2.0                     | 9.632              | Có BPMN, CMMN, DMN; bản 8.0.0 ngày 2026-02-27                                      |
-| Giao diện                | [react-admin](https://github.com/marmelab/react-admin)                      | MIT                            | 26.979             | Có sẵn field và input cho các kiểu trường của mô hình; chỉ dùng phần MIT |
-| Giao diện, dự phòng    | [Refine](https://github.com/refinedev/refine)                               | MIT                            | 35.977             | Dùng nếu react-admin không dựng được theo metadata đổi lúc chạy            |
-| Soạn mô hình | [Monaco Editor](https://github.com/microsoft/monaco-editor) | MIT | 46.944 | Trình soạn mã, có chế độ so sánh dùng cho màn hình kế hoạch |
-| Soạn mô hình | [monaco-yaml](https://github.com/remcohaszing/monaco-yaml) | MIT | 333 | Gợi ý và báo lỗi YAML theo JSON Schema |
-| Sơ đồ quy trình | [React Flow](https://github.com/xyflow/xyflow) | MIT | 38.874 | Vẽ quy trình sinh ra, chỉ để xem |
-| Đổi lược đồ             | [pgschema](https://pkg.go.dev/github.com/pgplex/pgschema@v1.13.4)            | Apache-2.0                     | 1.077              | So sánh và đổi lược đồ kiểu Terraform; lõi lo đổi tên và chặn mất dữ liệu |
+| Vai trò | Dự án | Giấy phép | Ghi chú |
+|---|---|---|---|
+| Luồng công việc | [Flowable](https://github.com/flowable/flowable-engine) | Apache-2.0 | Có BPMN, CMMN, DMN; bản 8.0.0 ngày 2026-02-27 |
+| Giao diện | [react-admin](https://github.com/marmelab/react-admin) | MIT | Có sẵn field và input cho các kiểu trường của mô hình; chỉ dùng phần MIT |
+| Giao diện, dự phòng | [Refine](https://github.com/refinedev/refine) | MIT | Dùng nếu react-admin không dựng được theo metadata đổi lúc chạy |
+| Soạn mô hình | [Monaco Editor](https://github.com/microsoft/monaco-editor) | MIT | Trình soạn mã, có chế độ so sánh dùng cho màn hình kế hoạch |
+| Soạn mô hình | [monaco-yaml](https://github.com/remcohaszing/monaco-yaml) | MIT | Gợi ý và báo lỗi YAML theo JSON Schema |
+| Sơ đồ quy trình | [React Flow](https://github.com/xyflow/xyflow) | MIT | Vẽ quy trình sinh ra, chỉ để xem |
+| Đổi lược đồ | [pgschema](https://pkg.go.dev/github.com/pgplex/pgschema@v1.13.4) | Apache-2.0 | So sánh và đổi lược đồ kiểu Terraform; lõi lo đổi tên và chặn mất dữ liệu |
 
 ## Đặc tả chi tiết
 

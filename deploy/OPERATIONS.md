@@ -1,6 +1,6 @@
 # Vận hành
 
-Tài liệu cho người cài và chạy stack hằng ngày: cài đặt và lệnh `dxos`, quản trị người dùng, kiểm tra trước khi chạy, tài nguyên, giám sát từ ngoài, sao lưu và khôi phục, quét mã độc.
+Tài liệu cho người cài và chạy stack hằng ngày: cài đặt và lệnh `dxos`, quản trị người dùng, kiểm tra trước khi chạy, tài nguyên, giám sát từ ngoài, sao lưu và khôi phục, ứng phó sự cố, quét mã độc.
 Log, giới hạn tốc độ, sự kiện đăng nhập, audit, số đo cho Prometheus và màn hình giám sát ở [`MONITORING.md`](./MONITORING.md).
 Webhook sự kiện, API kéo sự kiện, lịch sử chống sửa và hồ dữ liệu ở [`INTEGRATIONS.md`](./INTEGRATIONS.md).
 Kết nối công cụ báo cáo bằng vai PostgreSQL chỉ đọc ở [`REPORTING.md`](./REPORTING.md).
@@ -369,6 +369,39 @@ CI chạy một lượt backup và verify trên Postgres thật có một mô h�
    Hai dòng lỗi `role "..." already exists` và `database "..." already exists` là bình thường vì tài khoản quản trị và database chính đã có sẵn.
    Phần còn lại phải nạp không lỗi.
 4. Chép `data/seaweedfs` từ `/tmp/dxos-restore/data/` vào `deploy/data/` (các tệp thuộc root nên dùng `sudo`), rồi `docker compose up -d`.
+
+## Ứng phó sự cố
+
+Nghi bị xâm nhập, tệp bị mã hóa hay dữ liệu đổi lạ thì làm lần lượt bốn bước dưới đây.
+Mỗi bước ghi lại thời điểm và việc đã làm.
+
+1. **Cách ly.**
+   Gỡ các timer tự chạy để không gì dựng lại thứ vừa dừng: `dxos reconcile uninstall`, `dxos gitops uninstall` và `dxos archive schedule uninstall`.
+   Rồi `dxos stop`: lệnh dừng các container, giữ nguyên dữ liệu và log của container, và để lại `deploy/.stopped` nên `dxos reconcile` không bật lại.
+   Cắt đường vào từ Internet ở tường lửa, ở đường hầm hoặc ở reverse proxy đặt trước gateway.
+   Nghi máy chủ đã bị chiếm thì chép log ra máy khác trước: `docker compose logs --timestamps --no-color > su-co.log` trong `deploy/`.
+   Đừng chạy `docker compose down` hay `dxos uninstall --purge`: `down` xóa container kèm log của chúng, còn `--purge` xóa cả dữ liệu.
+   Chưa xóa gì khác, vì `deploy/data` và kho sao lưu còn cần cho các bước sau.
+2. **Khoanh vùng.**
+   Bật lại stack khi đường vào từ Internet đã cắt (`dxos start`), rồi `dxos history verify`.
+   Lệnh tính lại chuỗi hash của lịch sử hồ sơ và so với các điểm neo ở ngoài PostgreSQL; chuỗi hỏng thì in dòng đầu tiên bị sửa, xóa hoặc chèn.
+   Chuỗi nguyên vẹn nghĩa là lịch sử tới điểm neo gần nhất không bị đổi, không có nghĩa là dữ liệu hiện tại sạch.
+   Xem ai đã làm gì ở `audit_log` (nhật ký quản trị ở tab Người dùng) và ở màn hình giám sát `/monitor/`.
+   `./backup.sh snapshots` liệt kê các bản sao lưu để chọn bản chụp trước lúc sự cố.
+3. **Làm sạch.**
+   Cài lại đúng bản phát hành đang dùng bằng `dxos update vX.Y.Z`, hoặc bằng bộ cài trên một máy mới nếu nghi máy chủ bị chiếm quyền root; chép `deploy/.env` từ bản lưu ngoài máy sang máy mới.
+   Đổi bí mật nghi bị lộ: `dxos admin` cấp mật khẩu tạm mới cho `admin`, `dxos client rotate <tên>` cấp mã mới cho từng ứng dụng ngoài, và khóa hoặc đặt lại mật khẩu tài khoản nghi bị lộ ở tab Người dùng.
+   Các bí mật khác trong `deploy/.env` đổi theo hướng dẫn của thành phần tương ứng.
+   Không đổi `BACKUP_PASSWORD`, vì các bản sao lưu đã có sẽ không đọc được nữa.
+4. **Khôi phục.**
+   Làm theo mục Khôi phục ở trên với bản đã chọn ở bước 2.
+   `./backup.sh restore` chỉ lấy bản mới nhất.
+   Bản mới nhất chụp sau lúc sự cố bắt đầu thì lấy bản cũ hơn bằng `restic restore <ID>` trực tiếp trên kho, với ID từ `./backup.sh snapshots`; chưa có lệnh riêng cho việc này.
+   Khôi phục xong chạy `dxos history verify` và `dxos status`, mở lại đường vào, rồi cài lại các timer đã gỡ (`dxos reconcile install`, và `dxos gitops install` hay `dxos archive schedule install` nếu đang dùng).
+   Báo người dùng khoảng thời gian dữ liệu bị mất, từ bản sao lưu tới lúc sự cố.
+
+Sau sự cố, lập biên bản: lúc phát hiện, bản đã khôi phục, khoảng dữ liệu mất và nguyên nhân.
+Sự cố có đụng tới dữ liệu cá nhân thì báo cáo theo quy định về bảo vệ dữ liệu cá nhân.
 
 ## Quét mã độc tệp tải lên
 

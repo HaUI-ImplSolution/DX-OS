@@ -214,7 +214,7 @@ Các lệnh hay dùng của `dxos`:
 | Không đăng nhập được tài khoản thử | `dxos demo` đặt lại mật khẩu và in mật khẩu mới |
 | Sau lần áp dụng, một bản `backend` trả 404 | Chỉ chạy một bản `backend`, hoặc khởi động lại cả hai |
 
-Cài đặt, mọi lệnh `dxos`, sao lưu và khôi phục ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md); giám sát và log ở [`deploy/MONITORING.md`](./deploy/MONITORING.md).
+Cài đặt, mọi lệnh `dxos`, sao lưu, khôi phục và ứng phó sự cố ở [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md); giám sát và log ở [`deploy/MONITORING.md`](./deploy/MONITORING.md).
 
 ## Đối chiếu với đề thi
 
@@ -237,13 +237,15 @@ Các tài liệu về viết tệp mô hình, API, vận hành, giám sát, tíc
 
 | Cần gì | Xem |
 |---|---|
+| Xem nhanh trong 5 phút, tìm tài liệu theo thư mục | [`docs/README.md`](./docs/README.md) |
 | Ảnh màn hình và video | [trang hình ảnh](https://haui-implsolution.github.io/DX-OS/docs/hinh-anh) |
 | Dùng hệ thống theo vai | [người nộp](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-nop), [người xử lý](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-xu-ly), [người triển khai](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-trien-khai) |
 | Viết tệp mô hình | [`docs/MODEL.md`](./docs/MODEL.md) |
 | Gọi API | [`docs/API.md`](./docs/API.md) và đặc tả OpenAPI (`/v3/api-docs`) của backend đang chạy |
 | Phát triển dịch vụ, webhook và giao diện mở rộng | [`docs/EXTENSIONS.md`](./docs/EXTENSIONS.md) |
-| Kiến trúc | [`ARCHITECTURE.md`](./ARCHITECTURE.md) |
-| Cài đặt, lệnh `dxos`, sao lưu | [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md) |
+| Kiến trúc và các quyết định đã chốt | [`ARCHITECTURE.md`](./ARCHITECTURE.md) |
+| Thuật ngữ | [`docs/GLOSSARY.md`](./docs/GLOSSARY.md) |
+| Cài đặt, lệnh `dxos`, sao lưu, ứng phó sự cố | [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md) |
 | Giám sát, log, nhật ký truy cập | [`deploy/MONITORING.md`](./deploy/MONITORING.md) |
 | Webhook, lịch sử chống sửa, lưu trữ dài hạn | [`deploy/INTEGRATIONS.md`](./deploy/INTEGRATIONS.md) |
 | Kết nối công cụ báo cáo | [`deploy/REPORTING.md`](./deploy/REPORTING.md) |

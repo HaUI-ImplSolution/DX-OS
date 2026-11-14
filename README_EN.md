@@ -215,7 +215,7 @@ The `dxos` commands used most:
 | Cannot sign in with a trial account | `dxos demo` resets the password and prints the new one |
 | After an apply, one `backend` copy answers 404 | Run a single `backend` copy, or restart both |
 
-Install, every `dxos` command, backup and restore are in [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md); monitoring and logs are in [`deploy/MONITORING.md`](./deploy/MONITORING.md) (both Vietnamese).
+Install, every `dxos` command, backup, restore and incident response are in [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md); monitoring and logs are in [`deploy/MONITORING.md`](./deploy/MONITORING.md) (both Vietnamese).
 
 ## Against the brief
 
@@ -239,13 +239,15 @@ The documents on writing a model file, the API, operation, monitoring, integrati
 
 | You need | See |
 |---|---|
+| A 5-minute tour, and the documents by folder | [`docs/README.md`](./docs/README.md) (Vietnamese) |
 | Screenshots and videos | [the gallery page](https://haui-implsolution.github.io/DX-OS/docs/hinh-anh) (Vietnamese) |
 | Using the system by role | [submitters](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-nop), [handlers](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-xu-ly), [deployers](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-trien-khai) (Vietnamese) |
 | Writing a model file | [`docs/MODEL.md`](./docs/MODEL.md) |
 | Calling the API | [`docs/API.md`](./docs/API.md) and the OpenAPI specification (`/v3/api-docs`) of the running backend |
 | Building extension services, webhooks, and custom UIs | [`docs/EXTENSIONS.md`](./docs/EXTENSIONS.md) (Vietnamese) |
-| Architecture | [`ARCHITECTURE.md`](./ARCHITECTURE.md) |
-| Install, the `dxos` commands, backup | [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md) |
+| Architecture and the decisions made | [`ARCHITECTURE.md`](./ARCHITECTURE.md) |
+| Glossary | [`docs/GLOSSARY.md`](./docs/GLOSSARY.md) (Vietnamese) |
+| Install, the `dxos` commands, backup, incident response | [`deploy/OPERATIONS.md`](./deploy/OPERATIONS.md) |
 | Monitoring, logs, access audit | [`deploy/MONITORING.md`](./deploy/MONITORING.md) |
 | Webhooks, tamper-evident history, long-term archive | [`deploy/INTEGRATIONS.md`](./deploy/INTEGRATIONS.md) |
 | Connecting a reporting tool | [`deploy/REPORTING.md`](./deploy/REPORTING.md) (Vietnamese) |

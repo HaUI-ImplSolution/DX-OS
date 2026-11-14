@@ -25,6 +25,7 @@ export const DOCS = {
   'ARCHITECTURE.md': {page: 'kien-truc', label: 'Kiến trúc'},
   'docs/COMPATIBILITY.md': {page: 'tuong-thich', label: 'Tương thích giữa các bản'},
   'docs/DEMO.md': {page: 'trinh-dien', label: 'Kịch bản trình diễn'},
+  'docs/GLOSSARY.md': {page: 'thuat-ngu', label: 'Thuật ngữ'},
 };
 
 const problems = [];

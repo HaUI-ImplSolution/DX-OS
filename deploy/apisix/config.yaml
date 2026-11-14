@@ -1,3 +1,4 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 # Standalone routes are generated from common.yaml and optional local.yaml; no etcd or admin API.
 deployment:

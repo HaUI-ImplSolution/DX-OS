@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 // The sign-in flow, the record screens, the inbox, the calendar and the statistics.
 export const app: Record<string, string> = {

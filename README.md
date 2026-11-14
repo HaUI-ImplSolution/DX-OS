@@ -121,7 +121,7 @@ Danh mục đầy đủ ở [`DEPENDENCIES.txt`](./DEPENDENCIES.txt) và [`sbom/
 | DuckDB | 1.4.1 | MIT | Đọc kho lưu trữ Parquet bằng `dxos archive` |
 | restic | 0.17.3 | BSD-2-Clause | Sao lưu mã hóa, tùy chọn |
 
-Mã của đội theo Apache-2.0, có dòng SPDX ở đầu mỗi tệp và được `reuse lint` kiểm ở mỗi pull request.
+Mã của đội theo Apache-2.0, có hai dòng SPDX (chủ bản quyền và giấy phép) ở đầu mỗi tệp mã và được `reuse lint` kiểm ở mỗi pull request.
 ClamAV chạy thành dịch vụ riêng, giao tiếp qua mạng, không liên kết mã nên không xung đột với Apache-2.0.
 Lý do đọc hoặc không dùng làm nền với Supabase, Strapi và Directus ở [trang thành phần](https://haui-implsolution.github.io/DX-OS/docs/dependencies).
 

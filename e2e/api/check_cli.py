@@ -1,3 +1,4 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 """Checks of the command line of deploy/dxos (plan, apply, lint, conformance, archive) and of the IT/OT simulator.
 

@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-FileCopyrightText: 2026 HaUI-ImplSolution -->
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 <!--
   Filter of the SpotBugs run in the verify phase of the backend.

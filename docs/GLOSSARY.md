@@ -98,6 +98,6 @@ Mỗi từ được giải thích trong một hoặc hai dòng, kèm tài liệu
 | OIDC, PKCE | Cách giao diện ở tên miền khác đăng nhập người dùng, không giữ mã bí mật trong trình duyệt | [`EXTENSIONS.md`](./EXTENSIONS.md#giao-diện-ngoài) |
 | Tự phục hồi (`reconcile`) | `dxos reconcile` đưa stack về đúng khai báo, tạo lại container bị xóa hay lệch; chạy mỗi phút bằng systemd timer | [`OPERATIONS.md`](OPERATIONS.md) |
 | ClamAV | Dịch vụ quét mã độc tệp tải lên; tệp chưa quét được thì bị từ chối | [`OPERATIONS.md`](OPERATIONS.md#quét-mã-độc-tệp-tải-lên) |
-| SPDX, REUSE | Dòng `SPDX-License-Identifier` ở đầu mỗi tệp mã và `REUSE.toml` cho tệp không chèn được; `reuse lint` kiểm cả cây | [`CONTRIBUTING.md`](../CONTRIBUTING.md) |
+| SPDX, REUSE | Hai dòng `SPDX-FileCopyrightText` và `SPDX-License-Identifier` ở đầu mỗi tệp mã và `REUSE.toml` cho tệp không chèn được; `reuse lint` kiểm cả cây | [`CONTRIBUTING.md`](../CONTRIBUTING.md) |
 | SBOM | Danh mục thành phần (CycloneDX) của backend, web và trang docs, ở `sbom/` | [`sbom/README.md`](../sbom/README.md) |
 | OSI | Tổ chức công nhận giấy phép nguồn mở; mọi thành phần của DX-OS dùng giấy phép được OSI công nhận | [`DEPENDENCIES.txt`](../DEPENDENCIES.txt) |

@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 // Copies the product documents of the repository into website/docs/tai-lieu/ before every build.
 // The files in docs/ stay the only source; the copies are not committed.

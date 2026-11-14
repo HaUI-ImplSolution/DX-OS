@@ -1,3 +1,4 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 """Compare the basic ticket handlers in Lab with the Core application YAML."""
 import argparse

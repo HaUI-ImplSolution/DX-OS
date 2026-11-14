@@ -1,3 +1,4 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 """Checks of the guards around a model in use: who owns a role, the roles of the platform, removing
 a role, dropping an entity that has files or running work, and an apply that stopped halfway.

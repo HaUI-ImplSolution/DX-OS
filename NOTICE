@@ -23,7 +23,7 @@ Giấy phép còn cấp quyền dùng sáng chế của người đóng góp (m�
 Giấy phép này không xung đột với chúng, và các thành phần copyleft chỉ chạy thành dịch vụ riêng, giao tiếp qua mạng (xem DEPENDENCIES.txt).
 
 Toàn văn giấy phép ở tệp LICENSE.
-Mỗi tệp mã có dòng SPDX-License-Identifier ở đầu; tệp không chèn được dòng đó (tài liệu, ảnh, JSON, phông) được khai trong REUSE.toml theo chuẩn REUSE, và `reuse lint` kiểm cả cây.
+Mỗi tệp mã có dòng SPDX-FileCopyrightText và dòng SPDX-License-Identifier ở đầu; tệp không chèn được dòng đó (tài liệu, ảnh, JSON, phông) được khai trong REUSE.toml theo chuẩn REUSE, và `reuse lint` kiểm cả cây.
 
 Sản phẩm này sử dụng phần mềm của bên thứ ba, giữ nguyên giấy phép gốc:
 

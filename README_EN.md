@@ -122,7 +122,7 @@ The full list is in [`DEPENDENCIES.txt`](./DEPENDENCIES.txt) and [`sbom/`](./sbo
 | DuckDB | 1.4.1 | MIT | Reads the Parquet archive with `dxos archive` |
 | restic | 0.17.3 | BSD-2-Clause | Encrypted backup, optional |
 
-The code of the team is under Apache-2.0, with an SPDX line at the top of each file, checked by `reuse lint` on every pull request.
+The code of the team is under Apache-2.0, with two SPDX lines (copyright holder and license) at the top of each source file, checked by `reuse lint` on every pull request.
 ClamAV runs as a separate service and talks over the network, with no linked code, so it does not conflict with Apache-2.0.
 Why Supabase, Strapi and Directus were read for ideas or not used as a base is on the [components page](https://haui-implsolution.github.io/DX-OS/docs/dependencies) (Vietnamese).
 

@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 // Writes the license notices of the production dependencies of an npm project, so that a build
 // ships them with the code it bundles.

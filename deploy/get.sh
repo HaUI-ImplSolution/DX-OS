@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 # Downloads a DX-OS release, checks its SHA-256 and installs it; published with each release as dxos-install.sh.
 #

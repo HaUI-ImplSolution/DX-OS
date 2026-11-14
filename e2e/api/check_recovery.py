@@ -1,3 +1,4 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 """Recovery checks: a decision that fails after the process step, and an apply interrupted by Keycloak.
 

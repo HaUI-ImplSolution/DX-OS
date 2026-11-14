@@ -1,11 +1,13 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 """Check the licensing of the repository.
 
     python3 .github/scripts/check_licenses.py
     python3 .github/scripts/check_licenses.py sbom FILE...   # only the licenses of the SBOMs given
 
-1. Every tracked source file starts with an SPDX license line that names Apache-2.0, unless REUSE.toml
-   states the license of that file itself (an override annotation: third-party files and released migrations).
+1. Every tracked source file starts with an SPDX copyright line and an SPDX license line that names Apache-2.0,
+   unless REUSE.toml states the license of that file itself (an override annotation: third-party files)
+   or the file is a released database migration, which Flyway checks byte for byte.
    `reuse lint` checks the rest of the tree.
 2. Every package in sbom/*.cdx.json has a license that is allowed below or
    an entry in .github/dependency-exceptions.json that gives the reason.
@@ -37,6 +39,9 @@ SOURCE_NAMES = {"Dockerfile"}
 HEADER_LINES = 6
 # REUSE-IgnoreStart
 SPDX_LINE = re.compile(r"SPDX-License-Identifier: *([\w.\-+]+)")
+COPYRIGHT_LINE = re.compile(r"SPDX-FileCopyrightText: *\S")
+# Flyway checks the checksum of every applied migration, so a migration keeps its license line alone.
+MIGRATION_PATH = "/db/migration/"
 # REUSE-IgnoreEnd
 
 # Licenses approved by the OSI. Data under CC-BY-4.0 or CC0-1.0 is not on that list,
@@ -125,6 +130,8 @@ def check_headers() -> list[str]:
         found = next((m.group(1) for m in map(SPDX_LINE.search, head) if m), None)
         if found != wanted:
             problems.append(f"{rel}: license header is {found or 'missing'}, expected {wanted}")
+        elif MIGRATION_PATH not in rel and not any(COPYRIGHT_LINE.search(line) for line in head):
+            problems.append(f"{rel}: the SPDX-FileCopyrightText line is missing")
     return problems
 
 

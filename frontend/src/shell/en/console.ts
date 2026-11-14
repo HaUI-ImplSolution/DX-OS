@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 // The control panel: models, editor, plan, users, outbox and the guides.
 export const console: Record<string, string> = {

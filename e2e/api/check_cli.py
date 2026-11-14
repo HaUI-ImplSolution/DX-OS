@@ -22,7 +22,7 @@ import check_api as rt
 import kc
 
 YAML = "application/yaml"
-INVALID = sorted(glob.glob(os.path.join(kc.REPO, "models", "invalid", "*.yaml")))
+INVALID = sorted(glob.glob(os.path.join(kc.REPO, "e2e", "fixtures", "invalid-models", "*.yaml")))
 VALID = sorted(glob.glob(os.path.join(kc.REPO, "backend", "dx-engine", "src", "main", "resources", "templates", "*.yaml"))
                + glob.glob(os.path.join(kc.REPO, "examples", "model-repo", "models", "*.yaml")))
 

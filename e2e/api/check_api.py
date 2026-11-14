@@ -58,8 +58,8 @@ def main():
     admin = kc.token("admin1")
 
     # T5-02, T5-03: files with problems are refused with their line, and nothing changes.
-    for name, needle in [("unknown-reference", "line 9"), ("bad-name", "line 9"),
-                         ("unknown-role", "line 10"), ("unsupported-format", "line 2")]:
+    for name, needle in [("unknown-reference", "line 10"), ("bad-name", "line 10"),
+                         ("unknown-role", "line 11"), ("unsupported-format", "line 3")]:
         status, body = kc.api(admin, "POST", "/models/plan", read(f"e2e/fixtures/invalid-models/{name}.yaml"), YAML)
         ok = status == 400 and body["errorCode"] == "ERR_MODEL_INVALID" and needle in body["data"][0]
         check(f"T5-02/03 {name}", ok, f"{status} {body.get('data') if isinstance(body, dict) else body}")

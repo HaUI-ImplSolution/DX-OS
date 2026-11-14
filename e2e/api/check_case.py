@@ -46,8 +46,8 @@ def main():
     admin = kc.token("admin1")
 
     # T6-02: rules of the model file.
-    for name, needle in [("unit-without-field", "line 10"), ("assigned-without-process", "line 10"),
-                         ("duplicate-unit", "line 8")]:
+    for name, needle in [("unit-without-field", "line 11"), ("assigned-without-process", "line 11"),
+                         ("duplicate-unit", "line 9")]:
         status, body = kc.api(admin, "POST", "/models/plan", rt.read(f"e2e/fixtures/invalid-models/{name}.yaml"), YAML)
         rt.check(f"T6-02 {name}", status == 400 and needle in body["data"][0], f"{status} {body.get('data')}")
 

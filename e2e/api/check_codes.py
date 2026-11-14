@@ -148,7 +148,7 @@ def main():
     status, body = kc.api(kc.token("cd_stu4"), "GET", f"/data/{tiny}/request?size=50")
     rt.check("CD-22 and nothing was saved for it", status == 200 and body["data"]["totalElements"] == 9, str(body)[:200])
 
-    for fixture, needle in [("code-without-sequence", "line 10"), ("code-with-default", "line 10")]:
+    for fixture, needle in [("code-without-sequence", "line 11"), ("code-with-default", "line 11")]:
         status, body = kc.api(admin, "POST", "/models/plan", rt.read(f"e2e/fixtures/invalid-models/{fixture}.yaml"), YAML)
         rt.check(f"CD-23 {fixture}", status == 400 and needle in body["data"][0], f"{status} {body.get('data')}")
 

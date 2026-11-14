@@ -2,7 +2,7 @@
 """Checks of the user administration: who holds which role of which model, units, and accounts.
 
 Run after check_guards.py on the same stack (it needs the models applied by the scripts before):
-    python3 deploy/dev/check_users.py
+    python3 e2e/api/check_users.py
 """
 import json
 import subprocess

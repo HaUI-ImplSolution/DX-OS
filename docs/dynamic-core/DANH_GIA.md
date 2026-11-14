@@ -121,7 +121,7 @@ Cột Trạng thái ghi quyết định của đội: đề xuất đã chốt l
 
 | Đề xuất | Lý do | Làm gì | Lợi ích | Rủi ro | Trạng thái |
 |---|---|---|---|---|---|
-| **Kiểm tệp không cần hệ thống** | Kiểm một tệp mô hình cần cả hệ thống đang chạy; bộ kiểm chung cho mô hình mới nằm ở `deploy/dev` như script nội bộ | `dxos lint <tệp>` chạy bộ đọc của backend không cần hệ thống, từ JAR đi kèm bản phát hành hoặc từ image backend; `dxos conformance <mô hình>` chạy các kiểm rào chắn của lõi trên hệ thống đang chạy | Lỗi tệp bị bắt ở máy người viết và ở pull request; là công cụ hỗ trợ mà tiêu chí phát triển bền vững chấm | Lint không thấy lỗi phụ thuộc dữ liệu đang có nên không thay cho kế hoạch; conformance tạo client và người dùng thử, nên từ chối stack ngoài `localhost` nếu thiếu cờ | Đã làm |
+| **Kiểm tệp không cần hệ thống** | Kiểm một tệp mô hình cần cả hệ thống đang chạy; bộ kiểm chung cho mô hình mới nằm ở `e2e/api` như script nội bộ | `dxos lint <tệp>` chạy bộ đọc của backend không cần hệ thống, từ JAR đi kèm bản phát hành hoặc từ image backend; `dxos conformance <mô hình>` chạy các kiểm rào chắn của lõi trên hệ thống đang chạy | Lỗi tệp bị bắt ở máy người viết và ở pull request; là công cụ hỗ trợ mà tiêu chí phát triển bền vững chấm | Lint không thấy lỗi phụ thuộc dữ liệu đang có nên không thay cho kế hoạch; conformance tạo client và người dùng thử, nên từ chối stack ngoài `localhost` nếu thiếu cờ | Đã làm |
 
 ### 7.4. Kho mã và cộng đồng
 

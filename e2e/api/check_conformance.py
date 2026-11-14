@@ -2,7 +2,7 @@
 """Checks that an applied model keeps the barriers of the core, whatever the model declares.
 
 Run on a stack where the models are applied (all of them, or the ones named):
-    python3 deploy/dev/check_conformance.py [model ...]
+    python3 e2e/api/check_conformance.py [model ...]
 Per model it takes one user who holds a role of that model and checks that:
   - the status of a record of a process cannot be written through the data API (403);
   - a request without a token is refused (401);

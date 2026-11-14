@@ -3,7 +3,7 @@
 
 They run the real scripts against the stack that deploy/.env describes and apply a model of their
 own, so they need nothing from the scripts before them:
-    python3 deploy/dev/check_cli.py
+    python3 e2e/api/check_cli.py
 Needs docker (the archive reads the database through a DuckDB container, which downloads its
 postgres and httpfs extensions on the first run). Settings: DXOS_ENV_FILE, DXOS_BASE_URL, DXOS_PROJECT.
 """

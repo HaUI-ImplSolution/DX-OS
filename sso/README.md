@@ -58,7 +58,7 @@ Compose khi đó tự bật `KC_HOSTNAME` và `KC_HOSTNAME_BACKCHANNEL_DYNAMIC`;
 ## Sự kiện đăng nhập và khóa tạm
 
 - Realm import bật sự kiện người dùng (giữ 90 ngày), sự kiện quản trị kèm chi tiết, và khóa tạm sau 5 lần đăng nhập sai (chờ 1 phút, tăng dần, tối đa 15 phút, không khóa vĩnh viễn).
-- Cách xem sự kiện: [`deploy/MONITORING.md`](../deploy/MONITORING.md).
+- Cách xem sự kiện: [`docs/MONITORING.md`](../docs/MONITORING.md).
 - Realm chỉ import lần đầu, nên Keycloak đã có dữ liệu áp tay trong Admin Console (realm `dxos`):
   1. **Realm settings → Events → User events settings**: bật **Save events**, **Expiration** 90 ngày, chọn các loại `LOGIN`, `LOGIN_ERROR`, `LOGOUT`, `UPDATE_PASSWORD`, `RESET_PASSWORD` và loại bị khóa.
   2. **Realm settings → Events → Admin events settings**: bật **Save events** và **Include representation**.

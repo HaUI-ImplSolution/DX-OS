@@ -124,7 +124,7 @@ Trước khi nâng DX-OS hoặc áp dụng phiên bản mô hình mới:
 ## Bên nhận webhook
 
 Webhook phù hợp cho thông báo, đồng bộ bất đồng bộ, lập chỉ mục hoặc kích hoạt công việc sau khi DX-OS đã ghi thay đổi.
-Webhook không từ chối được hành động; muốn dịch vụ riêng chặn một hành động trước khi trạng thái đổi thì dùng `check` ở hành động, xem [Kiểm tra trước khi chuyển trạng thái](../deploy/INTEGRATIONS.md#kiểm-tra-trước-khi-chuyển-trạng-thái).
+Webhook không từ chối được hành động; muốn dịch vụ riêng chặn một hành động trước khi trạng thái đổi thì dùng `check` ở hành động, xem [Kiểm tra trước khi chuyển trạng thái](INTEGRATIONS.md#kiểm-tra-trước-khi-chuyển-trạng-thái).
 
 ### 1. Khai báo đích
 
@@ -144,7 +144,7 @@ Tệp mô hình chọn đích bằng khóa ở đầu tệp:
 webhook: extension_worker
 ```
 
-Chi tiết nạp lại cấu hình, retry, thứ tự và payload nằm ở [`deploy/INTEGRATIONS.md`](../deploy/INTEGRATIONS.md#webhook-sự-kiện).
+Chi tiết nạp lại cấu hình, retry, thứ tự và payload nằm ở [`docs/INTEGRATIONS.md`](INTEGRATIONS.md#webhook-sự-kiện).
 
 ### 2. Xử lý an toàn
 
@@ -285,7 +285,7 @@ docker compose run --rm --no-deps apisix-config
 ```
 
 Trình kiểm dùng cùng image APISIX đã ghim với gateway, không cần cài Python trên máy triển khai.
-Trong source tree chạy được `python3 deploy/apisix/check_routes.py --local <tệp>` (cần Python, PyYAML và Docker; thêm `--mode core` hoặc `--admin-console` để kiểm cấu hình tương ứng).
+Trong source tree chạy được `python3 e2e/api/check_routes.py --local <tệp>` (cần Python, PyYAML và Docker; thêm `--mode core` hoặc `--admin-console` để kiểm cấu hình tương ứng).
 Cấu hình hợp lệ được ghép theo thứ tự lõi rồi local và thay tệp đầu ra nguyên tử, APISIX đang chạy tự đọc lại.
 Lỗi schema, plugin, tham chiếu hoặc xung đột giữ tệp đầu ra hợp lệ trước đó và chỉ nêu tệp, resource và loại lỗi.
 Sau khi thay container upstream, chạy `docker compose restart apisix` để làm mới địa chỉ.

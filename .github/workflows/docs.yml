@@ -3,7 +3,7 @@ name: Docs
 
 # Builds the site of website/ on every pull request, so a broken link or anchor fails it.
 # It also checks that the documents cite real items of docs/TESTING.md and real check scripts.
-# The product documents of docs/ and deploy/ are copied into the site on every build.
+# The product documents of docs/ are copied into the site on every build.
 # A push to main also publishes the build to GitHub Pages.
 on:
   push:
@@ -12,7 +12,6 @@ on:
     paths:
       - 'website/**'
       - 'docs/**'
-      - 'deploy/*.md'
       - 'ARCHITECTURE.md'
       - '.github/scripts/check_doc_refs.py'
       - '.github/workflows/docs.yml'

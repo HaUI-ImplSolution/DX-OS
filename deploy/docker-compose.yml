@@ -296,7 +296,7 @@ services:
       MONITOR_DB_PASSWORD: ${MONITOR_DB_PASSWORD:?}
       KEYCLOAK_READONLY_DB_PASSWORD: ${KEYCLOAK_READONLY_DB_PASSWORD:?}
     volumes:
-      - ./monitor-init.sh:/monitor-init.sh:ro
+      - ./postgres/monitor-init.sh:/monitor-init.sh:ro
     entrypoint: ["bash", "/monitor-init.sh"]
 
   # Receives the unusual requests of the gateway, probes the services and serves the screen of

@@ -33,7 +33,7 @@ Tự cài thì dùng hai lệnh ở [`README.md`](../README.md#cài-đặt), m�
 | [`dynamic-core/`](./dynamic-core/README.md) | Hướng thiết kế của lõi, [đối chiếu với đề thi](./dynamic-core/DANH_GIA.md) và [việc còn lại](./dynamic-core/BACKLOG.md) |
 | [`diagrams/`](./diagrams) | Nguồn draw.io của sơ đồ kiến trúc |
 
-Kiến trúc ở [`ARCHITECTURE.md`](../ARCHITECTURE.md), cài đặt và vận hành ở [`deploy/OPERATIONS.md`](../deploy/OPERATIONS.md), và mục lục đầy đủ ở [`README.md`](../README.md#tài-liệu), mục Tài liệu.
+Kiến trúc ở [`ARCHITECTURE.md`](../ARCHITECTURE.md), cài đặt và vận hành ở [`docs/OPERATIONS.md`](OPERATIONS.md), và mục lục đầy đủ ở [`README.md`](../README.md#tài-liệu), mục Tài liệu.
 Các tài liệu sản phẩm cũng đọc được trên [trang docs](https://haui-implsolution.github.io/DX-OS/), có mục lục và liên kết giữa các trang.
 
 ## Giới hạn đã biết

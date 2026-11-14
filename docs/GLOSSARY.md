@@ -17,10 +17,10 @@ Mỗi từ được giải thích trong một hoặc hai dòng, kèm tài liệu
 | `dx-engine` | Dịch vụ lõi chạy được: phần điều khiển, API chung và Flowable nhúng | [`ARCHITECTURE.md`](../ARCHITECTURE.md#2-module-backend) |
 | `dx-model` | Module đọc và kiểm tra tệp mô hình, báo lỗi theo dòng và cột; không phụ thuộc Spring | [`ARCHITECTURE.md`](../ARCHITECTURE.md#2-module-backend) |
 | `dx-core` | Thư viện dùng chung của backend: bảo mật, audit, lưu trữ, quét tệp, client Keycloak | [`ARCHITECTURE.md`](../ARCHITECTURE.md#2-module-backend) |
-| `dx-monitor` | Dịch vụ giám sát chạy riêng, không phụ thuộc các module còn lại | [`deploy/MONITORING.md`](../deploy/MONITORING.md) |
+| `dx-monitor` | Dịch vụ giám sát chạy riêng, không phụ thuộc các module còn lại | [`docs/MONITORING.md`](MONITORING.md) |
 | Bảng điều khiển | Trang `/console` của người triển khai (ADMIN): thư viện mẫu, soạn mô hình, xem kế hoạch, áp dụng, người dùng, ứng dụng ngoài, danh mục dữ liệu | [`TESTING.md`](./TESTING.md) |
 | Portal | Trang `/portal/` liệt kê các địa chỉ và trạng thái dịch vụ | [`README.md`](../README.md) |
-| Chế độ chỉ lõi | `dxos start --core` chỉ chạy Tầng 1, không có ứng dụng web, portal và giám sát | [`OPERATIONS.md`](../deploy/OPERATIONS.md#chế-độ-chỉ-lõi) |
+| Chế độ chỉ lõi | `dxos start --core` chỉ chạy Tầng 1, không có ứng dụng web, portal và giám sát | [`OPERATIONS.md`](OPERATIONS.md#chế-độ-chỉ-lõi) |
 | Điểm mở rộng | Chỗ để người dùng viết thêm dịch vụ, bên nhận webhook, giao diện riêng hay route riêng ở ngoài lõi | [`EXTENSIONS.md`](./EXTENSIONS.md) |
 
 ## 2. Tệp mô hình
@@ -32,7 +32,7 @@ Mỗi từ được giải thích trong một hoặc hai dòng, kèm tài liệu
 | Thực thể | Một loại bản ghi của nghiệp vụ, như hồ sơ hay thiết bị; mỗi thực thể thành một bảng dữ liệu | [`MODEL.md`](./MODEL.md#trường-và-đơn-vị) |
 | Trường | Một cột của thực thể, có kiểu (`text`, `number`, `date`, `choice`, `reference`, `file`...) và các ràng buộc | [`MODEL.md`](./MODEL.md#trường-và-đơn-vị) |
 | Vai | Nhóm quyền của một người dùng trong một mô hình; vai của mô hình nằm ở client `dxos-m-<mô hình>` trong Keycloak | [`ARCHITECTURE.md`](../ARCHITECTURE.md#3-định-danh-và-token) |
-| `ADMIN` | Vai của nền tảng, không thuộc mô hình nào: dùng bảng điều khiển và quản trị người dùng | [`OPERATIONS.md`](../deploy/OPERATIONS.md) |
+| `ADMIN` | Vai của nền tảng, không thuộc mô hình nào: dùng bảng điều khiển và quản trị người dùng | [`OPERATIONS.md`](OPERATIONS.md) |
 | Đơn vị | Cơ cấu tổ chức, là một nhóm Keycloak dùng chung cho mọi mô hình; chỉ quyết định phạm vi dòng, không quyết định quyền làm gì | [`MODEL.md`](./MODEL.md#trường-và-đơn-vị) |
 | Quyền theo dòng | Mức một vai được chạm tới bản ghi: `all` mọi dòng, `read` mọi dòng chỉ đọc, `own` dòng mình tạo, `unit` dòng của đơn vị mình, `assigned` dòng giao cho mình | [`MODEL.md`](./MODEL.md#quyền-theo-vai) |
 | Mẫu có sẵn | Mô hình mẫu chọn được ngay ở bảng điều khiển, nằm ở `backend/dx-engine/src/main/resources/templates/` | [`MODEL.md`](./MODEL.md) |
@@ -70,22 +70,22 @@ Mỗi từ được giải thích trong một hoặc hai dòng, kèm tài liệu
 | Quay lui (`rollback`) | Áp lại nội dung phiên bản trước, ghi thành một phiên bản mới | [`ARCHITECTURE.md`](../ARCHITECTURE.md#4-áp-dụng-một-mô-hình) |
 | `renamed_from` | Khai báo tên cũ của một trường để đổi tên mà giữ nguyên dữ liệu | [`MODEL.md`](./MODEL.md#đổi-mô-hình-khi-đã-có-dữ-liệu) |
 | `pgschema` | Công cụ nguồn mở so bảng với tệp mô hình và đổi bảng cho khớp; lõi lo đổi tên và chặn mất dữ liệu | [`ARCHITECTURE.md`](../ARCHITECTURE.md#4-áp-dụng-một-mô-hình) |
-| GitOps | `dxos gitops` kéo hạ tầng và tệp mô hình từ git theo chu kỳ, rồi báo lệch, chờ duyệt hoặc tự áp dụng | [`OPERATIONS.md`](../deploy/OPERATIONS.md) |
+| GitOps | `dxos gitops` kéo hạ tầng và tệp mô hình từ git theo chu kỳ, rồi báo lệch, chờ duyệt hoặc tự áp dụng | [`OPERATIONS.md`](OPERATIONS.md) |
 | `dxos lint` | Kiểm tệp mô hình bằng đúng bộ đọc của backend, không cần hệ thống đang chạy | [`MODEL.md`](./MODEL.md#kiểm-tệp-trước-khi-áp-dụng) |
 
 ## 5. Dữ liệu và sự kiện
 
 | Thuật ngữ | Nghĩa | Xem thêm |
 |---|---|---|
-| Lịch sử chống sửa | Các dòng lịch sử của hồ sơ nối thành một chuỗi hash; sửa, xóa hay chèn một dòng thì `dxos history verify` chỉ ra dòng đầu tiên bị đổi | [`INTEGRATIONS.md`](../deploy/INTEGRATIONS.md) |
+| Lịch sử chống sửa | Các dòng lịch sử của hồ sơ nối thành một chuỗi hash; sửa, xóa hay chèn một dòng thì `dxos history verify` chỉ ra dòng đầu tiên bị đổi | [`INTEGRATIONS.md`](INTEGRATIONS.md) |
 | Điểm neo | Mỗi giờ lõi ghi mốc của chuỗi hash vào kho đối tượng, ngoài PostgreSQL, để so lại khi kiểm | [`ARCHITECTURE.md`](../ARCHITECTURE.md#10-toàn-vẹn-và-phục-hồi) |
-| Outbox | Bảng trong PostgreSQL giữ các sự kiện chờ gửi, để gửi lại khi bên nhận lỗi | [`INTEGRATIONS.md`](../deploy/INTEGRATIONS.md) |
+| Outbox | Bảng trong PostgreSQL giữ các sự kiện chờ gửi, để gửi lại khi bên nhận lỗi | [`INTEGRATIONS.md`](INTEGRATIONS.md) |
 | Webhook | Thông báo mỗi thay đổi của hồ sơ tới một địa chỉ web hoặc kênh chat, có chữ ký để bên nhận kiểm tra | [`EXTENSIONS.md`](./EXTENSIONS.md#bên-nhận-webhook) |
 | `Idempotency-Key` | Header cho yêu cầu tạo hồ sơ hay hành động: gửi lại cùng khóa và cùng nội dung chỉ làm một lần | [`EXTENSIONS.md`](./EXTENSIONS.md#3-gọi-dữ-liệu-và-quy-trình) |
 | Hồ dữ liệu | Kho Parquet trong SeaweedFS chứa hồ sơ đã đóng và lịch sử của chúng, kèm manifest và hash; đọc bằng DuckDB | [`ARCHITECTURE.md`](../ARCHITECTURE.md#10-toàn-vẹn-và-phục-hồi) |
 | Danh mục dữ liệu | Trang cho biết dữ liệu của mỗi mô hình nằm ở đâu, ai được xem, đi vào và đi ra đâu, và chất lượng ra sao | [`ARCHITECTURE.md`](../ARCHITECTURE.md#11-dữ-liệu) |
 | Phả hệ | Với mỗi trường: nơi giá trị đi vào, các quy tắc đọc nó và nơi nó đi ra | [`ARCHITECTURE.md`](../ARCHITECTURE.md#11-dữ-liệu) |
-| `report_ro` | Vai PostgreSQL chỉ đọc cho công cụ báo cáo; thấy mọi dòng, không áp quyền theo dòng | [`REPORTING.md`](../deploy/REPORTING.md) |
+| `report_ro` | Vai PostgreSQL chỉ đọc cho công cụ báo cáo; thấy mọi dòng, không áp quyền theo dòng | [`REPORTING.md`](REPORTING.md) |
 | OpenAPI theo mô hình | Tài liệu API sinh ngay lúc gọi từ mô hình đang chạy, nên luôn khớp tệp mô hình | [`API.md`](./API.md) |
 
 ## 6. Đăng nhập, vận hành và giấy phép
@@ -96,8 +96,8 @@ Mỗi từ được giải thích trong một hoặc hai dòng, kèm tài liệu
 | Client | Một ứng dụng đăng ký với Keycloak: `dxos-web` cho web, `dxos-cli` cho lệnh, `dxos-m-<mô hình>` giữ vai của mô hình, `dxos-app-<tên>` cho ứng dụng ngoài | [`ARCHITECTURE.md`](../ARCHITECTURE.md#3-định-danh-và-token) |
 | Token máy | Token một ứng dụng ngoài lấy bằng mã bí mật của nó; tài khoản dịch vụ giữ đúng một vai của một mô hình | [`EXTENSIONS.md`](./EXTENSIONS.md#dịch-vụ-riêng-gọi-api) |
 | OIDC, PKCE | Cách giao diện ở tên miền khác đăng nhập người dùng, không giữ mã bí mật trong trình duyệt | [`EXTENSIONS.md`](./EXTENSIONS.md#giao-diện-ngoài) |
-| Tự phục hồi (`reconcile`) | `dxos reconcile` đưa stack về đúng khai báo, tạo lại container bị xóa hay lệch; chạy mỗi phút bằng systemd timer | [`OPERATIONS.md`](../deploy/OPERATIONS.md) |
-| ClamAV | Dịch vụ quét mã độc tệp tải lên; tệp chưa quét được thì bị từ chối | [`OPERATIONS.md`](../deploy/OPERATIONS.md#quét-mã-độc-tệp-tải-lên) |
+| Tự phục hồi (`reconcile`) | `dxos reconcile` đưa stack về đúng khai báo, tạo lại container bị xóa hay lệch; chạy mỗi phút bằng systemd timer | [`OPERATIONS.md`](OPERATIONS.md) |
+| ClamAV | Dịch vụ quét mã độc tệp tải lên; tệp chưa quét được thì bị từ chối | [`OPERATIONS.md`](OPERATIONS.md#quét-mã-độc-tệp-tải-lên) |
 | SPDX, REUSE | Dòng `SPDX-License-Identifier` ở đầu mỗi tệp mã và `REUSE.toml` cho tệp không chèn được; `reuse lint` kiểm cả cây | [`CONTRIBUTING.md`](../CONTRIBUTING.md) |
 | SBOM | Danh mục thành phần (CycloneDX) của backend, web và trang docs, ở `sbom/` | [`sbom/README.md`](../sbom/README.md) |
 | OSI | Tổ chức công nhận giấy phép nguồn mở; mọi thành phần của DX-OS dùng giấy phép được OSI công nhận | [`DEPENDENCIES.txt`](../DEPENDENCIES.txt) |

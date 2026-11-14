@@ -281,7 +281,7 @@
     }
   },
   "application_declaration": {
-    "tool": "deploy/dev/count_own_code.py",
+    "tool": "tools/count_own_code.py",
     "tool_commit": "bab0367f869c0c6fb13b413c4c3048375405fc79",
     "scope": "temporary application directory containing support.yaml only; benchmark tooling excluded",
     "models": [

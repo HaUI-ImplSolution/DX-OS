@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copies the product documents of the repository into website/docs/tai-lieu/ before every build.
-// The files in docs/ and deploy/ stay the only source; the copies are not committed.
+// The files in docs/ stay the only source; the copies are not committed.
 // A link to another published document becomes a link inside the site, a link to any other file or folder
 // of the repository becomes a link to it on GitHub, and a link to something that does not exist fails the run.
 // An image kept under website/docs/ is shown from there.
@@ -17,10 +17,10 @@ const branch = 'main';
 export const DOCS = {
   'docs/MODEL.md': {page: 'viet-mo-hinh', label: 'Viết tệp mô hình'},
   'docs/API.md': {page: 'api', label: 'API'},
-  'deploy/OPERATIONS.md': {page: 'van-hanh', label: 'Cài đặt và vận hành'},
-  'deploy/MONITORING.md': {page: 'giam-sat', label: 'Giám sát và nhật ký'},
-  'deploy/INTEGRATIONS.md': {page: 'tich-hop', label: 'Tích hợp với hệ thống ngoài'},
-  'deploy/REPORTING.md': {page: 'bao-cao', label: 'Kết nối công cụ báo cáo'},
+  'docs/OPERATIONS.md': {page: 'van-hanh', label: 'Cài đặt và vận hành'},
+  'docs/MONITORING.md': {page: 'giam-sat', label: 'Giám sát và nhật ký'},
+  'docs/INTEGRATIONS.md': {page: 'tich-hop', label: 'Tích hợp với hệ thống ngoài'},
+  'docs/REPORTING.md': {page: 'bao-cao', label: 'Kết nối công cụ báo cáo'},
   'docs/EXTENSIONS.md': {page: 'mo-rong', label: 'Điểm mở rộng'},
   'ARCHITECTURE.md': {page: 'kien-truc', label: 'Kiến trúc'},
   'docs/COMPATIBILITY.md': {page: 'tuong-thich', label: 'Tương thích giữa các bản'},

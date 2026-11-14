@@ -2,7 +2,7 @@
 """Checks of the print templates of a model: the PDF of a record, who may get it and when.
 
 They apply a model of their own, so they need nothing from the scripts before them:
-    python3 deploy/dev/check_documents.py
+    python3 e2e/api/check_documents.py
 """
 import json
 import re
@@ -124,7 +124,7 @@ def main():
     rt.check("PD-14 a long template runs over several pages", status == 200 and pages >= 2, f"{status} {pages} pages")
 
     for fixture, needle in [("document-unknown-field", "line 14"), ("document-state-without-process", "line 13")]:
-        status, body = kc.api(admin, "POST", "/models/plan", rt.read(f"models/invalid/{fixture}.yaml"), YAML)
+        status, body = kc.api(admin, "POST", "/models/plan", rt.read(f"e2e/fixtures/invalid-models/{fixture}.yaml"), YAML)
         rt.check(f"PD-19 {fixture}", status == 400 and needle in body["data"][0], f"{status} {body.get('data')}")
 
     code, count = rt.psql("select count(*) from audit_log where action = 'DOCUMENT_PRINTED'")

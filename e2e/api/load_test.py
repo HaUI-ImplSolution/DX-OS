@@ -3,7 +3,7 @@
 
 Uses only the Python standard library. Run it against a throwaway stack, never the one in use:
     DXOS_ENV_FILE=<.env of the stack> DXOS_BASE_URL=http://localhost:9180 DXOS_PROJECT=dxscratch \
-      python3 deploy/dev/load_test.py --levels 1,10,50,100 --warmup 30 --duration 60
+      python3 e2e/api/load_test.py --levels 1,10,50,100 --warmup 30 --duration 60
 
 Each virtual user loops: create a record, list the open ones with a filter, take the first action
 of the process, read the history, list its own records. Every level runs warm-up first, then the

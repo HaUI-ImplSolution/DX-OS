@@ -42,4 +42,4 @@ Kế hoạch mức cao hơn nằm chờ: `dxos gitops status` thoát với mã 2
 Lịch sử các commit đã xét nằm ở `deploy/gitops/history.log`.
 Đổi `GITOPS_MODE` thành `report` nếu chỉ muốn báo lệch, hoặc `approve` nếu mọi thay đổi đều phải duyệt.
 
-Cách cấu hình đầy đủ, kể cả bắt buộc chữ ký commit, ở [`deploy/OPERATIONS.md`](../../deploy/OPERATIONS.md).
+Cách cấu hình đầy đủ, kể cả bắt buộc chữ ký commit, ở [`docs/OPERATIONS.md`](../../docs/OPERATIONS.md).

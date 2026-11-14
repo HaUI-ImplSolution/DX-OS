@@ -1,7 +1,7 @@
 # Cỡ cấu hình và tải đồng thời
 
 Tài liệu này trả lời hai câu hỏi: lõi chịu được bao nhiêu người dùng đồng thời, và cấu hình nhỏ nhất đáp ứng ngưỡng công bố là bao nhiêu nhân.
-Số liệu do `deploy/dev/load_test.py` đo trên một stack tạm, ngày 2026-11-12.
+Số liệu do `e2e/api/load_test.py` đo trên một stack tạm, ngày 2026-11-12.
 Mọi số là cận dưới vì bộ tạo tải chạy cùng máy với hệ thống được đo.
 
 ## Ngưỡng công bố
@@ -190,7 +190,7 @@ Chạy trên một bản sao tạm của `deploy/`, không bao giờ trên stack
    Đổi `LOAD_CPUSET` thì phải tạo lại container vì JVM đọc số nhân lúc khởi động:
 
 ```
-LOAD_CPUSET=0-3 docker compose -p dxscratch -f docker-compose.yml -f dev/load_override.yml up -d --force-recreate
+LOAD_CPUSET=0-3 docker compose -p dxscratch -f docker-compose.yml -f ../e2e/api/load_override.yml up -d --force-recreate
 ```
 
 5. Chạy bộ tạo tải từ gốc repository.
@@ -198,7 +198,7 @@ LOAD_CPUSET=0-3 docker compose -p dxscratch -f docker-compose.yml -f dev/load_ov
 
 ```
 DXOS_ENV_FILE=<.env của bản sao> DXOS_BASE_URL=http://localhost:9180 DXOS_PROJECT=dxscratch \
-  taskset -c 4-11 python3 deploy/dev/load_test.py --levels 1,10,25,50,75,100,200 --reset \
+  taskset -c 4-11 python3 e2e/api/load_test.py --levels 1,10,25,50,75,100,200 --reset \
   --warmup 30 --duration 60 --login-levels 1,10,50 --out result.json
 ```
 

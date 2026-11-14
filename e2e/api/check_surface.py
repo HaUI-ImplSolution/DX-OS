@@ -2,7 +2,7 @@
 """Checks what the gateway shows of tier 1: no page of its own unless the settings allow it.
 
 Run on a stack that is up, in either mode (DXOS_MODE and KEYCLOAK_ADMIN_CONSOLE are read from deploy/.env):
-    python3 deploy/dev/check_surface.py
+    python3 e2e/api/check_surface.py
 It needs no account: the paths are asked without a token, and the backend's own reach into the Keycloak Admin API is
 checked with the client credentials of the dxos command.
 """

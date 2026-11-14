@@ -418,7 +418,7 @@ api() {
     --data-urlencode "client_secret@$work/secret" "$url/realms/dxos/protocol/openid-connect/token" \
     || die "Keycloak did not answer at $url"
   token="$(sed -n 's/.*"access_token":"\([^"]*\)".*/\1/p' "$work/token")"
-  [[ -n "$token" ]] || die "Keycloak refused the client dxos-cli: $(cat "$work/token") (a realm imported by an older release has no such client, see deploy/OPERATIONS.md)"
+  [[ -n "$token" ]] || die "Keycloak refused the client dxos-cli: $(cat "$work/token") (a realm imported by an older release has no such client, see docs/OPERATIONS.md)"
   printf 'Authorization: Bearer %s\n' "$token" >"$work/header"
   [[ -n "$file" ]] && args=(-H "Content-Type: $type" --data-binary "@$file")
   API_STATUS="$(curl -sS -o "$work/body" -w '%{http_code}' -X "$method" -H "@$work/header" \
@@ -514,7 +514,7 @@ cmd_lint() {
   return "$code"
 }
 
-# Runs the barrier checks of the core (deploy/dev/check_conformance.py) for a model that is applied on this stack.
+# Runs the barrier checks of the core (e2e/api/check_conformance.py) for a model that is applied on this stack.
 # They sign in as test users of the model, so the command creates the client dxos-check and those users in Keycloak.
 cmd_conformance() {
   local model="" allow=false host
@@ -535,7 +535,7 @@ cmd_conformance() {
   [[ "$(env_value KEYCLOAK_ADMIN_CONSOLE)" == true ]] \
     || die "conformance reaches the Keycloak Admin API through the gateway: set KEYCLOAK_ADMIN_CONSOLE=true in deploy/.env, then run docker compose up -d apisix-config and docker compose restart apisix"
   DXOS_ENV_FILE="$DEPLOY_DIR/.env" DXOS_BASE_URL="http://localhost:$(env_value APISIX_HOST_PORT)" \
-    python3 "$DEPLOY_DIR/dev/check_conformance.py" "$model"
+    python3 "$DEPLOY_DIR/../e2e/api/check_conformance.py" "$model"
 }
 
 # Shows the complete format upgrade before an optional atomic replacement of the model file.

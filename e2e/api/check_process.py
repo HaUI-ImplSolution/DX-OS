@@ -2,7 +2,7 @@
 """Checks of the common process: families, the rules every process obeys, deadlines.
 
 Run after check_case.py on the same stack:
-    python3 deploy/dev/check_process.py
+    python3 e2e/api/check_process.py
 """
 import sys
 import time

@@ -8,7 +8,7 @@
 #   ./backup.sh verify          restore the latest snapshot into a scratch Postgres and SeaweedFS and check
 #                               that every model has its tables and every attachment its file
 #   ./backup.sh snapshots       list the snapshots
-#   ./backup.sh restore <dir>   restore the latest snapshot into <dir> (see deploy/OPERATIONS.md)
+#   ./backup.sh restore <dir>   restore the latest snapshot into <dir> (see docs/OPERATIONS.md)
 #
 # Settings in deploy/.env (ENV_FILE=other.env picks another file):
 #   BACKUP_PASSWORD     encrypts the repository; lose it and the backups are unreadable

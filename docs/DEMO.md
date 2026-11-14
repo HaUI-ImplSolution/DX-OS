@@ -2,7 +2,7 @@
 
 Kịch bản cho phần trình diễn chung kết của bản `2.0.0`.
 Mỗi bước nêu việc làm, tài khoản dùng, kết quả mong đợi và cách xử lý khi sự cố.
-Khung kiểm gốc là tám mục "Thế nào là đạt" ở [`docs/dynamic-core/README.md`](./dynamic-core/README.md#thế-nào-là-đạt), chạy tự động bằng `python3 deploy/dev/check_demo.py`.
+Khung kiểm gốc là tám mục "Thế nào là đạt" ở [`docs/dynamic-core/README.md`](./dynamic-core/README.md#thế-nào-là-đạt), chạy tự động bằng `python3 e2e/api/check_demo.py`.
 
 ## Chuẩn bị trước ngày trình diễn
 

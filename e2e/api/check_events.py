@@ -2,7 +2,7 @@
 """Checks of the webhook for the history lines of records.
 
 Run after check_users.py on the same stack (it applies the onestop model when it is missing):
-    python3 deploy/dev/check_events.py
+    python3 e2e/api/check_events.py
 The script starts a receiver on this machine, restarts the backend with its address, and leaves the
 backend without a webhook at the end.
 """

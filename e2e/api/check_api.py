@@ -2,7 +2,7 @@
 """API checks of the model-driven service on a stack with an empty database.
 
 Run from the repository root after  in deploy/:
-    python3 deploy/dev/check_api.py
+    python3 e2e/api/check_api.py
 Settings: DXOS_ENV_FILE, DXOS_BASE_URL, DXOS_PROJECT (compose project name, optional).
 """
 import os
@@ -59,7 +59,7 @@ def main():
     # T5-02, T5-03: files with problems are refused with their line, and nothing changes.
     for name, needle in [("unknown-reference", "line 9"), ("bad-name", "line 9"),
                          ("unknown-role", "line 10"), ("unsupported-format", "line 2")]:
-        status, body = kc.api(admin, "POST", "/models/plan", read(f"models/invalid/{name}.yaml"), YAML)
+        status, body = kc.api(admin, "POST", "/models/plan", read(f"e2e/fixtures/invalid-models/{name}.yaml"), YAML)
         ok = status == 400 and body["errorCode"] == "ERR_MODEL_INVALID" and needle in body["data"][0]
         check(f"T5-02/03 {name}", ok, f"{status} {body.get('data') if isinstance(body, dict) else body}")
     status, body = kc.api(admin, "GET", "/models")

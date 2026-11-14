@@ -2,7 +2,7 @@
 """Checks of the case features: states and actions, units, assignment, inbox and history.
 
 Run after check_recovery.py on the same stack:
-    python3 deploy/dev/check_case.py
+    python3 e2e/api/check_case.py
 """
 import json
 import os
@@ -47,7 +47,7 @@ def main():
     # T6-02: rules of the model file.
     for name, needle in [("unit-without-field", "line 10"), ("assigned-without-process", "line 10"),
                          ("duplicate-unit", "line 8")]:
-        status, body = kc.api(admin, "POST", "/models/plan", rt.read(f"models/invalid/{name}.yaml"), YAML)
+        status, body = kc.api(admin, "POST", "/models/plan", rt.read(f"e2e/fixtures/invalid-models/{name}.yaml"), YAML)
         rt.check(f"T6-02 {name}", status == 400 and needle in body["data"][0], f"{status} {body.get('data')}")
 
     # T6-01: a model with units is applied without changing the code of the core.

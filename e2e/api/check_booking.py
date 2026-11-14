@@ -2,7 +2,7 @@
 """Checks of the reservation family and of what the control panel reads.
 
 Run after check_process.py on the same stack:
-    python3 deploy/dev/check_booking.py
+    python3 e2e/api/check_booking.py
 """
 import json
 import sys

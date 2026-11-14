@@ -2,7 +2,7 @@
 """Checks that every endpoint the documents name is in the OpenAPI document of the running backend.
 
 Run on any stack that is up:
-    python3 deploy/dev/check_docs.py
+    python3 e2e/api/check_docs.py
 """
 import os
 import re
@@ -11,7 +11,7 @@ import sys
 import check_api as rt
 import kc
 
-DOCS = ["ARCHITECTURE.md", "docs/API.md", "docs/MODEL.md", "deploy/OPERATIONS.md", "deploy/MONITORING.md", "deploy/INTEGRATIONS.md"]
+DOCS = ["ARCHITECTURE.md", "docs/API.md", "docs/MODEL.md", "docs/OPERATIONS.md", "docs/MONITORING.md", "docs/INTEGRATIONS.md"]
 METHODS = ("GET", "POST", "PUT", "PATCH", "DELETE")
 # A method (optional) and an absolute API path inside backticks; a path that starts without /api/v1 is a shorthand.
 MENTION = re.compile(r"`(?:(GET|POST|PUT|PATCH|DELETE) )?(/api/v1/[A-Za-z0-9_{}\-./]*)(?:\?[^`]*)?`")

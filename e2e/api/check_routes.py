@@ -13,7 +13,7 @@ def main():
     parser.add_argument("--mode", choices=("full", "core"), default="full")
     parser.add_argument("--admin-console", action="store_true", help="check with the Keycloak Admin Console enabled")
     args = parser.parse_args()
-    source = Path(__file__).resolve().parent
+    source = Path(__file__).resolve().parents[2] / "deploy" / "apisix"
     compose = yaml.safe_load((source.parent / "docker-compose.yml").read_text())
     command = ["docker", "run", "--rm", "--network", "none", "-v", f"{source}:/src:ro",
                "-e", f"DXOS_MODE={args.mode}",

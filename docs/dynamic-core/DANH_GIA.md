@@ -19,6 +19,11 @@ Nguồn: [đề thi](https://vfossa.vn/tin-tuc/de-thi-phan-mem-nguon-mo-olp-2026
 | Ít nhất một ứng dụng Tầng 2 trong H-P-D-I | Ứng dụng web dựng từ metadata và bảng điều khiển, chạm H, P và D | Đạt; chưa có I; `README.md` có mục đối chiếu với đề |
 | Giấy phép OSI, mã công khai, có bản phát hành trước khi nộp | Apache-2.0; bảy bản `v1.0.0` đến `v2.0.0` | Đạt |
 
+Các giao diện đi kèm được tính như sau.
+Giao diện của DX-OS là giao diện web, bảng điều khiển, trang liên kết (portal) và màn hình giám sát, đều ở Tầng 2; lõi chạy riêng không kèm giao diện nào.
+Keycloak Admin Console là giao diện của dịch vụ nguồn mở đi kèm chứ không phải của DX-OS, và mặc định không mở ra cổng vào.
+Đây là cách đọc của đội, chưa có xác nhận của Ban tổ chức.
+
 ## 2. Bốn nguyên lý kỹ thuật
 
 | Nguyên lý | Hiện có | Mức |
@@ -47,12 +52,12 @@ Phần còn lại của bảy cụm là tầm nhìn của đề, phủ thêm là
 
 | Tiêu chí | Điểm | Đã có | Còn thiếu để chắc điểm |
 |---|---|---|---|
-| Quản lý mã nguồn trên Internet | 5 | GitHub công khai, hơn 950 commit của ba thành viên, CI trên mọi pull request | Đạt |
+| Quản lý mã nguồn trên Internet | 5 | GitHub công khai, 998 commit của ba thành viên, CI trên mọi pull request | Đạt |
 | Giấy phép OSI | 10 | Apache-2.0, `LICENSE` toàn văn, `NOTICE`, dòng SPDX ở tệp Java, TypeScript, JavaScript, Python, shell và YAML, `REUSE.toml` và `LICENSES/` cho tệp không chèn được chú thích, `reuse lint` và kiểm giấy phép của mọi gói trong CI, `README.md` có mục đối chiếu với đề | Đạt |
 | Bản phát hành | 5 | Bảy bản theo SemVer, mỗi bản có `.tar.gz`, `.sha256` và SBOM | Đạt |
 | Dịch từ mã nguồn | 10 | Cấu hình ở `.env` trước khi dựng, dựng bằng Docker, Maven và npm, cài ra ngoài thư mục mã nguồn, CI cài từ gói phát hành | Chạy lại trên máy sạch với image phát hành thật |
 | Thư viện và gói đính kèm | 10 | `DEPENDENCIES.txt`, SBOM khớp tệp khóa, image ghim digest, không chép và không vá mã của dự án khác | Đạt |
-| Tài liệu và giao tiếp | 10 | README hai thứ tiếng, CHANGELOG, mẫu issue, CONTRIBUTING, SECURITY, trang docs, `ROADMAP.md`, Discussions | 44 issue (34 đã đóng) so với 186 pull request đã gộp; chưa có issue nào gắn nhãn `good first issue` |
+| Tài liệu và giao tiếp | 10 | README hai thứ tiếng, CHANGELOG, mẫu issue, CONTRIBUTING, SECURITY, trang docs, `ROADMAP.md`, Discussions | 55 issue (36 đã đóng) so với 201 pull request đã gộp; khoảng 20 issue đã xong nhưng chờ một pull request DEV TO MAIN đóng; chưa có issue nào gắn nhãn `good first issue` |
 
 Các việc ở cột cuối nằm ở `BACKLOG.md`, mục 2 và 3.
 

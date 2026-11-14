@@ -21,7 +21,7 @@ Ký hiệu: ✅ đạt, ⚠️ còn thiếu hoặc chưa kiểm được, ❌ ch
 | 5. Thư viện, phụ thuộc, nguồn gốc | 10 | ✅ |
 | 6. Tài liệu, quản lý lỗi, giao tiếp | 10 | ✅ |
 
-Không có lỗi loại trừ: repository công khai, có `LICENSE`, đã có release (hiện đến `v1.1.1`), không phát hiện bí mật.
+Không có lỗi loại trừ: repository công khai, có `LICENSE`, đã có release (hiện đến `v2.0.0`), không phát hiện bí mật.
 
 ## 2. Điều kiện kiểm tra trước khi chấm
 
@@ -42,11 +42,11 @@ Không có lỗi loại trừ: repository công khai, có `LICENSE`, đã có re
 |---|---|---|---|
 | ✅ | Kho công khai trên Internet, có web viewer | GitHub: duyệt mã, lịch sử, blame trên trình duyệt | −3 |
 | ✅ | Truy cập mở, không cần đăng nhập | API không đăng nhập trả 200 cho repository, release, tag, `LICENSE` | −3 |
-| ✅ | Repository được dùng thật | 895 commit trên nhánh làm việc; 171 pull request đã gộp (GitHub); CI chạy trên mọi pull request | −5 |
-| ✅ | Lịch sử trải đều | Mười một tuần ISO liên tiếp từ W36 đến W46 đều có commit: 3, 80, 82, 53, 93, 97, 85, 84, 136, 119, 63 | |
-| ✅ | Nhiều người đóng góp | 3 sinh viên: `KhuongSpring` 643, `nddKhanh` 127, `tung51652-alt` 120 commit, cộng `dependabot` 5 | |
+| ✅ | Repository được dùng thật | 998 commit trên nhánh làm việc; 201 pull request đã gộp (GitHub); CI chạy trên mọi pull request | −5 |
+| ✅ | Lịch sử trải đều | Mười một tuần ISO liên tiếp từ W36 đến W46 đều có commit: 3, 80, 82, 53, 93, 97, 85, 84, 136, 119, 166 | |
+| ✅ | Nhiều người đóng góp | 3 sinh viên: `KhuongSpring` 718, `nddKhanh` 144, `tung51652-alt` 127 commit, cộng `dependabot` 7 | |
 | ✅ | Nhận diện tác giả | `.mailmap` gom các danh tính về một tên mỗi người | |
-| ⚠️ | Bug tracker có lịch sử | 43 issue (11 đã đóng) so với 171 pull request đã gộp; việc còn lại ghi ở `BACKLOG.md`, phần lớn đã có issue tương ứng | |
+| ⚠️ | Bug tracker có lịch sử | 55 issue (36 đã đóng) so với 201 pull request đã gộp; khoảng 20 issue đã xong nhưng còn mở vì pull request tính năng gộp vào `Khuong/main` chứ chưa vào `main`, GitHub chỉ tự đóng issue khi `Closes #n` nằm trên nhánh mặc định; một pull request DEV TO MAIN sắp tới sẽ đóng các issue đó | |
 
 ```bash
 git log --pretty='%h %ad %an %s' --date=short | tail -20     # lịch sử có trải đều không
@@ -74,8 +74,8 @@ head -3 LICENSE                                # toàn văn, không phải liên
 
 | Trạng thái | Yêu cầu | Bằng chứng | Mức trừ nếu thiếu |
 |---|---|---|---|
-| ✅ | Có ít nhất một release trước hạn nộp | Trang Releases: `v1.0.0`, `v1.0.1`, `v1.0.2`, `v1.0.3`, `v1.1.0`, `v1.1.1` | −5 |
-| ⚠️ | Release là sản phẩm dự thi | Sản phẩm dự thi là bản `2.0.0` (`CHANGELOG.md` mục `[2.0.0]`, `backend/pom.xml`, `frontend/package.json`); tag `v2.0.0` chưa tạo | −5 |
+| ✅ | Có ít nhất một release trước hạn nộp | Trang Releases: `v1.0.0`, `v1.0.1`, `v1.0.2`, `v1.0.3`, `v1.1.0`, `v1.1.1`, `v2.0.0` | −5 |
+| ⚠️ | Release là sản phẩm dự thi | Tag `v2.0.0` đã tạo (11/11); các việc gộp vào `Khuong/main` sau đó (#270 đến #295: Prometheus, mã hồ sơ, mẫu in, phả hệ dữ liệu, lint mô hình, điện thoại, quét mã độc e2e...) chưa nằm trong bản tag nào, cần một bản phát hành mới trước khi nộp | −5 |
 | ✅ | Phát hành theo phiên bản | Thẻ SemVer; `CHANGELOG.md` theo Keep a Changelog có mục cho mọi bản và `[Unreleased]` | −3 |
 | ✅ | Định dạng mở cho gói phát hành | Workflow `Release Package` chạy khi đẩy tag `v*`, đính kèm `dx-os-X.Y.Z.tar.gz`, `.sha256` và SBOM `.cdx.json`; không có `.zip` | −3 |
 | ✅ | Gói được kiểm trước khi đăng | `check_archive.sh` kiểm gói có `LICENSE`, `NOTICE`, `DEPENDENCIES.txt`, `README.md`, `CHANGELOG.md` và không có tệp giống bí mật; chạy ở job `Install from the release archive` của workflow `Platform` của mọi pull request và trong `Release Package` trước khi đăng | |
@@ -128,7 +128,7 @@ git ls-files | grep -E '(^|/)(vendor|third_party|node_modules)/|\.patch$' && ech
 
 | Trạng thái | Yêu cầu | Bằng chứng | Mức trừ nếu thiếu |
 |---|---|---|---|
-| ✅ | Có bug tracker | GitHub Issues đã bật; mẫu `bug_report.yml`, `feature_request.yml`; 43 issue | −5 |
+| ✅ | Có bug tracker | GitHub Issues đã bật; mẫu `bug_report.yml`, `feature_request.yml`; 55 issue | −5 |
 | ✅ | Có changelog | `CHANGELOG.md` theo Keep a Changelog, mục `[Unreleased]` và mục cho mọi bản đến `[2.0.0]` | −5 |
 | ✅ | Có README và hướng dẫn | `README.md`, `README_EN.md`; `ARCHITECTURE.md`; `docs/TESTING.md`; `deploy/OPERATIONS.md`; API qua đặc tả OpenAPI và `check_docs.py` kiểm tài liệu khớp OpenAPI; job `Check required files and scripts` báo lỗi nếu thiếu một tài liệu bắt buộc hoặc `CHANGELOG.md` mất mục `[Unreleased]`; job `Build the docs site` dựng trang docs, trong đó có các tài liệu của `docs/` và `deploy/` chép lại mỗi lần dựng, và dừng khi có liên kết hỏng | −5 |
 | ✅ | Hướng dẫn đóng góp | `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, mẫu pull request | |
@@ -151,7 +151,7 @@ git ls-files | grep -E '(^|/)(vendor|third_party|node_modules)/|\.patch$' && ech
 |---|---|---|
 | Repository không công khai | Không chấm PoF | Không vi phạm |
 | Không có `LICENSE` hoặc giấy phép không rõ | −5 đến −10 | Không vi phạm |
-| Không có release hoặc tag | −5 | Không vi phạm; sản phẩm dự thi `2.0.0` cần được gắn tag |
+| Không có release hoặc tag | −5 | Không vi phạm; `v2.0.0` đã tag, bản nộp cuối cần một tag mới nhất |
 | Không build hoặc cài được từ mã nguồn | −5 đến −10 | Rủi ro thấp; còn cần chạy lại trên máy sạch với image phát hành |
 | Không có README hoặc hướng dẫn chạy | −5 | Không vi phạm |
 | Không có CHANGELOG hoặc bug tracker | −3 đến −5 | Không vi phạm |

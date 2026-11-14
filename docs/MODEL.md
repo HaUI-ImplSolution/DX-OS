@@ -41,9 +41,9 @@ Sau khi đọc diff, chạy `dxos model upgrade --write <tệp>` để thay tệ
 Chạy lại trên format hiện hành không đổi nội dung.
 Hệ thống nhận ra tệp đổi theo nội dung chữ, nên lần áp dụng đầu của tệp đã nâng tạo thêm một phiên bản không đổi bảng hay quyền nào, và `dxos plan --check` trả 2 cho đến lúc đó.
 
-File tạm nằm cùng thư mục với tệp gốc (với liên kết mềm là thư mục của tệp đích), giữ quyền, chủ sở hữu và nhóm của tệp.
-Nếu migration, API, trích xuất kết quả hoặc ghi file tạm lỗi thì tệp gốc giữ nguyên; nếu tiến trình dừng trước rename thì xóa file `.dxos-model-upgrade.*` còn sót và chạy lại.
-Sau rename, dùng lịch sử Git hoặc bản sao lưu để quay lại nếu không muốn giữ kết quả.
+Tệp tạm nằm cùng thư mục với tệp gốc và giữ quyền, chủ sở hữu, nhóm của tệp.
+Lỗi ở bước migration hay ghi tệp tạm thì tệp gốc giữ nguyên; tiến trình dừng trước rename thì xóa tệp `.dxos-model-upgrade.*` còn sót rồi chạy lại.
+Muốn quay lại sau rename, dùng lịch sử Git hoặc bản sao lưu.
 
 ## Kiểm tệp trước khi áp dụng
 
@@ -96,7 +96,8 @@ fields:
 
 - `min` và `max` giới hạn một trường `number` hoặc `date`, cả hai đầu đều nhận giá trị: `qty: {type: number, min: 1, max: 100}`.
 - `pattern` là biểu thức chính quy của một trường `text`, và phải khớp toàn bộ giá trị: `code: {type: text, pattern: "[A-Z]{3}-[0-9]+"}`.
-  Biểu thức chỉ gồm ký tự, dấu chấm, lớp ký tự `[...]`, nhóm `(...)`, `|` và các lượng từ `*`, `+`, `?`, `{n}`, `{n,m}` với số lặp tối đa 255; không có `^`, `$`, `\d`, `(?` hay lượng từ lười.
+  Biểu thức chỉ gồm ký tự, dấu chấm, lớp ký tự `[...]`, nhóm `(...)`, `|` và các lượng từ `*`, `+`, `?`, `{n}`, `{n,m}` với số lặp tối đa 255.
+  Không có `^`, `$`, `\d`, `(?` hay lượng từ lười.
   Một nhóm có lượng từ bên trong không được lặp bằng `*`, `+` hay `{n,m}`, như `([a-z]+)*`, vì kiểu viết đó có thể làm phép khớp chạy rất lâu.
   Giá trị được kiểm bằng `pattern` dài tối đa 1000 ký tự, và phép khớp chỉ được đọc một số ký tự nhất định; quá số đó thì giá trị bị từ chối với `is too complex to check against the pattern`.
 - Giá trị vi phạm bị API từ chối kèm tên trường, và bảng có ràng buộc `CHECK` nên ghi thẳng vào cơ sở dữ liệu cũng bị chặn.
@@ -195,7 +196,8 @@ Ví dụ đầy đủ ở [`asset_register.yaml`](../backend/dx-engine/src/main/
   Hành động không đạt điều kiện trả 409 `ERR_INVALID_STATE` với `data.reason` là `CONDITION_NOT_MET`.
   `check: <tên đích>` cho một dịch vụ riêng quyết định hành động trước khi hồ sơ chuyển trạng thái.
   Tên đích khai trong `deploy/webhooks/targets.yml` như đích của `webhook`; tên chưa có trong tệp thì mô hình bị từ chối.
-  Dịch vụ được hỏi sau khi mọi quy tắc của quy trình đã đạt và trước khi trạng thái đổi; hành động bị từ chối trả 403 `ERR_ACTION_NOT_ALLOWED` với `data.reason` là `CHECK_DENIED` và `data.code` là mã dịch vụ trả về.
+  Dịch vụ được hỏi sau khi mọi quy tắc của quy trình đã đạt và trước khi trạng thái đổi.
+  Hành động bị từ chối trả 403 `ERR_ACTION_NOT_ALLOWED` với `data.reason` là `CHECK_DENIED` và `data.code` là mã dịch vụ trả về.
   Dịch vụ không trả lời hoặc trả lời sai thì cách xử lý do `on_error` của đích quyết định, cách khai và giao thức ở [`deploy/INTEGRATIONS.md`](../deploy/INTEGRATIONS.md#kiểm-tra-trước-khi-chuyển-trạng-thái).
   Hành động tự đóng của `auto_close` không hỏi dịch vụ.
 - Khi có `family`, mục khai báo ghi đè từng khóa của khung; viết `null` để bỏ một trạng thái hoặc hành động của khung.

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 # GitOps pull for dxos. Two sources, each with its own repository, ref and mode:
 #   models  the model files of a repository, compared with the running models;

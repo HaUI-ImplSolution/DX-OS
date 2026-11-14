@@ -1,3 +1,4 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 # Pins the whole stack to the first N cores and caps the memory of every service, so one machine
 # can stand for a smaller one when measuring with load_test.py. Used on a throwaway stack:

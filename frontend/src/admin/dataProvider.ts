@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import { HttpError, type DataProvider } from "react-admin";
 import { ApiError, json, queryString, request } from "../shell/api";

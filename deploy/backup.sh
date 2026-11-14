@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 # Encrypted backup of everything that cannot be rebuilt from the repository: every Postgres
 # database (business data, Keycloak accounts), the object store files and attachments. Uses restic (deduplicated, encrypted),

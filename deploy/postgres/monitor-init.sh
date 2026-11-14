@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 # Prepares Postgres for the monitoring service; safe to run again.
 #   - database dxos: role monitor_app, schema monitor (its own tables), read access to audit_log only;

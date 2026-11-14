@@ -1,3 +1,4 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 """The eight criteria of the demonstration, from docs/dynamic-core/README.md ("Thế nào là đạt").
 

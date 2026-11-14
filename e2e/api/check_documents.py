@@ -1,3 +1,4 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 """Checks of the print templates of a model: the PDF of a record, who may get it and when.
 
@@ -123,7 +124,7 @@ def main():
     pages = len(re.findall(rb"/Type\s*/Page(?!s)", pdf))
     rt.check("PD-14 a long template runs over several pages", status == 200 and pages >= 2, f"{status} {pages} pages")
 
-    for fixture, needle in [("document-unknown-field", "line 14"), ("document-state-without-process", "line 13")]:
+    for fixture, needle in [("document-unknown-field", "line 15"), ("document-state-without-process", "line 14")]:
         status, body = kc.api(admin, "POST", "/models/plan", rt.read(f"e2e/fixtures/invalid-models/{fixture}.yaml"), YAML)
         rt.check(f"PD-19 {fixture}", status == 400 and needle in body["data"][0], f"{status} {body.get('data')}")
 

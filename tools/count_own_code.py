@@ -1,3 +1,4 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 """Counts the code a person writes for a system built on DX-OS, by the public rules of docs/TARGETS.md.
 

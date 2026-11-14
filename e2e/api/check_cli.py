@@ -1,3 +1,4 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 """Checks of the command line of deploy/dxos (plan, apply, lint, conformance, archive) and of the IT/OT simulator.
 
@@ -21,7 +22,7 @@ import check_api as rt
 import kc
 
 YAML = "application/yaml"
-INVALID = sorted(glob.glob(os.path.join(kc.REPO, "models", "invalid", "*.yaml")))
+INVALID = sorted(glob.glob(os.path.join(kc.REPO, "e2e", "fixtures", "invalid-models", "*.yaml")))
 VALID = sorted(glob.glob(os.path.join(kc.REPO, "backend", "dx-engine", "src", "main", "resources", "templates", "*.yaml"))
                + glob.glob(os.path.join(kc.REPO, "examples", "model-repo", "models", "*.yaml")))
 

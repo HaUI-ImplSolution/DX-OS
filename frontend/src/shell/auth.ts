@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import { UserManager, WebStorageStateStore, type User as OidcUser } from "oidc-client-ts";
 

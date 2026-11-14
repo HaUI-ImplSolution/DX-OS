@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 # Gives the client dxos-backend-admin the client scope kc-admin-api, which puts the audience of the Admin API into its token.
 #

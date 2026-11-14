@@ -24,7 +24,7 @@ Danh sách giấy phép được OSI công nhận: https://opensource.org/licens
 | docs, tệp .md, ảnh, video, sơ đồ            | Apache-2.0 (LICENSE)  | Khai ở REUSE.toml vì tệp không có dòng SPDX  |
 +---------------------------------------------+-----------------------+----------------------------------------------+
 
-Header của file mã nguồn là một dòng SPDX-License-Identifier với giá trị Apache-2.0; `reuse lint` kiểm toàn bộ cây theo chuẩn REUSE.
+Header của file mã nguồn gồm dòng SPDX-FileCopyrightText với chủ bản quyền và dòng SPDX-License-Identifier với giá trị Apache-2.0; `reuse lint` kiểm toàn bộ cây theo chuẩn REUSE.
 Dòng header nằm ở đầu file Java, TypeScript, JavaScript, Python, shell, YAML, CSS, HTML, SQL, XML, nginx.conf, Dockerfile, .env.example và .toml; file không chèn được chú thích (tài liệu, JSON, ảnh, tệp cấu hình của git) và hai nhóm file đặc biệt khai trong REUSE.toml: file của bên thứ ba và migration SQL đã phát hành.
 .github/scripts/check_licenses.py kiểm header, giấy phép của từng dependency trong sbom/ và danh mục image, mô hình, tệp dữ liệu ở mỗi pull request;
 ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.

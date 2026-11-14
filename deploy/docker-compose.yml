@@ -1,3 +1,4 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 # DX-OS stack: the shared core and the model-driven service.
 # Every ${VAR:?} must be set in deploy/.env (copy .env.example); Compose stops and names the

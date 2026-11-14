@@ -56,7 +56,7 @@ cd ../frontend && npm install && npm run dev
 - **Issue và pull request:** viết bằng tiếng Việt hoặc tiếng Anh; nhóm đọc và trả lời cả hai.
 - **Thông báo của backend:** viết bằng tiếng Anh kèm `errorCode`; mỗi thông báo mới cần thêm một mẫu dịch ở `frontend/src/shell/backendMessages.ts`, nếu không giao diện hiện nguyên văn tiếng Anh.
 - **Mã lõi không chứa tên thực thể, vai hay luồng của một lĩnh vực**; nghiệp vụ nằm trong tệp mô hình.
-- **Header giấy phép:** dòng `SPDX-License-Identifier` với `Apache-2.0` ở đầu mọi file mã nguồn; file không chèn được chú thích (hoặc đã phát hành, như migration SQL) khai trong `REUSE.toml`; `reuse lint` kiểm cả hai.
+- **Header giấy phép:** hai dòng `SPDX-FileCopyrightText: 2026 HaUI-ImplSolution` và `SPDX-License-Identifier: Apache-2.0` ở đầu mọi file mã nguồn; file không chèn được chú thích (hoặc đã phát hành, như migration SQL) khai trong `REUSE.toml`; `reuse lint` kiểm cả hai.
 
 ## Tình huống thường gặp
 

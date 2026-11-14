@@ -1,3 +1,4 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 name: Dependencies
 
@@ -11,7 +12,7 @@ on:
       - 'backend/**/pom.xml'
       - 'frontend/package-lock.json'
       - 'website/package-lock.json'
-      - 'e2e/package-lock.json'
+      - 'e2e/web/package-lock.json'
       - 'sbom/*.cdx.json'
       - 'deploy/docker-compose.yml'
       - '.trivyignore'
@@ -27,7 +28,7 @@ on:
       - 'backend/**/pom.xml'
       - 'frontend/package-lock.json'
       - 'website/package-lock.json'
-      - 'e2e/package-lock.json'
+      - 'e2e/web/package-lock.json'
       - 'sbom/*.cdx.json'
       - 'deploy/docker-compose.yml'
       - '.trivyignore'

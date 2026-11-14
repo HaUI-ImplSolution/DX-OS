@@ -1,3 +1,4 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 # DX-OS stack: the shared core and the model-driven service.
 # Every ${VAR:?} must be set in deploy/.env (copy .env.example); Compose stops and names the
@@ -296,7 +297,7 @@ services:
       MONITOR_DB_PASSWORD: ${MONITOR_DB_PASSWORD:?}
       KEYCLOAK_READONLY_DB_PASSWORD: ${KEYCLOAK_READONLY_DB_PASSWORD:?}
     volumes:
-      - ./monitor-init.sh:/monitor-init.sh:ro
+      - ./postgres/monitor-init.sh:/monitor-init.sh:ro
     entrypoint: ["bash", "/monitor-init.sh"]
 
   # Receives the unusual requests of the gateway, probes the services and serves the screen of

@@ -21,6 +21,12 @@ Từ một yêu cầu gửi đi đến khi hồ sơ được duyệt và in ra: 
   <source src={require('./images/video/model-change.mp4').default} type="video/mp4" />
 </video>
 
+## Đăng nhập
+
+Mọi ứng dụng dùng chung một trang đăng nhập; đăng nhập một lần là vào được những gì vai của tài khoản cho phép.
+
+![Trang đăng nhập](./images/vi/login.png)
+
 ## Người triển khai
 
 Bảng điều khiển: các mô hình đang chạy, thư viện mẫu, soạn và áp dụng, hàng đợi sự kiện, người dùng, ứng dụng ngoài và danh mục dữ liệu.
@@ -31,13 +37,42 @@ Thư viện mẫu cho chọn một mô hình có sẵn và đổi tiếp.
 
 ![Thư viện mẫu](./images/vi/templates.png)
 
+Soạn bằng form: chỉ sửa những chỗ được đổi, các dòng chú thích trong tệp được giữ, và sơ đồ quy trình vẽ theo mô hình đang soạn.
+
+![Soạn bằng form](./images/vi/editor-form.png)
+
 Soạn tệp mô hình, xem kế hoạch (mức an toàn, thực thể và trường bị ảnh hưởng, câu lệnh SQL sẽ chạy) và sơ đồ quy trình vẽ theo tệp đang soạn.
 
 ![Soạn, xem kế hoạch và áp dụng](./images/vi/plan.png)
 
+Hàng đợi sự kiện: thông điệp gửi tới hệ thống ngoài sau mỗi thay đổi đã lưu.
+Thông điệp lỗi được thử lại dần, kèm lỗi gần nhất và nút thử lại ngay.
+
+![Hàng đợi sự kiện, thông điệp lỗi](./images/vi/outbox-error.png)
+
+![Hàng đợi sự kiện, thông điệp đã gửi](./images/vi/outbox-sent.png)
+
+Người dùng: tìm, tạo và quản lý tài khoản, vai và đơn vị.
+
+![Người dùng](./images/vi/users.png)
+
+Ứng dụng ngoài: mỗi ứng dụng có mã riêng và giữ đúng một vai của một mô hình.
+
+![Ứng dụng ngoài](./images/vi/apps.png)
+
+![Đăng ký ứng dụng ngoài](./images/vi/apps-dialog.png)
+
 Danh mục dữ liệu: dữ liệu của mỗi mô hình nằm ở đâu, ai được xem, trường nào sinh tự động và dữ liệu đi vào từ đâu.
 
 ![Danh mục dữ liệu](./images/vi/data-catalog.png)
+
+Nguồn gốc của từng trường: giá trị đi vào từ đâu, quy tắc nào đọc nó và nó đi ra đâu.
+
+![Nguồn gốc của từng trường](./images/vi/catalog-lineage.png)
+
+Chất lượng dữ liệu: độ điền theo trường và độ mới của hồ sơ.
+
+![Chất lượng dữ liệu](./images/vi/catalog-quality.png)
 
 Màn hình giám sát: tình trạng dịch vụ, đăng nhập sai và các bất thường.
 
@@ -51,11 +86,23 @@ Hộp việc của người xử lý; giao diện tối bật bằng nút ở th
 
 ![Hộp việc, giao diện tối](./images/vi/inbox-dark.png)
 
+Người nộp tạo hồ sơ bằng form; trường bắt buộc, danh sách lựa chọn và đơn vị xử lý lấy từ tệp mô hình.
+
+![Tạo hồ sơ](./images/vi/create.png)
+
 Danh sách hồ sơ và trang chi tiết một hồ sơ có lịch sử từng bước và nút in giấy.
 
 ![Danh sách hồ sơ](./images/vi/list.png)
 
+Bảng theo trạng thái xếp hồ sơ thành các cột; nút ở thanh công cụ đổi giữa danh sách và bảng.
+
+![Bảng theo trạng thái](./images/vi/board.png)
+
 ![Chi tiết hồ sơ](./images/vi/detail.png)
+
+Giấy in dựng từ mẫu của thực thể, điền số liệu của hồ sơ đã duyệt.
+
+![Giấy in](./images/vi/print-form.png)
 
 Trang thống kê, lịch đặt phòng và báo cáo theo trường.
 
@@ -86,6 +133,36 @@ Chữ của giao diện đổi theo nút chọn ngôn ngữ; chữ do tệp mô 
 ![Bảng điều khiển, tiếng Anh](./images/en/console.png)
 
 ![Màn hình kế hoạch, tiếng Anh](./images/en/plan.png)
+
+![Thư viện mẫu, tiếng Anh](./images/en/templates.png)
+
+![Soạn bằng form, tiếng Anh](./images/en/editor-form.png)
+
+![Hàng đợi sự kiện, thông điệp lỗi, tiếng Anh](./images/en/outbox-error.png)
+
+![Hàng đợi sự kiện, thông điệp đã gửi, tiếng Anh](./images/en/outbox-sent.png)
+
+![Người dùng, tiếng Anh](./images/en/users.png)
+
+![Ứng dụng ngoài, tiếng Anh](./images/en/apps.png)
+
+![Đăng ký ứng dụng ngoài, tiếng Anh](./images/en/apps-dialog.png)
+
+![Danh mục dữ liệu, tiếng Anh](./images/en/data-catalog.png)
+
+![Nguồn gốc của từng trường, tiếng Anh](./images/en/catalog-lineage.png)
+
+![Chất lượng dữ liệu, tiếng Anh](./images/en/catalog-quality.png)
+
+![Cổng vào, tiếng Anh](./images/en/portal.png)
+
+![Tạo hồ sơ, tiếng Anh](./images/en/create.png)
+
+![Danh sách hồ sơ, tiếng Anh](./images/en/list.png)
+
+![Bảng theo trạng thái, tiếng Anh](./images/en/board.png)
+
+![Thống kê, tiếng Anh](./images/en/stats.png)
 
 ![Hộp việc, tiếng Anh](./images/en/inbox.png)
 

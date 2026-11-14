@@ -1,3 +1,4 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 # Copy to .github/workflows/ of the model repository. It needs no DX-OS machine and no secret: a runner of GitHub
 # reads every model file with dxos-lint.jar of a DX-OS release and fails the job when a file has problems.

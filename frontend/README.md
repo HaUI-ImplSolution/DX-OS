@@ -34,7 +34,7 @@ Dev cần backend và Keycloak chạy qua gateway (`docker compose up -d` trong 
 
 ## Cấu hình
 
-Biến `VITE_*` nhúng vào bundle lúc build; mẫu ở [`.env.example`](./.env.example) (sao chép thành `.env` khi chạy `npm run dev`):
+Biến `VITE_*` nhúng vào bundle lúc build; mẫu ở [`.env.example`](.env.example) (sao chép thành `.env` khi chạy `npm run dev`):
 
 | Biến | Mặc định | Ý nghĩa |
 |---|---|---|

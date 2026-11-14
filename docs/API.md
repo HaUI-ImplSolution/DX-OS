@@ -2,7 +2,7 @@
 
 Bảng dưới liệt kê các đường dẫn chính dưới `/api/v1`; đặc tả đầy đủ ở OpenAPI (`/v3/api-docs`) của backend đang chạy; backend không kèm giao diện thử gọi, đưa đặc tả vào công cụ của bạn (Postman, Insomnia hay trình sinh mã).
 Mọi phản hồi bọc trong `ApiResponse`, và lỗi có `errorCode` ổn định.
-Script `deploy/dev/check_docs.py` kiểm mọi đường dẫn nêu ở đây có trong OpenAPI.
+Script `e2e/api/check_docs.py` kiểm mọi đường dẫn nêu ở đây có trong OpenAPI.
 
 | Đường dẫn | Việc |
 |---|---|

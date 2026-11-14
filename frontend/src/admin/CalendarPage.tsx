@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import { useNavigate, useParams } from "react-router-dom";
 import { alpha, Box, Card, Chip, Typography, useTheme } from "@mui/material";

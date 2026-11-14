@@ -1,3 +1,4 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 # Copy to .github/workflows/ of the model repository. The runner is a self-hosted runner on the DX-OS machine,
 # labelled "dxos", with the dxos command on its PATH. It plans the model files of a pull request and posts the plan.

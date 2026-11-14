@@ -1,3 +1,4 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 # Keycloak from its release archive on Ubuntu, so it also starts on x86-64 CPUs without
 # x86-64-v2 (SSE4.2, POPCNT), such as the "Common KVM processor" of some VPS hosts.

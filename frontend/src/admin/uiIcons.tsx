@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
 import BuildOutlinedIcon from "@mui/icons-material/BuildOutlined";

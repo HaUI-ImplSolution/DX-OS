@@ -1,4 +1,5 @@
 // @ts-check
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import {themes as prismThemes} from 'prism-react-renderer';
 

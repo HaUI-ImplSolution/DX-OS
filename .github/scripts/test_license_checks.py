@@ -1,3 +1,4 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 """Tests of the license checks that need no network: python3 -m unittest discover -s .github/scripts"""
 import json

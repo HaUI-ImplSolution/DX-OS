@@ -1,3 +1,4 @@
+-- SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 -- SPDX-License-Identifier: Apache-2.0
 -- Validates the core and installation routes before replacing the standalone configuration.
 require("apisix.core.profile").apisix_home = "/usr/local/apisix/"

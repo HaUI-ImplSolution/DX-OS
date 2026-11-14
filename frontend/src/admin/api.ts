@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import { json, queryString, request, requestFile } from "../shell/api";
 import type { AttachmentItem, EntityMeta, InboxItem, ModelMeta, Page, Person, PrintableDocument, RecordEvent } from "./types";

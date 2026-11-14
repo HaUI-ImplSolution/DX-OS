@@ -1,4 +1,5 @@
 // @ts-check
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 
 /** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */

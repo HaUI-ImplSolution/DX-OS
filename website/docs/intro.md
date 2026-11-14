@@ -23,6 +23,7 @@ Lõi nhận một tệp mô hình khai báo thực thể, trường, vai, quyề
 | Tham chiếu API | OpenAPI `/v3/api-docs` của backend đang chạy; bảng đường dẫn trong [API](./tai-lieu/api.md) |
 | Thay đổi theo phiên bản | [CHANGELOG.md](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/CHANGELOG.md) và [Releases](https://github.com/HaUI-ImplSolution/DX-OS/releases) |
 | Viết tệp mô hình | [Viết tệp mô hình](./tai-lieu/viet-mo-hinh.md) |
+| Từ khó, thuật ngữ | [Thuật ngữ](./tai-lieu/thuat-ngu.md) |
 | Hướng dẫn kiểm thử | [docs/TESTING.md](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/TESTING.md) |
 | Đóng góp, bảo mật, quy tắc ứng xử | [CONTRIBUTING.md](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/CONTRIBUTING.md), [SECURITY.md](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/SECURITY.md) |
 | Đánh giá, hồ sơ cuộc thi | Các mục ở thanh bên của trang này |
@@ -30,7 +31,7 @@ Lõi nhận một tệp mô hình khai báo thực thể, trường, vai, quyề
 ## Các mục trên trang này
 
 - **Hình ảnh và video:** ảnh các màn hình của sản phẩm và hai đoạn video ngắn.
-- **Tài liệu sản phẩm:** viết tệp mô hình, API, cài đặt và vận hành, giám sát, tích hợp, báo cáo, điểm mở rộng, kiến trúc, tương thích giữa các bản và kịch bản trình diễn; các trang này được chép từ `docs/` và `deploy/` mỗi lần dựng trang, nên không có bản thứ hai để sửa.
+- **Tài liệu sản phẩm:** viết tệp mô hình, API, cài đặt và vận hành, giám sát, tích hợp, báo cáo, điểm mở rộng, kiến trúc, tương thích giữa các bản, kịch bản trình diễn và thuật ngữ; các trang này được chép từ `docs/` và `deploy/` mỗi lần dựng trang, nên không có bản thứ hai để sửa.
 - **Hướng dẫn sử dụng:** ba trang theo vai: người nộp hồ sơ, người xử lý hồ sơ và người triển khai.
 - **Đánh giá:** ma trận bằng chứng cho từng tính năng và bảng rà soát PoF theo đề thi.
 - **Cuộc thi:** câu hỏi hội đồng, thành phần được chọn và không chọn.

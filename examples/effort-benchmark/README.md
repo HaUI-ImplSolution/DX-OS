@@ -24,7 +24,7 @@ Core dùng các trạng thái và hợp đồng API chung; bảng đối chiếu
 [measure.py](./measure.py) đọc đúng commit Lab, lấy nguyên các hàm phục vụ bảng trên và các hàm kiểm quyền/trạng thái mà chúng dùng.
 Đếm từ dòng khai báo hàm đến dấu đóng hàm, gồm dòng trống và chú thích bên trong; mỗi dòng chỉ tính một lần, toàn bộ YAML được đếm cùng cách.
 YAML có 28 dòng vì tính cả dòng SPDX đầu tệp.
-Công cụ `deploy/dev/count_own_code.py` của dự án bỏ dòng này và ghi 27 dòng khai báo, 0 dòng mã tự viết; theo số đó mức giảm là 92,22%.
+Công cụ `tools/count_own_code.py` của dự án bỏ dòng này và ghi 27 dòng khai báo, 0 dòng mã tự viết; theo số đó mức giảm là 92,22%.
 Các hàm được đếm nguyên vẹn, gồm kiểm tra đi kèm trong bản cũ; không cộng import, annotation ngoài hàm, entity, DTO, repository, frontend cũ hoặc mã nền tảng.
 Danh sách hàm cố định trong script; `--details` xuất từng hàm và khoảng dòng để kiểm lại.
 

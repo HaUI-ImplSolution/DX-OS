@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 // Tells the screens that a record changed somewhere, so they read their data again. The backend keeps
 // one event stream open per browser tab and sends a bare "changed" notice with no record content; the

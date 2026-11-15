@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.core.security;
 
@@ -31,19 +32,27 @@ public class UserRateLimitFilter extends OncePerRequestFilter {
   private final UserRateLimiter limiter;
   private final ObjectMapper objectMapper;
 
-  public UserRateLimitFilter(List<RateLimitRule> rules, UserRateLimiter limiter,
-      ObjectMapper objectMapper) {
+  public UserRateLimitFilter(
+      List<RateLimitRule> rules, UserRateLimiter limiter, ObjectMapper objectMapper) {
     PathPatternParser parser = new PathPatternParser();
     this.limits =
-        rules.stream().map(rule -> new Limit(rule.method(), parser.parse(rule.pathPattern()),
-            rule.maxPerMinute(), rule.method() + " " + rule.pathPattern())).toList();
+        rules.stream()
+            .map(
+                rule ->
+                    new Limit(
+                        rule.method(),
+                        parser.parse(rule.pathPattern()),
+                        rule.maxPerMinute(),
+                        rule.method() + " " + rule.pathPattern()))
+            .toList();
     this.limiter = limiter;
     this.objectMapper = objectMapper;
   }
 
   @Override
-  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-      FilterChain filterChain) throws ServletException, IOException {
+  protected void doFilterInternal(
+      HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+      throws ServletException, IOException {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication instanceof JwtAuthenticationToken token && token.getName() != null) {
       long retryAfter = admit(token.getName(), request);
@@ -63,8 +72,9 @@ public class UserRateLimitFilter extends OncePerRequestFilter {
     for (Limit limit : limits) {
       if ((limit.method() == null || limit.method().equals(request.getMethod()))
           && limit.pattern().matches(PathContainer.parsePath(path))) {
-        retryAfter = Math.max(retryAfter,
-            limiter.admit(user + "|" + limit.key(), limit.maxPerMinute(), now));
+        retryAfter =
+            Math.max(
+                retryAfter, limiter.admit(user + "|" + limit.key(), limit.maxPerMinute(), now));
       }
     }
     return retryAfter;
@@ -75,7 +85,12 @@ public class UserRateLimitFilter extends OncePerRequestFilter {
     response.setHeader(HttpHeaders.RETRY_AFTER, String.valueOf(retryAfter));
     response.setCharacterEncoding("UTF-8");
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-    response.getWriter().write(objectMapper.writeValueAsString(ApiResponse
-        .error("ERR_TOO_MANY_REQUESTS", "Bạn thao tác quá nhanh, vui lòng thử lại sau ít phút")));
+    response
+        .getWriter()
+        .write(
+            objectMapper.writeValueAsString(
+                ApiResponse.error(
+                    "ERR_TOO_MANY_REQUESTS",
+                    "Bạn thao tác quá nhanh, vui lòng thử lại sau ít phút")));
   }
 }

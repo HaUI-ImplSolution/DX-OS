@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 """Compares the hashes of the record history that a receiver kept with what the system holds now.
 

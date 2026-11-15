@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 # Synchronizes the managed assistant PKCE client during stack startup.
 set -euo pipefail

@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import { alpha, createTheme, type Theme } from "@mui/material/styles";
 import { defaultTheme } from "react-admin";

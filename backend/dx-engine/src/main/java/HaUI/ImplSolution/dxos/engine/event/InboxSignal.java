@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.engine.event;
 
@@ -40,15 +41,19 @@ public class InboxSignal {
   // One thread writes to every stream, so a slow page never holds up the transaction that changed
   // a record.
   private final ScheduledExecutorService writer =
-      Executors.newSingleThreadScheduledExecutor(task -> {
-        Thread thread = new Thread(task, "inbox-signal");
-        thread.setDaemon(true);
-        return thread;
-      });
+      Executors.newSingleThreadScheduledExecutor(
+          task -> {
+            Thread thread = new Thread(task, "inbox-signal");
+            thread.setDaemon(true);
+            return thread;
+          });
 
   public InboxSignal() {
-    writer.scheduleWithFixedDelay(() -> sendToAll(SseEmitter.event().comment("ping")), PING_SECONDS,
-        PING_SECONDS, TimeUnit.SECONDS);
+    writer.scheduleWithFixedDelay(
+        () -> sendToAll(SseEmitter.event().comment("ping")),
+        PING_SECONDS,
+        PING_SECONDS,
+        TimeUnit.SECONDS);
   }
 
   // A new stream for the person, or empty when this process already holds the most it serves.
@@ -91,12 +96,13 @@ public class InboxSignal {
   // has committed, or at once when there is no transaction.
   public void changed() {
     if (TransactionSynchronizationManager.isSynchronizationActive()) {
-      TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-        @Override
-        public void afterCommit() {
-          announce();
-        }
-      });
+      TransactionSynchronizationManager.registerSynchronization(
+          new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+              announce();
+            }
+          });
     } else {
       announce();
     }
@@ -107,10 +113,11 @@ public class InboxSignal {
     if (streams.isEmpty() || !queued.compareAndSet(false, true)) {
       return;
     }
-    writer.execute(() -> {
-      queued.set(false);
-      sendToAll(SseEmitter.event().name("changed").data("{}"));
-    });
+    writer.execute(
+        () -> {
+          queued.set(false);
+          sendToAll(SseEmitter.event().name("changed").data("{}"));
+        });
   }
 
   private void sendToAll(SseEmitter.SseEventBuilder frame) {

@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.monitor.alert;
 
@@ -24,8 +25,10 @@ public class ChatWebhookSender {
 
   public ChatWebhookSender(MonitorProperties properties) {
     this.settings = properties.chatWebhook();
-    this.client = HttpClient.newBuilder()
-        .connectTimeout(Duration.ofMillis(settings.connectTimeoutMs())).build();
+    this.client =
+        HttpClient.newBuilder()
+            .connectTimeout(Duration.ofMillis(settings.connectTimeoutMs()))
+            .build();
   }
 
   public boolean isEnabled() {
@@ -38,10 +41,12 @@ public class ChatWebhookSender {
       return;
     }
     try {
-      HttpRequest request = HttpRequest.newBuilder(URI.create(url.get()))
-          .timeout(Duration.ofMillis(settings.readTimeoutMs()))
-          .header("Content-Type", "application/json")
-          .POST(HttpRequest.BodyPublishers.ofString("{\"text\":\"" + escape(text) + "\"}")).build();
+      HttpRequest request =
+          HttpRequest.newBuilder(URI.create(url.get()))
+              .timeout(Duration.ofMillis(settings.readTimeoutMs()))
+              .header("Content-Type", "application/json")
+              .POST(HttpRequest.BodyPublishers.ofString("{\"text\":\"" + escape(text) + "\"}"))
+              .build();
       HttpResponse<Void> response = client.send(request, HttpResponse.BodyHandlers.discarding());
       if (response.statusCode() >= 300) {
         log.warn("The chat webhook answered {}", response.statusCode());

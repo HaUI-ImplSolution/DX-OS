@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.core.storage;
 
@@ -18,8 +19,14 @@ class StorageServiceTest {
 
   @BeforeEach
   void setUp() {
-    service = new StorageService("http://seaweedfs:8333", "access", "secret", "photos",
-        "http://gateway.example:9080", Duration.ofMinutes(15));
+    service =
+        new StorageService(
+            "http://seaweedfs:8333",
+            "access",
+            "secret",
+            "photos",
+            "http://gateway.example:9080",
+            Duration.ofMinutes(15));
   }
 
   @AfterEach
@@ -39,8 +46,10 @@ class StorageServiceTest {
 
     String url = service.presignedUrl("leaf.jpg");
 
-    assertThat(url).startsWith("http://192.168.1.10:9080/photos/leaf.jpg?")
-        .contains("X-Amz-Signature=").contains("X-Amz-Expires=900");
+    assertThat(url)
+        .startsWith("http://192.168.1.10:9080/photos/leaf.jpg?")
+        .contains("X-Amz-Signature=")
+        .contains("X-Amz-Expires=900");
   }
 
   @Test
@@ -60,6 +69,7 @@ class StorageServiceTest {
   @Test
   void linkForTheAiServiceUsesTheInternalEndpoint() {
     assertThat(service.internalPresignedUrl("leaf.jpg", Duration.ofMinutes(10)))
-        .startsWith("http://seaweedfs:8333/photos/leaf.jpg?").contains("X-Amz-Expires=600");
+        .startsWith("http://seaweedfs:8333/photos/leaf.jpg?")
+        .contains("X-Amz-Expires=600");
   }
 }

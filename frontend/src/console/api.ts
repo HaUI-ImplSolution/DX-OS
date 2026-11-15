@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import { translateBackend } from "../shell/backendMessages";
 import { json, queryString, request } from "../shell/api";
@@ -106,6 +107,14 @@ export interface Completion {
   groupField: string | null;
 }
 
+// A notice to other roles while an overdue record stays unhandled; everySeconds is null for one notice.
+export interface EscalationLevel {
+  afterSeconds: number;
+  to: string[];
+  everySeconds: number | null;
+  times: number;
+}
+
 export interface DiagramState extends FamilyState {
   completions: Completion[];
 }
@@ -120,6 +129,7 @@ export interface ProcessView {
   handlers: string[];
   allowSelfDecision: boolean;
   deadlineSeconds: number | null;
+  escalations: EscalationLevel[];
   autoCloseSeconds: number | null;
   autoCloseAction: string | null;
   booking: { resource: string; starts: string; ends: string; capacity: number } | null;
@@ -196,6 +206,41 @@ export interface DataCatalog {
   }[];
 }
 
+export interface LineageEdge {
+  kind: string;
+  name: string;
+  detail: string | null;
+}
+
+export interface FieldLineage {
+  entity: string;
+  field: string;
+  label: string;
+  type: string;
+  origins: LineageEdge[];
+  uses: LineageEdge[];
+  destinations: LineageEdge[];
+}
+
+export interface DataLineage {
+  model: string;
+  version: number;
+  fields: FieldLineage[];
+}
+
+export interface DataQuality {
+  model: string;
+  entity: string;
+  measuredAt: string;
+  sampleSize: number;
+  metrics: {
+    completeness?: { fields: { field: string; required: boolean; filled: number; missing: number; rate: number | null }[] };
+    requiredWhen?: { fields: { field: string; when: string; applicable: number; missing: number }[] };
+    constraints?: { fields: { field: string; rules: string[]; violating: number }[] };
+    freshness?: { staleDays: number; oldest: string | null; newest: string | null; stale: number };
+  };
+}
+
 const yaml = (method: string, text: string): RequestInit => ({
   method,
   headers: { "Content-Type": "application/yaml" },
@@ -210,7 +255,10 @@ const query = (params: Record<string, string | number | undefined>) => {
 export const listApplied = () => request<AppliedModel[]>("/models");
 export const getSchema = () => request<Record<string, unknown>>("/models/schema");
 export const getDataCatalog = (model: string) => request<DataCatalog>(`/models/${model}/data-catalog`);
-export const listFamilies = () => request<Family[]>("/models/families");
+export const getDataLineage = (model: string) => request<DataLineage>(`/models/${model}/data-lineage`);
+export const getDataQuality = (model: string, entity: string, staleDays: number) =>
+  request<DataQuality>(`/data/${model}/${entity}/quality${query({ staleDays })}`);
+export const listFamilies =() => request<Family[]>("/models/families");
 export const listTemplates = () => request<Template[]>("/models/templates");
 export const listVersions = (model: string) =>
   request<AppliedVersion[]>(`/models/${model}/versions`);
@@ -337,4 +385,5 @@ export interface AppSecret {
 export const listApps = () => request<AppClient[]>("/clients");
 export const registerApp = (name: string, model: string, role: string) => request<AppSecret>("/clients", json("POST", { name, model, role }));
 export const renewAppSecret = (name: string) => request<AppSecret>(`/clients/${name}/secret`, { method: "POST" });
-export const removeApp = (name: string) => request<null>(`/clients/${name}`, { method: "DELETE" });
+export const changeAppRole = (name: string, role: string) => request<AppClient>(`/clients/${name}`, json("PUT", { role }));
+export const removeApp =(name: string) => request<null>(`/clients/${name}`, { method: "DELETE" });

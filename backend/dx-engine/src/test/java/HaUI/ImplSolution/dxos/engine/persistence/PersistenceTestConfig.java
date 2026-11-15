@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.engine.persistence;
 
@@ -10,5 +11,4 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @TestConfiguration
 @EntityScan(basePackages = "HaUI.ImplSolution.dxos")
 @EnableJpaRepositories(basePackages = "HaUI.ImplSolution.dxos")
-class PersistenceTestConfig {
-}
+class PersistenceTestConfig {}

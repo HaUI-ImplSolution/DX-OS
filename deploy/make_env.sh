@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 # Writes an env file from .env.example: blank passwords, secrets and keys get a random value,
 # other blank variables stay blank. Used for the first setup of a stack (then set PUBLIC_HOST and the

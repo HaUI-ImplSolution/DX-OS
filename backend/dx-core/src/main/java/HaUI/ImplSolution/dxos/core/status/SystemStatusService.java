@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.core.status;
 
@@ -20,8 +21,8 @@ public class SystemStatusService {
   private final ObjectStorage objectStorage;
   private final ObjectProvider<HealthContributor> contributors;
 
-  public SystemStatusService(ObjectStorage objectStorage,
-      ObjectProvider<HealthContributor> contributors) {
+  public SystemStatusService(
+      ObjectStorage objectStorage, ObjectProvider<HealthContributor> contributors) {
     this.objectStorage = objectStorage;
     this.contributors = contributors;
   }
@@ -29,7 +30,8 @@ public class SystemStatusService {
   public ServiceStatusResponse status() {
     List<Service> services = new ArrayList<>();
     services.add(new Service("backend", UP));
-    contributors.orderedStream()
+    contributors
+        .orderedStream()
         .forEach(contributor -> services.add(new Service(contributor.name(), state(contributor))));
     services.add(new Service("storage", objectStorage.isReady() ? UP : DOWN));
     return new ServiceStatusResponse(services);

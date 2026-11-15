@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import { Fragment, useEffect, useState } from "react";
 import {
@@ -28,6 +29,7 @@ import { StatusChip, TONES } from "./StatusChip";
 import { conditionMet, conditionText } from "./condition";
 import { useNames } from "./people";
 import { assignRecord, fileLink, listEvents, listFiles, listHandlers, removeFile, takeAction, uploadFile } from "./api";
+import type { EscalationLevel } from "../console/api";
 import type { AttachmentItem, EntityMeta, FieldMeta, Person, ProcessAction, RecordEvent } from "./types";
 import { t, ta } from "../shell/t";
 
@@ -231,12 +233,26 @@ const EVENT_LABELS: Record<string, string> = {
   overdue: t("Quá hạn xử lý"),
   completion_skipped: t("Bỏ qua hành động hoàn tất"),
   auto_closed: t("Tự đóng do người nộp chưa xác nhận"),
+  escalated: t("Báo leo thang do quá hạn"),
 };
 
 const OPERATION_LABEL: Record<string, string> = {
   add_to_group: t("Thêm vào nhóm"),
   remove_from_group: t("Gỡ khỏi nhóm"),
 };
+
+// Who an escalation told and which notice of its level it was, from the "level:round" the backend records.
+function escalatedDetail(detail: string, levels: EscalationLevel[]): string | null {
+  const match = /^(\d+):(\d+)$/.exec(detail);
+  if (!match) return null;
+  const level = Number(match[1]);
+  const round = Number(match[2]) + 1;
+  const step = levels[level - 1];
+  if (!step) return t("Cấp {level}, lần {round}", { level, round });
+  return step.times > 1
+    ? t("Báo {roles}: cấp {level}, lần {round}/{times}", { roles: step.to.join(", "), level, round, times: step.times })
+    : t("Báo {roles}: cấp {level}", { roles: step.to.join(", "), level });
+}
 
 // Why a completion action was skipped, as the backend records it: "<operation> skipped: the record has no <what>".
 function skippedReason(detail: string, fieldLabel: (name: string) => string): string {
@@ -326,7 +342,9 @@ export function HistoryPanel({ model, entity }: Props) {
               ? updatedDetail(event.detail, entity.fields, fieldLabel, personNames)
               : event.action === "completion_skipped" && event.detail
                 ? skippedReason(event.detail, fieldLabel)
-                : null);
+                : event.action === "escalated" && event.detail
+                  ? escalatedDetail(event.detail, process?.escalations ?? [])
+                  : null);
           const tone = event.to_status ? TONES[event.to_status] : undefined;
           const color = !tone || tone === "default" ? "text.disabled" : `${tone}.main`;
           return (

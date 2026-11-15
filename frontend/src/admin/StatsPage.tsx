@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -11,6 +12,7 @@ import { Title } from "react-admin";
 import PageHeader from "../shell/PageHeader";
 import { formatDateTime, formatDuration } from "../shell/format";
 import { getStats, type EntityStats } from "./api";
+import ReportPanel from "./ReportPanel";
 import { TONES } from "./StatusChip";
 import { splitResource, type ModelMeta } from "./types";
 import { t } from "../shell/t";
@@ -187,6 +189,7 @@ export default function StatsPage({ models }: { models: ModelMeta[] }) {
               />
             )}
           </Box>
+          <ReportPanel model={model} entity={entity} />
         </Box>
       )}
     </Box>

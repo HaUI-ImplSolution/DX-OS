@@ -1,3 +1,4 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 name: Backend
 on:
@@ -36,15 +37,23 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up JDK 21
-        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
         with:
           distribution: 'temurin'
           java-version: '21'
           cache: 'maven'
 
       - name: Validate Code Formatting
-        run: mvn -T 2C --batch-mode formatter:validate
+        run: mvn -T 2C --batch-mode spotless:check
 
       # Persistence tests start PostgreSQL through Testcontainers (Docker is available on the runner).
       - name: Build and Test
         run: mvn --batch-mode verify
+
+      # SpotBugs with find-sec-bugs runs in the verify phase and fails the build on a finding that backend/spotbugs-exclude.xml does not explain.
+      - name: Summarize the SpotBugs findings
+        if: always()
+        run: |
+          for report in */target/spotbugsXml.xml; do
+            echo "$report: $(grep -o '<BugInstance' "$report" | wc -l) findings"
+          done

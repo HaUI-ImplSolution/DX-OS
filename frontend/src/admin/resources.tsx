@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import { Fragment } from "react";
 import {
@@ -24,6 +25,7 @@ import {
   SelectInput,
   Show,
   SimpleForm,
+  SimpleList,
   TextField,
   TextInput,
   SaveButton,
@@ -39,7 +41,7 @@ import {
   type Validator,
   useRecordContext,
 } from "react-admin";
-import { Box, Card, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from "@mui/material";
+import { Box, Card, ToggleButton, ToggleButtonGroup, Tooltip, Typography, useMediaQuery, type Theme } from "@mui/material";
 import ViewKanbanOutlinedIcon from "@mui/icons-material/ViewKanbanOutlined";
 import ViewListOutlinedIcon from "@mui/icons-material/ViewListOutlined";
 import EventIcon from "@mui/icons-material/Event";
@@ -48,9 +50,11 @@ import { Labeled } from "react-admin";
 import { Link } from "react-router-dom";
 import { BulkBar } from "./BulkActions";
 import { ActionButtons, AssignPanel, FilesPanel, HistoryPanel } from "./caseParts";
+import CodeField from "./CodeField";
 import DateTimeViInput from "./DateTimeViInput";
 import ExportCsvButton from "./ExportCsvButton";
 import KanbanBoard from "./KanbanBoard";
+import PrintButton from "./PrintButton";
 import { conditionMet, conditionText } from "./condition";
 import { PersonField, PersonInput } from "./people";
 import { StatusChip } from "./StatusChip";
@@ -154,6 +158,8 @@ const EXTRA_COLUMNS = ["assignee", "created_at", "updated_at"];
 
 // The inputs of a form: in the groups the model file declares, with the fields it did not list last.
 function formInputs(entity: EntityMeta, catalog: Catalog) {
+  // A code is made when the record is created and cannot be typed or changed.
+  const fields = entity.fields.filter((field) => field.type !== "code");
   const input = (field: FieldMeta) =>
     field.requiredWhen ? (
       <RequiredWhenInput
@@ -165,9 +171,9 @@ function formInputs(entity: EntityMeta, catalog: Catalog) {
       inputField(field, catalog, entity.fields, entity.ui?.hints?.[field.name])
     );
   const groups = entity.ui?.form?.groups;
-  if (!groups || groups.length === 0) return entity.fields.map(input);
+  if (!groups || groups.length === 0) return fields.map(input);
   const listed = new Set(groups.flatMap((group) => group.fields));
-  const rest = entity.fields.filter((field) => !listed.has(field.name));
+  const rest = fields.filter((field) => !listed.has(field.name));
   const heading = (label: string) => (
     <Typography variant="subtitle2" sx={{ fontWeight: 700, mt: 1, mb: 1.5, width: "100%" }}>
       {label}
@@ -176,7 +182,7 @@ function formInputs(entity: EntityMeta, catalog: Catalog) {
   const sections = groups.map((group) => (
     <Fragment key={group.label}>
       {heading(group.label)}
-      {group.fields.map((name) => entity.fields.find((field) => field.name === name)).filter((field): field is FieldMeta => field !== undefined).map(input)}
+      {group.fields.map((name) => fields.find((field) => field.name === name)).filter((field): field is FieldMeta => field !== undefined).map(input)}
     </Fragment>
   ));
   if (rest.length > 0) {
@@ -278,6 +284,13 @@ function inputField(field: FieldMeta, catalog: Catalog, fields: FieldMeta[], hin
   }
 }
 
+// The readable code of a record when its entity has a field of that type.
+function codeOf(entity: EntityMeta, record: Record<string, unknown>): string | null {
+  const field = entity.fields.find((candidate) => candidate.type === "code");
+  const value = field ? record[field.name] : null;
+  return typeof value === "string" && value !== "" ? value : null;
+}
+
 function ShowActions({ model, entity }: { model: string; entity: EntityMeta }) {
   const record = useRecordContext();
   const closed = entity.process?.states.find((state) => state.name === record?.status)?.terminal ?? false;
@@ -285,6 +298,7 @@ function ShowActions({ model, entity }: { model: string; entity: EntityMeta }) {
     <Box sx={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 0.5 }}>
       {entity.canWrite && !closed && <EditButton label={t("Sửa")} />}
       <ActionButtons model={model} entity={entity} />
+      <PrintButton model={model} entity={entity} />
     </Box>
   );
 }
@@ -300,7 +314,7 @@ function ShowBody({ model, entity, catalog }: { model: string; entity: EntityMet
       <Card sx={{ p: 2.5, mb: 2, display: "flex", gap: 2, alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
         <Box sx={{ minWidth: 0 }}>
           <Typography variant="caption" color="text.secondary">
-            {entity.label} · {t("Mã")} {record.id}
+            {entity.label} · {t("Mã")} {codeOf(entity, record) ?? record.id}
           </Typography>
           <Typography variant="h5" sx={{ my: 0.5 }}>
             {title}
@@ -325,7 +339,7 @@ function ShowBody({ model, entity, catalog }: { model: string; entity: EntityMet
                 .filter((field) => field.type !== "file")
                 .map((field) => (
                   <Labeled key={field.name} label={field.label}>
-                    {outputField(field, catalog)}
+                    {field.type === "code" ? <CodeField source={field.name} /> : outputField(field, catalog)}
                   </Labeled>
                 ))}
               <Labeled label={t("Tạo lúc")}>
@@ -405,6 +419,10 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
           <DateInput key={`${field.name}.lte`} source={`${field.name}.lte`} label={t("{label} đến", { label: field.label })} />,
         ];
       }
+      // A code is searched by any part of it.
+      if (field.type === "code") {
+        return [<TextInput key={`${field.name}.like`} source={`${field.name}.like`} label={field.label} alwaysOn />];
+      }
       // A field with several values is filtered by one option it holds.
       if ((field.type === "choice" || field.type === "unit") && field.multiple) {
         return [<SelectInput key={field.name} source={`${field.name}.contains`} label={field.label} choices={choices} />];
@@ -473,6 +491,8 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
   const ListBody = () => {
     const [view, setView] = useStore<"list" | "board">(viewKey, "list");
     const { filterValues, setFilters } = useListContext();
+    // A phone shows each record as a row of text, not a table that needs sideways scrolling.
+    const phone = useMediaQuery((theme: Theme) => theme.breakpoints.down("sm"));
     if (view === "board" && entity.hasProcess) {
       return (
         <KanbanBoard
@@ -485,6 +505,30 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
         />
       );
     }
+    if (phone) {
+      const titleField = displayField(entity);
+      const detail = entity.fields.filter((field) => field.name !== titleField && ["code", "text", "choice", "unit", "number", "date"].includes(field.type));
+      return (
+        <SimpleList
+          rowClick="show"
+          primaryText={(record: Record<string, unknown>) => String(record[titleField] ?? `#${record.id}`)}
+          secondaryText={(record: { status?: string; overdue?: boolean } & Record<string, unknown>) => (
+            <Box component="span" sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 0.5 }}>
+              {entity.hasProcess && record.status && <StatusChip entity={entity} status={record.status} overdue={record.overdue} />}
+              {detail
+                .filter((field) => record[field.name] != null && record[field.name] !== "")
+                .slice(0, 2)
+                .map((field) => (
+                  <Box component="span" key={field.name} sx={{ fontSize: 13 }}>
+                    {field.label}: {catalog.units[String(record[field.name])] ?? String(record[field.name])}
+                  </Box>
+                ))}
+            </Box>
+          )}
+          tertiaryText={(record: Record<string, unknown>) => (typeof record.updated_at === "string" ? timeAgo(record.updated_at) : "")}
+        />
+      );
+    }
     return (
       <DatagridConfigurable
         rowClick="show"
@@ -492,8 +536,9 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
         bulkActionButtons={bulk ? <span /> : false}
         bulkActionsToolbar={bulk ? <BulkBar model={model.name} entity={entity} /> : undefined}
       >
+        {entity.fields.filter((field) => field.type === "code").map((field) => outputField(field, catalog))}
         <TextField source="id" label={t("Mã")} />
-        {entity.fields.map((field) => outputField(field, catalog))}
+        {entity.fields.filter((field) => field.type !== "code").map((field) => outputField(field, catalog))}
         {entity.hasProcess && statusField(entity)}
         {entity.hasProcess && <PersonField source="assignee" label={t("Người xử lý")} />}
         <DateField source="created_at" label={t("Tạo lúc")} locales={intlLocale()} showTime options={DATE_OPTIONS} />

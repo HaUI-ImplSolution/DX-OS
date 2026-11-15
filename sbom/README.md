@@ -48,7 +48,8 @@ Backend sinh lại bằng Maven vì `pom.xml` không ghi phiên bản của các
 | Kiểm gì | Ở đâu | Khi nào |
 |---|---|---|
 | Mọi thành phần có giấy phép nằm trong danh sách OSI; ngoại lệ có lý do ở `.github/dependency-exceptions.json` | `.github/scripts/check_licenses.py`, job `Check licenses` của workflow `Compliance` | Mỗi pull request |
-| SBOM npm của web, trang tài liệu và trợ lý khớp tệp khóa | `.github/scripts/check_sbom_fresh.py`, job `Check SBOMs against lockfiles` của `Compliance` | Mỗi pull request |
+| Giấy phép của gói trong SBOM sinh lại từ pull request, trước khi `sbom/` được sinh lại | `check_licenses.py sbom <tệp>`, job `Check SBOMs against lockfiles` của `Compliance` (frontend, website) và `Scan the backend SBOM` của `Dependencies` (backend) | Mỗi pull request |
+| SBOM của `frontend`, `website` và `assistant` khớp tệp khóa | `.github/scripts/check_sbom_fresh.py`, job `Check SBOMs against lockfiles` của `Compliance` | Mỗi pull request |
 | SBOM của `backend` khớp các gói Maven đã giải | `check_sbom_fresh.py`, job `Scan the backend SBOM` của workflow `Dependencies`, sinh lại SBOM rồi so | Khi file khai báo đổi và mỗi tuần |
 | Lỗ hổng HIGH hoặc CRITICAL đã có bản vá chặn CI | Trivy, job `Scan dependencies` và `Scan the backend SBOM` của `Dependencies` | Khi file khai báo đổi và mỗi tuần |
 | Lỗ hổng của image bên thứ ba trong `deploy/docker-compose.yml`, chỉ báo bằng cảnh báo | Job `Scan third-party images` của `Dependencies` | Khi file khai báo đổi và mỗi tuần |

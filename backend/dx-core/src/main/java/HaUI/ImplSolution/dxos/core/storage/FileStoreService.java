@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.core.storage;
 
@@ -24,8 +25,11 @@ public class FileStoreService implements FileStore {
   private final AuditRecorder auditRecorder;
   private final Map<String, FileProcessor> processors = new HashMap<>();
 
-  public FileStoreService(ObjectStorage objectStorage, ClamAvScanner scanner,
-      AuditRecorder auditRecorder, ObjectProvider<FileProcessor> providers) {
+  public FileStoreService(
+      ObjectStorage objectStorage,
+      ClamAvScanner scanner,
+      AuditRecorder auditRecorder,
+      ObjectProvider<FileProcessor> providers) {
     this.objectStorage = objectStorage;
     this.scanner = scanner;
     this.auditRecorder = auditRecorder;
@@ -46,7 +50,10 @@ public class FileStoreService implements FileStore {
     rejectMalware(purpose, original);
     ProcessedFile processed = process(purpose, original, filename);
     String key = UUID.randomUUID() + "." + processed.extension();
-    objectStorage.putObject(key, processed.data(), processed.contentType(),
+    objectStorage.putObject(
+        key,
+        processed.data(),
+        processed.contentType(),
         Map.of("uploaded-by", uploadedBy, "source", purpose));
     return key;
   }
@@ -55,11 +62,16 @@ public class FileStoreService implements FileStore {
     if (!scanner.enabled()) {
       return;
     }
-    scanner.scan(original).ifPresent(signature -> {
-      auditRecorder.record(
-          AuditEvent.failed("FILE_INFECTED", "FILE", purpose, Map.of("signature", signature)));
-      throw new PokaYokeViolationException("ERR_FILE_INFECTED",
-          "The file was rejected because the virus scan found malware in it");
-    });
+    scanner
+        .scan(original)
+        .ifPresent(
+            signature -> {
+              auditRecorder.record(
+                  AuditEvent.failed(
+                      "FILE_INFECTED", "FILE", purpose, Map.of("signature", signature)));
+              throw new PokaYokeViolationException(
+                  "ERR_FILE_INFECTED",
+                  "The file was rejected because the virus scan found malware in it");
+            });
   }
 }

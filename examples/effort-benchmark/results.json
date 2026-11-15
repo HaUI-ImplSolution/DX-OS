@@ -1,0 +1,555 @@
+{
+  "schema_version": 2,
+  "issue": 228,
+  "scope": "Basic ticket functions: create/update, list/detail by role, assign/start, resolution, owner rating/close, history, attachments",
+  "measurement": {
+    "method": "Whole selected Java handlers, signature through closing brace; physical lines include blanks/comments; YAML counted in full",
+    "baseline": {
+      "commit": "90d62e5f6ace55e6c3ae8bdc9d27a674cf55f657",
+      "groups": [
+        {
+          "path": "backend/app-lab/src/main/java/HaUI/ImplSolution/dxos/lab/controller/TicketController.java",
+          "handlers": 10,
+          "physical_lines": 62,
+          "nonblank_lines": 62,
+          "inventory": [
+            {
+              "handler": "create",
+              "start_line": 79,
+              "end_line": 87,
+              "physical_lines": 9,
+              "nonblank_lines": 9
+            },
+            {
+              "handler": "list",
+              "start_line": 113,
+              "end_line": 125,
+              "physical_lines": 13,
+              "nonblank_lines": 13
+            },
+            {
+              "handler": "detail",
+              "start_line": 131,
+              "end_line": 133,
+              "physical_lines": 3,
+              "nonblank_lines": 3
+            },
+            {
+              "handler": "update",
+              "start_line": 159,
+              "end_line": 162,
+              "physical_lines": 4,
+              "nonblank_lines": 4
+            },
+            {
+              "handler": "assign",
+              "start_line": 193,
+              "end_line": 203,
+              "physical_lines": 11,
+              "nonblank_lines": 11
+            },
+            {
+              "handler": "start",
+              "start_line": 210,
+              "end_line": 212,
+              "physical_lines": 3,
+              "nonblank_lines": 3
+            },
+            {
+              "handler": "resolve",
+              "start_line": 229,
+              "end_line": 232,
+              "physical_lines": 4,
+              "nonblank_lines": 4
+            },
+            {
+              "handler": "confirm",
+              "start_line": 238,
+              "end_line": 241,
+              "physical_lines": 4,
+              "nonblank_lines": 4
+            },
+            {
+              "handler": "addAttachment",
+              "start_line": 169,
+              "end_line": 172,
+              "physical_lines": 4,
+              "nonblank_lines": 4
+            },
+            {
+              "handler": "removeAttachment",
+              "start_line": 178,
+              "end_line": 184,
+              "physical_lines": 7,
+              "nonblank_lines": 7
+            }
+          ]
+        },
+        {
+          "path": "backend/app-lab/src/main/java/HaUI/ImplSolution/dxos/lab/service/TicketService.java",
+          "handlers": 24,
+          "physical_lines": 285,
+          "nonblank_lines": 285,
+          "inventory": [
+            {
+              "handler": "create",
+              "start_line": 128,
+              "end_line": 171,
+              "physical_lines": 44,
+              "nonblank_lines": 44
+            },
+            {
+              "handler": "list",
+              "start_line": 188,
+              "end_line": 218,
+              "physical_lines": 31,
+              "nonblank_lines": 31
+            },
+            {
+              "handler": "detail",
+              "start_line": 220,
+              "end_line": 222,
+              "physical_lines": 3,
+              "nonblank_lines": 3
+            },
+            {
+              "handler": "update",
+              "start_line": 284,
+              "end_line": 298,
+              "physical_lines": 15,
+              "nonblank_lines": 15
+            },
+            {
+              "handler": "accept",
+              "start_line": 302,
+              "end_line": 308,
+              "physical_lines": 7,
+              "nonblank_lines": 7
+            },
+            {
+              "handler": "assign",
+              "start_line": 312,
+              "end_line": 335,
+              "physical_lines": 24,
+              "nonblank_lines": 24
+            },
+            {
+              "handler": "start",
+              "start_line": 338,
+              "end_line": 344,
+              "physical_lines": 7,
+              "nonblank_lines": 7
+            },
+            {
+              "handler": "resolve",
+              "start_line": 367,
+              "end_line": 383,
+              "physical_lines": 17,
+              "nonblank_lines": 17
+            },
+            {
+              "handler": "confirm",
+              "start_line": 387,
+              "end_line": 400,
+              "physical_lines": 14,
+              "nonblank_lines": 14
+            },
+            {
+              "handler": "addAttachment",
+              "start_line": 262,
+              "end_line": 271,
+              "physical_lines": 10,
+              "nonblank_lines": 10
+            },
+            {
+              "handler": "removeAttachment",
+              "start_line": 274,
+              "end_line": 281,
+              "physical_lines": 8,
+              "nonblank_lines": 8
+            },
+            {
+              "handler": "detailOf",
+              "start_line": 447,
+              "end_line": 457,
+              "physical_lines": 11,
+              "nonblank_lines": 11
+            },
+            {
+              "handler": "timeline",
+              "start_line": 462,
+              "end_line": 483,
+              "physical_lines": 22,
+              "nonblank_lines": 22
+            },
+            {
+              "handler": "findVisible",
+              "start_line": 486,
+              "end_line": 493,
+              "physical_lines": 8,
+              "nonblank_lines": 8
+            },
+            {
+              "handler": "findEditable",
+              "start_line": 515,
+              "end_line": 523,
+              "physical_lines": 9,
+              "nonblank_lines": 9
+            },
+            {
+              "handler": "findForUpdateAction",
+              "start_line": 525,
+              "end_line": 531,
+              "physical_lines": 7,
+              "nonblank_lines": 7
+            },
+            {
+              "handler": "requireStatus",
+              "start_line": 533,
+              "end_line": 538,
+              "physical_lines": 6,
+              "nonblank_lines": 6
+            },
+            {
+              "handler": "requireNotFinished",
+              "start_line": 540,
+              "end_line": 546,
+              "physical_lines": 7,
+              "nonblank_lines": 7
+            },
+            {
+              "handler": "requireAssigneeOrAdmin",
+              "start_line": 548,
+              "end_line": 552,
+              "physical_lines": 5,
+              "nonblank_lines": 5
+            },
+            {
+              "handler": "requireRequester",
+              "start_line": 554,
+              "end_line": 558,
+              "physical_lines": 5,
+              "nonblank_lines": 5
+            },
+            {
+              "handler": "store",
+              "start_line": 565,
+              "end_line": 578,
+              "physical_lines": 14,
+              "nonblank_lines": 14
+            },
+            {
+              "handler": "toResponse(TicketAttachment)",
+              "start_line": 580,
+              "end_line": 584,
+              "physical_lines": 5,
+              "nonblank_lines": 5
+            },
+            {
+              "handler": "requesterIs",
+              "start_line": 619,
+              "end_line": 621,
+              "physical_lines": 3,
+              "nonblank_lines": 3
+            },
+            {
+              "handler": "isBlank",
+              "start_line": 623,
+              "end_line": 625,
+              "physical_lines": 3,
+              "nonblank_lines": 3
+            }
+          ]
+        }
+      ],
+      "physical_lines": 347,
+      "nonblank_lines": 347
+    },
+    "core": {
+      "commit": "bab0367f869c0c6fb13b413c4c3048375405fc79",
+      "application_model": {
+        "path": "examples/effort-benchmark/support.yaml",
+        "sha256": "e3589d33a16a8bc368f7f607941740b516132f0e6fe5abdd560fd1be1b447dfa",
+        "physical_lines": 28,
+        "nonblank_lines": 28
+      }
+    },
+    "comparison": {
+      "removed_physical_lines": 319,
+      "reduction_percent": 91.93,
+      "meaning": "Reduction in selected handler/YAML lines, not a percentage of working hours"
+    }
+  },
+  "application_declaration": {
+    "tool": "tools/count_own_code.py",
+    "tool_commit": "bab0367f869c0c6fb13b413c4c3048375405fc79",
+    "scope": "temporary application directory containing support.yaml only; benchmark tooling excluded",
+    "models": [
+      {
+        "file": "support.yaml",
+        "level": 2,
+        "lines": 27
+      }
+    ],
+    "own_code": [],
+    "declaration_lines": 27,
+    "own_code_lines": 0,
+    "other_configuration_lines": 0
+  },
+  "verification": {
+    "core_commit": "bab0367f869c0c6fb13b413c4c3048375405fc79",
+    "api_checks": [
+      {
+        "case": "plan new model",
+        "http_status": 200,
+        "passed": true
+      },
+      {
+        "case": "apply new model",
+        "http_status": 200,
+        "passed": true
+      },
+      {
+        "case": "unchanged model",
+        "http_status": 200,
+        "passed": true
+      },
+      {
+        "case": "unchanged model",
+        "http_status": 200,
+        "passed": true
+      },
+      {
+        "case": "unchanged model",
+        "http_status": 200,
+        "passed": true
+      },
+      {
+        "case": "create ticket",
+        "http_status": 200,
+        "passed": true
+      },
+      {
+        "case": "create ticket",
+        "http_status": 200,
+        "passed": true
+      },
+      {
+        "case": "required fields",
+        "http_status": 400,
+        "passed": true
+      },
+      {
+        "case": "anonymous denied",
+        "http_status": 401,
+        "passed": true
+      },
+      {
+        "case": "unrelated role denied",
+        "http_status": 403,
+        "passed": true
+      },
+      {
+        "case": "owner lists only own",
+        "http_status": 200,
+        "passed": true
+      },
+      {
+        "case": "agent lists both",
+        "http_status": 200,
+        "passed": true
+      },
+      {
+        "case": "other owner detail hidden",
+        "http_status": 404,
+        "passed": true
+      },
+      {
+        "case": "owner cannot start",
+        "http_status": 403,
+        "passed": true
+      },
+      {
+        "case": "owner cannot assign",
+        "http_status": 403,
+        "passed": true
+      },
+      {
+        "case": "agent assigns",
+        "http_status": 200,
+        "passed": true
+      },
+      {
+        "case": "other handler cannot start assigned ticket",
+        "http_status": 403,
+        "passed": true
+      },
+      {
+        "case": "assigned handler starts",
+        "http_status": 200,
+        "passed": true
+      },
+      {
+        "case": "resolution fields required",
+        "http_status": 400,
+        "passed": true
+      },
+      {
+        "case": "write resolution",
+        "http_status": 200,
+        "passed": true
+      },
+      {
+        "case": "attach evidence",
+        "http_status": 200,
+        "passed": true
+      },
+      {
+        "case": "handler lists attachment",
+        "http_status": 200,
+        "passed": true
+      },
+      {
+        "case": "attachment link",
+        "http_status": 200,
+        "passed": true
+      },
+      {
+        "case": "attachment download",
+        "http_status": 200,
+        "passed": true
+      },
+      {
+        "case": "attachment hidden from other owner",
+        "http_status": 404,
+        "passed": true
+      },
+      {
+        "case": "handler resolves",
+        "http_status": 200,
+        "passed": true
+      },
+      {
+        "case": "handler cannot confirm",
+        "http_status": 403,
+        "passed": true
+      },
+      {
+        "case": "rating required",
+        "http_status": 400,
+        "passed": true
+      },
+      {
+        "case": "invalid rating rejected",
+        "http_status": 400,
+        "passed": true
+      },
+      {
+        "case": "owner records rating",
+        "http_status": 200,
+        "passed": true
+      },
+      {
+        "case": "owner confirms",
+        "http_status": 200,
+        "passed": true
+      },
+      {
+        "case": "closed ticket refuses edits",
+        "http_status": 409,
+        "passed": true
+      },
+      {
+        "case": "history includes lifecycle",
+        "http_status": 200,
+        "passed": true
+      }
+    ],
+    "ui_checks": [
+      {
+        "case": "owner list hides another owner ticket",
+        "passed": true
+      },
+      {
+        "case": "owner creates ticket using generated form",
+        "passed": true
+      },
+      {
+        "case": "owner uploads evidence before editing",
+        "passed": true
+      },
+      {
+        "case": "agent sees tickets of both owners",
+        "passed": true
+      },
+      {
+        "case": "agent claims and starts ticket",
+        "passed": true
+      },
+      {
+        "case": "generated edit form saves resolution",
+        "passed": true
+      },
+      {
+        "case": "agent resolves and cannot confirm",
+        "passed": true
+      },
+      {
+        "case": "owner enters rating and confirms",
+        "passed": true
+      },
+      {
+        "case": "closed detail retains attachment and history without edit action",
+        "passed": true
+      }
+    ],
+    "api_passed": 33,
+    "ui_passed": 9,
+    "image_provenance": {
+      "backend": "bab0367f869c0c6fb13b413c4c3048375405fc79",
+      "frontend": "bab0367f869c0c6fb13b413c4c3048375405fc79"
+    },
+    "auxiliary_images": {
+      "commit": "fc36f4e9d4336809ae41bf6b2715ff65e8affa81",
+      "services": [
+        "keycloak",
+        "monitor",
+        "portal"
+      ],
+      "runtime_sources_unchanged": true
+    },
+    "checked_at": "2026-11-12T13:54:18.528944+00:00"
+  },
+  "timings_seconds": {
+    "plan_first": 0.675,
+    "apply_first": 0.752,
+    "apply_repeated": [
+      0.261,
+      0.226,
+      0.246
+    ]
+  },
+  "environment": {
+    "logical_cpus": 8,
+    "memory_gib": 7.59,
+    "backend_cpu_limit": 2,
+    "backend_memory_mib": 1024,
+    "keycloak_cpu_limit": 2,
+    "keycloak_memory_mib": 1024,
+    "other_local_stack_running": true,
+    "antivirus_enabled": false,
+    "image_cache": "Application images available before timing plan/apply",
+    "docker_compose": "5.7.0",
+    "playwright": "1.65.0",
+    "browser": "Chrome for Testing 156.0.8078.4 (existing local binary)",
+    "other_memory_limits_mib": {
+      "postgres": 512,
+      "seaweedfs": 384,
+      "apisix": 384,
+      "monitor": 512,
+      "frontend": 64,
+      "portal": 64
+    }
+  },
+  "historical_lab_authoring_seconds": null
+}

@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.core.security;
 
@@ -28,8 +29,11 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
   }
 
   @Override
-  public void commence(HttpServletRequest request, HttpServletResponse response,
-      AuthenticationException authException) throws IOException {
+  public void commence(
+      HttpServletRequest request,
+      HttpServletResponse response,
+      AuthenticationException authException)
+      throws IOException {
     // A request without any token is mostly scanning noise; only a refused token is recorded.
     String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
     if (authorization != null && authorization.regionMatches(true, 0, "Bearer ", 0, 7)) {
@@ -38,7 +42,11 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
     response.setStatus(HttpStatus.UNAUTHORIZED.value());
     response.setCharacterEncoding("UTF-8");
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-    response.getWriter().write(objectMapper.writeValueAsString(
-        ApiResponse.error("ERR_UNAUTHENTICATED", "Chưa đăng nhập hoặc token không hợp lệ")));
+    response
+        .getWriter()
+        .write(
+            objectMapper.writeValueAsString(
+                ApiResponse.error(
+                    "ERR_UNAUTHENTICATED", "Chưa đăng nhập hoặc token không hợp lệ")));
   }
 }

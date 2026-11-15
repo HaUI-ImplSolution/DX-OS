@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.monitor.query;
 
@@ -6,8 +7,9 @@ import java.time.Instant;
 
 // The time spans the screen offers.
 public enum Window {
-  LAST_HOUR("1h", Duration.ofHours(1)), LAST_DAY("24h", Duration.ofHours(24)), LAST_WEEK("7d",
-      Duration.ofDays(7));
+  LAST_HOUR("1h", Duration.ofHours(1)),
+  LAST_DAY("24h", Duration.ofHours(24)),
+  LAST_WEEK("7d", Duration.ofDays(7));
 
   private final String code;
   private final Duration length;

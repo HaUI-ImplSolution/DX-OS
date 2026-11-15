@@ -1,3 +1,4 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 spring:
   config:
@@ -60,6 +61,9 @@ security:
   jwt:
     # Access tokens must carry this audience (added by the dxos-api client scope in Keycloak).
     audience: ${JWT_AUDIENCE:dxos-api}
+  cors:
+    # Exact browser origins; non-loopback origins must use HTTPS and wildcards are refused.
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://127.0.0.1:5173}
   rate-limit:
     # Per signed-in user and minute, counted in memory.
     enabled: ${RATE_LIMIT_ENABLED:true}
@@ -86,3 +90,17 @@ audit:
   denied:
     # Refused requests recorded per client address and action each minute; the rest are counted.
     max-per-minute: 20
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  endpoint:
+    health:
+      show-details: never
+
+metrics:
+  # Password of the user "metrics" that scrapes /actuator/prometheus; empty closes the endpoint.
+  scrape-password: ${METRICS_PASSWORD:}
+  refresh-ms: ${METRICS_REFRESH_MS:30000}

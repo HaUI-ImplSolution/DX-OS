@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import { randomBytes } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync, existsSync, chmodSync, chownSync, lstatSync, readdirSync, renameSync, rmSync } from 'node:fs';

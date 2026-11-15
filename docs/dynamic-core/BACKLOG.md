@@ -2,34 +2,55 @@
 
 Nguồn duy nhất cho việc chưa làm, chưa kiểm thử và giới hạn đã biết của lõi dynamic.
 Hướng đi nằm ở [`README.md`](./README.md).
+Đối chiếu với đề thi và đề xuất mở rộng nằm ở [`DANH_GIA.md`](./DANH_GIA.md).
 Làm xong một mục thì xóa dòng đó, không ghi lại diễn biến.
 
 ## 1. Thứ tự đến hạn nộp
 
 Hạn gửi bài là 17:00 ngày 06/12/2026.
-Mốc dưới đây là dự kiến.
+Kho mã được chấm từ 07 đến 09/12 trên những gì thấy được ở trang repository, không có đội giải thích; sản phẩm được chấm ở buổi trình diễn 10/12.
+Thứ tự dưới đây xếp theo số điểm đang để hở; chi tiết từng việc ở các mục sau.
 
-| Mốc | Nội dung | Dự kiến xong |
+| Thứ tự | Việc | Điểm liên quan |
 |---|---|---|
-| Phát hành 2.0.0 | Tag `v2.0.0` và GitHub Release, triển khai công khai, trang docs, gửi bài | 06/12 |
+| 1 | Pull request vào `main`, bản phát hành mới và rà soát cuối của mục 2 trên bản đó | Điều kiện để kho mã được chấm trên bản dự thi; bản phát hành 5, dịch từ mã nguồn 10 |
+| 2 | Tài liệu và giao tiếp: lịch sử issue (mục 3) | Tài liệu và giao tiếp 10, phát triển bền vững 10 |
+| 3 | Bằng chứng lõi là PaaS: ứng dụng mẫu (mục 3) | Nguyên gốc 10, phát triển bền vững 10 |
+| 4 | Bài trình bày chung kết (mục 2) | Hoàn thiện 10, trình diễn 10 |
+| 5 | Phần AI và chữ I của ứng dụng Tầng 2 (mục 3) | Hoàn thiện 10, nguyên gốc 10 |
 
 ## 2. Phải xử lý trước khi phát hành
 
 | Việc | Ghi chú |
 |---|---|
 | Tạo ADMIN khi cài mới | `deploy/dxos` đếm service account có vai ADMIN nên bỏ qua tạo tài khoản người dùng; bản cài sạch chỉ lên dịch vụ, chưa đăng nhập được. Đã có ở nhánh cha; lọc service account trước khi quyết định đã có ADMIN. Lệnh `dxos admin` là bước khôi phục hiện có |
-| Tag `v2.0.0` và GitHub Release | Tạo từ `main`; ngày của mục `[2.0.0]` trong `CHANGELOG.md` sửa theo ngày tag; đẩy tag thì workflow `Release Package` tự tạo Release từ mục đó (không tạo Release bằng tay trước, vì workflow không ghi đè nội dung đã có); rồi chạy tay workflow `Release Images` trên tag để có image `v2.0.0` mà `dxos-install.sh` kéo về |
-| Kiểm cài bằng image thật | `dxos-install.sh` và `dxos start <tệp>` mới kiểm bằng image local qua `install.sh`; sau khi workflow Release có image `v2.0.0`, chạy lại trên máy sạch |
-| Triển khai công khai | VPS giữ `v1.1.1`; bản mới không có đường nâng cấp dữ liệu nên phải dựng lại; đặt `STAFF_OTP_FLOW=CONDITIONAL` trước lần khởi động đầu để bắt ADMIN nhập mã một lần, đặt `KEYCLOAK_HOSTNAME=${GATEWAY_PUBLIC_URL}` trong `.env` thay cho `KC_HOSTNAME` ở file override (đặt `KC_HOSTNAME` một mình thì gateway từ chối token), và bật quét mã độc (`dxos av on`) |
-| Ruleset của `main` | Nhập `.github/rulesets/main.json` và `tags.json` ở Settings → Rules sau khi các check đã chạy một lần trên pull request, vì tên check phải đã xuất hiện; bật Private vulnerability reporting ở Settings |
-| Rà soát cuối trên bản phát hành | Trước 17:00 ngày 06/12: clone vào máy sạch rồi `deploy/make_env.sh` và `docker compose up -d --build` thành công; mở repository bằng trình duyệt ẩn danh thấy được không cần đăng nhập; `check_licenses.py` báo 0 vấn đề; CI xanh trên commit gắn tag (`Platform`, `Compliance`, `Backend`, `Frontend`, `Dependencies`); trang docs mô tả đúng bản `2.0.0` |
-| Gửi bài | Thư tới `olpvietnam@vaip.vn` và `thuky@vfossa.vn` trước 17:00 ngày 06/12/2026, tiêu đề `BÀI THI PMNM 2026 - [Tên Đội] - [Tên Trường]`, nội dung gồm thành viên đội, người hướng dẫn, đường dẫn kho mã nguồn và cam kết bản quyền theo mẫu trong đề |
-| Bài trình bày chung kết | 15 phút ngày 10/12: giải pháp và lựa chọn công nghệ, tính năng nền tảng và bài toán minh họa, kết quả và demo, định hướng phát triển; kịch bản demo đã có ở `docs/DEMO.md`, chưa thấy phần trình chiếu trong kho; thêm video demo ngắn hoặc ảnh động ở `README.md` và trang docs để thu hút cộng đồng |
+| Pull request vào `main` và bản phát hành mới | Nhánh `main` chậm 40 commit so với `Khuong/main` và `v2.0.0` không chứa phần đó; mở pull request `Khuong/main` vào `main` (đóng luôn khoảng 20 issue đã xong), rồi gắn tag, chạy `Release Package` và `Release Images`; rà soát cuối làm trên bản mới này |
+| Rà soát cuối trên bản phát hành | Trước 17:00 ngày 06/12: clone vào máy sạch rồi `deploy/make_env.sh` và `docker compose up -d --build` thành công; mở repository bằng trình duyệt ẩn danh thấy được không cần đăng nhập; trang Contributors hiện đủ ba thành viên (API `contributors` hiện chỉ trả hai người); `check_licenses.py` báo 0 vấn đề, `reuse lint` xanh và `gh api repos/HaUI-ImplSolution/DX-OS/license` vẫn trả Apache-2.0 khi có `LICENSES/`; CI xanh trên commit gắn tag (`Platform`, `Compliance`, `Backend`, `Frontend`, `Dependencies`); trang docs mô tả đúng bản `2.0.0`; số issue, pull request và commit ở `website/docs/pof-audit.md` lấy lại theo ngày gắn tag |
+| Gửi bài | Thư tới `olpvietnam@vaip.vn` và `thuky@vfossa.vn` trước 17:00 ngày 06/12/2026, tiêu đề `BÀI THI PMNM 2026 - [Tên Đội] - [Tên Trường]`, nội dung gồm thành viên đội, người hướng dẫn, đường dẫn kho mã nguồn và cam kết bản quyền theo mẫu trong đề; trước đó xác nhận với trường rằng đội đã có trong danh sách đăng ký gửi BTC, và ghi người hướng dẫn vào mục Nhóm phát triển của `README.md` |
+| Bài trình bày chung kết | 15 phút ngày 10/12: giải pháp và lựa chọn công nghệ, tính năng nền tảng và bài toán minh họa, kết quả và demo, định hướng phát triển; kịch bản demo đã có ở `docs/DEMO.md`, chưa thấy phần trình chiếu trong kho |
 
 ## 3. Giới hạn đã biết
 
+Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm ở mục 3.2.
+
+### 3.1. Đã có issue
+
+| Việc | Issue | Ghi chú |
+|---|---|---|
+| Phần AI | #210 | Pipeline AI nguồn mở chưa có mã: hỏi đáp sinh câu trả lời và tác tử đề xuất có người duyệt cần mô hình ngôn ngữ và embedding đạt định nghĩa Open Source AI của OSI (trọng số và dữ liệu huấn luyện đều mở), chưa chọn; khi làm sẽ là dịch vụ mới nối vào lõi; ứng viên LLM là Apertus 8B (Apache-2.0) và OLMo 2, cần thử tiếng Việt và tốc độ trên CPU; reranker và embedding phải thay bằng mô hình đạt chuẩn rồi đo lại chất lượng truy xuất; mô hình mở hoàn toàn có thể trả lời tiếng Việt kém và chậm hơn trên CPU nên cần đo trước khi trình diễn; không có LLM đạt thì Qwen chỉ là tùy chọn người dùng tự gắn, ghi rõ là mở trọng số; hỏi đáp quy chế cần một kho văn bản đạt cam kết nguồn mở (CC0, CC BY, ODbL hoặc không thuộc diện bảo hộ), vì kho văn bản của trường đã gỡ do thuộc bản quyền của trường |
+| Ứng dụng Tầng 2 | #211 | Chưa phủ I của H-P-D-I; hỏi BTC trên nhóm Telegram của họ xem ứng dụng minh họa có cần phủ cả bốn không gian H, P, D, I không |
+| Lớp tùy biến trên mẫu | #216 | Người triển khai sửa thẳng vào bản sao của mẫu, nên khi mẫu có bản mới phải gộp tay: chưa có khóa `extends: <mẫu>` để chỉ viết phần khác và chưa có lệnh in tệp đã gộp; lý do và rủi ro ở `DANH_GIA.md` mục 7.2 |
+| Giáo trình DX-OS | #217 | Mới đọc tổng quan, mục lục chương và trang Hộp cát; đọc hết rồi đối chiếu thuật ngữ và kiến trúc với lõi, nhất là dự án DX-Ticket |
+| Khách hàng | #231 | Chưa nói chuyện với khách hàng nào; mục Khách hàng và giá trị của `README.md` là giả thuyết |
+
+### 3.2. Chưa có issue
+
 | Việc | Ghi chú |
 |---|---|
+| Ứng dụng mẫu gọi lõi từ bên ngoài | Chưa có ứng dụng có giao diện nào ngoài ứng dụng của đội gọi lõi qua API, nên câu "PaaS phục vụ các ứng dụng tầng trên" của đề chưa có bằng chứng chạy được; đã chốt làm một ứng dụng mẫu ở `examples/`, viết bằng khung khác react-admin, chỉ dùng OpenAPI theo mô hình và đăng nhập Keycloak |
+| Chuẩn repository nguồn mở | Phân tích tĩnh cho web bằng ESLint, không dùng CodeQL vì điều khoản công cụ không thuộc OSI; `CODEOWNERS` khi nhóm chia vùng cho từng người; nâng `decode-uri-component`, `react-router`, `uuid` và `deepmerge` khi bản vá tương thích với `react-admin` và Docusaurus ra, để sáu cảnh báo ở tab Security đóng; chạy OpenSSF Scorecard; gắn nhãn `good first issue` và `help wanted` cho vài việc nhỏ |
+| Lịch sử issue | PoF chấm bug tracker có lịch sử; số issue và pull request lấy ở `website/docs/pof-audit.md`; mở issue cho việc phải sửa hoặc làm lại và đóng bằng pull request có `Closes #n`, còn việc phải thêm (giấy phép, lộ trình) chỉ ghi ở file này; issue chỉ mang nhãn `enhancement` hoặc `documentation`, chưa gắn milestone |
+| Chỉ số mục tiêu | Chưa có người thật làm bài thử "trong một buổi" (bài thử và bản mô phỏng ở `docs/TARGETS.md`), chưa đo công vận hành mỗi tháng và thời gian lần cài đầu có tải image |
 | Dọn tài liệu và thành phần AI cũ | Đối chiếu checkout cũ với Core hiện hành trước khi loại bỏ `COPYRIGHT.txt`, mã Python, dependency và SBOM không còn dùng; xử lý riêng, ngoài phạm vi tích hợp trợ lý |
 | Truy vấn phiên bản metadata | Giữ cách đọc hiện tại; khoảng 9 ms cho 54 truy vấn trên 23 mô hình/31 thực thể; cache chỉ làm khi có nhu cầu và đã kiểm apply/rollback/đồng thời |
 | Hội thoại trợ lý | Chưa tách theo mô hình; câu sinh đôi lúc có mã kỹ thuật hoặc thời gian chưa đúng múi giờ |
@@ -37,31 +58,6 @@ Mốc dưới đây là dự kiến.
 | Nghiệm thu provider API thứ hai | Chờ key OpenAI hoặc Anthropic; kiểm model thật với cùng luồng đọc, đề xuất, xác nhận và lỗi/quota trước khi công bố hỗ trợ đã xác minh |
 | Egress trợ lý | Runtime chưa có allowlist toàn mạng; endpoint compatible đang tắt; cần triển khai và kiểm chứng giới hạn kết nối toàn container |
 | Khóa/token backup trợ lý | Key và capability nằm cùng kho restic; người giải mã backup có thể đọc secret/giả danh runtime; cần tách quyền giữ khóa/token và có cách thu hồi, thay mới |
-| Phần AI | Pipeline AI nguồn mở chưa có mã: hỏi đáp sinh câu trả lời và tác tử đề xuất có người duyệt cần mô hình ngôn ngữ và embedding đạt định nghĩa Open Source AI của OSI (trọng số và dữ liệu huấn luyện đều mở), chưa chọn; khi làm sẽ là dịch vụ mới nối vào lõi; ứng viên LLM là Apertus 8B (Apache-2.0) và OLMo 2, cần thử tiếng Việt và tốc độ trên CPU; reranker và embedding phải thay bằng mô hình đạt chuẩn rồi đo lại chất lượng truy xuất; mô hình mở hoàn toàn có thể trả lời tiếng Việt kém và chậm hơn trên CPU nên cần đo trước khi trình diễn; không có LLM đạt thì Qwen chỉ là tùy chọn người dùng tự gắn, ghi rõ là mở trọng số; hỏi đáp quy chế cần một kho văn bản đạt cam kết nguồn mở (CC0, CC BY, ODbL hoặc không thuộc diện bảo hộ), vì kho văn bản của trường đã gỡ do thuộc bản quyền của trường |
-| Ứng dụng Tầng 2 | Chưa phủ I của H-P-D-I; hỏi BTC trên nhóm Telegram của họ xem ứng dụng minh họa có cần phủ cả bốn không gian H, P, D, I không, và màn hình quản trị đi kèm dịch vụ nguồn mở như Keycloak Admin có được coi là lõi có giao diện không |
-| Giới hạn của kiểu và thao tác mới | Đổi vai của một ứng dụng ngoài bằng cách gỡ rồi đăng ký lại; hành động hàng loạt không có hoàn tác và tối đa 50 hồ sơ mỗi lần; trường nhiều lựa chọn không có giá trị mặc định; trường ngày chưa làm nguồn của điều kiện `when` và `required_when` |
-| Hồ dữ liệu | Chưa có lớp truy vấn riêng trên các tệp Parquet trong kho; công cụ báo cáo đọc dữ liệu đang chạy qua vai `report_ro`; hướng làm: `dxos archive query` chạy DuckDB đọc thẳng các tệp trong kho |
-| Phả hệ dữ liệu | Danh mục dữ liệu dừng ở mức thực thể; chưa có phả hệ đến từng trường |
-| Trang và thành phần riêng trong ứng dụng Tầng 2 | Ứng dụng web chưa có chỗ đăng ký trang hay thành phần form; thêm chúng là sửa mã nguồn và dựng lại image |
-| Ý từ Frappe | Tách phần tùy biến khỏi mô hình gốc: chưa đọc mã của Frappe để đối chiếu |
-| Giáo trình DX-OS | Mới đọc tổng quan, mục lục chương và trang Hộp cát; đọc hết rồi đối chiếu thuật ngữ và kiến trúc với lõi, nhất là dự án DX-Ticket |
-| Mẫu cho lĩnh vực khác | Tầng 3 trong đề trải từ bán lẻ, bệnh án đến nhà máy, còn mẫu hiện có chạm nhà máy (`plant_incident`), giáo dục, hành chính và IT; thêm một mẫu y tế và một mẫu bán lẻ (ví dụ phiếu đổi trả), mỗi mẫu là một tệp mô hình chạy qua `check_conformance.py` như các mẫu khác |
-| Giao diện riêng ở tên miền khác | CORS của API chỉ nhận `localhost` và `127.0.0.1`, và Keycloak chỉ có client công khai `dxos-web` cho địa chỉ của cổng vào và `localhost`; một giao diện tự viết ở tên miền khác không đăng nhập và gọi API được nếu không sửa tay Keycloak và mã; hướng làm: lệnh đăng ký client công khai (PKCE) kèm redirect URI, và danh sách origin CORS đọc từ `.env` |
-| Route của dịch vụ riêng | Route nằm trong `deploy/apisix/common.yaml` do lõi quản, nên thêm route cho dịch vụ riêng là sửa tệp đó và mất khi `dxos update` thay tệp triển khai; hướng làm: một tệp route riêng của bản cài được nạp thêm |
-| Kiểm tra đồng bộ do dịch vụ riêng quyết định | Webhook chỉ báo sau khi hồ sơ đã chuyển; chưa có cách để dịch vụ riêng chặn một hành động trước khi chuyển trạng thái, nên logic đặc thù ở mức 3 chỉ phản ứng sau, không chặn được; nếu làm thì phải giữ quy tắc bất biến và hồ sơ không kẹt khi dịch vụ riêng không trả lời |
-| Hướng dẫn viết mã mở rộng | Chưa có tài liệu nói cách làm cho từng điểm mở rộng của `README.md` (API riêng, webhook, giao diện riêng, trang riêng); ví dụ hiện có là `itot-simulator` và `history-witness` |
-| Lịch sử issue | PoF chấm bug tracker có lịch sử: hiện 14 issue so với 161 pull request, vì việc còn lại ghi ở file này; mở issue cho mỗi dòng khi làm và đóng bằng pull request có `Closes #n` |
-| GitOps kéo | Lõi nhận tệp qua `dxos apply` và chưa tự kéo từ git để liên tục đối chiếu với trạng thái đang chạy |
-| Hai họ mẫu mở rộng | Kiểm tra định kỳ (lịch sinh bản ghi, kiểm tra, khắc phục) và Đánh giá và chọn lọc (nhiều người chấm, chọn theo chỉ tiêu) chưa làm; chỉ giữ một họ khi có ít nhất ba miền chạy được bằng tham số |
-| Nâng tệp mô hình cũ | Tệp ghi `format` để lõi tự nâng tệp cũ khi định dạng đổi, nhưng mới có `format: 0` nên chưa có bước nâng nào |
-| Leo thang khi quá hạn | Chưa có; quá hạn chỉ được ghi vào lịch sử và nhắc qua `due_soon`, `overdue` |
-| Hướng dẫn công cụ báo cáo | Vai `report_ro` chỉ đọc các bảng nghiệp vụ, nhưng chưa có tài liệu nào nói người triển khai nối công cụ báo cáo vào đó (địa chỉ, tài khoản, mật khẩu, phạm vi bảng), kèm một truy vấn ví dụ nối bảng của hai mô hình để thấy dữ liệu không thành ốc đảo |
-| Đo công sức | So số dòng và thời gian dựng ứng dụng mới trên lõi với phần Lab viết tay (5.792 dòng Java, 4.524 dòng giao diện, 8 migration) chưa làm |
-| Chỉ số mục tiêu | "Người mới tự dựng xong trong một buổi" cần một người chưa biết hệ thống thử; "mã tự viết bằng 0 ở mức 1 và 2" cần đếm trên một hệ thống thật; chưa có giá của lõi tự cài |
-| Tải | Chưa đo với nhiều người dùng đồng thời hay ít nhân hơn 12 |
-| Khách hàng | Chưa nói chuyện với khách hàng nào; mục Khách hàng và giá trị của `README.md` là giả thuyết |
-| Pháp lý | Chưa đọc văn bản gốc của Luật Bảo vệ dữ liệu cá nhân về chuyển dữ liệu ra nước ngoài; `README.md` dẫn nguồn thứ cấp |
-| Điều khoản kho chữ ký của ClamAV | Chưa kiểm |
 
 ## 4. Giới hạn chấp nhận
 
@@ -80,14 +76,22 @@ Mốc dưới đây là dự kiến.
 | Đổi vai hoặc đơn vị của người đang đăng nhập | Vai và đơn vị đọc từ token đã ký nên thay đổi có hiệu lực sau tối đa khoảng 5 phút (token sống 300 giây), và người bị gỡ giữ quyền đến lúc đó |
 | Chuỗi hash của lịch sử | Phát hiện chứ không ngăn sửa; điểm neo nằm trong kho đối tượng của cùng máy chủ nên người sửa được cả cơ sở dữ liệu lẫn kho thì chỉ bị lộ khi so với `hash` mà bên nhận webhook đã giữ |
 | Giá trị trong lịch sử | Dòng lịch sử `updated` giữ giá trị cũ và mới của từng trường; hồ sơ không có quy trình bị xóa thì các dòng này vẫn còn, vì chuỗi hash không cho sửa dòng đã ghi, và chỉ người đọc được hồ sơ xem được chúng khi hồ sơ còn |
+| Hành động hàng loạt | Web gọi lại hành động của một hồ sơ cho từng hồ sơ đã chọn, tối đa 50 hồ sơ mỗi lần để nằm trong giới hạn tốc độ của cổng API; mỗi hồ sơ tự đi qua quyền và luật quy trình của nó, hồ sơ bị từ chối được báo kèm lý do còn các hồ sơ khác vẫn chạy; không có hoàn tác vì hành động đơn lẻ cũng không có, chuyển trạng thái để lại dòng lịch sử trong chuỗi hash, và hồ sơ xử lý nhầm thì xử lý tiếp theo đường quy trình (mở lại hoặc trả lại nếu quy trình có); không có đường lô riêng ở backend |
 | Nhập dữ liệu hàng loạt | Không có nhập CSV và gói mô hình kèm dữ liệu danh mục; dữ liệu vào qua API chung để đi qua quyền, ràng buộc và quy trình |
 | Tìm kiếm | Không tìm hồ sơ và nội dung tệp; chỉ mục và đoạn trích có thể lộ dữ liệu ngoài quyền, và tìm tiếng Việt cần đo riêng |
-| Đăng ký thông báo | Không đăng ký theo loại sự kiện và người nhận; thông báo chat qua webhook cùng các dòng `due_soon` và `overdue` là mức cung cấp |
+| Đăng ký thông báo | Không đăng ký theo loại sự kiện và người nhận; thông báo chat qua webhook cùng các dòng `due_soon`, `overdue` và `escalated` là mức cung cấp |
 | Hành động hoàn tất gọi ra ngoài | Chỉ có `add_to_group` và `remove_from_group`; không có thao tác gọi tới một đích của webhook, vì webhook của mô hình đã gửi mọi dòng lịch sử kèm trạng thái cũ, trạng thái mới và hành động, nên bên nhận lọc theo trạng thái được |
-| Webhook sự kiện | Dạng `chat` chưa thử với Mattermost và Slack thật; Zulip (Apache-2.0) cũng chưa kiểm phụ thuộc, nối OIDC và webhook |
 | Kiểm tương thích khi đổi mô hình | Chưa có nơi đăng ký mã mở rộng nên chưa có hợp đồng để đối chiếu |
 | Người thứ hai duyệt thay đổi mô hình | Không bắt buộc; là chính sách tùy bản triển khai |
 | Ủy quyền có phạm vi và thời hạn | Không có; chạm nhiều đường kiểm quyền |
+| Thời gian viết tay làm mốc | Không đo; phần Lab viết tay không có ghi nhận giờ, nên so sánh công sức dùng số dòng (`examples/effort-benchmark/README.md`) chứ không dùng thời gian |
 | Quyền theo từng trường | Không có; phải phủ mọi đường dữ liệu đi ra: danh sách, bộ lọc, số đếm, lịch sử và webhook |
+| Tham chiếu sang mô hình khác | Trường `reference` chỉ trỏ tới thực thể cùng mô hình; trỏ sang mô hình khác thì mô hình không còn áp dụng và quay lui độc lập, và quyền của hai mô hình thuộc hai client khác nhau |
 | Kiểm tài liệu và OpenAPI chiều ngược | `check_docs.py` kiểm endpoint tài liệu nêu có trong OpenAPI; không kiểm chiều ngược vì `docs/API.md` chỉ liệt kê các đường dẫn chính và viết tắt đường dẫn, nên sẽ báo nhầm |
-| Kiểm thử tự động chưa phủ một số ý | Chưa phủ khe hở khi áp dụng (áp dụng một mô hình đổi bảng trong lúc có yêu cầu ghi hồ sơ), vì kiểm chạy đua dễ lúc đỏ lúc xanh; ý này kiểm tay theo mục 6 của `docs/TESTING.md`; bộ hẹn giờ của `dxos archive schedule`, tab Danh mục dữ liệu, ứng dụng ngoài, kiểu và ràng buộc mới, `required_when`, `ui:`, tài liệu OpenAPI theo mô hình, giới hạn luồng thông báo, khóa chống chạy lặp, bảng theo trạng thái và xuất CSV cũng chỉ kiểm tay theo mục đó, chưa có script trong CI |
+| Kiểm thử tự động chưa phủ một số ý | Chưa phủ khe hở khi áp dụng (áp dụng một mô hình đổi bảng trong lúc có yêu cầu ghi hồ sơ), vì kiểm chạy đua dễ lúc đỏ lúc xanh; ý này kiểm tay theo mục 6 của `docs/TESTING.md`; bộ hẹn giờ của `dxos archive schedule`, tab Danh mục dữ liệu, ứng dụng ngoài loại máy (`dxos client`), kiểu và ràng buộc mới, `required_when`, `ui:`, tài liệu OpenAPI theo mô hình, giới hạn luồng thông báo, khóa chống chạy lặp, bảng theo trạng thái, xuất CSV và mục Báo cáo theo trường của trang Thống kê cũng chỉ kiểm tay theo mục đó, chưa có script trong CI |
+| Thông lượng ghi lịch sử | Chuỗi hash nối mọi dòng theo thứ tự id trên toàn hệ thống nên các lần ghi lịch sử lần lượt qua một khóa tư vấn của PostgreSQL (`HistoryChain.lock()`), giữ đến hết giao dịch; thông lượng của API chung đứng dưới khoảng 1.000 yêu cầu mỗi giây dù CPU còn dư (`docs/SIZING.md`), ở 50 đến 100 người dùng đồng thời vẫn đạt p95 dưới 500 ms; chưa kiểm chứng riêng rằng khóa này là nguyên nhân; chuỗi theo từng hồ sơ hoặc nối hash bất đồng bộ bỏ được khóa nhưng đổi hợp đồng của chuỗi hash và của `hash` trong thông điệp webhook |
+| Đích webhook riêng cho từng mức leo thang | Thông báo leo thang đi qua đích webhook của mô hình, nên một mức chưa chọn được kênh khác; chưa lĩnh vực nào cần, và điều kiện thêm năng lực của `README.md` đòi ít nhất ba lĩnh vực |
+| Hợp đồng sự kiện theo chuẩn mở | Thông điệp webhook có `eventId`, chữ ký và `hash`, và được tả trong `docs/INTEGRATIONS.md`; AsyncAPI và `format: cloudevents` thêm một định dạng phải giữ tương thích mà không phủ tiêu chí nào của đề chưa phủ |
+| Trang và thành phần riêng trong ứng dụng Tầng 2 | Ứng dụng web chưa có chỗ đăng ký trang hay thành phần form; thêm chúng là sửa mã nguồn và dựng lại image; đề chỉ đòi một ứng dụng Tầng 2, và ứng dụng mẫu ngoài đã cho thấy lõi phục vụ ứng dụng khác |
+| Hai họ mẫu mở rộng | Kiểm tra định kỳ (lịch sinh bản ghi, kiểm tra, khắc phục) và Đánh giá và chọn lọc (nhiều người chấm, chọn theo chỉ tiêu) chưa làm; chỉ giữ một họ khi có ít nhất ba miền chạy được bằng tham số; ba họ hiện có đã đạt động cơ luồng công việc của đề |
+| Trợ lý cá nhân qua Telegram | Dịch vụ mở rộng tích hợp OpenClaw cần một mô hình ngôn ngữ như phần AI, mà phần đó chưa có mô hình đạt định nghĩa Open Source AI của OSI; chỉ mở lại khi phần AI có mô hình đạt |

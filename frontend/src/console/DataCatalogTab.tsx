@@ -1,6 +1,10 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import { useEffect, useState } from "react";
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Alert,
   Box,
   Card,
@@ -14,7 +18,9 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { getDataCatalog, listApplied, type DataCatalog, type DataPoint } from "./api";
+import { getDataCatalog, getDataLineage, listApplied, type DataCatalog, type DataLineage, type DataPoint } from "./api";
+import DataQualityPanel from "./DataQualityPanel";
+import FieldLineagePanel from "./FieldLineagePanel";
 import { SCOPE_LABEL } from "./formGuide";
 import { t } from "../shell/t";
 
@@ -60,6 +66,7 @@ export default function DataCatalogTab() {
   const [models, setModels] = useState<string[]>([]);
   const [model, setModel] = useState("");
   const [catalog, setCatalog] = useState<DataCatalog | null>(null);
+  const [lineage, setLineage] = useState<DataLineage | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -76,10 +83,12 @@ export default function DataCatalogTab() {
   useEffect(() => {
     if (!model) return;
     setCatalog(null);
-    getDataCatalog(model).then(
-      (value) => {
+    setLineage(null);
+    Promise.all([getDataCatalog(model), getDataLineage(model)]).then(
+      ([value, fields]) => {
         setError(null);
         setCatalog(value);
+        setLineage(fields);
       },
       (e: unknown) => setError(message(e)),
     );
@@ -88,7 +97,7 @@ export default function DataCatalogTab() {
   return (
     <Box>
       <Alert severity="info" sx={{ mb: 2 }}>
-        {t("Danh mục này đọc thẳng từ mô hình đang chạy: dữ liệu nằm ở đâu, ai được xem, tham chiếu lẫn nhau ra sao, đi vào từ đâu và đi ra đâu.")}
+        {t("Danh mục này đọc thẳng từ mô hình đang chạy: dữ liệu nằm ở đâu, ai được xem, tham chiếu lẫn nhau ra sao, đi vào từ đâu và đi ra đâu, đến từng trường.")}
       </Alert>
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
@@ -162,6 +171,18 @@ export default function DataCatalogTab() {
                   </TableBody>
                 </Table>
               </Box>
+              <Accordion disableGutters variant="outlined" sx={{ mt: 2 }} slotProps={{ transition: { unmountOnExit: true } }}>
+                <AccordionSummary>{t("Nguồn gốc của từng trường")}</AccordionSummary>
+                <AccordionDetails>
+                  <FieldLineagePanel fields={(lineage?.fields ?? []).filter((field) => field.entity === entity.name)} />
+                </AccordionDetails>
+              </Accordion>
+              <Accordion disableGutters variant="outlined" sx={{ mt: 2 }} slotProps={{ transition: { unmountOnExit: true } }}>
+                <AccordionSummary>{t("Chất lượng dữ liệu")}</AccordionSummary>
+                <AccordionDetails>
+                  <DataQualityPanel key={`${catalog.model}-${entity.name}`} model={catalog.model} entity={entity.name} />
+                </AccordionDetails>
+              </Accordion>
             </Card>
           ))}
         </Box>

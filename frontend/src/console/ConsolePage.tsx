@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import { useEffect, useRef, useState } from "react";
 import { Alert, Box, Skeleton, Snackbar, Tab, Tabs } from "@mui/material";
@@ -24,7 +25,7 @@ import { guardUnsavedWork } from "../shell/locale";
 import { t } from "../shell/t";
 
 const BLANK = `# SPDX-License-Identifier: Apache-2.0
-format: 0
+format: 1
 name: my_model
 roles:
   - name: USER

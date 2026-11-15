@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import { existsSync } from 'node:fs';
 import type { ChildProcess } from 'node:child_process';

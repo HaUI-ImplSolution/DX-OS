@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import { createHash, randomBytes } from 'node:crypto';
 import { request as httpRequest } from 'node:http';

@@ -66,6 +66,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Giao diện
 
+- `npm run lint` trong `frontend/` phân tích tĩnh mã web bằng Biome (cấu hình ở `frontend/biome.json`) và chạy ở workflow `Frontend`; phát hiện nghiêm trọng làm job đỏ, cảnh báo về phụ thuộc của hook và khóa theo chỉ số mảng chỉ hiện trong kết quả.
 - Lưu biểu mẫu bỏ trường tệp khỏi dữ liệu tạo/sửa hồ sơ, giữ tệp đính kèm hiện có khi sửa thông tin khác.
 - Trình sửa mô hình chọn `default` của trường nhiều lựa chọn từ danh sách `options`, và trình soạn YAML không còn cảnh báo khi `default` là danh sách.
 - Các mức leo thang hiện ở ghi chú dưới sơ đồ quy trình, ở dòng lịch sử của hồ sơ kèm vai được báo và lần nhắc, và ở kế hoạch khi tệp đổi các mức này; trình soạn YAML gợi ý các khóa `escalate`, `after`, `to` và `repeat`.
@@ -78,6 +79,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 - Đối chiếu toàn bộ giáo trình DX-OS với thuật ngữ, kiến trúc và hợp đồng hiện tại của lõi, gồm phân tích riêng DX-Ticket và các khoảng trống đã có issue theo dõi.
 - `CONTRIBUTING.md` ghi rõ tính năng mới đi kèm kiểm tự động (test backend hoặc mục kiểm trong `e2e/api/check_*.py`) và issue, pull request viết được bằng tiếng Việt hoặc tiếng Anh; README có huy hiệu OpenSSF Best Practices mức passing.
+- `.github/CODEOWNERS` khai ba thành viên là người sở hữu của mọi đường dẫn, ruleset của `main` đòi một người trong số đó duyệt, và workflow `Scorecard` chạy OpenSSF Scorecard mỗi tuần và khi đẩy lên `main`, đưa kết quả vào tab Security mà không công bố ra ngoài.
 - `docs/INTEGRATIONS.md` ghi cấu hình và kết quả kiểm webhook `chat` với Mattermost Team Edition 11.7.15: thông báo, hiển thị tiếng Việt, gửi lại khi lỗi và khả năng trùng tin.
 - Bài so sánh luồng ticket cơ bản ở `examples/effort-benchmark/`: mã API/xử lý của Lab với khai báo Core, cách đếm tái lập và kết quả kiểm API/UI.
 - `docs/TARGETS.md` ghi cách đo và kết quả của các chỉ số mục tiêu: mức 1, 2 và 3 của một hệ thống, quy tắc đếm mã tự viết (`tools/count_own_code.py`), thời gian dựng và đổi, bài thử có hướng dẫn kèm một bản mô phỏng người mới, và chi phí hạ tầng của cấu hình tham chiếu.

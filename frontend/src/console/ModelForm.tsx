@@ -60,7 +60,9 @@ function compact(source: Rec): Rec {
 // The same mapping with one key renamed, in the same place.
 function renameKey(source: Rec, from: string, to: string): Rec {
   const renamed: Rec = {};
-  Object.entries(source).forEach(([key, item]) => (renamed[key === from ? to : key] = item));
+  Object.entries(source).forEach(([key, item]) => {
+    renamed[key === from ? to : key] = item;
+  });
   return renamed;
 }
 

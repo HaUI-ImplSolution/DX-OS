@@ -99,14 +99,16 @@ export function buildProcessDiagram(
     nodesep: 50,
   });
   graph.setDefaultEdgeLabel(() => ({}));
-  states.forEach((state) =>
-    graph.setNode(state.name, { width: PROCESS_NODE_WIDTH, height: PROCESS_NODE_HEIGHT }),
-  );
-  steps.forEach((action) =>
+  states.forEach((state) => {
+    graph.setNode(state.name, { width: PROCESS_NODE_WIDTH, height: PROCESS_NODE_HEIGHT });
+  });
+  steps.forEach((action) => {
     action.from
       .filter((from) => visible.has(from) && visible.has(action.to))
-      .forEach((from) => graph.setEdge(from, action.to)),
-  );
+      .forEach((from) => {
+        graph.setEdge(from, action.to);
+      });
+  });
   layoutGraph(graph, { useDynamic: false });
 
   const nodes: ProcessDiagramNode[] = states.map((state) => {

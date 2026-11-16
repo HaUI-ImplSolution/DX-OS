@@ -1,0 +1,6 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
+# SPDX-License-Identifier: Apache-2.0
+
+# The last matching pattern wins, so the general rule comes first.
+# Every path is owned by the three team members; one of them is enough to review.
+*                   @KhuongSpring @nddKhanh @tung51652-alt

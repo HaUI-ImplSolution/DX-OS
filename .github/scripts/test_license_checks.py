@@ -120,6 +120,38 @@ class GithubAccessTest(unittest.TestCase):
         self.assertIn("HTTP 403", str(raised.exception))
         self.assertIn("IP allow list", str(raised.exception))
 
+    def test_rate_limit_uses_complete_same_ref_text_without_credentials(self):
+        import io
+        import urllib.error
+        urls = []
+        def handler(request):
+            urls.append(request.full_url)
+            if request.full_url.startswith("https://api.github.com/"):
+                raise urllib.error.HTTPError(request.full_url, 403, "Forbidden", {}, io.BytesIO(b'{"message":"API rate limit exceeded"}'))
+            return io.BytesIO((upstream.ROOT / "LICENSES/Apache-2.0.txt").read_bytes())
+        self.respond(handler)
+        self.assertIsNone(upstream.verify("p", ENTRY, "1.2.3"))
+        self.assertEqual(urls[-1], "https://raw.githubusercontent.com/org/project/v1.2.3/LICENSE")
+        self.assertIsNone(self.calls[-1])
+
+    def test_rate_limit_cannot_accept_a_partial_or_changed_license(self):
+        import io
+        def limited(path, raw=False):
+            raise upstream.RateLimited("quota")
+        self.respond(lambda request: io.BytesIO(b"Apache License, Version 2.0; changed terms"))
+        with self.assertRaises(upstream.Unreadable):
+            upstream.verify("p", ENTRY, "1.2.3", limited)
+
+    def test_rate_limit_cannot_accept_an_unreadable_upstream_file(self):
+        import urllib.error
+        def limited(path, raw=False):
+            raise upstream.RateLimited("quota")
+        def unavailable(request):
+            raise urllib.error.URLError("offline")
+        self.respond(unavailable)
+        with self.assertRaises(upstream.Unreadable):
+            upstream.verify("p", ENTRY, "1.2.3", limited)
+
 
 class SbomLicenseTest(unittest.TestCase):
     def check(self, licenses):

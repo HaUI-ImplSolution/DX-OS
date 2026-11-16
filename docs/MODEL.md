@@ -199,7 +199,7 @@ Một lần đổi vừa tăng vừa giảm, như `own` sang `read`, hoặc khô
 
 - `handler` là vai xử lý, hoặc một danh sách vai như `[MANAGER, SELLER]`; ai giữ một trong các vai đó thì xử lý được.
 - `family` chọn một họ mẫu để bắt đầu: `approval`, `work_item` hoặc `reservation`; bỏ trống thì tự khai báo đủ `states` và `actions`.
-- `deadline` là hạn xử lý tùy chọn (ví dụ `72h`).
+- `deadline` là hạn xử lý tùy chọn, một số kèm `m` (phút), `h` (giờ) hoặc `d` (ngày), ví dụ `72h`; thêm `calendar` để đếm theo lịch làm việc ([Lịch làm việc](#lịch-làm-việc)).
 - `escalate` là danh sách tối đa 5 mức leo thang tính từ lúc hồ sơ quá `deadline`, nên quy trình phải khai `deadline`.
   Mỗi mức khai `after` (thời gian sau hạn) và `to` (một vai hoặc danh sách vai, mỗi vai phải đọc được hồ sơ), cùng `repeat: {every: 12h, times: 3}` nếu muốn nhắc lại; bỏ `repeat` thì mỗi mức gửi một lần.
   Ví dụ: `escalate: [{after: 24h, to: MANAGER}, {after: 72h, to: [DIRECTOR], repeat: {every: 12h, times: 3}}]`.
@@ -270,6 +270,33 @@ actions:
   lead_reject: {from: submitted, to: rejected, role: LEAD, needs_note: true}
   approve: {from: lead_approved, to: approved, role: DIRECTOR}
 ```
+
+### Lịch làm việc
+
+`calendars` ở đầu tệp khai các lịch làm việc, và một quy trình có `deadline` chọn một lịch bằng `calendar: <tên>`.
+Quy trình không khai `calendar` thì đếm hạn liên tục cả ngày lẫn đêm.
+
+```yaml
+calendars:
+  office:
+    days: [mon, tue, wed, thu, fri]
+    hours: ['08:00-12:00', '13:30-17:30']
+    holidays: [2026-12-25]
+entities:
+  leave_request:
+    process: {family: approval, handler: MANAGER, deadline: 2d, calendar: office}
+```
+
+- `days` là các ngày làm trong tuần (`mon` đến `sun`) và bắt buộc có ít nhất một ngày.
+- `hours` là danh sách khoảng giờ `HH:MM-HH:MM` theo thứ tự thời gian, không chạm hay chồng nhau, và `24:00` chỉ dùng làm giờ kết thúc; bỏ `hours` thì cả ngày là giờ làm.
+- `holidays` là danh sách ngày nghỉ (`2026-12-25`), tối đa 1000 ngày.
+- Giờ tính theo múi giờ `Asia/Ho_Chi_Minh`.
+- `deadline` tính bằng `m` hoặc `h` chỉ đếm qua giờ làm; tính bằng `d` là chừng đó ngày làm, rơi đúng giờ trong ngày của lúc bắt đầu.
+- Hồ sơ bắt đầu chờ ngoài giờ làm thì tính từ lần mở cửa kế tiếp; chiều thứ Sáu 16:00 với hạn `1d` kết thúc 16:00 thứ Hai.
+- Hạn của hồ sơ (`handle_by`) tính một lần lúc hồ sơ vào trạng thái chờ xử lý, nên đổi lịch không dời hạn của hồ sơ đã có.
+- `due_soon` và `escalate` vẫn tính theo giờ thường từ hạn đó, nên một thông báo có thể rơi vào ngày nghỉ.
+- Đổi lịch của quy trình, hoặc đổi giờ, ngày làm, ngày nghỉ của một lịch, là thay đổi `SAFE` (`CHANGE_CALENDAR`) và bị từ chối khi còn hồ sơ mở, như đổi `deadline`.
+- Một lịch không quy trình nào dùng vẫn được lưu, và `extends` ghép `calendars` theo tên lịch.
 
 ### Đặt chỗ
 

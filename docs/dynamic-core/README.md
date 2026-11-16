@@ -225,7 +225,7 @@ Tham số của từng họ mẫu và cách tự khai báo quy trình ở [`docs
 - Một lần áp dụng sinh cả phần mềm lẫn quy trình từ cùng một tệp mô hình: lược đồ, vai Keycloak, quy trình và phiên bản mô hình nằm chung một kế hoạch.
   Lược đồ và Keycloak nằm ngoài giao dịch của Flowable, nên "một lần" nghĩa là một kế hoạch có thứ tự, chạy lại được hoặc quay lui, không phải một giao dịch duy nhất.
 - Kế hoạch cho xem khác biệt của quy trình, kiểm tra không có trạng thái cụt và vai có thật, và báo số bản ghi đang chạy bị ảnh hưởng.
-- Luật của quy trình (người xử lý, hạn xử lý, quyền tự quyết, hành động hoàn tất, đặt chỗ) chỉ đổi được khi thực thể không còn hồ sơ đang xử lý, nên mỗi hồ sơ chỉ chịu một bộ luật từ lúc nộp đến lúc đóng.
+- Luật của quy trình (người xử lý, hạn xử lý, lịch làm việc của hạn, quyền tự quyết, hành động hoàn tất, đặt chỗ) chỉ đổi được khi thực thể không còn hồ sơ đang xử lý, nên mỗi hồ sơ chỉ chịu một bộ luật từ lúc nộp đến lúc đóng.
   Đổi họ mẫu của một thực thể bị từ chối; muốn đổi hình dạng quy trình thì thêm thực thể mới.
 
 **Họ mẫu tùy biến:**
@@ -437,7 +437,7 @@ Những chỗ khó:
 
 Flowable thay phần workflow viết tay, người dùng không đụng tới BPMN.
 Đội viết sẵn và kiểm thử các họ mẫu quy trình, người dùng chọn họ mẫu rồi điền tham số như ai duyệt, hạn bao lâu, báo cho ai, hoặc tự khai báo trạng thái và hành động; xem [Quy trình chung](#quy-trình-chung).
-Hạn xử lý lưu trên bản ghi và quá hạn được tính khi đọc, một tác vụ định kỳ ghi dòng quá hạn và các dòng leo thang vào lịch sử; Flowable lo phiên bản quy trình.
+Hạn xử lý lưu trên bản ghi, tính một lần lúc hồ sơ chờ xử lý và đếm trong giờ làm của lịch nếu quy trình khai lịch, và quá hạn được tính khi đọc, một tác vụ định kỳ ghi dòng quá hạn và các dòng leo thang vào lịch sử; Flowable lo phiên bản quy trình.
 
 Trạng thái hồ sơ không thể bị đi vòng:
 

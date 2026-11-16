@@ -245,6 +245,13 @@ Kiểm bằng đúng các lệnh và thao tác trong tài liệu.
     - `own` sang `assigned`, hoặc `read` sang `own`, ra `CHANGE_ACCESS`.
     - Mọi dòng ở mức `SAFE`, `dxos apply` không cần `--accept`; chỉ đổi nhãn thì không có dòng quyền nào, và tệp giống mô hình đang chạy thì `dxos plan --check` thoát mã 0.
     - Tab Kế hoạch ghi nhãn đúng ở tiếng Việt và tiếng Anh, dòng `vai: cũ → mới` hiện dưới nhãn.
+49. **Lịch làm việc:** áp dụng một mô hình có `calendars` (ngày làm thứ Hai đến thứ Sáu, giờ `['08:00-12:00', '13:00-17:00']`) và hai thực thể có quy trình, một có `calendar: office` và `deadline: 4h`, một có `deadline: 1d` cùng lịch, một không có lịch:
+    - Hồ sơ tạo 15:00 thứ Hai ở thực thể `4h` có `handle_by` 10:00 thứ Ba; thực thể `1d` có `handle_by` 15:00 thứ Ba; hồ sơ tạo chiều thứ Sáu hoặc ngày nghỉ tính từ lần mở cửa kế tiếp; thực thể không có lịch có `handle_by` đúng bằng lúc tạo cộng hạn.
+    - Hành động đưa hồ sơ vào trạng thái chờ xử lý (như `start`) đặt lại `handle_by` theo lịch.
+    - `dxos lint` và Xem kế hoạch báo lỗi theo dòng và cột cho lịch không khai, giờ chồng nhau, giờ kết thúc trước giờ bắt đầu, `days` rỗng, ngày nghỉ sai dạng hoặc trùng, và `calendar` không có `deadline`.
+    - Đổi giờ của lịch đang dùng, hoặc bỏ `calendar` khỏi quy trình, ra `CHANGE_CALENDAR` ở mức `SAFE` và bị từ chối khi thực thể còn hồ sơ đang xử lý; một lịch không quy trình nào dùng mà đổi vẫn ra một dòng `CHANGE_CALENDAR`.
+    - Một tệp `extends` khai lại `office` chỉ với `hours` giữ `days` của mẫu và thêm lịch mới theo tên.
+    - Form quy trình ở tab Soạn và áp dụng có ô Lịch làm việc với các lịch đã khai, báo đỏ khi tên lịch chưa khai, và đủ ở tiếng Việt và tiếng Anh.
 
 ## 7. Hồi quy
 

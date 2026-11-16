@@ -91,8 +91,9 @@ export const GUIDE: Record<Section, Guide> = {
       t("Thêm trạng thái hoặc hành động vào khung đã chọn; đổi nhãn, đổi trạng thái đích; bỏ hành động của khung bằng null."),
       t("Giao một hành động cho riêng một vai (duyệt nhiều cấp) và bắt buộc điền trường trước khi thực hiện hành động."),
       t("Đặt hạn xử lý, tự đóng hồ sơ bằng một hành động của người nộp, cho phép người tạo tự quyết định, thêm hành động hoàn tất."),
+      t("Gắn lịch làm việc đã khai ở đầu tệp (calendars) để hạn xử lý chỉ đếm trong giờ làm và bỏ qua ngày nghỉ; báo leo thang và nhắc sắp đến hạn vẫn tính theo giờ thường."),
       t("Báo thêm vai khác khi hồ sơ quá hạn mà chưa ai xử lý: tối đa 5 cấp, mỗi cấp nhắc lại được; chỉ ghi lịch sử và gửi thông báo, không đổi trạng thái hay người giữ hồ sơ."),
-      t("Đổi trạng thái hoặc hành động khi còn hồ sơ đang xử lý thì bị từ chối; đổi nhãn, vai, trường bắt buộc, hạn, các cấp báo leo thang thì áp dụng ngay."),
+      t("Đổi trạng thái hoặc hành động khi còn hồ sơ đang xử lý thì bị từ chối; đổi nhãn, vai, trường bắt buộc, các cấp báo leo thang thì áp dụng ngay; đổi hạn hoặc lịch làm việc khi còn hồ sơ đang xử lý cũng bị từ chối."),
     ],
     creates: [
       t("Quy trình hoàn toàn mới, không dựa khung nào: tự khai báo states, actions và trạng thái ban đầu (initial)."),
@@ -131,6 +132,7 @@ export const COMPLETION_LABEL: Record<string, string> = {
 export const PARAM_HELP: Record<string, string> = {
   allow_self_decision: t("Người tạo hồ sơ được tự quyết định hồ sơ của mình"),
   deadline: t("Thời gian một vai xử lý có để xử lý hồ sơ, quá hạn thì được đánh dấu"),
+  calendar: t("Lịch làm việc: hạn xử lý chỉ đếm trong giờ làm và bỏ qua ngày nghỉ; bỏ trống thì đếm liên tục cả ngày đêm"),
   escalate: t("Quá hạn mà chưa ai xử lý thì báo thêm vai khác (khai trong tệp YAML)"),
   auto_close: t("Hồ sơ đã xử lý xong mà người nộp không xác nhận sau thời gian này thì hệ thống tự đóng"),
 };
@@ -179,7 +181,12 @@ export const SCHEMA_HELP: Record<string, string> = {
   "entities.process.actions.when": t("Điều kiện để thực hiện hành động: một phép so sánh dạng trường toán_tử giá_trị, ví dụ amount > 5000000. Toán tử: ==, !=, <, <=, >, >=; thứ tự chỉ cho trường number. Chỉ dùng cho hành động của người xử lý; mỗi trạng thái không cuối cần ít nhất một hành động ra không có điều kiện."),
   "entities.process.actions.require": t("Trường bắt buộc điền trước khi thực hiện hành động: một trường hoặc danh sách trường (không phải trường file)."),
   "entities.process.allow_self_decision": t("true nếu người tạo hồ sơ được tự xử lý hồ sơ của mình."),
-  "entities.process.deadline": t("Thời gian vai xử lý có để xử lý, quá hạn thì bị đánh dấu. Số kèm m (phút), h (giờ) hoặc d (ngày), ví dụ 90m, 72h, 3d."),
+  "entities.process.deadline": t("Thời gian vai xử lý có để xử lý, quá hạn thì bị đánh dấu. Số kèm m (phút), h (giờ) hoặc d (ngày), ví dụ 90m, 72h, 3d. Khi quy trình có calendar, m và h đếm giờ làm còn d là số ngày làm."),
+  "entities.process.calendar": t("Tên một lịch đã khai ở calendars. Hạn xử lý chỉ đếm trong giờ làm của lịch và bỏ qua ngày nghỉ; không khai thì đếm liên tục. Đổi khi còn hồ sơ đang xử lý bị từ chối."),
+  calendars: t("Lịch làm việc, mỗi lịch một tên viết thường (chữ, số, gạch dưới). Quy trình gắn lịch bằng calendar."),
+  "calendars.days": t("Các ngày làm trong tuần: mon, tue, wed, thu, fri, sat, sun. Cần ít nhất một ngày."),
+  "calendars.hours": t("Giờ làm trong một ngày làm: danh sách khoảng HH:MM-HH:MM, ví dụ ['08:00-12:00', '13:30-17:30'] để có nghỉ trưa. Các khoảng không chồng nhau."),
+  "calendars.holidays": t("Ngày nghỉ cố định theo dạng YYYY-MM-DD, ví dụ 2026-12-25; ngày đó không tính giờ làm dù rơi vào ngày làm."),
   "entities.process.escalate": t("Báo thêm vai khác khi hồ sơ quá hạn mà chưa ai xử lý: danh sách các cấp {after: 24h, to: MANAGER, repeat: {every: 12h, times: 3}}, tối đa 5 cấp. Cần có deadline."),
   "entities.process.escalate.after": t("Thời gian sau khi quá hạn thì cấp này báo lần đầu, ví dụ 24h."),
   "entities.process.escalate.to": t("Vai nhận báo: một vai hoặc danh sách vai, đã khai ở roles và có quyền all, read, unit hoặc assigned."),

@@ -104,6 +104,7 @@ public class ApplyService {
           "CHANGE_COMPLETION",
           "CHANGE_BOOKING",
           "CHANGE_DEADLINE",
+          "CHANGE_CALENDAR",
           "CHANGE_FLOW");
 
   private final JdbcTemplate jdbc;

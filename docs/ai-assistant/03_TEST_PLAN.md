@@ -12,6 +12,8 @@ CONTRIBUTING và các check CI bắt buộc vẫn áp dụng; chưa chạy thì 
 
 ## 2. Ma trận nghiệm thu
 
+Các hậu tố a/b trong checklist chia phần công việc của cùng một mã CP; không thay đổi điều kiện cần đạt ở bảng này.
+
 | Mã | Tình huống và kết quả cần đạt | Loại kiểm |
 |---|---|---|
 | CP-01 | LICENSE/NOTICE/provenance đúng phiên bản/artifact và bundled; model/dữ liệu đạt cam kết trước đóng gói, thiếu bằng chứng không được ghi đạt OSAID | Giấy phép upstream, artifact và dữ liệu |

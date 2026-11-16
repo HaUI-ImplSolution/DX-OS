@@ -144,7 +144,7 @@ Cột Trạng thái ghi quyết định của đội: đề xuất đã chốt l
 ## 9. Đối chiếu với chuẩn repository nguồn mở
 
 Đối chiếu với hồ sơ cộng đồng của GitHub, tiêu chí của huy hiệu OpenSSF Best Practices và Scorecard, và tệp có ở bảy dự án khác (Keycloak, APISIX, Supabase, Directus, Frappe, Strapi, Signet).
-Huy hiệu OpenSSF Best Practices mức passing đã được cấp; công cụ Scorecard chưa được chạy.
+Huy hiệu OpenSSF Best Practices mức passing đã được cấp; workflow `Scorecard` chạy hằng tuần và khi đẩy lên `main`, chưa có kết quả.
 GitHub chấm hồ sơ cộng đồng của repository là 87 trên 100, trong khi Signet được 100.
 Phần thiếu không phải mẫu issue (cả hai repository đều bị API ghi `issue_template: false`) mà là cài đặt "Reported content", Signet bật còn DX-OS chưa; đó là cài đặt của chủ repository.
 
@@ -158,14 +158,14 @@ Phần thiếu không phải mẫu issue (cả hai repository đều bị API gh
 | Cập nhật và quét phụ thuộc | Dependabot, Trivy, gitleaks; tab Security ngày 14/11 có 6 cảnh báo mở (1 cao, 4 vừa, 1 thấp), đều ở thư viện npm gián tiếp (`decode-uri-component`, `react-router` trong web; `uuid`, `deepmerge` trong trang docs) và đều mở từ 6 đến 11/11, chưa cái nào quá 60 ngày; quét độc lập bằng Trivy 0.58.1 (cùng image với CI) trên các tệp khóa thấy 0 lỗ hổng cao hoặc nghiêm trọng, và các lỗ hổng mức vừa bị giới hạn bởi phiên bản mà `react-admin` và Docusaurus cho phép | Phần lớn có công cụ cập nhật | Đạt có điều kiện: cần nâng các thư viện này khi bản vá tương thích ra |
 | Bảo vệ nhánh và tag | Hai ruleset đang `active`: `main` (bắt buộc pull request, 16 kiểm tra phải xanh, một đối tượng được bỏ qua) và tag `v*` bất biến | Không đo được từ ngoài | Đạt |
 | `.editorconfig` | Thêm ngày 14/11 | 6 trên 7 dự án có | Đạt |
-| `CODEOWNERS` | Chưa có; cần tên tài khoản GitHub của người phụ trách từng vùng | 4 trên 7 có | Thiếu |
-| Phân tích tĩnh (SAST) | SpotBugs với find-sec-bugs chạy ở bước `verify` của backend và làm hỏng build khi có phát hiện chưa được giải thích; ngày 14/11 đã duyệt 67 phát hiện còn lại sau khi lọc cảnh báo lộ tham chiếu của record và DTO: 37 về SQL (tên bảng và cột đều qua `Sql.ident`, giá trị qua tham số `?`), 7 về giá trị có thể null, 5 về đa luồng và 18 khác, không phát hiện chỗ nào khai thác được; mỗi nhóm có lý do ở `backend/spotbugs-exclude.xml` | 2 trên 7 có CodeQL | Đạt: công cụ chạy ở mọi lần build, mọi phát hiện đã duyệt và build chặn phát hiện mới |
+| `CODEOWNERS` | `.github/CODEOWNERS` nêu ba thành viên là chủ sở hữu của mọi đường dẫn, và ruleset của `main` đòi một chủ sở hữu duyệt pull request; chưa chia người phụ trách theo vùng | 4 trên 7 có | Đạt |
+| Phân tích tĩnh (SAST) | Mã web chạy Biome (`npm run lint`) ở workflow `Frontend`; SpotBugs với find-sec-bugs chạy ở bước `verify` của backend và làm hỏng build khi có phát hiện chưa được giải thích; ngày 14/11 đã duyệt 67 phát hiện còn lại sau khi lọc cảnh báo lộ tham chiếu của record và DTO: 37 về SQL (tên bảng và cột đều qua `Sql.ident`, giá trị qua tham số `?`), 7 về giá trị có thể null, 5 về đa luồng và 18 khác, không phát hiện chỗ nào khai thác được; mỗi nhóm có lý do ở `backend/spotbugs-exclude.xml` | 2 trên 7 có CodeQL | Đạt: công cụ chạy ở mọi lần build, mọi phát hiện đã duyệt và build chặn phát hiện mới |
 | Bản phát hành có chữ ký | Chỉ có SHA-256; chưa ký | Không có trong khảo sát | Thiếu, ưu tiên thấp |
 | `GOVERNANCE.md`, `MAINTAINERS` | Chưa có | Chỉ Keycloak có | Chưa cần với nhóm ba người |
-| Huy hiệu OpenSSF Best Practices, Scorecard | Huy hiệu mức passing đã cấp ngày 14/11 ([hồ sơ](https://www.bestpractices.dev/projects/16682)): 57 tiêu chí Met, 7 N/A và 3 Unmet ở mức khuyến nghị (`test_most`, `warnings_strict`, `dynamic_analysis`); lời giải thích từng tiêu chí trỏ về tệp của repository trên `main`, nên hồ sơ chỉ khớp sau khi nhánh tích hợp vào `main`; Scorecard đã tải và kiểm checksum nhưng hệ thống chặn việc chạy tệp nhị phân đó, nên chưa có kết quả | Không có dự án nào trong khảo sát chạy Scorecard | Đạt cho huy hiệu; Scorecard chưa kiểm |
+| Huy hiệu OpenSSF Best Practices, Scorecard | Huy hiệu mức passing đã cấp ngày 14/11 ([hồ sơ](https://www.bestpractices.dev/projects/16682)): 57 tiêu chí Met, 7 N/A và 3 Unmet ở mức khuyến nghị (`test_most`, `warnings_strict`, `dynamic_analysis`); lời giải thích từng tiêu chí trỏ về tệp của repository trên `main`, nên hồ sơ chỉ khớp sau khi nhánh tích hợp vào `main`; workflow `Scorecard` đưa kết quả vào tab Security, chưa có lần chạy nào | Không có dự án nào trong khảo sát chạy Scorecard | Đạt cho huy hiệu; Scorecard chưa có kết quả |
 
 Về phân tích tĩnh, CodeQL không hợp nguyên tắc công cụ phải có giấy phép OSI của dự án vì điều khoản của công cụ dòng lệnh không thuộc OSI.
-SpotBugs hoặc Error Prone cho Java và ESLint cho web đều là phần mềm nguồn mở.
+Backend dùng SpotBugs và web dùng Biome (ESLint không chạy được với TypeScript 7), cả hai đều là phần mềm nguồn mở.
 
 ## 10. Kết luận
 
@@ -179,6 +179,6 @@ SpotBugs hoặc Error Prone cho Java và ESLint cho web đều là phần mềm 
 2. **Chưa có phần AI.** Chữ I của H-P-D-I chưa có và chưa hỏi Ban tổ chức; ảnh hưởng đến mức hoàn thiện và tính nguyên gốc ở buổi chung kết, không ảnh hưởng điểm kho mã.
 3. **Lịch sử issue mỏng và đóng góp tập trung vào một người.** Không mất điểm trực tiếp theo thể lệ, nhưng làm yếu bằng chứng về dự án có cộng đồng.
 4. **Chưa kiểm được:** kết quả OpenSSF Scorecard, và việc dựng trên máy hoàn toàn mới không có bộ nhớ đệm của Docker.
-5. **Thiếu so với chuẩn repository:** chưa có `CODEOWNERS`; ở mọi vùng của repository một người viết từ 62 đến 100% commit, nên việc chia người phụ trách là quyết định của nhóm.
+5. **Thiếu so với chuẩn repository:** `CODEOWNERS` chưa chia theo vùng; ở mọi vùng của repository một người viết từ 62 đến 100% commit, nên việc chia người phụ trách là quyết định của nhóm.
 
 Các việc còn lại và thứ tự làm nằm ở `BACKLOG.md`.

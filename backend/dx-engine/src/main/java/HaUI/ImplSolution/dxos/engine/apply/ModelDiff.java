@@ -8,6 +8,7 @@ import HaUI.ImplSolution.dxos.model.Model.Entity;
 import HaUI.ImplSolution.dxos.model.Model.Field;
 import HaUI.ImplSolution.dxos.model.Model.Process;
 import HaUI.ImplSolution.dxos.model.ProcessFamily;
+import HaUI.ImplSolution.dxos.model.Scope;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -333,10 +334,53 @@ public final class ModelDiff {
     return lower ? order > 0 : order < 0;
   }
 
-  private void compareRest(Entity old, Entity entity) {
-    if (!old.access().equals(entity.access())) {
-      changes.add(new Change(Level.SAFE, "CHANGE_ACCESS", entity.name(), null, null));
+  // One change per role whose level moved, named by what it does to the rows the role reaches. All
+  // are SAFE: the access is read from the model at run time and no data moves.
+  private void compareAccess(Entity old, Entity entity) {
+    Set<String> roles = new LinkedHashSet<>(old.access().keySet());
+    roles.addAll(entity.access().keySet());
+    for (String role : roles) {
+      Scope was = old.access().get(role);
+      Scope now = entity.access().get(role);
+      if (was == now) {
+        continue;
+      }
+      String kind =
+          was == null ? "GRANT_ACCESS" : now == null ? "REVOKE_ACCESS" : accessKind(was, now);
+      String detail =
+          role
+              + ": "
+              + (was == null ? "none" : was.key())
+              + " → "
+              + (now == null ? "none" : now.key());
+      changes.add(new Change(Level.SAFE, kind, entity.name(), null, detail));
     }
+  }
+
+  // The levels do not form a line, so they are compared on two counts: how many rows the role
+  // reaches (own and assigned, then unit, then all and read) and whether it may write. Gaining on
+  // either count without losing on the other widens the access, the reverse narrows it, and a move
+  // that gains on one and loses on the other, or on neither, is only reported as a change.
+  private static String accessKind(Scope was, Scope now) {
+    boolean gains = reach(now) > reach(was) || (writes(now) && !writes(was));
+    boolean loses = reach(now) < reach(was) || (!writes(now) && writes(was));
+    return gains == loses ? "CHANGE_ACCESS" : gains ? "WIDEN_ACCESS" : "NARROW_ACCESS";
+  }
+
+  private static int reach(Scope scope) {
+    return switch (scope) {
+      case OWN, ASSIGNED -> 1;
+      case UNIT -> 2;
+      case ALL, READ -> 3;
+    };
+  }
+
+  private static boolean writes(Scope scope) {
+    return scope != Scope.READ;
+  }
+
+  private void compareRest(Entity old, Entity entity) {
+    compareAccess(old, entity);
     if (!Objects.equals(old.ownerVia(), entity.ownerVia())) {
       changes.add(new Change(Level.SAFE, "CHANGE_OWNER_VIA", entity.name(), null, null));
     }

@@ -188,6 +188,11 @@ Ví dụ đầy đủ ở [`asset_register.yaml`](../backend/dx-engine/src/main/
 | `unit` | Dòng của đơn vị mình |
 | `assigned` | Dòng được giao cho mình |
 
+Đổi `access` là thay đổi `SAFE`, và kế hoạch ghi mỗi vai có mức đổi thành một dòng `vai: cũ → mới`.
+Dòng đó thuộc một trong năm loại: cấp thêm cho một vai chưa có (`GRANT_ACCESS`), thu hồi (`REVOKE_ACCESS`), mở rộng (`WIDEN_ACCESS`), thu hẹp (`NARROW_ACCESS`) và đổi (`CHANGE_ACCESS`).
+Mở rộng hay thu hẹp so theo hai điều: số dòng vai chạm tới (`own` và `assigned`, rồi `unit`, rồi `all` và `read`) và quyền ghi (`read` không ghi).
+Một lần đổi vừa tăng vừa giảm, như `own` sang `read`, hoặc không tăng không giảm, như `own` sang `assigned`, được ghi là đổi.
+
 `owner_via` cho thực thể con theo chủ sở hữu của thực thể cha, qua nhiều cấp.
 
 ## Quy trình

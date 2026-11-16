@@ -32,6 +32,8 @@
 #   dxos model upgrade [--write] <model-file>
 #                              preview the sequential upgrade to the current model format;
 #                              --write replaces the file atomically after printing the diff
+#   dxos model merge <model-file>
+#                              print the complete model of a file that extends a template, as plan and apply use it
 #   dxos history verify|anchor check that the history of records was not changed, or anchor it now
 #   dxos gitops sync [models|infra] | status [models|infra] | approve [infra] <commit> [--accept LEVEL] | install | uninstall
 #                              keep the models equal to the model files of a git repository, and this install
@@ -589,10 +591,29 @@ cmd_model_upgrade() (
   echo "Upgraded $file atomically."
 )
 
+# Prints the file that results from the extends key; a file without extends is printed as it is.
+cmd_model_merge() {
+  local file
+  (( $# == 1 )) || die "usage: dxos model merge <model-file>"
+  file="$(from_caller "$1")"
+  model_file_arg "$file" "model merge"
+  api POST /models/merge "$file"
+  if [[ "$API_STATUS" != 200 ]]; then pretty "$API_BODY"; return 1; fi
+  [[ "$(json_field template "$API_BODY")" != null ]] || echo "The file does not extend a template." >&2
+  if command -v jq >/dev/null 2>&1; then
+    jq -ej '.data.content' <<<"$API_BODY"
+  elif command -v python3 >/dev/null 2>&1; then
+    python3 -c 'import json, sys; sys.stdout.write(json.load(sys.stdin)["data"]["content"])' <<<"$API_BODY"
+  else
+    die "jq or python3 is required to read the merged model"
+  fi
+}
+
 cmd_model() {
   case "${1:-}" in
     upgrade) shift; cmd_model_upgrade "$@" ;;
-    *) die "usage: dxos model upgrade [--write] <model-file>" ;;
+    merge) shift; cmd_model_merge "$@" ;;
+    *) die "usage: dxos model upgrade [--write] <model-file> | dxos model merge <model-file>" ;;
   esac
 }
 

@@ -73,6 +73,7 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 | `dxos lint <tệp>...` | Kiểm tệp mô hình bằng bộ đọc của backend, không cần hệ thống đang chạy (xem dưới) |
 | `dxos conformance <mô hình> [--allow-test-users]` | Kiểm các rào chắn của lõi cho một mô hình đã áp dụng (xem dưới) |
 | `dxos model upgrade [--write] <tệp>` | Xem diff nâng tuần tự tệp lên format hiện hành; `--write` thay tệp nguyên tử sau khi in diff (xem dưới) |
+| `dxos model merge <tệp>` | In tệp mô hình đầy đủ của một tệp có `extends` (xem [`MODEL.md`](./MODEL.md#mở-rộng-từ-mẫu)) |
 | `dxos gitops sync [models\|infra]`, `status [models\|infra]`, `approve [infra] <commit> [--accept MỨC]`, `install`, `uninstall` | Kéo hạ tầng và tệp mô hình từ git, so với bản cài và mô hình đang chạy; `install` chạy mỗi 5 phút bằng systemd user timer (xem dưới) |
 | `dxos history verify`, `dxos history anchor` | Kiểm lịch sử hồ sơ chưa bị sửa, hoặc ghi điểm neo ngay (xem [`INTEGRATIONS.md`](./INTEGRATIONS.md#lịch-sử-chống-sửa)) |
 | `dxos reconcile [install\|uninstall]` | Đưa stack về đúng khai báo; `install` chạy mỗi phút bằng systemd user timer (xem dưới) |

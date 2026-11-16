@@ -85,7 +85,7 @@ python3 e2e/api/check_bootstrap.py
 | `check_api.py` | Áp dụng mô hình mẫu vào hệ thống rỗng, lỗi tệp theo dòng và cột, quyền theo vai và theo dòng, chặn ghi `status`, chống SQL qua tên trường, 10.000 dòng có lọc và sắp xếp |
 | `check_recovery.py` | Lỗi sau bước quy trình thì hồ sơ và quy trình cùng quay về; áp dụng bị Keycloak làm gián đoạn rồi áp dụng lại |
 | `check_case.py` | Trạng thái và hành động, đơn vị, giao việc, hộp việc, lịch sử có giá trị cũ và mới, mã lý do của lỗi 403 và 409 |
-| `check_change.py` | Đổi mô hình khi đã có dữ liệu: mức rủi ro, đổi tên giữ dữ liệu, dòng vi phạm, quay về |
+| `check_change.py` | Đổi mô hình khi đã có dữ liệu: mức rủi ro, đổi tên giữ dữ liệu, dòng vi phạm, quay về; tệp mở rộng từ mẫu bằng `extends` |
 | `check_process.py` | Các họ mẫu, hạn và quá hạn, hành động hoàn tất qua outbox, tệp đính kèm, thống kê, chống ghi đè |
 | `check_codes.py` | Mã hồ sơ: mã đầu năm, đếm riêng theo thực thể, tạo đồng thời, từ chối ghi và sửa mã, tra theo mã, chuyển năm, đổi khuôn, hết số |
 | `check_booking.py` | Họ `reservation`, danh mục của bảng điều khiển, mọi mẫu áp dụng được |

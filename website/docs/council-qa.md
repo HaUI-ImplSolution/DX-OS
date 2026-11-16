@@ -167,7 +167,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - Trong lúc áp dụng, mô hình bị giữ; lỗi giữa chừng thì áp dụng lại để làm tiếp hoặc hủy bỏ; có quay về phiên bản trước.
 - Đổi luật quy trình chỉ được khi thực thể không còn hồ sơ đang xử lý; vai `ADMIN` của nền tảng không khai báo được.
 - Giới hạn: không có người thứ hai duyệt thay đổi mô hình, đây là chính sách tùy bản triển khai.
-- **Bằng chứng:** `python3 e2e/api/check_change.py` (65 kiểm), `check_guards.py` (61), `check_recovery.py` (19); `ARCHITECTURE.md` mục 4.
+- **Bằng chứng:** `python3 e2e/api/check_change.py` (75 kiểm), `check_guards.py` (61), `check_recovery.py` (19); `ARCHITECTURE.md` mục 4.
 
 ## 16. Lịch sử hồ sơ có chống sửa lén không?
 

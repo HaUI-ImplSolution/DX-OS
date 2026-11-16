@@ -45,6 +45,36 @@ Tệp tạm nằm cùng thư mục với tệp gốc và giữ quyền, chủ s�
 Lỗi ở bước migration hay ghi tệp tạm thì tệp gốc giữ nguyên; tiến trình dừng trước rename thì xóa tệp `.dxos-model-upgrade.*` còn sót rồi chạy lại.
 Muốn quay lại sau rename, dùng lịch sử Git hoặc bản sao lưu.
 
+## Mở rộng từ mẫu
+
+Một tệp bắt đầu từ mẫu của thư viện bằng khóa `extends` ở mức đầu và chỉ ghi phần khác mẫu:
+
+```yaml
+extends: asset_register
+name: school_assets
+roles:
+  - name: AUDITOR
+    description: Kiểm kê
+entities:
+  asset:
+    fields:
+      price: null
+      serial: {type: text, label: Số seri, unique: true}
+    access: {CUSTODIAN: all, AUDITOR: read}
+```
+
+Quy tắc ghép:
+
+- `name` luôn ghi trong tệp; `format` bỏ trống được, nếu ghi thì phải bằng format của mẫu.
+- Mapping ghép từng khóa, khóa đặt `null` xóa khóa của mẫu.
+- `roles` và `units` ghép theo `name`: mục cùng tên ghép từng khóa, mục mới nối sau mục của mẫu; vai hay đơn vị của mẫu không xóa được.
+- Mọi danh sách khác (`options`, `columns`, `groups`, trạng thái, hành động) được thay nguyên bằng danh sách của tệp.
+- Kết quả ghép được kiểm như một tệp đầy đủ; xóa một trường mà chỗ khác còn nhắc tới thì báo lỗi với số dòng của tệp đã ghép.
+
+`dxos plan` và `dxos apply` ghép lúc chạy, và `dxos model merge <tệp>` in tệp đầy đủ để đối chiếu.
+Tên mẫu không có trong thư viện thì bị từ chối, và tệp đã ghép lưu kèm tên và hash của mẫu.
+`dxos lint` chỉ kiểm phần của tệp ngắn (YAML, `extends` là chữ, có `name`) và báo `ok (extends <mẫu>)`; phần ghép với mẫu do `dxos plan` kiểm.
+
 ## Kiểm tệp trước khi áp dụng
 
 `dxos lint <tệp>...` đọc tệp bằng đúng bộ đọc của backend và không cần hệ thống đang chạy.

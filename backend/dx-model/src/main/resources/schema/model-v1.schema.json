@@ -3,9 +3,12 @@
   "$id": "https://github.com/HaUI-ImplSolution/DX-OS/schemas/model-v1.schema.json",
   "title": "DX-OS model file, format 1",
   "type": "object",
-  "required": ["format", "name", "roles", "entities"],
+  "required": ["name"],
+  "if": { "not": { "required": ["extends"] } },
+  "then": { "required": ["format", "roles", "entities"] },
   "additionalProperties": false,
   "properties": {
+    "extends": { "type": "string", "minLength": 1 },
     "format": { "const": 1 },
     "name": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,39}$" },
     "webhook": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,39}$" },

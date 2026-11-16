@@ -13,6 +13,7 @@ Ví dụ này cho thấy tệp mô hình sống trong một kho git riêng, qua 
 Workflow `model-lint.yml` chạy trên runner của GitHub, không cần máy chạy DX-OS và không cần bí mật nào.
 Nó tải `dxos-lint.jar` của một bản phát hành DX-OS, kiểm SHA-256 của tệp rồi đọc mọi tệp trong `models/` bằng bộ đọc của backend.
 Một tệp có lỗi làm job đỏ, và mỗi lỗi in thành một dòng `tệp:dòng:cột: nội dung`.
+Tệp có `extends` chỉ được kiểm phần của nó; phần ghép với mẫu do bước kế hoạch kiểm.
 Đặt `DXOS_VERSION` trong workflow thành tag của bản phát hành bạn dùng.
 
 ## Kế hoạch trên pull request

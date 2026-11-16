@@ -83,6 +83,10 @@ public final class ModelUpgrader {
     Map<String, Node> keys = new LinkedHashMap<>();
     for (NodeTuple tuple : mapping.getValue()) {
       if (tuple.getKeyNode() instanceof ScalarNode key) {
+        if (key.getValue().equals("extends")) {
+          throw problem(
+              key, "extends must be resolved first: POST /api/v1/models/merge or dxos model merge");
+        }
         keys.put(key.getValue(), tuple.getValueNode());
       }
     }

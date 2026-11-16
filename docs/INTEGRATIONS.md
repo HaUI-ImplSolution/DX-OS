@@ -56,6 +56,7 @@ Thay đổi của quản trị lấy lại bằng `GET /api/v1/events/admin?afte
 
 Hồ sơ có hạn xử lý dài hơn `DXOS_DUE_SOON_BEFORE` (mặc định `24h`, `0` để tắt) nhận một dòng `due_soon` khi còn chừng đó thời gian trước hạn, đúng một lần cho mỗi hạn.
 Hạn không dài hơn khoảng này thì không có dòng `due_soon`.
+Khoảng này so với `deadline` đã khai, kể cả khi quy trình có lịch làm việc, và đếm bằng giờ thường từ hạn của hồ sơ.
 Quy trình khai `escalate` thì hồ sơ quá hạn nhận thêm các dòng `escalated`, mỗi dòng cho một mức đến hạn hoặc một lần nhắc lại, kèm `level` (mức, từ 1) và `round` (lần nhắc, từ 0) trong thông điệp.
 Dòng `escalated` không đổi trạng thái hồ sơ, và các trường còn lại của thông điệp có dạng như mọi dòng lịch sử khác.
 

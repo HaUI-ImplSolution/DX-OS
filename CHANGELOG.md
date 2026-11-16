@@ -40,6 +40,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Ứng dụng ngoài
 
+- Thêm trợ lý nghiệp vụ tùy chọn dùng inference self-host để đề xuất một giá trị trường từ hồ sơ và nguồn được cấu hình; người dùng sửa, hủy hoặc xác nhận, Core kiểm quyền và phiên bản trước khi ghi.
 - Route riêng của bản cài nằm trong `apisix/local.yaml`, được kiểm trước khi ghép với cấu hình lõi và giữ nguyên qua cập nhật.
 - Ứng dụng ngoài đổi sang vai khác của cùng mô hình bằng `dxos client role`, nút Đổi vai ở tab Ứng dụng ngoài hoặc `PUT /api/v1/clients/{name}`, giữ nguyên tên và mã bí mật; token đã cấp giữ vai cũ đến khi hết hạn.
 - `dxos client browser add` đăng ký public OIDC client dùng Authorization Code với PKCE S256 cho giao diện ở tên miền khác, đồng thời thêm origin chính xác vào allowlist CORS; backend và `dxos doctor` từ chối wildcard, HTTP ngoài loopback, path hoặc URI không hợp lệ.
@@ -47,6 +48,8 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Tệp mô hình
 
+- Kế hoạch của một lần đổi `access` ghi mỗi vai đổi mức thành một dòng `vai: cũ → mới`, phân loại là cấp thêm, thu hồi, mở rộng, thu hẹp hoặc đổi ở API kế hoạch, `dxos plan` và tab Kế hoạch; mức rủi ro vẫn là `SAFE`.
+- Khóa `extends: <mẫu>` cho một tệp bắt đầu từ mẫu của thư viện và chỉ ghi phần khác: lõi ghép lúc xem kế hoạch và áp dụng, lưu tệp đã ghép kèm tên và hash của mẫu; `POST /api/v1/models/merge` và `dxos model merge` in tệp đầy đủ, còn `dxos lint` kiểm phần của tệp ngắn và để `dxos plan` kiểm phần ghép.
 - Kiểu trường `code` sinh mã hồ sơ đọc được theo khuôn `format`, ví dụ `HS-{year}-{seq:5}`: chữ cố định, năm tạo và số thứ tự có độ dài cố định, đếm riêng theo mô hình, thực thể và trường, và đếm lại mỗi năm khi khuôn có `{year}`. Mã gán một lần lúc tạo hồ sơ, không ghi hay sửa được, tra bằng `filter.<trường>`; thêm trường vào thực thể đã có hồ sơ là thay đổi `MIGRATION` và điền mã cho hồ sơ cũ.
 - Thực thể khai báo mẫu in bằng khóa `documents`: tiêu đề, đoạn văn, bảng trường và khối chữ ký với chỗ trống `{{trường}}`, kèm tên tệp và trạng thái cho in. `GET /api/v1/data/{model}/{entity}/{id}/documents` liệt kê mẫu và `.../documents/{tên}` trả PDF tiếng Việt cho người đọc được hồ sơ; mỗi lần in vào `audit_log`, và màn hình hồ sơ có nút In.
 - Format hiện hành là `1`; lõi tự nâng format `0` trong bộ nhớ, API `/models/upgrade` và `dxos model upgrade` cho xem diff trước khi tùy chọn ghi nguyên tử, còn format tương lai hoặc thiếu bước migration bị từ chối.
@@ -56,6 +59,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Trường nhiều lựa chọn nhận `default` là một danh sách các lựa chọn.
 - `escalate` trong quy trình khai các mức leo thang khi hồ sơ quá hạn, mỗi mức có thời gian sau hạn, vai nhận và số lần nhắc lại; mỗi thông báo là một dòng lịch sử `escalated` gửi qua webhook của mô hình, không đổi trạng thái hồ sơ, và sau lúc dịch vụ tắt chỉ gửi mức mới nhất đã đến hạn.
 - Trường `date` làm nguồn của điều kiện `when` và `required_when`, so sánh bằng `==`, `!=`, `<`, `<=`, `>` và `>=`.
+- `calendars` khai các lịch làm việc (ngày làm, khoảng giờ, ngày nghỉ) và `calendar` trong quy trình đếm `deadline` theo lịch đó: `m` và `h` chỉ đếm qua giờ làm, `d` là ngày làm, hồ sơ vào ngoài giờ tính từ lần mở cửa kế tiếp; không khai `calendar` thì hạn đếm liên tục như trước. Đổi lịch là thay đổi `SAFE` (`CHANGE_CALENDAR`) và bị từ chối khi quy trình còn hồ sơ mở, như đổi `deadline`; kế hoạch, bảng điều khiển (ô chọn lịch ở form quy trình, nhãn tiếng Việt và tiếng Anh) và trình soạn YAML đều hiểu khóa mới.
 
 ### Dữ liệu
 
@@ -65,6 +69,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Giao diện
 
+- `npm run lint` trong `frontend/` phân tích tĩnh mã web bằng Biome (cấu hình ở `frontend/biome.json`) và chạy ở workflow `Frontend`; phát hiện nghiêm trọng làm job đỏ, cảnh báo về phụ thuộc của hook và khóa theo chỉ số mảng chỉ hiện trong kết quả.
 - Lưu biểu mẫu bỏ trường tệp khỏi dữ liệu tạo/sửa hồ sơ, giữ tệp đính kèm hiện có khi sửa thông tin khác.
 - Trình sửa mô hình chọn `default` của trường nhiều lựa chọn từ danh sách `options`, và trình soạn YAML không còn cảnh báo khi `default` là danh sách.
 - Các mức leo thang hiện ở ghi chú dưới sơ đồ quy trình, ở dòng lịch sử của hồ sơ kèm vai được báo và lần nhắc, và ở kế hoạch khi tệp đổi các mức này; trình soạn YAML gợi ý các khóa `escalate`, `after`, `to` và `repeat`.
@@ -75,7 +80,9 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Tài liệu
 
+- Đối chiếu toàn bộ giáo trình DX-OS với thuật ngữ, kiến trúc và hợp đồng hiện tại của lõi, gồm phân tích riêng DX-Ticket và các khoảng trống đã có issue theo dõi.
 - `CONTRIBUTING.md` ghi rõ tính năng mới đi kèm kiểm tự động (test backend hoặc mục kiểm trong `e2e/api/check_*.py`) và issue, pull request viết được bằng tiếng Việt hoặc tiếng Anh; README có huy hiệu OpenSSF Best Practices mức passing.
+- `.github/CODEOWNERS` khai ba thành viên là người sở hữu của mọi đường dẫn, ruleset của `main` đòi một người trong số đó duyệt, và workflow `Scorecard` chạy OpenSSF Scorecard mỗi tuần và khi đẩy lên `main`, đưa kết quả vào tab Security mà không công bố ra ngoài.
 - `docs/INTEGRATIONS.md` ghi cấu hình và kết quả kiểm webhook `chat` với Mattermost Team Edition 11.7.15: thông báo, hiển thị tiếng Việt, gửi lại khi lỗi và khả năng trùng tin.
 - Bài so sánh luồng ticket cơ bản ở `examples/effort-benchmark/`: mã API/xử lý của Lab với khai báo Core, cách đếm tái lập và kết quả kiểm API/UI.
 - `docs/TARGETS.md` ghi cách đo và kết quả của các chỉ số mục tiêu: mức 1, 2 và 3 của một hệ thống, quy tắc đếm mã tự viết (`tools/count_own_code.py`), thời gian dựng và đổi, bài thử có hướng dẫn kèm một bản mô phỏng người mới, và chi phí hạ tầng của cấu hình tham chiếu.

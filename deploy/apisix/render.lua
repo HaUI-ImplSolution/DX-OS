@@ -10,6 +10,7 @@ local validate = require("jsonschema").generate_validator
 local lfs = require("lfs")
 
 local public = {
+    ["assistant-api"] = "feature probe and SSO callback; assistant verifies JWT on account routes",
     ["api-system-status"] = "status before sign-in",
     ["api-preflight"] = "CORS preflight carries no token",
     ["api-docs"] = "OpenAPI and Swagger UI",

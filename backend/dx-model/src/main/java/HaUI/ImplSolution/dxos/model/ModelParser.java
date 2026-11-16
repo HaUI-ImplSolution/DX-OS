@@ -2,11 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.model;
 
+import HaUI.ImplSolution.dxos.model.Model.Calendar;
 import HaUI.ImplSolution.dxos.model.Model.Document;
 import HaUI.ImplSolution.dxos.model.Model.Entity;
 import HaUI.ImplSolution.dxos.model.Model.Field;
 import HaUI.ImplSolution.dxos.model.Model.Process;
 import HaUI.ImplSolution.dxos.model.Model.Role;
+import HaUI.ImplSolution.dxos.model.Model.TimeRange;
 import HaUI.ImplSolution.dxos.model.Model.Ui;
 import HaUI.ImplSolution.dxos.model.Model.Ui.FormGroup;
 import HaUI.ImplSolution.dxos.model.Model.Ui.FormView;
@@ -19,8 +21,10 @@ import HaUI.ImplSolution.dxos.model.ProcessFamily.Actor;
 import HaUI.ImplSolution.dxos.model.ProcessFamily.Condition;
 import HaUI.ImplSolution.dxos.model.ProcessFamily.State;
 import java.io.StringReader;
+import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,6 +55,8 @@ public final class ModelParser {
 
   private static final Pattern NAME = Pattern.compile("[a-z][a-z0-9_]{0,39}");
   private static final Pattern DEADLINE = Pattern.compile("([0-9]{1,6})([mhd])");
+  private static final Pattern SPAN =
+      Pattern.compile("([0-9]{2}):([0-9]{2})-([0-9]{2}):([0-9]{2})");
   private static final Pattern ROLE = Pattern.compile("[A-Z][A-Z0-9_]{0,39}");
   // Roles the platform owns: a model that declared one would hand platform rights to its users.
   private static final Set<String> RESERVED_ROLES = Set.of("ADMIN");
@@ -75,6 +81,7 @@ public final class ModelParser {
   private final List<Problem> problems = new ArrayList<>();
 
   private final Set<String> unitNames = new LinkedHashSet<>();
+  private final Set<String> calendarNames = new LinkedHashSet<>();
   private final Map<String, Node> accessNodes = new LinkedHashMap<>();
 
   private ModelParser() {}
@@ -106,7 +113,8 @@ public final class ModelParser {
       return null;
     }
     Map<String, Node> keys =
-        mapping(top, Set.of("format", "name", "webhook", "roles", "units", "entities"));
+        mapping(
+            top, Set.of("format", "name", "webhook", "roles", "units", "calendars", "entities"));
 
     int format = readFormat(top, keys.get("format"));
     String name = readName(top, keys.get("name"), "model name");
@@ -117,6 +125,7 @@ public final class ModelParser {
     roles.forEach(role -> roleNames.add(role.name()));
     List<Unit> units = readUnits(keys.get("units"));
     units.forEach(unit -> unitNames.add(unit.name()));
+    Map<String, Calendar> calendars = readCalendars(keys.get("calendars"));
 
     Map<String, Entity> entities = new LinkedHashMap<>();
     Node entitiesNode = keys.get("entities");
@@ -140,7 +149,8 @@ public final class ModelParser {
     if (!problems.isEmpty()) {
       return null;
     }
-    return new Model(format, name, webhook, List.copyOf(roles), List.copyOf(units), entities);
+    return new Model(
+        format, name, webhook, List.copyOf(roles), List.copyOf(units), calendars, entities);
   }
 
   private List<Unit> readUnits(Node node) {
@@ -175,6 +185,140 @@ public final class ModelParser {
       units.add(new Unit(unitName, label == null ? unitName : scalar(label)));
     }
     return units;
+  }
+
+  // The working calendars: a mapping of a name to the days, hours and holidays it works.
+  private Map<String, Calendar> readCalendars(Node node) {
+    Map<String, Calendar> calendars = new LinkedHashMap<>();
+    if (node == null) {
+      return calendars;
+    }
+    if (!(node instanceof MappingNode map) || map.getValue().isEmpty()) {
+      problem(node, "calendars is a mapping of a calendar name to its days, hours and holidays");
+      return calendars;
+    }
+    for (NodeTuple tuple : map.getValue()) {
+      String name = scalar(tuple.getKeyNode());
+      if (name == null || !NAME.matcher(name).matches()) {
+        problem(
+            tuple.getKeyNode(),
+            "calendar name must match [a-z][a-z0-9_]* and be at most 40 characters");
+        continue;
+      }
+      calendarNames.add(name);
+      Calendar calendar = readCalendar(tuple.getValueNode());
+      if (calendar != null) {
+        calendars.put(name, calendar);
+      }
+    }
+    return calendars;
+  }
+
+  private Calendar readCalendar(Node node) {
+    if (!(node instanceof MappingNode map)) {
+      problem(node, "a calendar is a mapping with days, hours and holidays");
+      return null;
+    }
+    Map<String, Node> keys = mapping(map, ProcessSyntax.CALENDAR);
+    int before = problems.size();
+    Set<DayOfWeek> days = readDays(map, keys.get("days"));
+    List<TimeRange> hours = readHours(keys.get("hours"));
+    Set<LocalDate> holidays = readHolidays(keys.get("holidays"));
+    return problems.size() == before ? new Calendar(days, hours, holidays) : null;
+  }
+
+  // The days of the week, written mon, tue, wed, thu, fri, sat and sun.
+  private Set<DayOfWeek> readDays(Node parent, Node node) {
+    Set<DayOfWeek> days = new LinkedHashSet<>();
+    if (!(node instanceof SequenceNode sequence) || sequence.getValue().isEmpty()) {
+      problem(node == null ? parent : node, "days is a list such as [mon, tue, wed, thu, fri]");
+      return days;
+    }
+    for (Node item : sequence.getValue()) {
+      String text = scalar(item);
+      DayOfWeek day = null;
+      for (DayOfWeek candidate : DayOfWeek.values()) {
+        if (candidate.name().substring(0, 3).toLowerCase().equals(text)) {
+          day = candidate;
+        }
+      }
+      if (day == null) {
+        problem(item, "a day is one of mon, tue, wed, thu, fri, sat, sun");
+      } else if (!days.add(day)) {
+        problem(item, "day " + text + " is listed twice");
+      }
+    }
+    return days;
+  }
+
+  // Spans such as 08:00-12:00 and 13:30-17:30, in time order and apart; none means the whole day.
+  private List<TimeRange> readHours(Node node) {
+    if (node == null) {
+      return List.of(new TimeRange(LocalTime.MIDNIGHT, LocalTime.MIDNIGHT));
+    }
+    if (!(node instanceof SequenceNode sequence) || sequence.getValue().isEmpty()) {
+      problem(node, "hours is a list of spans such as ['08:00-12:00', '13:30-17:30']");
+      return List.of();
+    }
+    List<TimeRange> hours = new ArrayList<>();
+    for (Node item : sequence.getValue()) {
+      Matcher matcher = SPAN.matcher(scalar(item) == null ? "" : scalar(item));
+      if (!matcher.matches()) {
+        problem(item, "a span of hours is written 08:00-17:00");
+        continue;
+      }
+      LocalTime start = clock(matcher.group(1), matcher.group(2), false);
+      LocalTime end = clock(matcher.group(3), matcher.group(4), true);
+      if (start == null || end == null) {
+        problem(item, "an hour is 00 to 23 and a minute 00 to 59 (24:00 ends a day)");
+      } else if (!end.equals(LocalTime.MIDNIGHT) && !end.isAfter(start)
+          || end.equals(LocalTime.MIDNIGHT) && start.equals(LocalTime.MIDNIGHT)) {
+        problem(item, "a span of hours must end after it starts");
+      } else if (!hours.isEmpty() && !startsAfter(hours.get(hours.size() - 1), start)) {
+        problem(item, "the spans of hours must be in time order and not touch or overlap");
+      } else {
+        hours.add(new TimeRange(start, end));
+      }
+    }
+    return hours;
+  }
+
+  private static boolean startsAfter(TimeRange previous, LocalTime start) {
+    return !previous.end().equals(LocalTime.MIDNIGHT) && previous.end().isBefore(start);
+  }
+
+  private static LocalTime clock(String hour, String minute, boolean mayEndDay) {
+    int h = Integer.parseInt(hour);
+    int m = Integer.parseInt(minute);
+    if (mayEndDay && h == 24 && m == 0) {
+      return LocalTime.MIDNIGHT;
+    }
+    return h > 23 || m > 59 ? null : LocalTime.of(h, m);
+  }
+
+  private Set<LocalDate> readHolidays(Node node) {
+    Set<LocalDate> holidays = new LinkedHashSet<>();
+    if (node == null) {
+      return holidays;
+    }
+    if (!(node instanceof SequenceNode sequence)) {
+      problem(node, "holidays is a list of dates such as [2026-12-25]");
+      return holidays;
+    }
+    if (sequence.getValue().size() > ProcessSyntax.MAX_HOLIDAYS) {
+      problem(node, "holidays has at most " + ProcessSyntax.MAX_HOLIDAYS + " dates");
+      return holidays;
+    }
+    for (Node item : sequence.getValue()) {
+      try {
+        if (!holidays.add(LocalDate.parse(scalar(item)))) {
+          problem(item, "holiday " + scalar(item) + " is listed twice");
+        }
+      } catch (DateTimeParseException e) {
+        problem(item, "a holiday is a date written 2026-12-25");
+      }
+    }
+    return holidays;
   }
 
   // A scope needs what it filters on, on the entity or on the record at the end of its owner_via
@@ -328,7 +472,8 @@ public final class ModelParser {
     }
     Map<String, Node> keys =
         mapping(
-            map, Set.of("label", "fields", "access", "process", "owner_via", "ui", "documents"));
+            map,
+            Set.of("label", "fields", "access", "process", "owner_via", "ui", "documents", "ai"));
 
     Map<String, Field> fields = readFields(map, keys.get("fields"), entityNames);
     if (fields.values().stream().filter(field -> field.type() == FieldType.CODE).count() > 1) {
@@ -369,7 +514,98 @@ public final class ModelParser {
         process,
         ownerVia,
         ui,
-        documents);
+        documents,
+        readAiTasks(keys.get("ai"), fields, process));
+  }
+
+  private Map<String, Model.AiTask> readAiTasks(
+      Node node, Map<String, Field> fields, Process process) {
+    if (node == null) return Map.of();
+    if (!(node instanceof MappingNode ai)) {
+      problem(node, "ai must be a mapping with tasks");
+      return Map.of();
+    }
+    Node tasksNode = mapping(ai, Set.of("tasks")).get("tasks");
+    if (!(tasksNode instanceof MappingNode tasks)
+        || tasks.getValue().isEmpty()
+        || tasks.getValue().size() > 8) {
+      problem(node, "ai.tasks must contain between 1 and 8 tasks");
+      return Map.of();
+    }
+    Map<String, Model.AiTask> result = new LinkedHashMap<>();
+    for (NodeTuple tuple : tasks.getValue()) {
+      String name = readName(tuple.getKeyNode(), tuple.getKeyNode(), "task name");
+      if (name == null) continue;
+      if (!(tuple.getValueNode() instanceof MappingNode task)) {
+        problem(tuple.getValueNode(), "a task must be a mapping");
+        continue;
+      }
+      Map<String, Node> keys =
+          mapping(
+              task,
+              Set.of(
+                  "label", "input_fields", "output_field", "instruction", "sources", "max_length"));
+      List<String> input = aiNames(task, keys.get("input_fields"), "input_fields");
+      List<String> sources = aiNames(task, keys.get("sources"), "sources");
+      for (String field : input) {
+        Field f = fields.get(field);
+        if (f == null
+            || Set.of(FieldType.FILE, FieldType.USER, FieldType.REFERENCE).contains(f.type())) {
+          problem(task, "input_fields must name supported fields of this entity");
+        }
+      }
+      String output = keys.get("output_field") == null ? "" : scalar(keys.get("output_field"));
+      Field target = fields.get(output);
+      if (target == null
+          || target.multiple()
+          || (target.type() != FieldType.TEXT && target.type() != FieldType.CHOICE)) {
+        problem(task, "output_field must name a text or single choice field");
+      }
+      if (process != null
+          && process.after() != null
+          && process.after().values().stream()
+              .flatMap(List::stream)
+              .anyMatch(effect -> output.equals(effect.groupField()))) {
+        problem(task, "output_field must not supply a membership group");
+      }
+      String label = keys.get("label") == null ? name : scalar(keys.get("label"));
+      String instruction = keys.get("instruction") == null ? "" : scalar(keys.get("instruction"));
+      if (label.isBlank()
+          || label.length() > 200
+          || instruction.isBlank()
+          || instruction.length() > 2000) {
+        problem(task, "a task needs a label up to 200 and instruction up to 2000 characters");
+      }
+      int maxLength = 500;
+      try {
+        if (keys.get("max_length") != null)
+          maxLength = Integer.parseInt(scalar(keys.get("max_length")));
+        if (maxLength < 1 || maxLength > 2000) throw new NumberFormatException();
+      } catch (NumberFormatException error) {
+        problem(task, "max_length must be a whole number between 1 and 2000");
+      }
+      if (result.containsKey(name))
+        problem(tuple.getKeyNode(), "task " + name + " is declared twice");
+      result.put(name, new Model.AiTask(label, input, output, instruction, sources, maxLength));
+    }
+    return result;
+  }
+
+  private List<String> aiNames(Node parent, Node node, String name) {
+    if (!(node instanceof SequenceNode sequence)
+        || sequence.getValue().isEmpty()
+        || sequence.getValue().size() > 12) {
+      problem(parent, name + " must contain between 1 and 12 names");
+      return List.of();
+    }
+    List<String> names = new ArrayList<>();
+    for (Node item : sequence.getValue()) {
+      String value = scalar(item);
+      if (!NAME.matcher(value).matches() || names.contains(value))
+        problem(item, name + " requires unique valid names");
+      names.add(value);
+    }
+    return names;
   }
 
   // The print templates of an entity. A placeholder names a field of the entity or one of the
@@ -1380,6 +1616,8 @@ public final class ModelParser {
         handlers,
         flag(keys.get("allow_self_decision"), "allow_self_decision"),
         deadline,
+        keys.get("deadline") != null && scalar(keys.get("deadline")).endsWith("d"),
+        readCalendarName(map, keys.get("calendar"), deadline),
         readEscalations(keys.get("escalate"), deadline, roleNames, access),
         autoClose.after(),
         autoClose.action(),
@@ -2083,6 +2321,26 @@ public final class ModelParser {
     }
     return new Completion(
         operation, user, groupNode == null ? null : scalar(groupNode), groupField);
+  }
+
+  // The calendar a deadline is counted in: one declared in calendars, on a process with a deadline.
+  private String readCalendarName(Node parent, Node node, Duration deadline) {
+    if (node == null) {
+      return null;
+    }
+    String name = scalar(node);
+    if (deadline == null) {
+      problem(node, "calendar counts the deadline, so the process needs a deadline");
+      return null;
+    }
+    if (name == null || !calendarNames.contains(name)) {
+      problem(
+          node,
+          "unknown calendar, declared in calendars: "
+              + (calendarNames.isEmpty() ? "none" : String.join(", ", calendarNames)));
+      return null;
+    }
+    return name;
   }
 
   // A number followed by m (minutes), h (hours) or d (days), such as 90m, 72h or 3d.

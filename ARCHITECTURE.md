@@ -211,6 +211,10 @@ Flowable đặt `search_path` của kết nối nó dùng về `engine` và khô
 - `dxos start <tệp>...` đưa các tệp mô hình vào qua `deploy/model/` và in kết quả của `ModelBootstrap` cho từng tệp.
 - Chi tiết vận hành ở [`docs/OPERATIONS.md`](./docs/OPERATIONS.md), log và audit ở [`docs/MONITORING.md`](./docs/MONITORING.md), webhook và lịch sử chống sửa ở [`docs/INTEGRATIONS.md`](./docs/INTEGRATIONS.md).
 
+- Dịch vụ [`assistant/`](./assistant/README.md) dùng inference self-host để đề xuất giá trị trường, đọc và ghi qua API Core theo phiên SSO của người dùng.
+  Provider giữ state riêng theo chủ trong SQLite và không truy cập DB nghiệp vụ.
+  Xác nhận nằm ngoài model; Core kiểm quyền cùng `modelVersion`/`version` dưới khóa giao dịch, client không gửi điều kiện mới vẫn giữ tương thích.
+
 ## 13. Đối chiếu với yêu cầu của đề
 
 | Đề yêu cầu | Đáp ứng |

@@ -80,6 +80,7 @@ Mười mẫu có sẵn, chọn được ngay ở bảng điều khiển: một 
 | | **Dùng thử ngay:** một lệnh tạo tài khoản thử cho từng vai cùng hồ sơ mẫu ở nhiều trạng thái, để người xem đăng nhập là thấy hệ thống có việc đang chạy. |
 | | **Cài và vận hành đơn giản:** một lệnh cài, một lệnh chạy; có sao lưu kiểm được, tự khởi động lại dịch vụ, quét mã độc cho tệp đính kèm và số đo vận hành đọc được bằng công cụ giám sát có sẵn của bạn. |
 | | **Đăng nhập một lần:** qua Keycloak, có thể bắt quản trị viên nhập thêm mã một lần. |
+| | **[Trợ lý nghiệp vụ (tùy chọn)](./assistant/README.md):** AI chạy tại máy chủ của bản cài đề xuất nội dung từ hồ sơ và nguồn tham khảo, người dùng xác nhận trước khi lưu. |
 
 Bảng đối chiếu từng tính năng với bài kiểm của nó ở [ma trận bằng chứng](https://haui-implsolution.github.io/DX-OS/docs/evidence-matrix).
 

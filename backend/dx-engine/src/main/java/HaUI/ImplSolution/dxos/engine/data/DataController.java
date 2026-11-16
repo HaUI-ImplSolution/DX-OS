@@ -12,6 +12,7 @@ import HaUI.ImplSolution.dxos.model.Model.Entity;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -189,14 +190,26 @@ public class DataController {
       description =
           "The body may carry version, as read with the record: the change then applies"
               + " only to that version, and 409 ERR_CONCURRENT_MODIFICATION answers when the record"
-              + " changed in between. Without version the change applies to the current record.")
+              + " changed in between, including an unchanged value."
+              + " Optional modelVersion rejects a changed model with 409 and data.reason"
+              + " MODEL_VERSION_CHANGED. Without conditions the change applies to the current record.")
   public ApiResponse<Map<String, Object>> update(
       @PathVariable String model,
       @PathVariable String entity,
       @PathVariable long id,
       @RequestBody Map<String, Object> body) {
     Model m = registry.require(model);
-    return ApiResponse.success(service.update(m, entity(m, entity), id, body));
+    Map<String, String> expected = new LinkedHashMap<>();
+    for (String key : List.of("version", "modelVersion")) {
+      if (body.get(key) != null) {
+        expected.put(key, body.get(key).toString());
+      }
+    }
+    RecordPreconditions conditions = RecordPreconditions.from(expected);
+    registry.checkVersion(model, conditions.modelVersion());
+    Map<String, Object> fields = new LinkedHashMap<>(body);
+    fields.remove("modelVersion");
+    return ApiResponse.success(service.update(m, entity(m, entity), id, fields));
   }
 
   @DeleteMapping("/{id}")
@@ -227,8 +240,10 @@ public class DataController {
               + " when it cannot be asked and the target does not allow the action then, the record"
               + " left as it was. A terminal state"
               + " stores decided_by and decided_at. The owner can take the action withdraw from any"
-              + " state that is not final. An Idempotency-Key header works as it does when creating a"
-              + " record: a repeat gets the first answer instead of 409 WRONG_STATE.")
+              + " state that is not final. Optional version and modelVersion reject a changed record"
+              + " or model with 409; a changed model has data.reason MODEL_VERSION_CHANGED."
+              + " An Idempotency-Key repeat returns the first answer without executing the action"
+              + " again.")
   public ApiResponse<Map<String, Object>> act(
       @PathVariable String model,
       @PathVariable String entity,
@@ -239,13 +254,17 @@ public class DataController {
       HttpServletResponse response) {
     Model m = registry.require(model);
     String note = body == null ? null : body.get("note");
+    RecordPreconditions conditions = RecordPreconditions.from(body);
     return answer(
         idempotency.once(
             key,
             "act",
             model + "/" + entity + "/" + id + "/" + action,
             body,
-            () -> service.act(m, entity(m, entity), id, action, note)),
+            () -> {
+              registry.checkVersion(model, conditions.modelVersion());
+              return service.act(m, entity(m, entity), id, action, note, conditions.version());
+            }),
         response);
   }
 
@@ -264,14 +283,19 @@ public class DataController {
       description =
           "The body is {\"assignee\": \"<user id>\"}, with null to release it. The"
               + " handler role and roles writing to all rows or to their units may assign. 400 when"
-              + " that user, the caller included, cannot handle the record.")
+              + " that user, the caller included, cannot handle the record. Optional version and"
+              + " modelVersion reject changed snapshots with 409; a changed model has data.reason"
+              + " MODEL_VERSION_CHANGED.")
   public ApiResponse<Map<String, Object>> assign(
       @PathVariable String model,
       @PathVariable String entity,
       @PathVariable long id,
       @RequestBody Map<String, String> body) {
     Model m = registry.require(model);
-    return ApiResponse.success(service.assign(m, entity(m, entity), id, body.get("assignee")));
+    RecordPreconditions conditions = RecordPreconditions.from(body);
+    registry.checkVersion(model, conditions.modelVersion());
+    return ApiResponse.success(
+        service.assign(m, entity(m, entity), id, body.get("assignee"), conditions.version()));
   }
 
   @GetMapping("/{id}/handlers")

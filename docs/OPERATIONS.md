@@ -73,6 +73,7 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 | `dxos lint <tệp>...` | Kiểm tệp mô hình bằng bộ đọc của backend, không cần hệ thống đang chạy (xem dưới) |
 | `dxos conformance <mô hình> [--allow-test-users]` | Kiểm các rào chắn của lõi cho một mô hình đã áp dụng (xem dưới) |
 | `dxos model upgrade [--write] <tệp>` | Xem diff nâng tuần tự tệp lên format hiện hành; `--write` thay tệp nguyên tử sau khi in diff (xem dưới) |
+| `dxos model merge <tệp>` | In tệp mô hình đầy đủ của một tệp có `extends` (xem [`MODEL.md`](./MODEL.md#mở-rộng-từ-mẫu)) |
 | `dxos gitops sync [models\|infra]`, `status [models\|infra]`, `approve [infra] <commit> [--accept MỨC]`, `install`, `uninstall` | Kéo hạ tầng và tệp mô hình từ git, so với bản cài và mô hình đang chạy; `install` chạy mỗi 5 phút bằng systemd user timer (xem dưới) |
 | `dxos history verify`, `dxos history anchor` | Kiểm lịch sử hồ sơ chưa bị sửa, hoặc ghi điểm neo ngay (xem [`INTEGRATIONS.md`](./INTEGRATIONS.md#lịch-sử-chống-sửa)) |
 | `dxos reconcile [install\|uninstall]` | Đưa stack về đúng khai báo; `install` chạy mỗi phút bằng systemd user timer (xem dưới) |
@@ -83,6 +84,7 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 | `dxos client browser add <tên> --redirect-uri URL [...]`, `dxos client browser list`, `dxos client browser remove <tên>` | Đăng ký và quản lý public OIDC client dùng PKCE cho giao diện trình duyệt ở origin khác |
 | `dxos uninstall [--purge]` | Xóa container và lệnh `dxos`; `--purge` xóa cả dữ liệu và thư mục cài, phải gõ xác nhận |
 
+Trợ lý được chuẩn bị cùng stack; mỗi người tự liên kết và kích hoạt trên giao diện theo [`assistant/README.md`](../assistant/README.md).
 File route riêng `deploy/apisix/local.yaml` được giữ khi cập nhật và ghép với cấu hình lõi mới sau khi kiểm; cấu hình xung đột làm cập nhật dừng trước khi thay container.
 Cách khai báo và nạp lại ở [Route riêng trong APISIX](EXTENSIONS.md#route-riêng-trong-apisix).
 
@@ -299,7 +301,7 @@ Từ tệp mô hình đến hệ thống chạy mất khoảng ba phút khi qué
 
 ## Tài nguyên và số bản sao
 
-Số đo trên máy 12 CPU, 31 GB RAM, với stack tám service (không bật `clamav`) đang rảnh sau khi nạp 40 hồ sơ mẫu bằng `dxos demo`.
+Số đo trên máy 12 CPU, 31 GB RAM, với stack tám service (chưa gồm trợ lý và không bật `clamav`) đang rảnh sau khi nạp 40 hồ sơ mẫu bằng `dxos demo`.
 
 | Service | RAM (MiB) |
 |---|---|
@@ -319,6 +321,9 @@ Dựng stack rỗng khi image đã có trên máy, với một tệp mô hình: 
 Trên mô hình đã có 40 hồ sơ, `dxos plan` và `dxos apply` một trường mới mất dưới 1 giây và các hồ sơ còn nguyên.
 Giao diện, cổng vào, trang đăng nhập Keycloak và bảng điều khiển không tải tài nguyên từ ngoài cổng vào của hệ thống.
 
+Hệ thống chuẩn bị sẵn dịch vụ trợ lý; bot cá nhân chỉ chạy khi người dùng cấu hình và kích hoạt.
+Giới hạn CPU, RAM và số trợ lý được cấu hình trong `deploy/.env`, theo mẫu `.env.example`.
+
 `backend` chạy một bản.
 Chạy hai bản sau gateway thì mỗi bản giữ danh sách mô hình riêng trong bộ nhớ: sau một lần áp dụng, bản kia trả 404 cho mô hình mới và tiếp tục phục vụ mô hình đang bị giữ, cho đến khi khởi động lại cả hai.
 
@@ -334,11 +339,17 @@ Người đã có Prometheus thì đọc số hồ sơ theo trạng thái, hồ 
 ## Sao lưu và khôi phục
 
 `./backup.sh` (trong `deploy/`) chụp một bản sao lưu mã hóa của những gì không dựng lại được từ repo.
-Gồm toàn bộ Postgres (dữ liệu nghiệp vụ, tài khoản Keycloak) và tệp trong SeaweedFS.
+Gồm toàn bộ Postgres (dữ liệu nghiệp vụ, tài khoản Keycloak), tệp trong SeaweedFS và `data/assistant` (cấu hình, khóa, liên kết, hội thoại).
 Không gồm `apisix/local.yaml` của bản cài; cất bản sao của nó cùng cấu hình triển khai.
 Script dùng restic chạy trong container nên chỉ cần Docker.
 Bản sao lưu khử trùng lặp và mã hóa bằng `BACKUP_PASSWORD`.
 Cất mật khẩu này ở nơi khác máy chủ, vì mất nó là không đọc lại được.
+
+Khi chụp dữ liệu trợ lý, script dừng các container trợ lý rồi khôi phục những container đang chạy trước đó, kể cả khi sao chép lỗi; Core vẫn hoạt động.
+Trong khoảng dừng, chức năng tạo và xác nhận đề xuất của trợ lý không khả dụng.
+Kho backup chứa master key và các credential cũ được giữ để phục hồi; giữ mật khẩu restic ngoài backup, Git và log.
+Trước nâng cấp, dừng dịch vụ trợ lý và chụp snapshot nhất quán; migration phải giữ lịch sử, liên kết và owner.
+Khôi phục dùng snapshot cùng image tương thích; không tự thực thi lại thao tác có kết quả chưa rõ.
 
 ```bash
 cd deploy
@@ -350,7 +361,7 @@ cd deploy
 `verify` in số mô hình đã áp dụng và tổng số dòng trong các bảng `m_*` của bản dump.
 Mô hình có phiên bản trong `engine.model_version` mà không có bảng nào trong schema `m_<mô hình>` làm `verify` báo `FAILED` kèm tên mô hình.
 `verify` còn khôi phục bản chụp của kho vào một Docker volume tạm và khởi động một SeaweedFS tạm trên đó (filer HTTP chỉ mở trong container), rồi kiểm mọi khóa trong `engine.attachment` của bản dump đều có tệp.
-`verify` không so nội dung từng tệp, không kiểm quy trình đang chạy và không kiểm quyền sau khi khôi phục.
+`verify` không so nội dung từng tệp, không kiểm quy trình đang chạy, quyền sau khôi phục hoặc khả năng giải mã và khởi động trợ lý.
 Thiếu tệp thì `verify` báo `FAILED` kèm tên các tệp thiếu và thoát với mã 1.
 `backup.sh` dump Postgres rồi mới chụp kho, và tệp bị gỡ chỉ rời kho sau `DXOS_FILE_DELETE_DELAY`, nên bản sao lưu luôn có tệp của mọi dòng trong bản dump, miễn là cả hai bước ngắn hơn khoảng đó.
 Lượt chạy lâu hơn khoảng đó thì `backup.sh` in `WARNING`; khi đó tăng `DXOS_FILE_DELETE_DELAY`.
@@ -368,7 +379,10 @@ CI chạy một lượt backup và verify trên Postgres thật có một mô h�
 3. Nạp Postgres: `gunzip -c /tmp/dxos-restore/stage/postgres.sql.gz | docker compose exec -T postgres psql -U "$POSTGRES_USER" postgres`.
    Hai dòng lỗi `role "..." already exists` và `database "..." already exists` là bình thường vì tài khoản quản trị và database chính đã có sẵn.
    Phần còn lại phải nạp không lỗi.
-4. Chép `data/seaweedfs` từ `/tmp/dxos-restore/data/` vào `deploy/data/` (các tệp thuộc root nên dùng `sudo`), rồi `docker compose up -d`.
+4. Chép `data/seaweedfs` từ `/tmp/dxos-restore/data/` vào `deploy/data/` (các tệp thuộc root nên dùng `sudo`).
+5. Nếu bản sao có `stage/assistant`, chép nguyên thư mục đó thành `deploy/data/assistant`, giữ khóa và dữ liệu cùng bản sao; thư mục riêng `0700`, tệp bí mật `0600`.
+   Database trợ lý cũ thiếu master key phải khôi phục đúng key, không tạo khóa thay thế.
+6. Chạy `docker compose up -d`, rồi kiểm tra đăng nhập và trợ lý.
 
 ## Ứng phó sự cố
 

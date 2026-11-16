@@ -7,6 +7,9 @@ Run after check_case.py on the same stack:
 """
 import sys
 import time
+import base64
+import json
+from concurrent.futures import ThreadPoolExecutor
 
 import check_api as rt
 import kc
@@ -60,6 +63,73 @@ def create(token, base, body):
     status, made = kc.api(token, "POST", base, body)
     assert status == 200, (status, made)
     return made["data"]["id"]
+
+
+def conditional_actions(admin, asker, agent, other_agent):
+    status, metadata = kc.api(agent, "GET", "/meta/models")
+    model = next(model for model in metadata["data"] if model["name"] == "desk8")
+    version = model["modelVersion"]
+    record = create(asker, TICKETS, {"title": "Conditional assignment"})
+    _, before = kc.api(agent, "GET", f"{TICKETS}/{record}")
+    person = json.loads(base64.urlsafe_b64decode(agent.split(".")[1] + "==="))["sub"]
+    snapshot = {"version": before["data"]["version"], "modelVersion": version}
+
+    def assign(token):
+        return kc.api(token, "POST", f"{TICKETS}/{record}/assign", {**snapshot, "assignee": person})
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        responses = list(pool.map(assign, [agent, other_agent]))
+    rt.check("conditional assignment accepts one concurrent snapshot",
+             sorted(status for status, _ in responses) == [200, 409])
+    status, body = kc.api(agent, "POST", f"{TICKETS}/{record}/actions/start", snapshot)
+    rt.check("a stale action leaves the assigned record unchanged",
+             status == 409 and body.get("errorCode") == "ERR_CONCURRENT_MODIFICATION")
+    _, current = kc.api(agent, "GET", f"{TICKETS}/{record}")
+    actor = agent
+    status, body = kc.api(actor, "POST", f"{TICKETS}/{record}/actions/start", {
+        "version": current["data"]["version"], "modelVersion": version})
+    rt.check("a current conditional action joins the process transaction",
+             status == 200 and body["data"]["status"] == "in_progress")
+
+    changed = DESK.replace("      title: {type: text, required: true}",
+                           "      title: {type: text, required: true}\n      description: {type: text}", 1)
+    status, applied = kc.api(admin, "POST", f"/models/apply?base={version}", changed, YAML)
+    rt.check("a compatible model update advances the snapshot",
+             status == 200 and applied["data"]["version"] == version + 1)
+    _, current = kc.api(actor, "GET", f"{TICKETS}/{record}")
+    status, body = kc.api(actor, "POST", f"{TICKETS}/{record}/actions/resolve", {
+        "version": current["data"]["version"], "modelVersion": version})
+    _, after = kc.api(actor, "GET", f"{TICKETS}/{record}")
+    rt.check("a changed model refuses the old decision without changing the row",
+             status == 409 and body.get("data", {}).get("reason") == "MODEL_VERSION_CHANGED"
+             and after["data"]["version"] == current["data"]["version"]
+             and after["data"]["status"] == "in_progress")
+
+
+def ai_task_changes(admin):
+    base = DESK.replace("name: desk8", "name: taskplan8")
+    status, body = kc.api(admin, "POST", "/models/apply", base, YAML)
+    rt.check("T8-14 the task plan fixture applies", status == 200, str(status))
+    version = body["data"]["version"]
+    task = """    ai:
+      tasks:
+        summarize:
+          label: Summary
+          input_fields: [title]
+          output_field: title
+          instruction: Summarize using the supplied source.
+          sources: [fixture_source_v1]
+          max_length: 100
+"""
+    configured = base.replace("    fields:", task + "    fields:", 1)
+    status, body = kc.api(admin, "POST", "/models/plan", configured, YAML)
+    rt.check("T8-14 adding a task is visible and safe in the model plan", status == 200 and
+             any(c["kind"] == "CHANGE_AI_TASKS" and c["level"] == "SAFE" for c in body["data"]["changes"]), str(status))
+    status, body = kc.api(admin, "POST", f"/models/apply?base={version}&accept=SAFE", configured, YAML)
+    rt.check("T8-14 applying a task advances the model version", status == 200 and body["data"]["version"] == version + 1, str(status))
+    status, body = kc.api(admin, "POST", "/models/plan", base, YAML)
+    rt.check("T8-14 removing a task is visible in the model plan", status == 200 and
+             any(c["kind"] == "CHANGE_AI_TASKS" for c in body["data"]["changes"]), str(status))
 
 
 def main():
@@ -241,6 +311,17 @@ def main():
              status == 200 and body["data"]["version"] == read_at + 1, f"{status} {body.get('data')}")
     status, body = kc.api(asker, "PATCH", f"{TICKETS}/{mine}", {"title": "Second", "version": read_at})
     rt.check("T8-10 an update at an older version is refused", status == 409 and body.get("errorCode") == "ERR_CONCURRENT_MODIFICATION", f"{status} {body}")
+    status, body = kc.api(asker, "PATCH", f"{TICKETS}/{mine}", {"title": "First", "version": read_at})
+    rt.check("T8-10 an unchanged value still rejects a stale snapshot",
+             status == 409 and body.get("errorCode") == "ERR_CONCURRENT_MODIFICATION", f"{status} {body}")
+    status, meta = kc.api(asker, "GET", "/meta/models")
+    model_version = next(m["modelVersion"] for m in meta["data"] if m["name"] == "desk8")
+    status, body = kc.api(asker, "PATCH", f"{TICKETS}/{mine}", {"title": "First", "version": read_at + 1, "modelVersion": model_version})
+    rt.check("T8-10 an unchanged value with current snapshots keeps the version",
+             status == 200 and body["data"]["version"] == read_at + 1, f"{status} {body}")
+    status, body = kc.api(asker, "PATCH", f"{TICKETS}/{mine}", {"title": "First", "modelVersion": model_version + 1})
+    rt.check("T8-10 an unchanged value still rejects a different model snapshot",
+             status == 409 and (body.get("data") or {}).get("reason") == "MODEL_VERSION_CHANGED", f"{status} {body}")
     status, body = kc.api(asker, "GET", f"{TICKETS}/{mine}")
     rt.check("T8-10 and the record keeps the newer content", body["data"]["title"] == "First", str(body["data"]["title"]))
     status, body = kc.api(asker, "PATCH", f"{TICKETS}/{mine}", {"title": "Third", "version": "x"})
@@ -353,6 +434,9 @@ def main():
     rt.check("T8-08 the sweep records the overdue record once", reported)
     code, rows = rt.psql(f"select count(*) from engine.record_event where record_id={newer} and entity='ticket' and action='overdue'")
     rt.check("T8-08 and not again", rows == "1", rows)
+
+    conditional_actions(admin, asker, agent, agent2)
+    ai_task_changes(admin)
 
     failed = [case for case, ok in rt.results if not ok]
     print(f"\n{len(rt.results) - len(failed)}/{len(rt.results)} passed", failed)

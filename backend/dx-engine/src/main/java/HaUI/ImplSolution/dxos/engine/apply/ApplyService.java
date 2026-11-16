@@ -104,6 +104,7 @@ public class ApplyService {
           "CHANGE_COMPLETION",
           "CHANGE_BOOKING",
           "CHANGE_DEADLINE",
+          "CHANGE_CALENDAR",
           "CHANGE_FLOW");
 
   private final JdbcTemplate jdbc;
@@ -117,6 +118,7 @@ public class ApplyService {
   private final AuditRecorder audit;
   private final ProcessDeployer processes;
   private final RecordCodes codes;
+  private final TemplateResolver templates;
   private final String reportPassword;
   // Kind of step that fails on purpose, so that a stopped apply can be produced in tests.
   private final String faultStep;
@@ -133,6 +135,7 @@ public class ApplyService {
       AuditRecorder audit,
       ProcessDeployer processes,
       RecordCodes codes,
+      TemplateResolver templates,
       @Value("${engine.report-db-password:}") String reportPassword,
       @Value("${engine.fault.apply-step:}") String faultStep) {
     this.jdbc = jdbc;
@@ -146,12 +149,20 @@ public class ApplyService {
     this.audit = audit;
     this.processes = processes;
     this.codes = codes;
+    this.templates = templates;
     this.reportPassword = reportPassword;
     this.faultStep = faultStep.strip();
   }
 
-  public Plan plan(String content) {
-    Model model = ModelParser.parse(content);
+  // The file with extends resolved and parsed; a file without extends is parsed as it is.
+  public TemplateResolver.Parsed parse(String source) {
+    return templates.parse(source);
+  }
+
+  public Plan plan(String source) {
+    TemplateResolver.Parsed file = parse(source);
+    String content = file.content();
+    Model model = file.model();
     return leavingNoSchema(model, () -> plan(model, hash(content), Map.of()));
   }
 
@@ -166,8 +177,10 @@ public class ApplyService {
   // Who applies a model: the token "sub" and the name shown in the version history.
   public record Actor(String id, String name) {}
 
-  public Applied apply(String content, Actor actor, Integer base, Level accept) {
-    Model model = ModelParser.parse(content);
+  public Applied apply(String source, Actor actor, Integer base, Level accept) {
+    TemplateResolver.Parsed file = parse(source);
+    String content = file.content();
+    Model model = file.model();
     return announced(
         "MODEL_APPLIED",
         actor,

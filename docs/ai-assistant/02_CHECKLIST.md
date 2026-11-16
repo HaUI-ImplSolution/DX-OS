@@ -1,121 +1,60 @@
-# Checklist triển khai và nghiệm thu
+# Checklist trợ lý nghiệp vụ động
 
-Đối chiếu [overview](./00_OVERVIEW.md), [plan](./01_PLAN.md) và [rủi ro](./03_TRADEOFFS_RISKS.md).
-Chỉ đánh dấu khi có bằng chứng; các lựa chọn đã thống nhất không đồng nghĩa chức năng đã đạt.
-Log, fixture, ảnh và kết quả kiểm chi tiết giữ ngoài Git mặc định; PR khi được phép gửi sẽ dẫn bằng chứng đã loại bí mật.
+Các mục CP theo dõi trợ lý nghiệp vụ; chỉ tick phần đã kiểm đủ theo [test plan](./03_TEST_PLAN.md).
+Chưa nghiệm thu cuối hoặc chọn model phát hành.
+Kiểm tích hợp phải chạy lại sau khi đồng bộ nhánh cha; dấu tick kỹ thuật không thay nghiệm thu bản phát hành.
 
-## 1. Quyết định và review
+## Quyết định và review
 
-- [x] Người dùng chọn self-host làm hướng triển khai của kế hoạch.
-- [x] Kế hoạch dùng Apertus 8B lượng tử hóa và khảo sát công cụ nguồn mở có sẵn.
-- [x] Người dùng chọn giao diện chat theo cách bố trí Gemini và truy xuất nhẹ trước.
-- [x] Người dùng cho phép tạo tri thức giả lập lúc triển khai.
-- [x] Người dùng yêu cầu bộ tài liệu độc lập trong `docs/`, ngang hàng với `dynamic-core/`.
-- [ ] Tech lead review pipeline self-host, hồ sơ model/runtime theo OSAID và sự thống nhất với issue/tài liệu định hướng.
-- [ ] Tech lead chốt cấu hình và danh tính nền của tác tử theo sự kiện, trường được đề xuất và người duyệt.
-- [ ] Tech lead review kiến trúc dịch vụ AI riêng, lưu trữ, route và hợp đồng xác nhận.
-- [ ] Tech lead review lựa chọn Haystack/Python so với TypeScript tối thiểu, cùng ngân sách khảo sát local trên máy đích.
-- [ ] Đồng bộ mục tiêu issue và các tài liệu liên quan khi có ủy quyền đúng phạm vi.
+- [x] Người dùng chốt trợ lý nghiệp vụ nhiều domain, self-host và có xác nhận trước ghi.
+- [x] Đã xác minh worktree/nhánh và fetch nhánh cha `Khuong/main` trước khi lập kế hoạch.
+- [ ] Tech lead review schema nhiệm vụ, trải nghiệm trên hồ sơ, ranh giới dịch vụ và phần #210 chưa thực hiện.
+- [ ] Chốt model/artifact, nguồn mở, chất lượng tiếng Việt và ngân sách từ khảo sát nhiệm vụ mới.
 
-## 2. Nền tảng và giấy phép
+## P0–P1: Hợp đồng và mô hình
 
-- [ ] Kiểm lại nhánh cha, thay đổi local và phần đã tích hợp trước khi sửa.
-- [ ] Kiểm LICENSE/NOTICE đúng phiên bản của dependency trực tiếp, bắc cầu, build/test và image; báo trước khi thêm manifest.
-- [ ] Đo BM25 trước; không mặc định thêm embedding, reranker, kho vector hoặc framework agent.
-- [ ] Chọn component pipeline có sẵn sau kiểm dependency; không cài toàn bộ ứng viên chỉ vì có trong plan.
-- [ ] Có schema dữ liệu AI riêng, migration và tài khoản DB không chạm bảng nghiệp vụ.
-- [ ] OpenAPI được sinh từ hợp đồng triển khai; giữ envelope, HTTP status, mã lỗi và bản dịch.
-- [ ] Hồ sơ dependency, NOTICE, catalog và SBOM phản ánh đúng phần thực sự thêm.
+- [ ] CP-01 Audit runtime/model/artifact/bundled và nguồn dữ liệu trước manifest; không suy OSAID từ self-host hoặc Apache-2.0.
+- [ ] CP-02 Chốt khai báo nhiệm vụ trung tính trong YAML, parser/schema, Console, diff/plan và model upgrade.
+- [ ] CP-03 Metadata/nhiệm vụ theo quyền người gọi; mô hình không có AI vẫn hoạt động.
+- [x] CP-04 Đổi/bỏ trường, lựa chọn, nhiệm vụ hoặc nguồn làm proposal cũ mất hiệu lực.
+- [x] CP-05 Chốt spec rồi cập nhật OpenAPI/schema và code cùng thay đổi; giữ envelope/status/errorCode/i18n.
+- [x] CP-06 Sửa trường có `version` và `modelVersion` được Core kiểm dưới khóa/giao dịch; client cũ giữ tương thích.
 
-## 3. Backend self-host và cách ly
+## P2–P3: Provider và giao diện
 
-- [ ] Model, endpoint và bí mật runtime chỉ do người triển khai cấu hình; API người dùng chỉ trả model ID/trạng thái.
-- [ ] Endpoint nội bộ có xác thực dịch vụ; không mở URL tùy ý hoặc cổng suy luận trực tiếp.
-- [ ] Backend lỗi hoặc đầy hàng đợi báo rõ và giữ trạng thái lượt; người dùng chủ động thử lại.
-- [ ] JWT kiểm issuer, audience, chữ ký và hạn; chủ luôn lấy từ danh tính đã kiểm.
-- [ ] Credential nền mã hóa; bí mật runtime nằm ở hạ tầng và không xuất qua API, URL, log, lỗi hoặc hội thoại.
-- [ ] Hai người dùng đồng thời không truy cập chéo cấu hình, tin nhắn, nguồn hoặc đề xuất.
-- [ ] Hội thoại gắn một mô hình; quyền được kiểm lại khi đọc và tiếp tục hội thoại.
-- [ ] Mất quyền nguồn cũ không khiến dữ liệu được đưa lại vào ngữ cảnh suy luận qua lịch sử.
-- [ ] Credential và dữ liệu AI được backup/restore đúng quyền; khóa gốc ngoài DB và Git.
+- [x] CP-07 Một request suy luận cho một nhiệm vụ; schema đầu ra, lựa chọn và nguồn được server kiểm, lỗi không tự chữa thành lệnh ghi.
+- [ ] CP-08 Nguồn có provenance/license/revision; thiếu căn cứ thì từ chối, trích dẫn thật và liên quan.
+- [ ] CP-09 Không đọc chéo người/mô hình hoặc nhận token/URL/nguồn từ chỉ dẫn trong hồ sơ; không thêm ACL theo trường.
+- [x] CP-10 Proposal có chủ/snapshot/TTL/revision; confirm ngoài LLM, sửa nội dung phải xác nhận snapshot mới.
+- [x] CP-11 Hai confirm chỉ một claim; mất quyền/đổi trạng thái/phiên bản cũ bị Core chặn; timeout sau ghi là uncertain.
+- [ ] CP-12 UI dùng metadata trên màn hồ sơ, có giá trị hiện tại/đề xuất/nguồn và phân biệt chưa lưu/đã lưu.
+- [ ] CP-13 Model off, busy, timeout, hủy hoặc output lỗi không cản thao tác nghiệp vụ và giải phóng slot.
 
-## 4. Hội thoại và công cụ đọc
+## P4–P5: Triển khai và state
 
-- [ ] Tạo, liệt kê, đổi tên, xóa hội thoại và đọc lịch sử theo đúng chủ/mô hình.
-- [ ] Gửi có mã request chống trùng; gián đoạn không tự gửi lại prompt hoặc công cụ.
-- [ ] Adapter llama.cpp xử lý stream, lời gọi công cụ, kết quả, lỗi, hủy lượt và số token đúng hợp đồng.
-- [ ] Metadata, hộp việc, bộ lọc, chi tiết, lịch sử, thống kê và người nhận dùng API Core đúng quyền.
-- [ ] Tên trường/toán tử/hành động lấy từ metadata; không SQL, HTTP tùy ý hoặc shell.
-- [ ] Trang kết quả bị cắt không được mô tả là đầy đủ; số tổng dùng endpoint thống kê.
-- [ ] Có giới hạn payload, token, vòng công cụ, đồng thời và timeout.
+- [ ] CP-14 Snapshot nhất quán và thử restore trước migration; lỗi nâng cấp không tạo lại key.
+- [x] CP-15 Giữ owner/SSO/lịch sử/key khi migration; trạng thái chưa rõ không replay.
+- [x] CP-16 Route ngoài hợp đồng không được tạo credential, gọi inference hoặc ghi Core.
+- [x] CP-17 Dọn Dockerfile/Compose/env/network/APISIX/CLI/backup và CI đúng consumer; không ảnh hưởng Core hoặc dữ liệu cũ.
+- [x] CP-18 Kiểm owner, claim, encryption và timeout bằng bộ kiểm hiện có; không thêm test file/framework.
+- [ ] CP-19 Đồng bộ license/catalog/NOTICE/DEPENDENCIES/SBOM/REUSE và docs VI/EN; không xóa mục license còn dùng chung.
+- [ ] CP-20 Cài mới/nâng cấp nhiều binding/rollback được kiểm; thiếu model không chặn Compose/Core, không tự tải artifact hoặc gọi cloud.
 
-## 5. Tri thức có nguồn
+## P6: Tính động, tài nguyên và nghiệm thu
 
-- [ ] Có corpus hư cấu ghi rõ nguồn, phiên bản, giấy phép và phạm vi mô hình.
-- [ ] Không đưa quy chế thật, dữ liệu cá nhân hoặc tài liệu chưa rõ quyền sử dụng vào corpus.
-- [ ] BM25 chuẩn hóa tiếng Việt; cache và corpus tách đúng phạm vi truy cập.
-- [ ] Không lập chỉ mục tập trung hồ sơ hoặc nội dung tệp nghiệp vụ.
-- [ ] Câu trả lời chỉ dẫn nguồn đã cấp; nguồn không tồn tại bị từ chối.
-- [ ] Thiếu bằng chứng thì từ chối hoặc hỏi lại, không coi điểm tìm kiếm là độ tin cậy.
-- [ ] Bộ câu hỏi đạt mục tiêu truy xuất đã được tech lead review; ghi riêng độ đúng câu trả lời và kết quả sai phạm vi.
+- [x] CP-21 Hai domain thật dùng cùng provider/UI, thay YAML không sửa mã; hồi quy ba họ workflow hiện có.
+- [ ] CP-22 Đo đúng workload mới trên host thực, tách Core/provider/model và cold/warm/busy/cancel; chưa công bố giảm RAM hoặc SLA khi chưa đo.
+- [ ] CP-23 Kiểm build/compliance/doc refs/secret/diff đúng phần thay đổi; không để reference vận hành treo hoặc dependency vô dụng.
+- [ ] CP-24 Người dùng chạy kịch bản demo, tech lead review giới hạn và giấy phép; chưa đánh dấu hoàn tất toàn bộ #210.
 
-## 6. Đề xuất và xác nhận
+## Cải thiện chất lượng đa mẫu
 
-- [ ] Snapshot do server dựng, có chủ, đích, tham số, nguồn, version/modelVersion và hạn.
-- [ ] Thẻ hiển thị đúng snapshot; đổi tham số bắt buộc tạo đề xuất mới.
-- [ ] LLM chỉ đọc/tạo đề xuất, không được gọi xác nhận hoặc thực thi.
-- [ ] Core kiểm phiên bản, quyền, trạng thái và điều kiện trong cùng giao dịch.
-- [ ] Client cũ không gửi điều kiện vẫn giữ hành vi; client AI bắt buộc có điều kiện.
-- [ ] Đề xuất giao/trả việc, chuyển trạng thái và sửa trường được phép không vượt metadata.
-- [ ] Sai chủ, quá hạn, thay phiên bản, đổi vai hoặc người nhận không hợp lệ bị từ chối.
-- [ ] Xác nhận kép chỉ claim một lần; crash/timeout sau ghi chuyển `uncertain`, không tự gửi lại.
-- [ ] Thành công và tác động bất đồng bộ được mô tả theo bằng chứng API, có lịch sử đối chiếu.
+- [x] QI-01 Giữ đối chứng 30 ca và chốt thêm ca chưa dùng để chỉnh prompt.
+- [ ] QI-02 Quyết định đủ căn cứ trước giá trị; đo từ chối đúng và không làm mất các ca rõ nghĩa.
+- [x] QI-03 Quan hệ số và đối chiếu danh mục lấy từ dữ liệu/metadata, không có tên ngành trong mã dùng chung.
+- [ ] QI-04 Nội dung ngắn hoàn chỉnh; lỗi kiểu, nguồn và cấu trúc không thành đề xuất ghi được.
+- [x] QI-05 Giữ một lượt suy luận, một slot, thời hạn và hủy; không lặp suy luận vô hạn hoặc tự ghi.
+- [ ] QI-06 Kiểm hồi quy và đối chiếu trước/sau với Core/model/giao diện thật; công bố giới hạn còn lại.
 
-## 7. Tác tử theo sự kiện
-
-- [ ] Bật/tắt cấu hình theo chính chủ; dùng backend self-host và hàng đợi có giới hạn cho tác vụ nền.
-- [ ] Nhận webhook có chữ ký, lưu bền vững và khử trùng trước khi gọi model.
-- [ ] Không dùng feed ADMIN hoặc tài khoản ADMIN để đọc dữ liệu thay người dùng.
-- [ ] Có phiên nền riêng được cấp/thu hồi đúng cách; chưa bật thì không giữ credential nền.
-- [ ] Mất phiên hoặc mất quyền dừng xử lý và hiển thị tình trạng đúng.
-- [ ] Chỉ tạo đề xuất trường được cấu hình, không tự ghi và không tạo vòng lặp sự kiện.
-- [ ] Tác vụ trùng, worker restart và lỗi runtime không gây gọi vô hạn hoặc mất trạng thái âm thầm.
-- [ ] Cách nhận sự kiện tương thích với cấu hình webhook của bản cài được review.
-
-## 8. Giao diện và vận hành
-
-- [ ] Trang chat dùng Material UI hiện có, nạp chậm; không thêm bộ giao diện khác.
-- [ ] Lịch sử bên trái, vùng chat, ô nhập, trạng thái model self-host và cài đặt hội thoại dùng được.
-- [ ] Nguồn, liên kết hồ sơ và thẻ xác nhận hiển thị trực tiếp trong hội thoại.
-- [ ] Không có HTML tùy ý từ model; liên kết và nội dung hiển thị được kiểm.
-- [ ] Desktop/mobile, bàn phím, bộ gõ tiếng Việt, sáng/tối, loading/empty/error và reduced motion đạt.
-- [ ] Thiếu trọng số, backend lỗi hoặc tắt AI vẫn dùng được Core và giao diện nghiệp vụ.
-- [ ] Có cách bật/tắt, khởi động lại, đổi bí mật runtime, thu hồi phiên nền và backup/restore.
-- [ ] Có số đo tài nguyên và độ trễ ở trạng thái tắt, nhàn rỗi và hai người chat đồng thời.
-
-## 9. Kiểm chứng và bàn giao
-
-- [ ] Đọc diff; backend compile/test-compile và định dạng theo đúng nhánh khi có sửa tương ứng.
-- [ ] Frontend typecheck và kiểm cú pháp/typecheck/build dịch vụ AI theo stack đã chốt đạt.
-- [ ] Ca chức năng chạy trên môi trường được duyệt, phân biệt mô phỏng và model self-host thật.
-- [ ] Model GGUF/runtime ghim có bằng chứng suy luận thật và hoạt động hoàn toàn trong hạ tầng self-host.
-- [ ] Sau chuẩn bị artifact, hỏi đáp và tác tử hoạt động khi chặn mạng ra ngoài; thiếu trọng số báo chưa sẵn sàng thay vì tự tải.
-- [ ] Ba họ quy trình và hai chủ đồng thời đạt các ca quyền, snapshot và xác nhận.
-- [ ] Kiểm giấy phép và CI bắt buộc đạt trên phiên bản chuẩn bị nộp.
-- [ ] Tài liệu sử dụng/cấu hình phản ánh đúng triển khai; không xóa backlog khi chưa hoàn tất cả phạm vi.
-- [ ] Bàn giao nêu nhánh/base, thay đổi, kết quả, giới hạn, việc còn lại và trạng thái Git/GitHub đã xác minh.
-- [ ] Tech lead/người dùng nghiệm thu; không tự đóng issue hoặc xuất bản thay đổi khi chưa có ủy quyền.
-
-## 10. Khảo sát self-host và thư viện có sẵn
-
-- [ ] Đối chiếu đúng bản Apertus Instruct với trọng số, mã, thông tin dữ liệu huấn luyện/hậu huấn luyện và yêu cầu OSAID.
-- [ ] Kiểm nguồn gốc GGUF, công cụ/cấu hình chuyển đổi và dữ liệu hiệu chỉnh nếu có; không kết luận từ license trọng số hoặc tên uploader.
-- [ ] Kiểm giấy phép đúng phiên bản `llama.cpp`, image/binary và dependency trước khi đưa vào bản cài.
-- [ ] So sánh Haystack với stack tối thiểu theo lượng mã phải tự viết, dependency, image và tài nguyên nhàn rỗi; chọn một dịch vụ điều phối.
-- [ ] Chỉ khảo sát FastEmbed hoặc FlashRank khi chất lượng BM25 chưa đạt; kiểm riêng model được chọn và tiếng Việt.
-- [ ] Q4_K_M được đo với ngữ cảnh 4.096 token và một lượt suy luận; corpus và ngân sách output được cố định.
-- [ ] Khi cần đối chứng, Q5_K_M dùng cùng câu hỏi, template, công cụ và tham số sinh; ghi các khác biệt về môi trường.
-- [ ] Có kết quả tiếng Việt có nguồn, từ chối thiếu bằng chứng, JSON và chọn đúng công cụ/tham số; không đồng nhất JSON hợp lệ với đúng nghiệp vụ.
-- [ ] Có RAM đỉnh, CPU, token/giây, thời gian tới token đầu, tổng độ trễ và ảnh hưởng tới Core trên máy đích.
-- [ ] Hai tài khoản xếp hàng không lộ prompt/cache/kết quả; timeout và hàng đợi đầy báo rõ, hủy/timeout giải phóng slot và trạng thái chờ được đối chiếu đúng.
-- [ ] Tech lead review cấu hình self-host và phần còn thiếu nếu chưa đạt; chưa có bằng chứng thì không công bố đủ nhẹ/đạt OSAID.
+QI-02 và QI-04 còn mở ở phần chất lượng ngữ nghĩa và văn phong; các lỗi model còn lại được theo dõi tại [BACKLOG](../dynamic-core/BACKLOG.md).
+Bản hiện tại giữ một lượt suy luận; chưa nghiệm thu khả năng từ chối ổn định trên các cách diễn đạt mới.

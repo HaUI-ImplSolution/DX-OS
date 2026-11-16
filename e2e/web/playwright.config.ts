@@ -11,6 +11,7 @@ export default defineConfig({
   retries: 0,
   reporter: [["list"]],
   use: {
+    ...(process.env.E2E_CHROMIUM_EXECUTABLE ? { launchOptions: { executablePath: process.env.E2E_CHROMIUM_EXECUTABLE } } : {}),
     baseURL: process.env.DXOS_BASE_URL ?? "http://localhost:9080",
     locale: "vi-VN",
     viewport: { width: 1366, height: 800 },

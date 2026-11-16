@@ -19,7 +19,7 @@ Danh sách giấy phép được OSI công nhận: https://opensource.org/licens
 | Phần                                        | Giấy phép             | Ghi chú                                      |
 +=============================================+=======================+==============================================+
 | backend, frontend, website, deploy, portal, | Apache-2.0 (LICENSE)  | SPDX header ở mọi file mã nguồn              |
-| sso, seaweedfs, e2e, examples               |                       |                                              |
+| sso, seaweedfs, e2e, examples, assistant    |                       |                                              |
 +---------------------------------------------+-----------------------+----------------------------------------------+
 | docs, tệp .md, ảnh, video, sơ đồ            | Apache-2.0 (LICENSE)  | Khai ở REUSE.toml vì tệp không có dòng SPDX  |
 +---------------------------------------------+-----------------------+----------------------------------------------+
@@ -131,7 +131,7 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 | dompurify (qua monaco-editor)                                | MPL-2.0 OR   | Làm sạch nội dung hiển thị           |
 |                                                              | Apache-2.0   | [3]                                  |
 +--------------------------------------------------------------+--------------+--------------------------------------+
-| TypeScript                                                   | Apache-2.0   | Web                                  |
+| TypeScript                                                   | Apache-2.0   | Chỉ khi build web và trợ lý           |
 +--------------------------------------------------------------+--------------+--------------------------------------+
 | css-mediaquery (qua react-admin)                             | BSD-3-Clause | Truy vấn media của MUI               |
 +--------------------------------------------------------------+--------------+--------------------------------------+
@@ -154,6 +154,13 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 | nginx 1.30                                                   | BSD-2-Clause | Image phục vụ web và portal          |
 +--------------------------------------------------------------+--------------+--------------------------------------+
 | Node.js 22 (node:22-alpine)                                  | MIT          | Chỉ khi build web                    |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| Fastify, @fastify/swagger, jose                              | MIT          | API, OpenAPI và xác thực JWT của     |
+|                                                              |              | dịch vụ trợ lý                       |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| Node.js 24.16.0                                              | MIT          | Chạy trợ lý và SQLite tích hợp       |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| @types/node                                                  | MIT          | Chỉ khi build và test trợ lý         |
 +--------------------------------------------------------------+--------------+--------------------------------------+
 
 4. HẠ TẦNG VÀ CÔNG CỤ
@@ -218,6 +225,10 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 | CycloneDX (@cyclonedx/cyclonedx-npm, | Apache-2.0                           | Sinh SBOM                            |
 | cyclonedx-maven-plugin)              |                                      |                                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
+| Biome (@biomejs/biome)               | MIT OR Apache-2.0                    | Phân tích tĩnh mã web (npm run lint) |
+|                                      |                                      | trong CI; devDependency, không đóng  |
+|                                      |                                      | gói vào sản phẩm                     |
++--------------------------------------+--------------------------------------+--------------------------------------+
 | reuse 6.3.0 (pipx run)               | Apache-2.0, GPL-3.0-or-later (mã);   | Kiểm chuẩn REUSE (reuse lint) trong  |
 |                                      | CC0-1.0, CC-BY-SA-4.0 (tài liệu)     | CI; không đóng gói vào sản phẩm      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
@@ -235,8 +246,8 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | draw.io (jgraph/drawio)              | Apache-2.0                           | Chỉ khi sửa sơ đồ ở docs/diagrams    |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| GitHub Actions (actions/*,           | MIT, Apache-2.0, ISC, 0BSD,          | Chỉ trong CI, ghim theo SHA          |
-| docker/*)                            | BlueOak-1.0.0                        |                                      |
+| GitHub Actions (actions/*, docker/*, | MIT, Apache-2.0, ISC, 0BSD,          | Chỉ trong CI, ghim theo SHA          |
+| github/*, ossf/*)                    | BlueOak-1.0.0                        |                                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 
 5. GHI CHÚ

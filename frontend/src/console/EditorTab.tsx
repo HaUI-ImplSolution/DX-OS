@@ -78,7 +78,9 @@ function patch(doc: Document, path: Path, before: unknown, after: unknown) {
     Object.keys(before).forEach((key) => {
       if (!(key in after)) doc.deleteIn([...path, key]);
     });
-    Object.entries(after).forEach(([key, value]) => patch(doc, [...path, key], before[key], value));
+    Object.entries(after).forEach(([key, value]) => {
+      patch(doc, [...path, key], before[key], value);
+    });
     // A key renamed in the middle keeps its place instead of moving to the end.
     const node = path.length === 0 ? doc.contents : doc.getIn(path, true);
     if (isMap(node)) {

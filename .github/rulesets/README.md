@@ -5,7 +5,7 @@ Tệp ở đây chỉ là bản ghi: GitHub không tự đọc thư mục này.
 
 | Tệp | Áp dụng cho | Quy tắc |
 |---|---|---|
-| `main.json` | nhánh `main` | cấm xóa, cấm ghi đè lịch sử, chỉ nhận thay đổi qua pull request gộp bằng merge, và pull request phải có đủ các check bắt buộc xanh |
+| `main.json` | nhánh `main` | cấm xóa, cấm ghi đè lịch sử, chỉ nhận thay đổi qua pull request gộp bằng merge, pull request đụng tệp có chủ sở hữu ở `.github/CODEOWNERS` phải được một chủ sở hữu duyệt, và pull request phải có đủ các check bắt buộc xanh |
 | `tags.json` | tag `v*` | cấm sửa và cấm xóa tag đã tạo |
 
 Nhập: Settings → Rules → Rulesets → New ruleset → Import a ruleset, chọn từng tệp.

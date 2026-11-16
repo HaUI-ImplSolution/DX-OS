@@ -12,6 +12,7 @@ import HaUI.ImplSolution.dxos.model.Completion;
 import HaUI.ImplSolution.dxos.model.Model;
 import HaUI.ImplSolution.dxos.model.Model.Entity;
 import HaUI.ImplSolution.dxos.model.ProcessFamily;
+import java.sql.Timestamp;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -35,18 +36,21 @@ public class RecordStatus {
   private final Outbox outbox;
   private final EventLog events;
   private final OverdueSweep overdue;
+  private final Deadlines deadlines;
 
   public RecordStatus(
       JdbcTemplate jdbc,
       ModelRegistry registry,
       Outbox outbox,
       EventLog events,
-      OverdueSweep overdue) {
+      OverdueSweep overdue,
+      Deadlines deadlines) {
     this.jdbc = jdbc;
     this.registry = registry;
     this.outbox = outbox;
     this.events = events;
     this.overdue = overdue;
+    this.deadlines = deadlines;
   }
 
   public void set(DelegateExecution execution, String status) {
@@ -72,8 +76,14 @@ public class RecordStatus {
       args.add(actor);
     }
     if (deadline != null && family.awaitsHandler(status)) {
-      sql.append(", handle_by = now() + make_interval(secs => ?)");
-      args.add(deadline.toSeconds());
+      Timestamp due = deadlines.dueNow(model, entity.process());
+      if (due == null) {
+        sql.append(", handle_by = now() + make_interval(secs => ?)");
+        args.add(deadline.toSeconds());
+      } else {
+        sql.append(", handle_by = ?");
+        args.add(due);
+      }
     } else {
       sql.append(", handle_by = NULL");
     }

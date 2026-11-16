@@ -6,16 +6,32 @@ import { getLocale } from "./locale";
 // text can follow the language of the interface. A message that no rule matches is shown as the backend sent it.
 type Rule = [RegExp, string];
 
-const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 // A message that never changes, and one with parts that are kept (written as regular expression groups).
-const fixed = (english: string, vietnamese: string): Rule => [new RegExp(`^${escape(english)}$`), vietnamese];
+const fixed = (english: string, vietnamese: string): Rule => [new RegExp(`^${escapeRegExp(english)}$`), vietnamese];
 const pattern = (english: string, vietnamese: string): Rule => [new RegExp(`^${english}$`), vietnamese];
 
 const NAME = "\\[a-z\\]\\[a-z0-9_\\]\\*";
 
 // Most specific first: the general "... is required" comes last.
 const VI: Rule[] = [
+  fixed("task name must match [a-z][a-z0-9_]* and be at most 40 characters", "Tên nhiệm vụ phải khớp [a-z][a-z0-9_]* và dài tối đa 40 ký tự"),
+  fixed("ai must be a mapping with tasks", "ai phải là một mapping chứa tasks"),
+  fixed("ai.tasks must contain between 1 and 8 tasks", "ai.tasks cần từ 1 đến 8 nhiệm vụ"),
+  fixed("a task must be a mapping", "Mỗi nhiệm vụ phải là một mapping"),
+  fixed("input_fields must name supported fields of this entity", "input_fields phải chỉ đến các trường được hỗ trợ của thực thể này"),
+  fixed("output_field must name a text or single choice field", "output_field phải là trường text hoặc choice đơn trị"),
+  fixed("output_field must not supply a membership group", "Không được đề xuất trường dùng để cấp nhóm quyền"),
+  fixed("a task needs a label up to 200 and instruction up to 2000 characters", "Nhiệm vụ cần nhãn tối đa 200 và hướng dẫn tối đa 2000 ký tự"),
+  fixed("max_length must be a whole number between 1 and 2000", "max_length phải là số nguyên từ 1 đến 2000"),
+
+  fixed("This action is not available to your roles", "Vai trò của bạn không được thực hiện hành động này"),
+  fixed("The model changed; read it again", "Mô hình đã thay đổi; hãy tải lại trước khi thực hiện"),
+  pattern("must be a whole number at least (.+)", "Phải là số nguyên không nhỏ hơn $1"),
   pattern("The record does not meet the condition of this action: (.+)", "Hồ sơ chưa đạt điều kiện của hành động này: $1"),
+  pattern("(input_fields|sources) must contain between 1 and 12 names", "$1 cần từ 1 đến 12 tên"),
+  pattern("(input_fields|sources) requires unique valid names", "$1 cần các tên hợp lệ, không trùng nhau"),
+  pattern("task (.+) is declared twice", "Nhiệm vụ $1 bị khai báo hai lần"),
   // A model file (the checker of the model format).
   fixed("The model file has problems", "Tệp mô hình có lỗi"),
   pattern("invalid YAML: (.*)", "YAML không hợp lệ: $1"),

@@ -18,6 +18,7 @@ import HaUI.ImplSolution.dxos.engine.event.ActionCheck;
 import HaUI.ImplSolution.dxos.engine.exception.ModelValidationException;
 import HaUI.ImplSolution.dxos.engine.files.AttachmentCleaner;
 import HaUI.ImplSolution.dxos.engine.process.BookingGuard;
+import HaUI.ImplSolution.dxos.engine.process.Deadlines;
 import HaUI.ImplSolution.dxos.engine.process.ProcessRules;
 import HaUI.ImplSolution.dxos.engine.process.ProcessService;
 import HaUI.ImplSolution.dxos.engine.registry.ModelClient;
@@ -102,6 +103,7 @@ public class DataService {
   private final ActionCheck checks;
   private final TransactionTemplate separate;
   private final RecordCodes codes;
+  private final Deadlines deadlines;
 
   public DataService(
       NamedParameterJdbcTemplate jdbc,
@@ -114,6 +116,7 @@ public class DataService {
       AttachmentCleaner attachments,
       ActionCheck checks,
       RecordCodes codes,
+      Deadlines deadlines,
       PlatformTransactionManager transactions) {
     this.jdbc = jdbc;
     this.user = user;
@@ -125,6 +128,7 @@ public class DataService {
     this.attachments = attachments;
     this.checks = checks;
     this.codes = codes;
+    this.deadlines = deadlines;
     this.separate = new TransactionTemplate(transactions);
     this.separate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
   }
@@ -390,8 +394,14 @@ public class DataService {
         });
     if (entity.process() != null && entity.process().deadline() != null) {
       names.add("handle_by");
-      markers.add("now() + make_interval(secs => :handle_secs)");
-      params.addValue("handle_secs", entity.process().deadline().toSeconds());
+      Timestamp due = deadlines.dueNow(model, entity.process());
+      if (due == null) {
+        markers.add("now() + make_interval(secs => :handle_secs)");
+        params.addValue("handle_secs", entity.process().deadline().toSeconds());
+      } else {
+        markers.add(":handle_by");
+        params.addValue("handle_by", due);
+      }
     }
     Map<String, Object> row;
     try {
@@ -433,7 +443,7 @@ public class DataService {
     }
     requireReachableParent(model, entity, access, values);
     requireOpen(model, entity, access, id);
-    Changed changed = changes(model, entity, access, id, values);
+    Changed changed = changes(model, entity, access, id, values, baseVersion);
     requireConditionalFields(model, entity, id, values);
     Map<String, Object> changes = changed.values();
     if (changes.isEmpty()) {
@@ -574,6 +584,12 @@ public class DataService {
   @Transactional
   public Map<String, Object> act(
       Model model, Entity entity, long id, String actionName, String note) {
+    return act(model, entity, id, actionName, note, null);
+  }
+
+  @Transactional
+  public Map<String, Object> act(
+      Model model, Entity entity, long id, String actionName, String note, Long version) {
     Action action =
         processOf(entity)
             .definition()
@@ -585,6 +601,7 @@ public class DataService {
       judged.add(action.when().field());
     }
     Map<String, Object> record = lock(model, entity, access(model, entity), id, judged);
+    RecordPreconditions.check(entity.name(), version, record);
     String me = user.currentUserId();
     rules.checkAction(
         entity, action, record, me, user.clientRoles(ModelClient.of(model.name())), note);
@@ -656,6 +673,12 @@ public class DataService {
   // Gives a record to a user who can handle it, or back to the handler role with null.
   @Transactional
   public Map<String, Object> assign(Model model, Entity entity, long id, String assignee) {
+    return assign(model, entity, id, assignee, null);
+  }
+
+  @Transactional
+  public Map<String, Object> assign(
+      Model model, Entity entity, long id, String assignee, Long version) {
     processOf(entity);
     Access access = access(model, entity);
     Map<String, Object> current = get(model, entity, id);
@@ -672,6 +695,7 @@ public class DataService {
                   () -> new ModelValidationException("assignee", "cannot handle this record"));
     }
     Map<String, Object> record = lock(model, entity, access, id);
+    RecordPreconditions.check(entity.name(), version, record);
     String status = (String) record.get("status");
     if (entity.process().definition().isTerminal(status)) {
       throw new InvalidStateException("The record is closed", "RECORD_CLOSED");
@@ -940,9 +964,15 @@ public class DataService {
   // values the row held. The row stays locked until the transaction ends, so what is read here is
   // what the update replaces.
   private Changed changes(
-      Model model, Entity entity, Access access, long id, Map<String, Object> values) {
+      Model model,
+      Entity entity,
+      Access access,
+      long id,
+      Map<String, Object> values,
+      Long expectedVersion) {
     MapSqlParameterSource params = new MapSqlParameterSource("id", id);
     List<String> columns = new ArrayList<>();
+    columns.add("version");
     List<String> names = new ArrayList<>(values.keySet());
     for (int i = 0; i < names.size(); i++) {
       String name = names.get(i);
@@ -971,6 +1001,7 @@ public class DataService {
     if (rows.isEmpty()) {
       throw notFound(entity, id);
     }
+    RecordPreconditions.check(entity.name(), expectedVersion, rows.get(0));
     Map<String, Object> changed = new LinkedHashMap<>();
     Map<String, Object> before = new LinkedHashMap<>();
     for (int i = 0; i < names.size(); i++) {

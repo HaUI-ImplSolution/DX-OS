@@ -19,7 +19,9 @@ function notify() {
   if (timer) return;
   timer = setTimeout(() => {
     timer = null;
-    listeners.forEach((listener) => listener());
+    listeners.forEach((listener) => {
+      listener();
+    });
   }, COALESCE_MS);
 }
 

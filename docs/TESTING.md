@@ -11,7 +11,7 @@ Mức hoàn thiện của từng tính năng và bài kiểm của nó ở [`web
 |---|---|
 | Docker và Docker Compose v2 | Backend `verify` dùng Testcontainers nên cần Docker chạy |
 | JDK 21 | Dùng Maven wrapper trong repo; đặt `JAVA_HOME` về JDK 21 nếu máy mặc định bản khác |
-| Node 22 trở lên | Cho `frontend`, `website` và `e2e` |
+| Node 22 trở lên | Cho `frontend`, `website` và `e2e`; riêng trợ lý cần Node 24.16 |
 | Python 3 | Cho các script kiểm ở `e2e/api` |
 
 ## 2. Các loại kiểm
@@ -19,7 +19,9 @@ Mức hoàn thiện của từng tính năng và bài kiểm của nó ở [`web
 | Loại | Lệnh | Chạy ở CI |
 |---|---|---|
 | Định dạng, biên dịch, test của backend | `cd backend && ./mvnw verify` | Workflow `Backend` |
+| Trợ lý tùy chọn, không cần key | `cd assistant && npm ci && npm test` (Node 24.16) | `Check the optional assistant` của `Platform` |
 | Kiểu của web | `cd frontend && npx tsc --noEmit` | Workflow `Frontend` |
+| Phân tích tĩnh của web | `cd frontend && npm run lint` | Workflow `Frontend` |
 | Giấy phép và header | `python3 .github/scripts/check_licenses.py`; `pipx run --spec reuse==6.3.0 reuse lint` | `Check licenses` của `Compliance` |
 | Giấy phép của phiên bản đang dùng | `GITHUB_TOKEN=... python3 .github/scripts/check_upstream_licenses.py`; `python3 -m unittest discover -s .github/scripts` | `Check upstream licenses` và `Check licenses` của `Compliance` |
 | SBOM khớp tệp khóa | `python3 .github/scripts/check_sbom_fresh.py` | `Check SBOMs against lockfiles` của `Compliance` |
@@ -85,7 +87,7 @@ python3 e2e/api/check_bootstrap.py
 | `check_api.py` | Áp dụng mô hình mẫu vào hệ thống rỗng, lỗi tệp theo dòng và cột, quyền theo vai và theo dòng, chặn ghi `status`, chống SQL qua tên trường, 10.000 dòng có lọc và sắp xếp |
 | `check_recovery.py` | Lỗi sau bước quy trình thì hồ sơ và quy trình cùng quay về; áp dụng bị Keycloak làm gián đoạn rồi áp dụng lại |
 | `check_case.py` | Trạng thái và hành động, đơn vị, giao việc, hộp việc, lịch sử có giá trị cũ và mới, mã lý do của lỗi 403 và 409 |
-| `check_change.py` | Đổi mô hình khi đã có dữ liệu: mức rủi ro, đổi tên giữ dữ liệu, dòng vi phạm, quay về |
+| `check_change.py` | Đổi mô hình khi đã có dữ liệu: mức rủi ro, đổi tên giữ dữ liệu, dòng vi phạm, quay về; tệp mở rộng từ mẫu bằng `extends` |
 | `check_process.py` | Các họ mẫu, hạn và quá hạn, hành động hoàn tất qua outbox, tệp đính kèm, thống kê, chống ghi đè |
 | `check_codes.py` | Mã hồ sơ: mã đầu năm, đếm riêng theo thực thể, tạo đồng thời, từ chối ghi và sửa mã, tra theo mã, chuyển năm, đổi khuôn, hết số |
 | `check_booking.py` | Họ `reservation`, danh mục của bảng điều khiển, mọi mẫu áp dụng được |
@@ -238,6 +240,27 @@ Kiểm bằng đúng các lệnh và thao tác trong tài liệu.
     - Địa chỉ SSH với host lạ, khóa sai hoặc khóa có quyền rộng bị từ chối, mỗi lỗi ghi nguyên nhân riêng.
     - API tắt thì nguồn mô hình ghi `error` và thoát mã 1.
     - `dxos gitops install` tạo timer và `uninstall` gỡ; `history.log` ghi mỗi lần commit hoặc kết quả đổi.
+48. **Kế hoạch khi đổi quyền truy cập:** áp dụng một mẫu (ví dụ `equipment`), sửa `access` của một thực thể rồi chạy `dxos plan <tệp>` hoặc bấm Xem kế hoạch ở tab Soạn và áp dụng:
+    - `own` sang `all` ra `WIDEN_ACCESS` với `BORROWER: own → all`; `all` sang `read` ra `NARROW_ACCESS`.
+    - Thêm một vai vào `access` ra `GRANT_ACCESS` (`AUDITOR: none → read`); bỏ một vai ra `REVOKE_ACCESS` (`BORROWER: own → none`).
+    - `own` sang `assigned`, hoặc `read` sang `own`, ra `CHANGE_ACCESS`.
+    - Mọi dòng ở mức `SAFE`, `dxos apply` không cần `--accept`; chỉ đổi nhãn thì không có dòng quyền nào, và tệp giống mô hình đang chạy thì `dxos plan --check` thoát mã 0.
+    - Tab Kế hoạch ghi nhãn đúng ở tiếng Việt và tiếng Anh, dòng `vai: cũ → mới` hiện dưới nhãn.
+49. **Lịch làm việc:** áp dụng một mô hình có `calendars` (ngày làm thứ Hai đến thứ Sáu, giờ `['08:00-12:00', '13:00-17:00']`) và hai thực thể có quy trình, một có `calendar: office` và `deadline: 4h`, một có `deadline: 1d` cùng lịch, một không có lịch:
+    - Hồ sơ tạo 15:00 thứ Hai ở thực thể `4h` có `handle_by` 10:00 thứ Ba; thực thể `1d` có `handle_by` 15:00 thứ Ba; hồ sơ tạo chiều thứ Sáu hoặc ngày nghỉ tính từ lần mở cửa kế tiếp; thực thể không có lịch có `handle_by` đúng bằng lúc tạo cộng hạn.
+    - Hành động đưa hồ sơ vào trạng thái chờ xử lý (như `start`) đặt lại `handle_by` theo lịch.
+    - `dxos lint` và Xem kế hoạch báo lỗi theo dòng và cột cho lịch không khai, giờ chồng nhau, giờ kết thúc trước giờ bắt đầu, `days` rỗng, ngày nghỉ sai dạng hoặc trùng, và `calendar` không có `deadline`.
+    - Đổi giờ của lịch đang dùng, hoặc bỏ `calendar` khỏi quy trình, ra `CHANGE_CALENDAR` ở mức `SAFE` và bị từ chối khi thực thể còn hồ sơ đang xử lý; một lịch không quy trình nào dùng mà đổi vẫn ra một dòng `CHANGE_CALENDAR`.
+    - Một tệp `extends` khai lại `office` chỉ với `hours` giữ `days` của mẫu và thêm lịch mới theo tên.
+    - Form quy trình ở tab Soạn và áp dụng có ô Lịch làm việc với các lịch đã khai, báo đỏ khi tên lịch chưa khai, và đủ ở tiếng Việt và tiếng Anh.
+
+### Trợ lý (tùy chọn)
+
+48. Theo [`assistant/README.md`](../assistant/README.md), liên kết SSO, cấu hình inference/nguồn của bản cài và khai báo nhiệm vụ `ai.tasks`.
+    Mở hồ sơ, tạo đề xuất, xem nguồn, sửa hoặc hủy, rồi xác nhận và đối chiếu phiên bản/lịch sử Core.
+    Kiểm hai chủ không đọc/ghi chéo; giá trị trùng không tạo lịch sử sửa và model tắt không cản nghiệp vụ.
+    Kiểm nâng cấp/restore giữ SSO, key và lịch sử, không thực thi lại đề xuất cũ.
+    Ma trận đầy đủ ở [kế hoạch kiểm trợ lý](./ai-assistant/03_TEST_PLAN.md).
 
 ## 7. Hồi quy
 

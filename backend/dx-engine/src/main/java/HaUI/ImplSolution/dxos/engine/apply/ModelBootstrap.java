@@ -156,9 +156,11 @@ public class ModelBootstrap {
     }
   }
 
-  void consider(String file, String content, Set<String> seen) {
+  void consider(String file, String source, Set<String> seen) {
+    String content;
     Model model;
     try {
+      content = apply.resolve(source);
       model = ModelParser.parse(content);
     } catch (ModelException e) {
       log.error("Model bootstrap: failed {} fails the checks: {}", file, e.problems());

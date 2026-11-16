@@ -2,7 +2,6 @@
 
 Định hướng và phạm vi của lõi dynamic.
 Việc chưa làm, chưa kiểm và giới hạn đã biết nằm ở [`BACKLOG.md`](./BACKLOG.md); cách kiểm ở [`docs/TESTING.md`](../TESTING.md).
-Đối chiếu cơ chế tùy biến của Frappe với tệp mô hình nằm ở [`FRAPPE_CUSTOMIZATION.md`](./FRAPPE_CUSTOMIZATION.md).
 
 ## Tóm tắt
 

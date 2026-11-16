@@ -139,6 +139,7 @@ export const PARAM_HELP: Record<string, string> = {
 // the model file by the path of the key, so the structure stays where the model format is defined.
 export const SCHEMA_HELP: Record<string, string> = {
   format: t("Phiên bản định dạng của tệp mô hình, hiện là 1."),
+  extends: t("Dựa trên một mẫu của thư viện: chỉ viết phần khác với mẫu, lõi ghép thành tệp hoàn chỉnh khi xem kế hoạch và áp dụng. Khóa name vẫn phải có."),
   name: t("Tên mô hình: chữ thường, số, gạch dưới, bắt đầu bằng chữ, tối đa 40 ký tự. Đặt tên bảng dữ liệu (schema m_<tên>) và đường dẫn API."),
   webhook: t("Tên đích nhận lịch sử hồ sơ, đã cấu hình ở máy chủ (không phải địa chỉ web). Bỏ trống thì dùng đích mặc định."),
   roles: t("Danh sách vai: nhóm người có cùng quyền. Cần ít nhất một vai. Vai khai ở đây dùng được ở access, handler và role của hành động."),

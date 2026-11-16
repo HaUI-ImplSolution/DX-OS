@@ -5,6 +5,7 @@
 Run after check_case.py on the same stack:
     python3 e2e/api/check_change.py
 """
+import hashlib
 import sys
 
 import check_api as rt
@@ -47,6 +48,43 @@ def apply(admin, content, base=None, accept=None):
 
 def kinds(the_plan):
     return {(c["kind"], c["field"]) for c in the_plan["changes"]}
+
+
+def extends_template(admin):
+    template = rt.read("backend/dx-engine/src/main/resources/templates/notes.yaml")
+    field = "      body: {type: text, label: Nội dung}\n"
+    tag = "      tag: {type: text, label: Nhãn}\n"
+    full = template.replace("name: notes\n", "name: ext_notes\n", 1).replace(field, field + tag, 1)
+    short = "extends: notes\nname: ext_notes\nentities:\n  note:\n    fields:\n" + tag
+
+    from_full, from_short = plan(admin, full), plan(admin, short)
+    rt.check("T7-12 a file that extends a template plans like the complete file",
+             from_short["action"] == "create" and from_short["statements"] == from_full["statements"], str(from_short["action"]))
+    status, body = kc.api(admin, "POST", "/models/merge", short, YAML)
+    merged = body["data"]["content"] if status == 200 else ""
+    pin = f"# extends: notes sha256:{hashlib.sha256(template.encode()).hexdigest()}"
+    rt.check("T7-12 merge returns the complete file with the template pinned on its first line",
+             status == 200 and body["data"]["template"] == "notes" and merged.splitlines()[:1] == [pin], merged[:120])
+    rt.check("T7-12 the merged file plans like the complete file",
+             plan(admin, merged)["statements"] == from_full["statements"])
+    status, body = kc.api(admin, "POST", "/models/merge", full, YAML)
+    rt.check("T7-12 a file without extends comes back unchanged",
+             status == 200 and body["data"]["template"] is None and body["data"]["content"] == full, str(status))
+
+    status, body = kc.api(admin, "POST", "/models/plan", "extends: no_such_template\nname: ext_x\n", YAML)
+    message = body["data"][0] if status == 400 and isinstance(body.get("data"), list) and body["data"] else ""
+    rt.check("T7-12 an unknown template is refused and the library is listed",
+             "unknown template no_such_template, available:" in message and "notes" in message, f"{status} {message}")
+    status, body = kc.api(admin, "POST", "/models/plan", "extends: notes\nname: ext_x\nformat: 2\n", YAML)
+    rt.check("T7-12 a problem of the file carries the line of the file",
+             status == 400 and "line 3" in str(body.get("data")), f"{status} {body.get('data')}")
+
+    status, body = apply(admin, short)
+    rt.check("T7-12 apply of the extending file", status == 200 and body["data"]["status"] == "applied", f"{status} {body}")
+    code, stored = rt.psql("select content from engine.model_version where model='ext_notes' and version=1")
+    rt.check("T7-12 the stored version is the merged file", stored.strip() == merged.strip(), stored[:120])
+    status, body = apply(admin, short)
+    rt.check("T7-12 the same extending file applies as unchanged", status == 200 and body["data"]["status"] == "unchanged", f"{status} {body}")
 
 
 def main():
@@ -243,6 +281,8 @@ entities:
     rt.check("T7-11 its own file finishes it", status == 200 and body["data"]["version"] == int(version) + 1, f"{status} {body}")
     status, body = kc.api(buyer if False else kc.token("buyer1"), "GET", f"{BASE}/{ids[1]}")
     rt.check("T7-11 data is reachable", status == 200 and body["data"]["title"] == "x" + str(ids[1]), str(body))
+
+    extends_template(kc.token("admin1"))
 
     failed = [case for case, ok in rt.results if not ok]
     print(f"\n{len(rt.results) - len(failed)}/{len(rt.results)} passed", failed)

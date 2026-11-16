@@ -117,6 +117,7 @@ public class ApplyService {
   private final AuditRecorder audit;
   private final ProcessDeployer processes;
   private final RecordCodes codes;
+  private final TemplateResolver templates;
   private final String reportPassword;
   // Kind of step that fails on purpose, so that a stopped apply can be produced in tests.
   private final String faultStep;
@@ -133,6 +134,7 @@ public class ApplyService {
       AuditRecorder audit,
       ProcessDeployer processes,
       RecordCodes codes,
+      TemplateResolver templates,
       @Value("${engine.report-db-password:}") String reportPassword,
       @Value("${engine.fault.apply-step:}") String faultStep) {
     this.jdbc = jdbc;
@@ -146,11 +148,18 @@ public class ApplyService {
     this.audit = audit;
     this.processes = processes;
     this.codes = codes;
+    this.templates = templates;
     this.reportPassword = reportPassword;
     this.faultStep = faultStep.strip();
   }
 
-  public Plan plan(String content) {
+  // The file with extends resolved; a file that does not extend a template comes back as it is.
+  public String resolve(String content) {
+    return templates.resolve(content).content();
+  }
+
+  public Plan plan(String source) {
+    String content = resolve(source);
     Model model = ModelParser.parse(content);
     return leavingNoSchema(model, () -> plan(model, hash(content), Map.of()));
   }
@@ -166,7 +175,8 @@ public class ApplyService {
   // Who applies a model: the token "sub" and the name shown in the version history.
   public record Actor(String id, String name) {}
 
-  public Applied apply(String content, Actor actor, Integer base, Level accept) {
+  public Applied apply(String source, Actor actor, Integer base, Level accept) {
+    String content = resolve(source);
     Model model = ModelParser.parse(content);
     return announced(
         "MODEL_APPLIED",

@@ -76,6 +76,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Tài liệu
 
+- Đối chiếu toàn bộ giáo trình DX-OS với thuật ngữ, kiến trúc và hợp đồng hiện tại của lõi, gồm phân tích riêng DX-Ticket và các khoảng trống đã có issue theo dõi.
 - `CONTRIBUTING.md` ghi rõ tính năng mới đi kèm kiểm tự động (test backend hoặc mục kiểm trong `e2e/api/check_*.py`) và issue, pull request viết được bằng tiếng Việt hoặc tiếng Anh; README có huy hiệu OpenSSF Best Practices mức passing.
 - `docs/INTEGRATIONS.md` ghi cấu hình và kết quả kiểm webhook `chat` với Mattermost Team Edition 11.7.15: thông báo, hiển thị tiếng Việt, gửi lại khi lỗi và khả năng trùng tin.
 - Bài so sánh luồng ticket cơ bản ở `examples/effort-benchmark/`: mã API/xử lý của Lab với khai báo Core, cách đếm tái lập và kết quả kiểm API/UI.

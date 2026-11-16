@@ -36,7 +36,7 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 
 | Việc | Issue | Ghi chú |
 |---|---|---|
-| Phần AI | #210 | Chưa có mã: hỏi đáp sinh câu trả lời và tác tử đề xuất có người duyệt cần mô hình ngôn ngữ và embedding đạt định nghĩa Open Source AI của OSI (trọng số và dữ liệu huấn luyện đều mở), chưa chọn; khi làm sẽ là dịch vụ mới nối vào lõi; ứng viên LLM là Apertus 8B (Apache-2.0) và OLMo 2, cần thử tiếng Việt và tốc độ trên CPU; reranker và embedding phải thay bằng mô hình đạt chuẩn rồi đo lại chất lượng truy xuất; mô hình mở hoàn toàn có thể trả lời tiếng Việt kém và chậm hơn trên CPU nên cần đo trước khi trình diễn; không có LLM đạt thì Qwen chỉ là tùy chọn người dùng tự gắn, ghi rõ là mở trọng số; hỏi đáp quy chế cần một kho văn bản đạt cam kết nguồn mở (CC0, CC BY, ODbL hoặc không thuộc diện bảo hộ), vì kho văn bản của trường đã gỡ do thuộc bản quyền của trường |
+| Phần AI | #210 | Pipeline AI nguồn mở chưa có mã: hỏi đáp sinh câu trả lời và tác tử đề xuất có người duyệt cần mô hình ngôn ngữ và embedding đạt định nghĩa Open Source AI của OSI (trọng số và dữ liệu huấn luyện đều mở), chưa chọn; khi làm sẽ là dịch vụ mới nối vào lõi; ứng viên LLM là Apertus 8B (Apache-2.0) và OLMo 2, cần thử tiếng Việt và tốc độ trên CPU; reranker và embedding phải thay bằng mô hình đạt chuẩn rồi đo lại chất lượng truy xuất; mô hình mở hoàn toàn có thể trả lời tiếng Việt kém và chậm hơn trên CPU nên cần đo trước khi trình diễn; không có LLM đạt thì Qwen chỉ là tùy chọn người dùng tự gắn, ghi rõ là mở trọng số; hỏi đáp quy chế cần một kho văn bản đạt cam kết nguồn mở (CC0, CC BY, ODbL hoặc không thuộc diện bảo hộ), vì kho văn bản của trường đã gỡ do thuộc bản quyền của trường |
 | Ứng dụng Tầng 2 | #211 | Chưa phủ I của H-P-D-I; hỏi BTC trên nhóm Telegram của họ xem ứng dụng minh họa có cần phủ cả bốn không gian H, P, D, I không |
 | Lớp tùy biến trên mẫu | #216 | Người triển khai sửa thẳng vào bản sao của mẫu, nên khi mẫu có bản mới phải gộp tay: chưa có khóa `extends: <mẫu>` để chỉ viết phần khác và chưa có lệnh in tệp đã gộp; lý do và rủi ro ở `DANH_GIA.md` mục 7.2 |
 | Giáo trình DX-OS | #217 | Mới đọc tổng quan, mục lục chương và trang Hộp cát; đọc hết rồi đối chiếu thuật ngữ và kiến trúc với lõi, nhất là dự án DX-Ticket |
@@ -50,6 +50,13 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 | Chuẩn repository nguồn mở | Phân tích tĩnh cho web bằng ESLint, không dùng CodeQL vì điều khoản công cụ không thuộc OSI; `CODEOWNERS` khi nhóm chia vùng cho từng người; nâng `decode-uri-component`, `react-router`, `uuid` và `deepmerge` khi bản vá tương thích với `react-admin` và Docusaurus ra, để sáu cảnh báo ở tab Security đóng; chạy OpenSSF Scorecard; gắn nhãn `good first issue` và `help wanted` cho vài việc nhỏ |
 | Lịch sử issue | PoF chấm bug tracker có lịch sử; số issue và pull request lấy ở `website/docs/pof-audit.md`; mở issue cho việc phải sửa hoặc làm lại và đóng bằng pull request có `Closes #n`, còn việc phải thêm (giấy phép, lộ trình) chỉ ghi ở file này; issue chỉ mang nhãn `enhancement` hoặc `documentation`, chưa gắn milestone |
 | Chỉ số mục tiêu | Chưa có người thật làm bài thử "trong một buổi" (bài thử và bản mô phỏng ở `docs/TARGETS.md`), chưa đo công vận hành mỗi tháng và thời gian lần cài đầu có tải image |
+| Dọn tài liệu và thành phần AI cũ | Đối chiếu checkout cũ với Core hiện hành trước khi loại bỏ `COPYRIGHT.txt`, mã Python, dependency và SBOM không còn dùng; xử lý riêng, ngoài phạm vi tích hợp trợ lý |
+| Truy vấn phiên bản metadata | Giữ cách đọc hiện tại; khoảng 9 ms cho 54 truy vấn trên 23 mô hình/31 thực thể; cache chỉ làm khi có nhu cầu và đã kiểm apply/rollback/đồng thời |
+| Hội thoại trợ lý | Chưa tách theo mô hình; câu sinh đôi lúc có mã kỹ thuật hoặc thời gian chưa đúng múi giờ |
+| Thử tải ba trợ lý đồng thời | Hoãn theo chủ dự án; đợt hiện tại nghiệm thu hai trợ lý. Cần bot và tài nguyên phù hợp trước khi đo cold/warm, độ trễ, RAM/swap và ảnh hưởng Core |
+| Nghiệm thu provider API thứ hai | Chờ key OpenAI hoặc Anthropic; kiểm model thật với cùng luồng đọc, đề xuất, xác nhận và lỗi/quota trước khi công bố hỗ trợ đã xác minh |
+| Egress trợ lý | Runtime chưa có allowlist toàn mạng; endpoint compatible đang tắt; cần triển khai và kiểm chứng giới hạn kết nối toàn container |
+| Khóa/token backup trợ lý | Key và capability nằm cùng kho restic; người giải mã backup có thể đọc secret/giả danh runtime; cần tách quyền giữ khóa/token và có cách thu hồi, thay mới |
 
 ## 4. Giới hạn chấp nhận
 

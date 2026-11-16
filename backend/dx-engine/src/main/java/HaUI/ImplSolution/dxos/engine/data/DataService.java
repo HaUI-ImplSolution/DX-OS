@@ -574,6 +574,12 @@ public class DataService {
   @Transactional
   public Map<String, Object> act(
       Model model, Entity entity, long id, String actionName, String note) {
+    return act(model, entity, id, actionName, note, null);
+  }
+
+  @Transactional
+  public Map<String, Object> act(
+      Model model, Entity entity, long id, String actionName, String note, Long version) {
     Action action =
         processOf(entity)
             .definition()
@@ -585,6 +591,7 @@ public class DataService {
       judged.add(action.when().field());
     }
     Map<String, Object> record = lock(model, entity, access(model, entity), id, judged);
+    RecordPreconditions.check(entity.name(), version, record);
     String me = user.currentUserId();
     rules.checkAction(
         entity, action, record, me, user.clientRoles(ModelClient.of(model.name())), note);
@@ -656,6 +663,12 @@ public class DataService {
   // Gives a record to a user who can handle it, or back to the handler role with null.
   @Transactional
   public Map<String, Object> assign(Model model, Entity entity, long id, String assignee) {
+    return assign(model, entity, id, assignee, null);
+  }
+
+  @Transactional
+  public Map<String, Object> assign(
+      Model model, Entity entity, long id, String assignee, Long version) {
     processOf(entity);
     Access access = access(model, entity);
     Map<String, Object> current = get(model, entity, id);
@@ -672,6 +685,7 @@ public class DataService {
                   () -> new ModelValidationException("assignee", "cannot handle this record"));
     }
     Map<String, Object> record = lock(model, entity, access, id);
+    RecordPreconditions.check(entity.name(), version, record);
     String status = (String) record.get("status");
     if (entity.process().definition().isTerminal(status)) {
       throw new InvalidStateException("The record is closed", "RECORD_CLOSED");

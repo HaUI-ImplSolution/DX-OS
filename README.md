@@ -80,6 +80,7 @@ Mười mẫu có sẵn, chọn được ngay ở bảng điều khiển: một 
 | | **Dùng thử ngay:** một lệnh tạo tài khoản thử cho từng vai cùng hồ sơ mẫu ở nhiều trạng thái, để người xem đăng nhập là thấy hệ thống có việc đang chạy. |
 | | **Cài và vận hành đơn giản:** một lệnh cài, một lệnh chạy; có sao lưu kiểm được, tự khởi động lại dịch vụ, quét mã độc cho tệp đính kèm và số đo vận hành đọc được bằng công cụ giám sát có sẵn của bạn. |
 | | **Đăng nhập một lần:** qua Keycloak, có thể bắt quản trị viên nhập thêm mã một lần. |
+| | **[Trợ lý cá nhân (tùy chọn)](./assistant/README.md):** đọc và theo dõi hồ sơ qua Telegram, đề xuất giao việc hoặc chuyển trạng thái để người dùng xác nhận. Khi bật trợ lý, nội dung phục vụ yêu cầu được gửi tới nhà cung cấp API mô hình và tin nhắn được trao đổi qua Telegram. |
 
 Bảng đối chiếu từng tính năng với bài kiểm của nó ở [ma trận bằng chứng](https://haui-implsolution.github.io/DX-OS/docs/evidence-matrix).
 

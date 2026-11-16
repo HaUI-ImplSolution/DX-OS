@@ -1,0 +1,75 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
+// SPDX-License-Identifier: Apache-2.0
+import { API_BASE, ApiError } from "../shell/api";
+import { getToken } from "../shell/auth";
+import { errorMessageFor, registerErrorMessages, statusMessageFor } from "../shell/errorMessages";
+import { t } from "../shell/t";
+
+registerErrorMessages({
+  ERR_ORIGIN: t("Hãy mở trợ lý bằng đúng địa chỉ công khai của DX-OS. Liên hệ quản trị viên nếu đang dùng IP hoặc tên miền khác."),
+  ERR_REQUEST_TOO_LARGE: t("Nội dung gửi quá lớn. Hãy rút gọn rồi thử lại."),
+  ERR_INVALID_REQUEST: t("Dữ liệu gửi chưa hợp lệ. Hãy kiểm tra rồi thử lại."),
+  ERR_PROVIDER_DISABLED: t("Endpoint tùy chỉnh chưa được mở vì chưa nghiệm thu bảo vệ kết nối. Hãy chọn Gemini, OpenAI hoặc Anthropic."),
+  ERR_UNAUTHORIZED: t("Phiên đăng nhập chưa hợp lệ hoặc đã hết hạn. Hãy đăng nhập lại DX-OS."),
+  ERR_CORE_LINK: t("Hãy liên kết lại tài khoản DX-OS cho trợ lý."),
+  ERR_LINK_IDENTITY: t("Hãy liên kết bằng cùng tài khoản đang đăng nhập DX-OS."),
+  ERR_LINK_EXPIRED: t("Phiên liên kết đã hết hạn hoặc đã dùng. Hãy bắt đầu liên kết lại."),
+  ERR_LINK_INVALID: t("Hãy hoàn tất liên kết trong cùng trình duyệt đã bắt đầu."),
+  ERR_IDENTITY_UNAVAILABLE: t("Chưa kết nối được dịch vụ đăng nhập. Hãy thử lại sau."),
+  ERR_PROVIDER_REQUIRED: t("Hãy chọn một profile API trước khi bật trợ lý."),
+  ERR_PROVIDER_ORIGIN: t("Endpoint phải là HTTPS và được quản trị viên cho phép."),
+  ERR_PROVIDER_LIMIT: t("Mỗi tài khoản lưu tối đa 5 profile API."),
+  ERR_PROVIDER_PROBE: t("Kiểm kết nối chưa thành công. Hãy kiểm tra key, model, quota và kết nối."),
+  ERR_TOOL_CAPABILITY: t("Model có phản hồi nhưng chưa thực hiện được công cụ kiểm tra."),
+  ERR_RUNTIME_REQUIRED: t("Quản trị viên cần chuẩn bị runtime riêng trước khi bật trợ lý."),
+  ERR_RUNTIME_CAPACITY: t("Các runtime riêng đã được cấp hết. Hãy liên hệ quản trị viên."),
+  ERR_RUNTIME_UNAVAILABLE: t("Chưa kết nối được runtime riêng. Kiểm tra trạng thái trợ lý."),
+  ERR_RUNTIME_BUSY: t("Runtime đang xử lý một thao tác khác. Hãy chờ rồi thử lại."),
+  ERR_TELEGRAM_REQUIRED: t("Hãy cấu hình bot Telegram trước."),
+  ERR_TELEGRAM_TOKEN: t("Hãy nhập token bot do @BotFather cấp."),
+  ERR_TELEGRAM_WEBHOOK: t("Bot đang dùng webhook ở nơi khác. Hãy dùng bot riêng."),
+  ERR_TELEGRAM_UNAVAILABLE: t("Chưa xác minh được bot. Kiểm tra token và kết nối Telegram."),
+  ERR_PAIRING_CODE: t("Mã liên kết Telegram chưa hợp lệ hoặc đã hết hạn."),
+  ERR_ALREADY_PAIRED: t("Bot đã được liên kết. Cấu hình lại bot nếu muốn đổi người dùng."),
+  ERR_BOT_IN_USE: t("Bot này đã được tài khoản khác liên kết."),
+  ERR_PROPOSAL_CLOSED: t("Đề xuất đã hết hạn hoặc đã được xử lý. Hãy tải lại."),
+  ERR_EXECUTION_UNCERTAIN: t("Chưa rõ kết quả. Kiểm tra lịch sử hồ sơ trước khi thử lại."),
+  ERR_CONDITIONAL_API_REQUIRED: t("Backend cần hỗ trợ điều kiện phiên bản trước khi trợ lý được ghi dữ liệu."),
+  ERR_PROPOSAL_VERSION_REQUIRED: t("Đề xuất cũ thiếu phiên bản. Hãy yêu cầu bot tạo lại đề xuất trước khi xác nhận."),
+});
+
+let availability: Promise<boolean> | undefined;
+
+export function assistantAvailable(): Promise<boolean> {
+  return availability ??= loadAvailability();
+}
+
+async function loadAvailability(): Promise<boolean> {
+  try {
+    const response = await fetch(`${API_BASE}/assistant-api/v1/features`, { signal: AbortSignal.timeout(3000) });
+    return response.ok && response.headers.get("content-type")?.includes("application/json") === true && (await response.json()).enabled === true;
+  } catch { return false; }
+}
+
+export async function assistantRequest<T>(path: string, method = "GET", payload?: unknown): Promise<T> {
+  const token = await getToken();
+  const response = await fetch(`${API_BASE}/assistant-api/v1${path}`, {
+    method, signal: AbortSignal.timeout(path.endsWith("/probe") ? 110000 : 60000),
+    headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(payload === undefined ? {} : { "Content-Type": "application/json" }) },
+    ...(payload === undefined ? {} : { body: JSON.stringify(payload) }),
+  });
+  const body = response.headers.get("content-type")?.includes("application/json") ? await response.json() : null;
+  if (!response.ok || !body?.success) throw new ApiError(errorMessageFor(body?.errorCode,
+    body?.message ?? statusMessageFor(response.status)), response.status, body?.data);
+  return body.data;
+}
+
+export type ProviderProfile = { id: string; provider: "gemini" | "openai" | "anthropic" | "compatible";
+  model: string; baseUrl?: string; configured: boolean };
+export type Profiles = { profiles: ProviderProfile[]; selected: string | null };
+export type Notifications = { enabled: boolean; timeZone: string; digestHour: number;
+  lastScan: string | null; error: string | null; pending: number; uncertain: number };
+export type Proposal = { id: string; state: string; expires: number; snapshot: {
+  summary: string; operation: string; note?: string; webOnly: boolean;
+  effects?: { operation: string; userSource: string; group: string; asynchronous: boolean }[];
+} };

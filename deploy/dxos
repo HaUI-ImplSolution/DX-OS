@@ -265,7 +265,7 @@ trap 'rm -f /tmp/dxos-kcadm.config' EXIT
 kc config credentials --server http://localhost:8080 --realm master \
   --user "$KC_BOOTSTRAP_ADMIN_USERNAME" --password "$KC_BOOTSTRAP_ADMIN_PASSWORD" >/dev/null 2>&1 \
   || { echo "cannot sign in to Keycloak as $KC_BOOTSTRAP_ADMIN_USERNAME" >&2; exit 3; }
-if [[ "$MODE" == ensure ]] && kc get roles/ADMIN/users -r dxos --fields username | grep -q '"username"'; then
+if [[ "$MODE" == ensure ]] && kc get roles/ADMIN/users -r dxos --fields username | grep '"username"' | grep -qv '"service-account-'; then
   exit 10
 fi
 if ! kc get users -r dxos -q exact=true -q username="$ADMIN_USER" --fields id | grep -q '"id"'; then
@@ -290,6 +290,7 @@ EOF
 }
 
 cmd_start() {
+  "$DEPLOY_DIR/make_env.sh" "$DEPLOY_DIR/.env" --update-assistant
   local since since_epoch was_running=false model_status=0 started mode=""
   while (( $# )); do
     case "$1" in

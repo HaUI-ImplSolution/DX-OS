@@ -11,7 +11,7 @@ Mức hoàn thiện của từng tính năng và bài kiểm của nó ở [`web
 |---|---|
 | Docker và Docker Compose v2 | Backend `verify` dùng Testcontainers nên cần Docker chạy |
 | JDK 21 | Dùng Maven wrapper trong repo; đặt `JAVA_HOME` về JDK 21 nếu máy mặc định bản khác |
-| Node 22 trở lên | Cho `frontend`, `website` và `e2e` |
+| Node 22 trở lên | Cho `frontend`, `website` và `e2e`; riêng trợ lý cần Node 24.16 |
 | Python 3 | Cho các script kiểm ở `e2e/api` |
 
 ## 2. Các loại kiểm
@@ -19,6 +19,7 @@ Mức hoàn thiện của từng tính năng và bài kiểm của nó ở [`web
 | Loại | Lệnh | Chạy ở CI |
 |---|---|---|
 | Định dạng, biên dịch, test của backend | `cd backend && ./mvnw verify` | Workflow `Backend` |
+| Trợ lý tùy chọn, không cần key | `cd assistant && npm ci && npm test` (Node 24.16) | `Check the optional assistant` của `Platform` |
 | Kiểu của web | `cd frontend && npx tsc --noEmit` | Workflow `Frontend` |
 | Giấy phép và header | `python3 .github/scripts/check_licenses.py`; `pipx run --spec reuse==6.3.0 reuse lint` | `Check licenses` của `Compliance` |
 | Giấy phép của phiên bản đang dùng | `GITHUB_TOKEN=... python3 .github/scripts/check_upstream_licenses.py`; `python3 -m unittest discover -s .github/scripts` | `Check upstream licenses` và `Check licenses` của `Compliance` |
@@ -238,6 +239,14 @@ Kiểm bằng đúng các lệnh và thao tác trong tài liệu.
     - Địa chỉ SSH với host lạ, khóa sai hoặc khóa có quyền rộng bị từ chối, mỗi lỗi ghi nguyên nhân riêng.
     - API tắt thì nguồn mô hình ghi `error` và thoát mã 1.
     - `dxos gitops install` tạo timer và `uninstall` gỡ; `history.log` ghi mỗi lần commit hoặc kết quả đổi.
+
+### Trợ lý (tùy chọn)
+
+48. Trợ lý: khi chưa có API key, trang cấu hình vẫn mở được và không có gateway cá nhân hoặc lượt gọi model.
+    Liên kết SSO, chọn API/model, kiểm kết nối và ghép bot theo [`assistant/README.md`](../assistant/README.md), rồi bật trợ lý.
+    Tìm hồ sơ bằng tiêu đề, yêu cầu giao việc hoặc chuyển trạng thái, hủy một đề xuất rồi xác nhận đề xuất mới và đối chiếu lịch sử Core.
+    Hai tài khoản dùng bot riêng; dừng một trợ lý không dừng trợ lý còn lại hoặc Core.
+    Restart stack và khôi phục backup phải giữ cấu hình, liên kết và trạng thái kích hoạt của từng người.
 
 ## 7. Hồi quy
 

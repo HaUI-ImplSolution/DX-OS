@@ -80,6 +80,7 @@ Ten templates are ready to pick in the control panel: student one-stop service, 
 | | **Try it at once:** one command creates a trial account for each role and sample records in several states, so a visitor who signs in finds a system with work in it. |
 | | **Simple to install and run:** one command installs and one starts; backups can be checked, services restart on their own, attachments are virus-scanned, and the operational numbers can be read by the monitoring tool you already have. |
 | | **Single sign-on:** through Keycloak, and administrators can be required to enter a one-time code as well. |
+| | **[Optional personal assistant](./assistant/README.md):** read and monitor records through Telegram, and propose assignment or workflow actions for the user to confirm. When enabled, content needed for the request is sent to the model API provider, and messages are exchanged through Telegram. |
 
 Each feature and the test that proves it are matched in the [evidence matrix](https://haui-implsolution.github.io/DX-OS/docs/evidence-matrix) (Vietnamese).
 

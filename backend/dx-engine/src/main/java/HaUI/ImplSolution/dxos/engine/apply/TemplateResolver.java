@@ -3,9 +3,11 @@
 package HaUI.ImplSolution.dxos.engine.apply;
 
 import HaUI.ImplSolution.dxos.engine.catalog.CatalogService;
+import HaUI.ImplSolution.dxos.model.Model;
 import HaUI.ImplSolution.dxos.model.ModelException;
 import HaUI.ImplSolution.dxos.model.ModelException.Problem;
 import HaUI.ImplSolution.dxos.model.ModelExtends;
+import HaUI.ImplSolution.dxos.model.ModelParser;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.HexFormat;
@@ -24,6 +26,9 @@ public class TemplateResolver {
 
   // template is the id of the template the file extends, or null when the file does not.
   public record Resolved(String template, String content) {}
+
+  // The complete file, as stored, with the model it parses to.
+  public record Parsed(String content, Model model) {}
 
   private final CatalogService catalog;
 
@@ -46,6 +51,29 @@ public class TemplateResolver {
             .orElseThrow(() -> unknown(id, templates));
     String merged = ModelExtends.merge(text, content);
     return new Resolved(id, "# extends: " + id + " sha256:" + sha256(text) + "\n" + merged);
+  }
+
+  // Resolves the file and parses the result; problems found after a merge carry the line numbers of
+  // the merged file, which the message says.
+  public Parsed parse(String source) {
+    Resolved file = resolve(source);
+    try {
+      return new Parsed(file.content(), ModelParser.parse(file.content()));
+    } catch (ModelException e) {
+      if (file.template() == null) {
+        throw e;
+      }
+      String where =
+          " (line numbers are those of the file merged with template "
+              + file.template()
+              + ", shown by POST /api/v1/models/merge)";
+      throw new ModelException(
+          e.problems().stream()
+              .map(
+                  problem ->
+                      new Problem(problem.line(), problem.column(), problem.message() + where))
+              .toList());
+    }
   }
 
   private static ModelException unknown(String id, List<Map<String, Object>> templates) {

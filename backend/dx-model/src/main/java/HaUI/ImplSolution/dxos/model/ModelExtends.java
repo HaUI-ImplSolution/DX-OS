@@ -60,6 +60,20 @@ public final class ModelExtends {
     return Optional.of(id);
   }
 
+  // The template a file extends, after the checks that need no template: extends is a text and the
+  // file has a name. A file that extends none, or is not a readable mapping, gives empty.
+  public static Optional<String> check(String fileYaml) {
+    Optional<String> id = templateOf(fileYaml);
+    if (id.isPresent()) {
+      MappingNode top = top(fileYaml, "the file", new ArrayList<>());
+      if (top != null && value(top, NAME) == null) {
+        throw new ModelException(
+            List.of(at(top, "name is required in a file that extends a template")));
+      }
+    }
+    return id;
+  }
+
   // The file laid over the template, as a model file without the extends key.
   public static String merge(String templateYaml, String fileYaml) {
     List<Problem> problems = new ArrayList<>();

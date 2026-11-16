@@ -73,7 +73,7 @@ Quy tắc ghép:
 
 `dxos plan` và `dxos apply` ghép lúc chạy, và `dxos model merge <tệp>` in tệp đầy đủ để đối chiếu.
 Tên mẫu không có trong thư viện thì bị từ chối, và tệp đã ghép lưu kèm tên và hash của mẫu.
-`dxos lint` không kiểm tệp có `extends`; dùng `dxos plan` cho các tệp này.
+`dxos lint` chỉ kiểm phần của tệp ngắn (YAML, `extends` là chữ, có `name`) và báo `ok (extends <mẫu>)`; phần ghép với mẫu do `dxos plan` kiểm.
 
 ## Kiểm tệp trước khi áp dụng
 

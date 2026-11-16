@@ -79,6 +79,11 @@ def extends_template(admin):
     rt.check("T7-12 a problem of the file carries the line of the file",
              status == 400 and "line 3" in str(body.get("data")), f"{status} {body.get('data')}")
 
+    broken = short.replace("{type: text, label: Nhãn}", "{type: nope}")
+    status, body = kc.api(admin, "POST", "/models/plan", broken, YAML)
+    rt.check("T7-12 a problem found after the merge says the lines are those of the merged file",
+             status == 400 and "merged with template notes" in str(body.get("data")), f"{status} {body.get('data')}")
+
     status, body = apply(admin, short)
     rt.check("T7-12 apply of the extending file", status == 200 and body["data"]["status"] == "applied", f"{status} {body}")
     code, stored = rt.psql("select content from engine.model_version where model='ext_notes' and version=1")

@@ -153,14 +153,15 @@ public class ApplyService {
     this.faultStep = faultStep.strip();
   }
 
-  // The file with extends resolved; a file that does not extend a template comes back as it is.
-  public String resolve(String content) {
-    return templates.resolve(content).content();
+  // The file with extends resolved and parsed; a file without extends is parsed as it is.
+  public TemplateResolver.Parsed parse(String source) {
+    return templates.parse(source);
   }
 
   public Plan plan(String source) {
-    String content = resolve(source);
-    Model model = ModelParser.parse(content);
+    TemplateResolver.Parsed file = parse(source);
+    String content = file.content();
+    Model model = file.model();
     return leavingNoSchema(model, () -> plan(model, hash(content), Map.of()));
   }
 
@@ -176,8 +177,9 @@ public class ApplyService {
   public record Actor(String id, String name) {}
 
   public Applied apply(String source, Actor actor, Integer base, Level accept) {
-    String content = resolve(source);
-    Model model = ModelParser.parse(content);
+    TemplateResolver.Parsed file = parse(source);
+    String content = file.content();
+    Model model = file.model();
     return announced(
         "MODEL_APPLIED",
         actor,

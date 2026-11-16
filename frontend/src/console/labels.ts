@@ -42,6 +42,7 @@ export const CHANGE_KIND: Record<string, string> = {
   CHANGE_COMPLETION: t("Đổi hành động hoàn tất"),
   CHANGE_BOOKING: t("Đổi khối đặt chỗ"),
   CHANGE_DEADLINE: t("Đổi hạn xử lý"),
+  CHANGE_CALENDAR: t("Đổi lịch làm việc của quy trình"),
   CHANGE_ESCALATION: t("Đổi các cấp báo leo thang khi quá hạn"),
   CHANGE_AUTO_CLOSE: t("Đổi thời gian tự đóng hồ sơ"),
   REPAIR_SCHEMA: t("Sửa cấu trúc bảng"),

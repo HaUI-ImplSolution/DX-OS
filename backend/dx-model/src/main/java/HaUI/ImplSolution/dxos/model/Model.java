@@ -2,21 +2,34 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.model;
 
+import java.time.DayOfWeek;
 import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 // A parsed and validated model file.
 // webhook names the target the history of the records goes to, or is null for the default target.
+// calendars are the working calendars the processes refer to by name, empty when none is declared.
 public record Model(
     int format,
     String name,
     String webhook,
     List<Role> roles,
     List<Unit> units,
+    Map<String, Calendar> calendars,
     Map<String, Entity> entities) {
+
+  // The days of the week a calendar works, the working hours of each of those days and the dates
+  // that are off. An end of 24:00 is stored as midnight.
+  public record Calendar(Set<DayOfWeek> days, List<TimeRange> hours, Set<LocalDate> holidays) {}
+
+  // A span of one day, from start to end; end is midnight for a span that runs to 24:00.
+  public record TimeRange(LocalTime start, LocalTime end) {}
 
   public record Role(String name, String description, boolean staff) {}
 
@@ -199,6 +212,8 @@ public record Model(
   // action itself), the roles that handle its records, whether the creator of a record may handle
   // it,
   // and how long a handler has before a record counts as overdue (null for no deadline).
+  // A deadline in days (deadlineInDays) counts working days when the process has a calendar, and
+  // calendar names the entry of calendars the deadline is counted in (null for round the clock).
   // Escalations are the notices sent to other roles as an overdue record stays unhandled (empty for
   // none). AutoClose
   // is
@@ -212,6 +227,8 @@ public record Model(
       List<String> handlers,
       boolean allowSelfDecision,
       Duration deadline,
+      boolean deadlineInDays,
+      String calendar,
       List<Escalation> escalations,
       Duration autoClose,
       String autoCloseAction,

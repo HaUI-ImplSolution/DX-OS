@@ -58,6 +58,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Trường nhiều lựa chọn nhận `default` là một danh sách các lựa chọn.
 - `escalate` trong quy trình khai các mức leo thang khi hồ sơ quá hạn, mỗi mức có thời gian sau hạn, vai nhận và số lần nhắc lại; mỗi thông báo là một dòng lịch sử `escalated` gửi qua webhook của mô hình, không đổi trạng thái hồ sơ, và sau lúc dịch vụ tắt chỉ gửi mức mới nhất đã đến hạn.
 - Trường `date` làm nguồn của điều kiện `when` và `required_when`, so sánh bằng `==`, `!=`, `<`, `<=`, `>` và `>=`.
+- `calendars` khai các lịch làm việc (ngày làm, khoảng giờ, ngày nghỉ) và `calendar` trong quy trình đếm `deadline` theo lịch đó: `m` và `h` chỉ đếm qua giờ làm, `d` là ngày làm, hồ sơ vào ngoài giờ tính từ lần mở cửa kế tiếp; không khai `calendar` thì hạn đếm liên tục như trước. Đổi lịch là thay đổi `SAFE` (`CHANGE_CALENDAR`) và bị từ chối khi quy trình còn hồ sơ mở, như đổi `deadline`; kế hoạch, bảng điều khiển (ô chọn lịch ở form quy trình, nhãn tiếng Việt và tiếng Anh) và trình soạn YAML đều hiểu khóa mới.
 
 ### Dữ liệu
 

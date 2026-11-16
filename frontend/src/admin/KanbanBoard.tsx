@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import { Box, Button, Card, Chip, Skeleton, Typography } from "@mui/material";
 import { Link, useCreatePath, useGetList, useListContext, useResourceContext } from "react-admin";

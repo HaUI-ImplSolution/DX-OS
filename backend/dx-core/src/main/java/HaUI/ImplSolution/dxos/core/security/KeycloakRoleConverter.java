@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.core.security;
 
@@ -19,7 +20,8 @@ public class KeycloakRoleConverter implements Converter<Jwt, Collection<GrantedA
     if (realmAccess == null || !(realmAccess.get("roles") instanceof List<?> roles)) {
       return List.of();
     }
-    return roles.stream().map(role -> (GrantedAuthority) new SimpleGrantedAuthority("ROLE_" + role))
+    return roles.stream()
+        .map(role -> (GrantedAuthority) new SimpleGrantedAuthority("ROLE_" + role))
         .toList();
   }
 }

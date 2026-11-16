@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.engine.event;
 
@@ -31,12 +32,26 @@ import org.yaml.snakeyaml.Yaml;
 // ops:
 // url: https://chat.example.org/hooks/abc
 // secret: change-me
+// ledger:
+// url: https://ledger.example.org/check
+// on_error: allow
+// bypass: false
+//
+// A target an action names with check is asked before the action is taken. on_error says what
+// happens when it cannot be reached or answers wrongly: deny (the default) refuses the action and
+// allow lets it through. bypass: true lets every action through without asking, for maintenance.
 @Component
 public class WebhookTargets {
 
   // format is json (the message as it is) or chat (a {"text": ...} body that Mattermost and Slack
   // accept).
-  public record Target(String url, String secret, String format) {}
+  public record Target(
+      String url, String secret, String format, boolean allowOnError, boolean bypass) {
+
+    public Target(String url, String secret, String format) {
+      this(url, secret, format, false, false);
+    }
+  }
 
   private static final Logger log = LoggerFactory.getLogger(WebhookTargets.class);
   private static final Pattern NAME = Pattern.compile("[a-z][a-z0-9_]{0,39}");
@@ -46,7 +61,8 @@ public class WebhookTargets {
   private Map<String, Target> named = Map.of();
   private FileTime readAt;
 
-  public WebhookTargets(@Value("${engine.webhook.file:}") String file,
+  public WebhookTargets(
+      @Value("${engine.webhook.file:}") String file,
       @Value("${engine.webhook.url:}") String url,
       @Value("${engine.webhook.secret:}") String secret,
       @Value("${engine.webhook.format:json}") String format) {
@@ -54,8 +70,9 @@ public class WebhookTargets {
     this.fallback =
         usable(url) && formatOk(format) ? new Target(url.strip(), secret, format.strip()) : null;
     if (this.fallback == null && !url.isBlank()) {
-      log.error("ENGINE_WEBHOOK_URL or ENGINE_WEBHOOK_FORMAT is not valid, so the default target is"
-          + " not used");
+      log.error(
+          "ENGINE_WEBHOOK_URL or ENGINE_WEBHOOK_FORMAT is not valid, so the default target is"
+              + " not used");
     }
   }
 
@@ -64,8 +81,9 @@ public class WebhookTargets {
   static boolean usable(String address) {
     try {
       URI uri = URI.create(address.strip());
-      return uri.getHost() != null && ("http".equalsIgnoreCase(uri.getScheme())
-          || "https".equalsIgnoreCase(uri.getScheme()));
+      return uri.getHost() != null
+          && ("http".equalsIgnoreCase(uri.getScheme())
+              || "https".equalsIgnoreCase(uri.getScheme()));
     } catch (IllegalArgumentException e) {
       return false;
     }
@@ -97,12 +115,24 @@ public class WebhookTargets {
     return model.webhook() == null ? Optional.ofNullable(fallback) : named(model.webhook());
   }
 
-  // The reason a model cannot be applied, empty when its target exists or it names none.
+  // The target an action is checked with, empty when the file has no such target.
+  public Optional<Target> checkTarget(String name) {
+    return named(name);
+  }
+
+  // The reason a model cannot be applied, empty when every target it names exists: its own and
+  // the ones its actions are checked with.
   public Optional<String> missing(Model model) {
-    if (model.webhook() == null || named(model.webhook()).isPresent()) {
-      return Optional.empty();
+    if (model.webhook() != null && named(model.webhook()).isEmpty()) {
+      return Optional.of("webhook target " + model.webhook() + " is not configured");
     }
-    return Optional.of("webhook target " + model.webhook() + " is not configured");
+    return model.entities().values().stream()
+        .filter(entity -> entity.process() != null)
+        .flatMap(entity -> entity.process().definition().actions().stream())
+        .map(action -> action.check())
+        .filter(name -> name != null && named(name).isEmpty())
+        .findFirst()
+        .map(name -> "webhook target " + name + " is not configured");
   }
 
   private synchronized Optional<Target> named(String name) {
@@ -145,17 +175,37 @@ public class WebhookTargets {
 
   private void add(Map<String, Target> targets, String name, Object value) {
     String url =
-        value instanceof Map<?, ?> map && map.get("url") != null ? String.valueOf(map.get("url"))
+        value instanceof Map<?, ?> map && map.get("url") != null
+            ? String.valueOf(map.get("url"))
             : "";
     Object format =
         value instanceof Map<?, ?> map && map.get("format") != null ? map.get("format") : "json";
     if (!NAME.matcher(name).matches() || !usable(url) || !formatOk(String.valueOf(format))) {
-      log.error("The webhook target {} is skipped: it needs a name matching [a-z][a-z0-9_]*, an "
-          + "http or https url and a format of json or chat", name);
+      log.error(
+          "The webhook target {} is skipped: it needs a name matching [a-z][a-z0-9_]*, an "
+              + "http or https url and a format of json or chat",
+          name);
       return;
     }
-    Object secret = ((Map<?, ?>) value).get("secret");
-    targets.put(name, new Target(url.strip(), secret == null ? "" : String.valueOf(secret),
-        String.valueOf(format).strip()));
+    Map<?, ?> spec = (Map<?, ?>) value;
+    Object secret = spec.get("secret");
+    Object onError = spec.get("on_error") == null ? "deny" : spec.get("on_error");
+    Object bypass = spec.get("bypass") == null ? Boolean.FALSE : spec.get("bypass");
+    if (!(onError instanceof String mode && ("deny".equals(mode) || "allow".equals(mode)))
+        || !(bypass instanceof Boolean)) {
+      log.error(
+          "The webhook target {} is skipped: on_error is deny or allow and bypass is true or"
+              + " false",
+          name);
+      return;
+    }
+    targets.put(
+        name,
+        new Target(
+            url.strip(),
+            secret == null ? "" : String.valueOf(secret),
+            String.valueOf(format).strip(),
+            "allow".equals(onError),
+            (Boolean) bypass));
   }
 }

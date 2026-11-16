@@ -1,0 +1,14 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
+# SPDX-License-Identifier: Apache-2.0
+format: 1
+name: tasks
+roles:
+  - name: MEMBER
+    description: Người nhận việc
+entities:
+  task:
+    label: Việc
+    fields:
+      title: {type: text, label: Tiêu đề, required: true}
+      note: {type: text, label: Ghi chú}
+    access: {MEMBER: all}

@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.engine.exception;
 
@@ -10,8 +11,10 @@ public class ModelValidationException extends RuntimeException {
   private final Map<String, String> fieldErrors;
 
   public ModelValidationException(Map<String, String> fieldErrors) {
-    super(fieldErrors.entrySet().stream().map(e -> e.getKey() + ": " + e.getValue())
-        .collect(Collectors.joining(", ")));
+    super(
+        fieldErrors.entrySet().stream()
+            .map(e -> e.getKey() + ": " + e.getValue())
+            .collect(Collectors.joining(", ")));
     this.fieldErrors = Map.copyOf(fieldErrors);
   }
 

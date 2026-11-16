@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.core.security;
 
@@ -18,7 +19,9 @@ public class AppRoles {
   private final Map<String, RoleDefinition> byName = new LinkedHashMap<>();
 
   public AppRoles(ObjectProvider<RoleProvider> providers) {
-    providers.orderedStream().flatMap(provider -> provider.roles().stream())
+    providers
+        .orderedStream()
+        .flatMap(provider -> provider.roles().stream())
         .forEach(role -> byName.put(role.name(), role));
   }
 
@@ -27,7 +30,9 @@ public class AppRoles {
   }
 
   public Set<String> staffRoles() {
-    return byName.values().stream().filter(RoleDefinition::staff).map(RoleDefinition::name)
+    return byName.values().stream()
+        .filter(RoleDefinition::staff)
+        .map(RoleDefinition::name)
         .collect(Collectors.toUnmodifiableSet());
   }
 }

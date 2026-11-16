@@ -1,5 +1,6 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
-format: 0
+format: 1
 name: notes
 roles:
   - name: EDITOR

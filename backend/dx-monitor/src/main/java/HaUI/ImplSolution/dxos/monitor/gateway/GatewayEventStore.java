@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.monitor.gateway;
 
@@ -19,8 +20,8 @@ public class GatewayEventStore {
   private final IpMinuteLimiter limiter;
   private final int maxPerIpMinute;
 
-  public GatewayEventStore(JdbcTemplate jdbc, IpMinuteLimiter limiter,
-      MonitorProperties properties) {
+  public GatewayEventStore(
+      JdbcTemplate jdbc, IpMinuteLimiter limiter, MonitorProperties properties) {
     this.jdbc = jdbc;
     this.limiter = limiter;
     this.maxPerIpMinute = properties.gateway().maxPerIpMinute();
@@ -38,15 +39,20 @@ public class GatewayEventStore {
         insert(event);
         kept++;
       } else {
-        overflow.computeIfAbsent(event.ip() + "|" + event.kind().name(),
-            key -> new Overflow(event)).count++;
+        overflow.computeIfAbsent(event.ip() + "|" + event.kind().name(), key -> new Overflow(event))
+            .count++;
       }
     }
     for (Overflow over : overflow.values()) {
-      int updated = jdbc.update("""
+      int updated =
+          jdbc.update(
+              """
           UPDATE gateway_event SET suppressed = suppressed + ?
           WHERE id = (SELECT max(id) FROM gateway_event WHERE ip = ? AND kind = ?)
-          """, over.count, over.first.ip(), over.first.kind().name());
+          """,
+              over.count,
+              over.first.ip(),
+              over.first.kind().name());
       if (updated == 0) {
         insert(over.first.withSuppressed(over.count - 1));
         kept++;
@@ -56,13 +62,25 @@ public class GatewayEventStore {
   }
 
   private void insert(GatewayEvent event) {
-    jdbc.update("""
+    jdbc.update(
+        """
         INSERT INTO gateway_event (occurred_at, kind, ip, host, method, path, status,
           request_time_ms, upstream, request_id, cf_ray, user_agent, suppressed)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, Timestamp.from(event.occurredAt()), event.kind().name(), event.ip(), event.host(),
-        event.method(), event.path(), event.status(), event.requestTimeMs(), event.upstream(),
-        event.requestId(), event.cfRay(), event.userAgent(), event.suppressed());
+        """,
+        Timestamp.from(event.occurredAt()),
+        event.kind().name(),
+        event.ip(),
+        event.host(),
+        event.method(),
+        event.path(),
+        event.status(),
+        event.requestTimeMs(),
+        event.upstream(),
+        event.requestId(),
+        event.cfRay(),
+        event.userAgent(),
+        event.suppressed());
   }
 
   private static final class Overflow {
@@ -76,7 +94,8 @@ public class GatewayEventStore {
   }
 
   public int deleteOlderThan(Duration age) {
-    return jdbc.update("DELETE FROM gateway_event WHERE occurred_at < ?",
+    return jdbc.update(
+        "DELETE FROM gateway_event WHERE occurred_at < ?",
         Timestamp.from(Instant.now().minus(age)));
   }
 }

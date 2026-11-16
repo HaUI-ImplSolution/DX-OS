@@ -1,7 +1,14 @@
 # Tùy biến Frappe và mô hình DX-OS
 
-Đối chiếu mã [Frappe v15.126.1][f-version] với mô hình `format: 0` của DX-OS.
+Đối chiếu mã [Frappe v15.126.1][f-version] với mô hình `format: 1` của DX-OS tại `Khuong/main`.
 Các kết luận dựa trên đọc mã và tài liệu chính thức, chưa kiểm bằng một bản Frappe đang chạy.
+
+## Phạm vi
+
+Tài liệu này là phần nghiên cứu của issue #216: so cách Frappe tách tùy biến khỏi mô hình gốc với tệp mô hình của DX-OS, nêu điểm áp dụng được, khác biệt kiến trúc và rủi ro nâng cấp.
+Đề xuất nhỏ nhất đã được chốt ở [`DANH_GIA.md`](./DANH_GIA.md) mục 7.2 (đề xuất "Lớp tùy biến trên mẫu", trạng thái Chốt làm): tệp mô hình khai `extends: <mẫu>` và chỉ viết phần khác.
+Việc cài đặt `extends` còn lại ở dòng "Lớp tùy biến trên mẫu" của [`BACKLOG.md`](./BACKLOG.md), ngoài phạm vi tài liệu này.
+Cơ chế thay lớp controller của Frappe và việc nhập tùy biến của Frappe không được đưa vào DX-OS, lý do ở các mục dưới.
 
 ## Cơ chế và khác biệt
 
@@ -35,19 +42,21 @@ Ghi đè controller bằng [override_doctype_class][f-controller] thay lớp Pyt
 - **Bỏ tùy biến:** xóa metadata trường không đồng nghĩa xóa cột; Frappe có thao tác `trim_table` riêng. [Nguồn][f-reset]
   Với DX-OS, bỏ trường là `LOSS`; quay lui vẫn cần xét dữ liệu và các ràng buộc khi áp dụng, không phải khôi phục bản sao lưu. [ModelDiff][d-diff], [ApplyService][d-apply]
 
-## Gợi ý để tech lead xem xét
+## Điều kiện cho `extends`
 
 Chọn mẫu bằng nút Dùng mẫu hiện chỉ đưa nội dung YAML vào trình sửa, không tạo quan hệ theo dõi bản gốc. [Nguồn][d-template]
-Các gợi ý dưới đây là kết quả đối chiếu để tech lead cân nhắc giá trị và quyết định có đưa vào BACKLOG hay không.
+Mỗi rủi ro nâng cấp của Frappe ở trên thành một điều kiện cần cân nhắc khi cài `extends`; bảng này không thêm đề xuất mới ngoài mục 7.2 của `DANH_GIA.md`.
 
-| Gợi ý | Mục đích | Lý do và điều kiện xem xét |
+| Rủi ro của Frappe | Điều kiện cho `extends` | Đã có trong đề xuất đã chốt |
 |---|---|---|
-| Tách mô hình gốc và phần tùy biến của từng bản cài | Cập nhật mẫu dùng chung mà vẫn nhận diện được các thay đổi riêng | Frappe lưu Custom Field/Property Setter riêng; DX-OS hiện sửa một YAML hoàn chỉnh; cần xác minh nhu cầu dùng chung mô hình giữa nhiều bản cài trước khi chọn hướng này |
-| Kiểm xung đột nếu ghép mô hình gốc với tùy biến | Báo rõ trường trùng tên, đổi kiểu hoặc bị xóa khi nâng mô hình gốc | Setter Frappe có thể thay cùng khóa hoặc không còn đích để áp; nếu chọn tách tùy biến thì cần chốt định danh, thứ tự ưu tiên và cách báo xung đột |
-| Lưu nguồn gốc và xuất phần tùy biến | Tái lập mô hình hiệu lực và biết phần nào do mẫu gốc, phần nào do bản cài thay đổi | Frappe có đường xuất tùy biến; DX-OS đã lưu phiên bản YAML nhưng chưa lưu quan hệ với mẫu gốc; chỉ cần bổ sung nếu chọn quản lý hai phần riêng |
+| Trùng tên trường giữa lớp gốc và lớp tùy biến | Kế hoạch áp dụng tính trên tệp đã gộp, nên trường trùng hiện ra ở bước xem kế hoạch như mọi thay đổi khác | Có: kế hoạch tính trên tệp đã gộp |
+| Trường gốc đổi tên hoặc mất, phần tùy biến mất hiệu lực không báo | Phần tùy biến nhắc tới trường không còn phải được báo ở bước xem kế hoạch, không bỏ qua im lặng | Một phần: `DANH_GIA.md` nêu rủi ro mẫu đổi tên trường, chưa nêu cách báo |
+| Nhiều nguồn cùng sửa một khóa | Quy tắc ghi đè từng khóa, `null` để bỏ, dùng lại quy tắc giữa họ mẫu và quy trình khai báo | Có |
+| Khó biết một trường đến từ lớp nào | Lệnh in tệp đã gộp | Có |
+| Nâng mẫu đổi kết quả đã áp dụng | Ghim phiên bản mẫu để áp dụng lại cho ra cùng kết quả | Có |
 
-Nếu chọn hướng tách tùy biến, phương án nhỏ nhất để đánh giá là ghép bên ngoài runtime thành một YAML hoàn chỉnh.
-Mô hình kết quả vẫn đi qua parser và `plan/apply`, gồm quyền ADMIN, `base`, `accept`, kiểm dữ liệu cũ và giới hạn thay quy trình khi còn hồ sơ đang xử lý. [Nguồn][d-controller], [ApplyService.run/requireRows][d-apply]
+Phương án nhỏ nhất vẫn là ghép thành một YAML hoàn chỉnh trước khi vào parser.
+Mô hình kết quả đi qua `plan/apply`, gồm quyền ADMIN, `base`, `accept`, kiểm dữ liệu cũ và giới hạn thay quy trình khi còn hồ sơ đang xử lý. [Nguồn][d-controller], [ApplyService.run/requireRows][d-apply]
 
 [f-version]: https://github.com/frappe/frappe/tree/2e9ecdc03fa5b5b8d1ba05224a1aff7dad832bd0
 [f-process]: https://github.com/frappe/frappe/blob/2e9ecdc03fa5b5b8d1ba05224a1aff7dad832bd0/frappe/model/meta.py#L136-L150

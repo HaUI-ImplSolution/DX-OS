@@ -1,7 +1,10 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 name: Docs
 
 # Builds the site of website/ on every pull request, so a broken link or anchor fails it.
+# It also checks that the documents cite real items of docs/TESTING.md and real check scripts.
+# The product documents of docs/ are copied into the site on every build.
 # A push to main also publishes the build to GitHub Pages.
 on:
   push:
@@ -9,6 +12,9 @@ on:
       - main
     paths:
       - 'website/**'
+      - 'docs/**'
+      - 'ARCHITECTURE.md'
+      - '.github/scripts/check_doc_refs.py'
       - '.github/workflows/docs.yml'
   pull_request:
     types:
@@ -44,6 +50,10 @@ jobs:
           node-version: '22'
           cache: 'npm'
           cache-dependency-path: website/package-lock.json
+
+      - name: The references between the documents and the checks they name hold
+        working-directory: .
+        run: python3 .github/scripts/check_doc_refs.py
 
       - name: Install dependencies
         run: npm ci --no-audit --no-fund --ignore-scripts

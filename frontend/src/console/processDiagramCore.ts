@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import { Graph, layout as layoutGraph } from "@dagrejs/dagre";
 import { formatDuration } from "../shell/format";

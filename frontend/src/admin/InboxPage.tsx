@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import { useEffect, useState } from "react";
 import {
@@ -13,6 +14,8 @@ import {
   TableHead,
   TableRow,
   Typography,
+  useMediaQuery,
+  type Theme,
 } from "@mui/material";
 import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurnedInOutlined";
 import HourglassTopIcon from "@mui/icons-material/HourglassTop";
@@ -64,6 +67,7 @@ export default function InboxPage({ models }: { models: ModelMeta[] }) {
   const [error, setError] = useState<string | null>(null);
   const [reload, setReload] = useState(0);
   const items = data?.items ?? null;
+  const phone = useMediaQuery((theme: Theme) => theme.breakpoints.down("sm"));
 
   // Another person's action can add or remove a record here, so the list is read again when one changes.
   useEffect(() => onLiveChange(() => setReload((value) => value + 1)), []);
@@ -117,7 +121,34 @@ export default function InboxPage({ models }: { models: ModelMeta[] }) {
             <Typography variant="body2">{t("Hồ sơ mới giao cho bạn sẽ hiện ở đây.")}</Typography>
           </Box>
         )}
-        {items && items.length > 0 && (
+        {items && items.length > 0 && phone && (
+          <Box>
+            {items.map((item) => {
+              const entity = entityOf(item);
+              return (
+                <Box
+                  key={`${item.model}-${item.entity}-${item.id}`}
+                  sx={{ p: 2, display: "grid", gap: 0.75, borderBottom: 1, borderColor: "divider", "&:last-of-type": { borderBottom: 0 } }}
+                >
+                  <Link
+                    to={`/${resourceName(item.model, item.entity)}/${item.id}/show`}
+                    sx={{ fontWeight: 600, color: "primary.main", textDecoration: "none", overflowWrap: "anywhere" }}
+                  >
+                    {item.title ?? `#${item.id}`}
+                  </Link>
+                  <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 0.75 }}>
+                    <Chip size="small" label={item.entityLabel} />
+                    {entity ? <StatusChip entity={entity} status={item.status} overdue={item.overdue} /> : item.status}
+                  </Box>
+                  <Typography variant="caption" color="text.secondary">
+                    {timeAgo(item.createdAt)} · {formatDateTime(item.createdAt)}
+                  </Typography>
+                </Box>
+              );
+            })}
+          </Box>
+        )}
+        {items && items.length > 0 && !phone && (
           <Table size="medium">
             <TableHead>
               <TableRow>

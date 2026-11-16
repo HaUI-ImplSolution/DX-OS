@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.core.security;
 
@@ -11,8 +12,12 @@ import org.springframework.security.oauth2.jwt.Jwt;
 class AudienceValidatorTest {
 
   private static Jwt token(Object audience) {
-    Jwt.Builder builder = Jwt.withTokenValue("t").header("alg", "RS256").subject("u")
-        .issuedAt(Instant.now()).expiresAt(Instant.now().plusSeconds(60));
+    Jwt.Builder builder =
+        Jwt.withTokenValue("t")
+            .header("alg", "RS256")
+            .subject("u")
+            .issuedAt(Instant.now())
+            .expiresAt(Instant.now().plusSeconds(60));
     if (audience != null) {
       builder.claim("aud", audience);
     }

@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import * as monaco from "monaco-editor";
 import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
@@ -36,7 +37,7 @@ export function useModelSchema(schema: Record<string, unknown>) {
     validate: true,
     completion: true,
     hover: true,
-    schemas: [{ uri: "https://dxos.local/model-v0.schema.json", fileMatch: ["*"], schema }],
+    schemas: [{ uri: "https://dxos.local/model-v1.schema.json", fileMatch: ["*"], schema }],
   };
   if (handle) void handle.update(config);
   else handle = configureMonacoYaml(yamlMonaco, config);

@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
@@ -1186,9 +1187,9 @@ export default function ModelForm({ schema, value, onChange }: Props) {
               />
             </Tooltip>
           </Row>
-          {(PARAM_HELP.deadline || PARAM_HELP.auto_close) && (
+          {(PARAM_HELP.deadline || PARAM_HELP.escalate || PARAM_HELP.auto_close) && (
             <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
-              {PARAM_HELP.deadline}. {PARAM_HELP.auto_close}.
+              {PARAM_HELP.deadline}. {PARAM_HELP.escalate}. {PARAM_HELP.auto_close}.
             </Typography>
           )}
           {params.includes("booking") && (

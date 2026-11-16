@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 // A cell that a spreadsheet would read as a formula is written as text, so a value typed by a person
 // cannot run in the program that opens the file.

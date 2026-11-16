@@ -1,3 +1,4 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 name: Release Package
 run-name: Release package ${{ inputs.tag || github.ref_name }}
@@ -54,12 +55,28 @@ jobs:
           git merge-base --is-ancestor "refs/tags/$TAG" origin/main \
             || { echo "::error::Tag $TAG is not on main: merge the release into main and tag it there"; exit 1; }
 
+      - name: Set up JDK 21
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+
+      # The model reader and its one dependency in a runnable jar, for dxos lint on a machine without the stack.
+      - name: Build the dxos-lint jar
+        working-directory: backend
+        run: ./mvnw -B -ntp -q -pl dx-model package -DskipTests
+
       - name: Build the source archive, checksums and SBOM files
         run: |
           VERSION="${TAG#v}"
           mkdir dist
           git archive --format=tar.gz --prefix="dx-os-${VERSION}/" -o "dist/dx-os-${VERSION}.tar.gz" HEAD
           cp deploy/get.sh dist/dxos-install.sh
+          # Tags made before the lint jar existed have none.
+          for jar in backend/dx-model/target/dx-model-*-cli.jar; do
+            [[ -e "$jar" ]] && cp "$jar" dist/dxos-lint.jar
+          done
           # Tags made before the SBOMs were committed have none.
           for sbom in sbom/*.cdx.json; do
             [[ -e "$sbom" ]] || continue
@@ -87,7 +104,7 @@ jobs:
             echo
             echo "Cài trên máy có Docker: \`curl -fsSL https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/dxos-install.sh | bash -s -- --version ${TAG}\` rồi \`dxos start\`."
             echo
-            echo "Tệp kèm theo: \`dx-os-${VERSION}.tar.gz\` là gói mã nguồn phát hành chính thức; \`dxos-install.sh\` là bộ cài; \`dx-os-${VERSION}.sha256\` chứa SHA-256 của mọi tệp; các tệp \`.cdx.json\` là SBOM CycloneDX."
+            echo "Tệp kèm theo: \`dx-os-${VERSION}.tar.gz\` là gói mã nguồn phát hành chính thức; \`dxos-install.sh\` là bộ cài; \`dxos-lint.jar\` kiểm tệp mô hình không cần khởi động hệ thống (\`java -jar dxos-lint.jar <tệp>\`, cần Java 21); \`dx-os-${VERSION}.sha256\` chứa SHA-256 của mọi tệp; các tệp \`.cdx.json\` là SBOM CycloneDX."
           } >> notes.md
 
       - name: Create the Release, or add the files to the one that exists

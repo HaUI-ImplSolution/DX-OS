@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.monitor.maintenance;
 
@@ -20,7 +21,9 @@ public class RetentionJob {
   private final ServiceHealthStore healthEvents;
   private final Duration retention;
 
-  public RetentionJob(GatewayEventStore gatewayEvents, ServiceHealthStore healthEvents,
+  public RetentionJob(
+      GatewayEventStore gatewayEvents,
+      ServiceHealthStore healthEvents,
       MonitorProperties properties) {
     this.gatewayEvents = gatewayEvents;
     this.healthEvents = healthEvents;

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
 # Accounts and sample records for the people who try DX-OS (see dxos demo).
 #
@@ -272,7 +273,7 @@ ensure_model() {
   secret="$(env_value DXOS_CLI_SECRET)"
   [[ -n "$secret" ]] || die "DXOS_CLI_SECRET is empty in $DEPLOY_DIR/.env"
   admin="$(token client_credentials dxos-cli "$secret")"
-  [[ -n "$admin" ]] || die "Keycloak refused the client dxos-cli (see deploy/OPERATIONS.md)"
+  [[ -n "$admin" ]] || die "Keycloak refused the client dxos-cli (see docs/OPERATIONS.md)"
   api "$admin" GET "/models/$MODEL/versions"
   if [[ "$API_STATUS" == 200 ]]; then
     echo "The model $MODEL runs already."

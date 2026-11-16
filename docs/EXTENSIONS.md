@@ -12,11 +12,10 @@ Nó không có nghĩa một mô hình có thể đổi trường mà mã tích h
 | Nhu cầu | Mức hỗ trợ | Ranh giới nâng cấp |
 |---|---|---|
 | Dịch vụ riêng gọi API của lõi | Ổn định | Dùng client riêng cho đúng một vai của một mô hình và đọc OpenAPI sinh từ mô hình đang chạy |
-| Bên nhận phản ứng sau thay đổi | Ổn định | Webhook có chữ ký, `schemaVersion` và API đọc bù; webhook không chặn được hành động trước khi trạng thái đổi |
-| Giao diện ngoài chạy ở `localhost` | Thử nghiệm cục bộ | Client `dxos-web` chỉ có redirect cho gateway, `localhost:9080` và `localhost:5173`; CORS nhận `localhost` và `127.0.0.1` |
-| Giao diện ngoài ở tên miền khác | Chưa có hợp đồng cài đặt | Chưa có lệnh đăng ký OIDC public client hoặc allowlist CORS cho tên miền tùy chọn |
+| Bên nhận phản ứng sau thay đổi | Ổn định | Webhook có chữ ký, `schemaVersion` và API đọc bù; chặn một hành động trước khi trạng thái đổi dùng khóa `check` của hành động |
+| Giao diện ngoài chạy ở origin riêng | Ổn định | Đăng ký public client bằng `dxos client browser add`; redirect và CORS dùng danh sách chính xác, không nhận wildcard |
 | Trang hoặc thành phần form trong web Tầng 2 | Tùy biến source | Phải sửa và dựng lại image frontend; chưa có registry plugin hay kiểm tra tương thích |
-| Route riêng dưới gateway DX-OS | Thử nghiệm | Phải sửa tệp APISIX do bộ cài quản lý; `dxos update` có thể thay tệp đó |
+| Route riêng dưới gateway DX-OS | Ổn định | `deploy/apisix/local.yaml` của bản cài được kiểm và ghép với cấu hình lõi; giữ nguyên khi nâng cấp |
 | Quy trình riêng | Ổn định bằng khai báo | Khai báo `states` và `actions` trong tệp mô hình, không viết plugin; xem [`MODEL.md`](./MODEL.md#tự-khai-báo-hoặc-mở-rộng-quy-trình) |
 
 Ưu tiên tệp mô hình và API chung trước khi viết mã.
@@ -125,7 +124,7 @@ Trước khi nâng DX-OS hoặc áp dụng phiên bản mô hình mới:
 ## Bên nhận webhook
 
 Webhook phù hợp cho thông báo, đồng bộ bất đồng bộ, lập chỉ mục hoặc kích hoạt công việc sau khi DX-OS đã ghi thay đổi.
-Webhook hiện không phải điểm kiểm tra đồng bộ và không thể từ chối một hành động trước khi trạng thái đổi.
+Webhook không từ chối được hành động; muốn dịch vụ riêng chặn một hành động trước khi trạng thái đổi thì dùng `check` ở hành động, xem [Kiểm tra trước khi chuyển trạng thái](INTEGRATIONS.md#kiểm-tra-trước-khi-chuyển-trạng-thái).
 
 ### 1. Khai báo đích
 
@@ -145,7 +144,7 @@ Tệp mô hình chọn đích bằng khóa ở đầu tệp:
 webhook: extension_worker
 ```
 
-Chi tiết nạp lại cấu hình, retry, thứ tự và payload nằm ở [`deploy/INTEGRATIONS.md`](../deploy/INTEGRATIONS.md#webhook-sự-kiện).
+Chi tiết nạp lại cấu hình, retry, thứ tự và payload nằm ở [`docs/INTEGRATIONS.md`](INTEGRATIONS.md#webhook-sự-kiện).
 
 ### 2. Xử lý an toàn
 
@@ -189,30 +188,44 @@ Theo dõi `schemaVersion`, kiểm payload thử trước khi nâng và triển k
 Giao diện trình duyệt phải đăng nhập người dùng bằng Authorization Code và PKCE.
 Không đặt client secret hoặc dùng `client_credentials` trong JavaScript gửi tới trình duyệt.
 
-### Nguyên mẫu local hiện hỗ trợ
+### Đăng ký client và origin
 
-Realm hiện có public client `dxos-web` cho gateway, `http://localhost:9080` và `http://localhost:5173`.
-Backend cho CORS từ `http://localhost:*` và `http://127.0.0.1:*`.
-Vì vậy một nguyên mẫu local có thể chạy ở `http://localhost:5173` với:
+Ví dụ giao diện phục vụ ở `https://partner.example` và nhận callback tại `/auth/callback`:
+
+```bash
+dxos client browser add partner-ui \
+  --redirect-uri https://partner.example/auth/callback
+```
+
+Lệnh tạo public client `dxos-browser-partner-ui`, bật Authorization Code với PKCE S256, thêm mapper audience `dxos-api` và claim nhóm, rồi thêm `https://partner.example` vào `CORS_ALLOWED_ORIGINS` trong `deploy/.env`.
+Nếu backend đang chạy, lệnh tạo lại riêng backend và chờ service sẵn sàng.
+Nêu nhiều `--redirect-uri` khi ứng dụng có callback và silent renew riêng; mỗi URI được giữ chính xác, không tự mở rộng bằng wildcard.
+
+Ứng dụng dùng:
 
 | Giá trị OIDC | Cấu hình |
 |---|---|
 | Authority | `http://localhost:9080/realms/dxos` |
-| Client id | `dxos-web` |
+| Client id | `dxos-browser-partner-ui` |
 | Flow | Authorization Code + PKCE |
-| Redirect và post-logout URI | Origin chính xác của ứng dụng |
+| Redirect và post-logout URI | Một URI chính xác đã đăng ký |
 | Scope | `openid profile` |
+
+Thay authority bằng địa chỉ gateway thật khi triển khai.
+Không đặt secret trong giao diện; client public không có secret.
+
+Redirect ngoài máy phát triển phải dùng HTTPS; HTTP chỉ nhận `localhost`, `127.0.0.1` hoặc `[::1]`.
+Wildcard, user info, fragment, host hoặc cổng sai bị từ chối trước khi thay Keycloak.
+`CORS_ALLOWED_ORIGINS` chỉ chứa các origin cách nhau bằng dấu phẩy, không có path, query hay dấu `/` cuối; backend kiểm lại khi khởi động và `dxos doctor` báo trước giá trị sai.
 
 Sau đăng nhập, gửi access token ở `Authorization: Bearer <token>` và đọc `/api/v1/meta/models/{model}/openapi` bằng chính người dùng đó.
 Tài liệu sinh ra chỉ chứa thực thể người dùng được xem, nên giao diện vẫn phải xử lý `403` khi quyền đổi và không tự suy quyền từ nút đang hiển thị.
 
 Kiểm luồng đăng nhập, callback, refresh hoặc đăng nhập lại khi token hết hạn, single logout, `401`, `403` và việc quay về đúng trang ban đầu.
+Liệt kê bằng `dxos client browser list` và gỡ bằng `dxos client browser remove partner-ui`.
+Lệnh gỡ giữ origin trong `CORS_ALLOWED_ORIGINS` vì client khác có thể dùng chung; quản trị viên xóa origin không còn dùng rồi tạo lại backend.
 
-### Giới hạn triển khai thật
-
-Tên miền khác chưa có đường cấu hình được hỗ trợ: CORS không đọc danh sách từ `.env`, và chưa có lệnh đăng ký public client với redirect URI tùy chọn.
-Sửa tay Keycloak và source backend không được bộ cài kiểm hay bảo toàn khi nâng cấp.
-Phục vụ giao diện dưới cùng gateway cần thêm route riêng, chịu giới hạn của phần [Route riêng trong APISIX](#route-riêng-trong-apisix).
+Phục vụ giao diện dưới cùng gateway vẫn cần route riêng, chịu giới hạn của phần [Route riêng trong APISIX](#route-riêng-trong-apisix).
 
 ## Trang riêng trong web Tầng 2
 
@@ -238,50 +251,46 @@ Không tải JavaScript tùy ý từ mô hình hoặc từ một URL do người
 Dịch vụ chỉ gọi DX-OS không cần route này.
 Chỉ thêm route khi người dùng hoặc hệ thống khác phải gọi dịch vụ mở rộng qua cùng cổng vào.
 
-Tệp `deploy/apisix/common.yaml` có hai danh sách `upstreams` và `routes`.
-Ví dụ sau giả định container `extension-worker` cùng mạng Docker với APISIX; ghép từng phần vào danh sách tương ứng, không tạo khóa YAML thứ hai:
+Tạo `deploy/apisix/local.yaml` trong bản cài từ [`local.example.yaml`](../deploy/apisix/local.example.yaml); file này chỉ chứa phần bổ sung, còn `common.yaml` do lõi quản lý.
+Ví dụ sau giả định container `extension-worker` cùng mạng Docker với APISIX:
 
 ```yaml
-# Trong upstreams:
-- id: extension-worker
-  type: roundrobin
-  nodes:
-    "extension-worker:8080": 1
-
-# Trong routes:
-- id: extension-worker-api
-  priority: 10
-  uri: /extensions/worker/*
-  upstream_id: extension-worker
-  plugin_config_id: bearer-token
+upstreams:
+  - id: extension-worker
+    type: roundrobin
+    nodes:
+      "extension-worker:8080": 1
+routes:
+  - id: extension-worker-api
+    uri: /extensions/worker/*
+    upstream_id: extension-worker
+    plugin_config_id: bearer-token
 ```
 
-Route id và đường dẫn phải không trùng, và priority phải cao hơn route web bắt mọi đường dẫn.
-APISIX chuyển nguyên đường dẫn `/extensions/worker/...` tới dịch vụ, nên dịch vụ phục vụ đúng tiền tố đó.
-`bearer-token` chỉ xác thực token; dịch vụ mở rộng vẫn phải kiểm quyền cần thiết hoặc gọi API lõi bằng token của người dùng.
-Một route public phải được xem xét riêng và liệt kê lý do trong `deploy/apisix/check_routes.py`; không bỏ xác thực chỉ để phép kiểm đi qua.
+File local nhận `upstreams`, `routes` và tùy chọn `public_routes`, trong một tài liệu YAML tối đa 1 MiB, không khóa trùng, anchor hay alias.
+Route phải có id riêng, tham chiếu hợp lệ và priority lớn hơn `-10` của web fallback (mặc định `0`).
+Đường dẫn của route local không được giao với route lõi hay route local khác, trừ web fallback `/*`; đường có `%`, đoạn `.` hoặc `..`, dấu gạch chéo kép và ký tự điều khiển bị từ chối.
+Host, methods và priority không cho phép ghi đè đường dẫn của lõi, kể cả khi thành phần tương ứng tắt trong chế độ `core`.
 
-Kiểm và nạp lại cấu hình:
+APISIX chuyển nguyên đường dẫn `/extensions/worker/...` tới dịch vụ.
+`bearer-token` xác thực token; dịch vụ mở rộng vẫn phải kiểm quyền nghiệp vụ.
+Route public khai tường minh `public_routes: {<id>: "lý do công khai"}` trong file local; id phải thuộc một route local không kiểm token.
+Metadata này chỉ phục vụ kiểm cấu hình, không được nạp thành resource APISIX.
+
+Kiểm và nạp lại từ thư mục `deploy` của bản cài:
 
 ```bash
-python3 deploy/apisix/check_routes.py
-cd deploy
-docker compose up --force-recreate apisix-config
-docker compose restart apisix
+docker compose run --rm --no-deps apisix-config --check
+docker compose run --rm --no-deps apisix-config
 ```
 
-Gọi thử không token, token sai và token đúng; đối chiếu `X-Request-Id` trong log.
+Trình kiểm dùng cùng image APISIX đã ghim với gateway, không cần cài Python trên máy triển khai.
+Trong source tree chạy được `python3 e2e/api/check_routes.py --local <tệp>` (cần Python, PyYAML và Docker; thêm `--mode core` hoặc `--admin-console` để kiểm cấu hình tương ứng).
+Cấu hình hợp lệ được ghép theo thứ tự lõi rồi local và thay tệp đầu ra nguyên tử, APISIX đang chạy tự đọc lại.
+Lỗi schema, plugin, tham chiếu hoặc xung đột giữ tệp đầu ra hợp lệ trước đó và chỉ nêu tệp, resource và loại lỗi.
+Sau khi thay container upstream, chạy `docker compose restart apisix` để làm mới địa chỉ.
 
-Đây chưa phải điểm mở rộng bền qua nâng cấp.
-`deploy/install.sh --upgrade` thay các tệp runtime được phân phối, gồm `apisix/common.yaml` và `docker-compose.yml`, nên phải giữ patch riêng, xem lại diff của bản mới và áp dụng lại sau `dxos update`.
-
-## Danh sách kiểm trước khi phát hành phần mở rộng
-
-- Mã và image nằm ngoài lõi, có giấy phép và SBOM của chính nó.
-- Client chỉ có một vai của một mô hình; secret không nằm trong source, image hay log.
-- OpenAPI của mô hình đang chạy được lưu làm đầu vào kiểm thử hợp đồng.
-- Retry ghi dùng `Idempotency-Key`, có giới hạn và không biến `403` hay lỗi kiểm tra thành thành công.
-- Webhook kiểm chữ ký trên raw body, khử trùng trước `2xx` và đọc hết từng trang trước khi tăng cursor.
-- Giao diện dùng Authorization Code + PKCE, không có secret trong trình duyệt và không tự quyết định quyền.
-- Route có id, path, priority, xác thực và giới hạn lưu lượng rõ ràng.
-- Đã thử nâng trên môi trường tách biệt và có đường quay lại image cùng cấu hình trước đó.
+`dxos update` giữ nguyên tệp local và kiểm nó với `common.yaml` mới trước khi thay container.
+Xung đột với bản lõi mới làm cập nhật dừng để người triển khai sửa local; bước nâng bộ cài có thể đã thay các tệp runtime, nên đây không phải hoàn tác toàn bộ.
+Bỏ tệp local rồi nạp lại để gỡ các route riêng.
+Cất bản sao tệp local cùng cấu hình triển khai, vì sao lưu Postgres và SeaweedFS không chứa tệp này.

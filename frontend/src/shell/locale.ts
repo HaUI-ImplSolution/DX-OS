@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 // The language of the interface, Vietnamese or English. The choice is kept in the browser and read
 // before anything is drawn; changing it reloads the page so that every screen starts in the new language.

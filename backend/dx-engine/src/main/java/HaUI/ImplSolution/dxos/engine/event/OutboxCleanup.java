@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.engine.event;
 
@@ -18,7 +19,9 @@ public class OutboxCleanup {
 
   private final int retentionDays;
 
-  public OutboxCleanup(JdbcTemplate jdbc, JobLock lock,
+  public OutboxCleanup(
+      JdbcTemplate jdbc,
+      JobLock lock,
       @Value("${engine.outbox.retention-days:30}") int retentionDays) {
     this.jdbc = jdbc;
     this.lock = lock;
@@ -34,9 +37,13 @@ public class OutboxCleanup {
     int total = 0;
     int deleted;
     do {
-      deleted = jdbc.update("DELETE FROM engine.outbox WHERE id IN (SELECT id FROM engine.outbox "
-          + "WHERE delivered_at < now() - make_interval(days => ?) ORDER BY id LIMIT " + BATCH
-          + ")", retentionDays);
+      deleted =
+          jdbc.update(
+              "DELETE FROM engine.outbox WHERE id IN (SELECT id FROM engine.outbox "
+                  + "WHERE delivered_at < now() - make_interval(days => ?) ORDER BY id LIMIT "
+                  + BATCH
+                  + ")",
+              retentionDays);
       total += deleted;
     } while (deleted == BATCH);
     return total;

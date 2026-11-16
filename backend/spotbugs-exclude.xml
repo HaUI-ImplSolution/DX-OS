@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-FileCopyrightText: 2026 HaUI-ImplSolution -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!--
+  Filter of the SpotBugs run in the verify phase of the backend.
+  Every entry names one class and one pattern, with the reason the finding does not apply.
+  A finding in any other class, or of any other pattern, fails the build.
+-->
+<FindBugsFilter>
+  <!-- Records, DTOs and Spring beans keep the references they are given on purpose; copying every list, map and service would hide that. -->
+  <Match>
+    <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+  </Match>
+
+  <!--
+    SQL built from text.
+    Every table, column and schema name goes through Sql.ident, Sql.table or Sql.literal, which refuse
+    anything outside [a-z_][a-z0-9_]{0,62} after the model parser has already limited names to
+    [a-z][a-z0-9_]{0,39}.
+    Every value reaches the statement as a ? parameter, and the remaining pieces (conditions, filters,
+    intervals, date bins) are constants chosen in code, never text from a request.
+  -->
+  <Match>
+    <Class name="~HaUI\.ImplSolution\.dxos\.(engine\.(apply\.ApplyService|catalog\.DataCatalogService|event\.(EscalationSweep|EventFeedController|OutboxController|OutboxDispatcher|OverdueSweep)|files\.AttachmentService|metrics\.OperationalMetrics|process\.(AutoCloseSweep|BookingGuard|RecordStatus))|monitor\.(alert\.AlertJob|query\.(AuthEventReader|MonitorQueryService)))(\$.*)?"/>
+    <Bug pattern="SQL_INJECTION_SPRING_JDBC,SQL_INJECTION_JDBC"/>
+  </Match>
+
+  <!-- The text of the BPMN file: names are limited to letters, digits and underscores by the model parser, and every label goes through escape(). -->
+  <Match>
+    <Class name="HaUI.ImplSolution.dxos.engine.process.ProcessBpmnGenerator"/>
+    <Bug pattern="POTENTIAL_XML_INJECTION"/>
+  </Match>
+
+  <!-- The schema tool is started with an argument list, never through a shell, and the schema name is a validated identifier. -->
+  <Match>
+    <Class name="HaUI.ImplSolution.dxos.engine.apply.SchemaTool"/>
+    <Bug pattern="COMMAND_INJECTION"/>
+  </Match>
+
+  <!-- A fixed regular expression of the report filter with no nested repetition. -->
+  <Match>
+    <Class name="HaUI.ImplSolution.dxos.engine.data.ReportQuery"/>
+    <Bug pattern="REDOS"/>
+  </Match>
+
+  <!-- Fingerprints of model files, which are not secrets, so the time of the comparison reveals nothing. -->
+  <Match>
+    <Class name="~HaUI\.ImplSolution\.dxos\.engine\.apply\.(ApplyService|ModelBootstrap)(\$.*)?"/>
+    <Bug pattern="UNSAFE_HASH_EQUALS"/>
+  </Match>
+
+  <!-- The API keeps no session and no cookie: every request carries its own bearer token, so there is no ambient credential for a forged page to ride on. -->
+  <Match>
+    <Class name="~HaUI\.ImplSolution\.dxos\.core\.security\.SecurityConfig(\$.*)?"/>
+    <Bug pattern="SPRING_CSRF_PROTECTION_DISABLED"/>
+  </Match>
+
+  <!-- These error bodies are fixed JSON text; nothing from the request is written back. -->
+  <Match>
+    <Class name="~HaUI\.ImplSolution\.dxos\.core\.security\.(RestAccessDeniedHandler|RestAuthenticationEntryPoint|UserRateLimitFilter)(\$.*)?"/>
+    <Bug pattern="XSS_SERVLET"/>
+  </Match>
+
+  <!-- The targets are the application's own /forbidden page and the identity provider's logout URL from configuration; no request parameter chooses them. -->
+  <Match>
+    <Class name="~HaUI\.ImplSolution\.dxos\.monitor\.config\.MonitorSecurityConfig(\$.*)?"/>
+    <Bug pattern="UNVALIDATED_REDIRECT"/>
+  </Match>
+
+  <!-- ClamAV's daemon speaks a plain-text protocol and runs on the private network of the stack; it is not published. -->
+  <Match>
+    <Class name="HaUI.ImplSolution.dxos.core.storage.ClamAvScanner"/>
+    <Bug pattern="UNENCRYPTED_SOCKET"/>
+  </Match>
+
+  <!-- One PdfPages object lays out one document on the thread that renders it; it is never shared. -->
+  <Match>
+    <Class name="HaUI.ImplSolution.dxos.engine.documents.PdfPages"/>
+    <Bug pattern="AT_NONATOMIC_OPERATIONS_ON_SHARED_VARIABLE,AT_STALE_THREAD_WRITE_OF_PRIMITIVE"/>
+  </Match>
+
+  <!--
+    Return values that Spring and Keycloak document as present: an authenticated request has an
+    Authentication, an INSERT ... RETURNING gives its id, a successful admin call has a body, and a
+    PSQLException from a constraint violation carries a server message.
+    A missing one is an error that surfaces as a failed request, not a way in.
+  -->
+  <Match>
+    <Class name="~HaUI\.ImplSolution\.dxos\.(core\.identity\.(CurrentUserService|KeycloakAdminClient)|engine\.(apply\.ApplyService|data\.DataService)|monitor\.config\.MonitorSecurityConfig)(\$.*)?"/>
+    <Bug pattern="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"/>
+  </Match>
+
+  <!-- Style findings with no effect on behaviour. -->
+  <Match>
+    <Class name="HaUI.ImplSolution.dxos.engine.process.BookingGuard"/>
+    <Bug pattern="BX_UNBOXING_IMMEDIATELY_REBOXED"/>
+  </Match>
+  <Match>
+    <Class name="HaUI.ImplSolution.dxos.monitor.query.MonitorQueryService"/>
+    <Bug pattern="VA_FORMAT_STRING_USES_NEWLINE"/>
+  </Match>
+</FindBugsFilter>

@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.monitor.gateway;
 
@@ -38,10 +39,21 @@ public class GatewayEventFilter {
     if (kind == null) {
       return Optional.empty();
     }
-    return Optional.of(new GatewayEvent(time(entry.get("time")), kind, ip,
-        text(entry.get("host"), 255), text(entry.get("method"), 16), path, status, requestTimeMs,
-        firstAddress(text(entry.get("upstream_addr"), 128)), text(entry.get("request_id"), 64),
-        text(entry.get("cf_ray"), 64), text(entry.get("user_agent"), 255), 0));
+    return Optional.of(
+        new GatewayEvent(
+            time(entry.get("time")),
+            kind,
+            ip,
+            text(entry.get("host"), 255),
+            text(entry.get("method"), 16),
+            path,
+            status,
+            requestTimeMs,
+            firstAddress(text(entry.get("upstream_addr"), 128)),
+            text(entry.get("request_id"), 64),
+            text(entry.get("cf_ray"), 64),
+            text(entry.get("user_agent"), 255),
+            0));
   }
 
   private GatewayEventKind kindOf(int status, int requestTimeMs, String path) {

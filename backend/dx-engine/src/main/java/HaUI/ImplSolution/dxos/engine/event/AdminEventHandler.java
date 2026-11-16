@@ -1,3 +1,4 @@
+// SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.engine.event;
 
@@ -40,7 +41,7 @@ public class AdminEventHandler implements OutboxHandler {
       throw new IllegalStateException(
           "The webhook target " + model.map(Model::webhook).orElse(null) + " is not configured");
     }
-    sender.send(target.get(), String.valueOf(payload.get("eventId")), payload,
-        ChatText.admin(payload));
+    sender.send(
+        target.get(), String.valueOf(payload.get("eventId")), payload, ChatText.admin(payload));
   }
 }

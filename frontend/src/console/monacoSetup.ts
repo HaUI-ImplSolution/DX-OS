@@ -11,7 +11,7 @@ self.MonacoEnvironment = {
   },
 };
 
-type LegacyWorkerOptions = { createData?: unknown; host?: Record<string, Function>; keepIdleModels?: boolean };
+type LegacyWorkerOptions = { createData?: unknown; host?: Record<string, (...args: never[]) => unknown>; keepIdleModels?: boolean };
 
 // monaco-yaml asks for its worker with the createWebWorker options of monaco-editor before 0.57
 // (label, moduleId, createData); since 0.57 the caller starts the worker and sends the creation data.
@@ -31,7 +31,7 @@ const yamlMonaco = {
 let handle: MonacoYaml | null = null;
 
 // Points the YAML language service at the schema of the model file; later calls replace it.
-export function useModelSchema(schema: Record<string, unknown>) {
+export function registerModelSchema(schema: Record<string, unknown>) {
   const config = {
     enableSchemaRequest: false,
     validate: true,

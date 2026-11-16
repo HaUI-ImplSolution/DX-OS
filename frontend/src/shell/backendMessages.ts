@@ -6,9 +6,9 @@ import { getLocale } from "./locale";
 // text can follow the language of the interface. A message that no rule matches is shown as the backend sent it.
 type Rule = [RegExp, string];
 
-const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 // A message that never changes, and one with parts that are kept (written as regular expression groups).
-const fixed = (english: string, vietnamese: string): Rule => [new RegExp(`^${escape(english)}$`), vietnamese];
+const fixed = (english: string, vietnamese: string): Rule => [new RegExp(`^${escapeRegExp(english)}$`), vietnamese];
 const pattern = (english: string, vietnamese: string): Rule => [new RegExp(`^${english}$`), vietnamese];
 
 const NAME = "\\[a-z\\]\\[a-z0-9_\\]\\*";

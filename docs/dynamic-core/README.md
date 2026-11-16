@@ -280,7 +280,7 @@ Bảng điều khiển thuộc tầng 2, nằm ở tuyến `/console` của ứn
 
 - **Thư viện mẫu:** chọn họ mẫu và mô hình mẫu, kèm mô tả mỗi mẫu cần gì.
 - **Soạn mô hình có hướng dẫn:** form dựng từ JSON Schema của định dạng mô hình, trình soạn YAML có gợi ý và báo lỗi theo schema, và sơ đồ quy trình vẽ từ tệp đang soạn.
-- **Màn hình kế hoạch:** khác biệt, mức rủi ro, dòng vi phạm và xác nhận thay đổi mất dữ liệu.
+- **Màn hình kế hoạch:** khác biệt, mức rủi ro, dòng vi phạm và xác nhận thay đổi mất dữ liệu; mỗi vai đổi quyền truy cập là một dòng `vai: cũ → mới`, phân loại là cấp thêm, thu hồi, mở rộng, thu hẹp hoặc đổi.
 - **Lịch sử áp dụng:** từng phiên bản và từng bước của mỗi lần áp dụng, kèm quay về phiên bản trước.
 - **Sơ đồ quy trình:** trạng thái và hành động của quy trình mà thực thể dùng, vẽ cả từ tệp đang soạn, chỉ để xem.
 - **Người dùng:** tìm, gán và gỡ vai và đơn vị, tạo người dùng với mật khẩu tạm, khóa và mở, đặt lại mật khẩu; mỗi thay đổi được ghi vào nhật ký: ai đổi gì, lúc nào.
@@ -417,7 +417,7 @@ Không thể áp dụng: còn 3 dòng vi phạm.
 
 | Mức                       | Ví dụ                                                       | Cách xử lý                               | Quay lui            |
 | ---------------------------- | --------------------------------------------------------------- | --------------------------------------------- | --------------------- |
-| **An toàn**               | Thêm trường tùy chọn, thực thể, vai, kênh thông báo | Áp dụng sau khi xác nhận kế hoạch     | Được             |
+| **An toàn**               | Thêm trường tùy chọn, thực thể, vai, kênh thông báo, đổi quyền truy cập của vai | Áp dụng sau khi xác nhận kế hoạch     | Được             |
 | **Cần chuyển dữ liệu** | Đổi tên, thêm trường bắt buộc, thêm quy tắc         | Dữ liệu vi phạm thì dừng và liệt kê | Kế hoạch nêu rõ |
 | **Mất dữ liệu**         | Xóa trường, xóa thực thể                                | Sao lưu trước và xác nhận riêng      | Chỉ từ sao lưu   |
 

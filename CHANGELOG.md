@@ -47,6 +47,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Tệp mô hình
 
+- Kế hoạch của một lần đổi `access` ghi mỗi vai đổi mức thành một dòng `vai: cũ → mới`, phân loại là cấp thêm, thu hồi, mở rộng, thu hẹp hoặc đổi ở API kế hoạch, `dxos plan` và tab Kế hoạch; mức rủi ro vẫn là `SAFE`.
 - Khóa `extends: <mẫu>` cho một tệp bắt đầu từ mẫu của thư viện và chỉ ghi phần khác: lõi ghép lúc xem kế hoạch và áp dụng, lưu tệp đã ghép kèm tên và hash của mẫu; `POST /api/v1/models/merge` và `dxos model merge` in tệp đầy đủ, còn `dxos lint` kiểm phần của tệp ngắn và để `dxos plan` kiểm phần ghép.
 - Kiểu trường `code` sinh mã hồ sơ đọc được theo khuôn `format`, ví dụ `HS-{year}-{seq:5}`: chữ cố định, năm tạo và số thứ tự có độ dài cố định, đếm riêng theo mô hình, thực thể và trường, và đếm lại mỗi năm khi khuôn có `{year}`. Mã gán một lần lúc tạo hồ sơ, không ghi hay sửa được, tra bằng `filter.<trường>`; thêm trường vào thực thể đã có hồ sơ là thay đổi `MIGRATION` và điền mã cho hồ sơ cũ.
 - Thực thể khai báo mẫu in bằng khóa `documents`: tiêu đề, đoạn văn, bảng trường và khối chữ ký với chỗ trống `{{trường}}`, kèm tên tệp và trạng thái cho in. `GET /api/v1/data/{model}/{entity}/{id}/documents` liệt kê mẫu và `.../documents/{tên}` trả PDF tiếng Việt cho người đọc được hồ sơ; mỗi lần in vào `audit_log`, và màn hình hồ sơ có nút In.

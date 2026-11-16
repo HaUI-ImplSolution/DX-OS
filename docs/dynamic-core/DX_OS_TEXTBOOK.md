@@ -117,4 +117,5 @@ Ba nhóm không nên đưa vào lõi chỉ để giống giáo trình:
 Đối chiếu này xác nhận không gian I là một khoảng trống hiện tại; nó không chứng minh I là khoảng trống sản phẩm duy nhất.
 AI đã có issue #210 và việc xác minh yêu cầu phủ H-P-D-I đã có issue #211, nên tài liệu không tạo backlog trùng cho hai việc đó.
 Những phần còn thiếu khác gồm không gian tri thức tích hợp, biểu mẫu công khai của DX-Ticket và các năng lực dữ liệu đa nguồn.
-Việc xếp chúng vào lõi, ứng dụng Tầng 2 hay điểm mở rộng phải dựa trên yêu cầu chính thức, ít nhất ba miền sử dụng hoặc một nhu cầu tích hợp cụ thể; trạng thái quyết định nằm ở [`DANH_GIA.md`](./DANH_GIA.md) và [`BACKLOG.md`](./BACKLOG.md).
+Việc xếp chúng vào lõi, ứng dụng Tầng 2 hay điểm mở rộng phải dựa trên yêu cầu chính thức, ít nhất ba miền sử dụng hoặc một nhu cầu tích hợp cụ thể.
+Chưa có quyết định nào về ba phần này nên chúng chưa có dòng trong [`BACKLOG.md`](./BACKLOG.md); bản đối chiếu với đề thi ở [`DANH_GIA.md`](./DANH_GIA.md).

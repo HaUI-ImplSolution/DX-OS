@@ -93,8 +93,9 @@ global_rules:
       # app-tier:end
 
 routes:
+  # Personal assistant: public feature probe and SSO callback, limited per client address; account routes check the JWT.
   - id: assistant-api
-    vars: [[server_port, "==", "9080"]]
+    vars: [["server_port", "==", "9080"]]
     priority: 20
     uri: /assistant-api/*
     upstream:

@@ -76,6 +76,5 @@ fi
 echo "==> Checking the Keycloak admin client"
 ./keycloak-admin-scope.sh || echo "WARNING: model apply stays refused until this works; run ./keycloak-admin-scope.sh once Keycloak is up." >&2
 
-
 docker image prune -f >/dev/null
 echo "==> Up to date. Check: docker compose ps"

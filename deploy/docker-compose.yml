@@ -101,7 +101,6 @@ services:
   # Backend, web and portal
   # ---------------------------------------------------------------------------
   backend:
-    networks: [default, assistant-core]
     <<: *hardened
     logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-backend:${DXOS_IMAGE_TAG:-local}
@@ -109,6 +108,7 @@ services:
     build:
       context: ../backend
       dockerfile: Dockerfile
+    networks: [default, assistant-core]
     depends_on:
       postgres:
         condition: service_healthy
@@ -242,7 +242,6 @@ services:
   # Identity
   # ---------------------------------------------------------------------------
   keycloak:
-    networks: [default, assistant-core]
     logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-sso:${DXOS_IMAGE_TAG:-local}
     build:
@@ -256,6 +255,7 @@ services:
       - -c
       - '[ -z "$$KEYCLOAK_HOSTNAME" ] || export KC_HOSTNAME="$$KEYCLOAK_HOSTNAME" KC_HOSTNAME_BACKCHANNEL_DYNAMIC=true; exec /opt/keycloak/bin/kc.sh "$$@"'
       - kc
+    networks: [default, assistant-core]
     depends_on:
       postgres:
         condition: service_healthy
@@ -485,7 +485,6 @@ services:
       - ./data/apisix:/out
 
   apisix:
-    networks: [default, assistant-ingress]
     # The access log is the traffic record, so it keeps more history than the other services.
     logging:
       driver: json-file
@@ -496,6 +495,7 @@ services:
     entrypoint: ["/bin/sh", "/dxos-apisix-entrypoint.sh"]
     command: ["docker-start"]
     restart: unless-stopped
+    networks: [default, assistant-ingress]
     depends_on:
       apisix-config:
         condition: service_completed_successfully

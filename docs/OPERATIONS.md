@@ -87,6 +87,24 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 File route riêng `deploy/apisix/local.yaml` được giữ khi cập nhật và ghép với cấu hình lõi mới sau khi kiểm; cấu hình xung đột làm cập nhật dừng trước khi thay container.
 Cách khai báo và nạp lại ở [Route riêng trong APISIX](EXTENSIONS.md#route-riêng-trong-apisix).
 
+### Kiểm image phát hành theo digest
+
+Mỗi image `ghcr.io/haui-implsolution/dxos-*` do `release-images.yml` đẩy lên kèm SBOM (SPDX) và thông tin dựng (SLSA), nên mỗi tag là một chỉ mục gồm image và manifest attestation.
+`docker pull` và `dxos update` kéo image như bình thường.
+
+Lấy digest của tag đang chạy, rồi đọc hai attestation theo digest đó:
+
+```bash
+D=$(docker buildx imagetools inspect ghcr.io/haui-implsolution/dxos-backend:vX.Y.Z --format '{{.Manifest.Digest}}')
+docker buildx imagetools inspect ghcr.io/haui-implsolution/dxos-backend:vX.Y.Z@$D --format '{{json .SBOM}}'
+docker buildx imagetools inspect ghcr.io/haui-implsolution/dxos-backend:vX.Y.Z@$D --format '{{json .Provenance}}'
+```
+
+SBOM liệt kê các gói trong image; thông tin dựng ghi lần dựng của image đó.
+Digest không đổi giữa các lần kiểm thì vẫn là cùng một image.
+
+Attestation này không chứng minh chữ ký hay danh tính người phát hành.
+
 ### Tệp mô hình lúc khởi động
 
 `dxos start <tệp>...` chép các tệp vào `deploy/model/` (chỉ giữ các tệp vừa đưa vào), ghi tên chúng theo thứ tự, cách nhau bằng dấu phẩy, vào `DXOS_MODEL_FILE` trong `.env` và khởi động lại backend nếu nó đang chạy.

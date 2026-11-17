@@ -132,7 +132,7 @@ Why Supabase, Strapi and Directus were read for ideas or not used as a base is o
 
 | Item | Requirement | Note |
 |---|---|---|
-| Operating system | Linux | With Docker and Docker Compose v2 |
+| Operating system | Linux, or Windows 10/11 through WSL2 | With Docker and Docker Compose v2; on Windows use Docker Desktop and run the commands in WSL, see [Windows (WSL2)](./docs/OPERATIONS.md#windows-wsl2) (Vietnamese) |
 | Source code | Not needed with the installer | Only to build it yourself |
 | JDK, Node | 21, 22 | Only to build and test outside Docker |
 | RAM | About 1.8 GiB for the eight services when idle | Measured numbers in [`docs/OPERATIONS.md`](./docs/OPERATIONS.md#tài-nguyên-và-số-bản-sao) (Vietnamese); ClamAV adds about 1 GB, turn it off with `dxos av off` |
@@ -143,7 +143,7 @@ The machine size by number of concurrent users is in [`docs/SIZING.md`](./docs/S
 
 ### Quick install with the installer
 
-You need a Linux machine with Docker and Compose v2; no source code.
+You need a Linux machine (or WSL2 on Windows) with Docker and Compose v2; no source code.
 
 ```bash
 curl -fsSL https://github.com/HaUI-ImplSolution/DX-OS/releases/latest/download/dxos-install.sh | bash

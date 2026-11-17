@@ -109,7 +109,7 @@ docker buildx imagetools inspect ghcr.io/haui-implsolution/dxos-backend:vX.Y.Z@$
 docker buildx imagetools inspect ghcr.io/haui-implsolution/dxos-backend:vX.Y.Z@$D --format '{{json .Provenance}}'
 ```
 
-SBOM liệt kê các gói trong image; thông tin dựng ghi lần dựng của image đó.
+SBOM liệt kê các gói trong image; thông tin dựng ghi lần dựng của image đó, gồm commit (`vcs:revision`) và tag (`refs/tags/vX.Y.Z`) được dựng, nên commit này phải trùng commit của tag.
 Digest không đổi giữa các lần kiểm thì vẫn là cùng một image.
 
 Attestation này không chứng minh chữ ký hay danh tính người phát hành.

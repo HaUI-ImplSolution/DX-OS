@@ -33,7 +33,7 @@ Người triển khai mô tả nghiệp vụ của mình trong một tệp mô h
 Đổi nghiệp vụ là đổi tệp, không đổi mã.
 
 Toàn bộ hệ thống lắp từ phần mềm nguồn mở có giấy phép được OSI công nhận, tự cài trên máy của bạn, dữ liệu nằm hoàn toàn ở đó.
-Phiên bản hiện tại là `2.0.0`; thay đổi theo từng phiên bản ở [`CHANGELOG.md`](./CHANGELOG.md).
+Phiên bản hiện tại là `2.0.1`; thay đổi theo từng phiên bản ở [`CHANGELOG.md`](./CHANGELOG.md).
 
 ## Kiến trúc
 
@@ -180,7 +180,7 @@ Hướng dẫn kiểm thử đầy đủ ở [`docs/TESTING.md`](./docs/TESTING.
 
 ## Chạy thử
 
-Bản `2.0.0` chạy công khai tại https://khuongdev.io.vn/ với mô hình Một cửa sinh viên và 40 hồ sơ mẫu.
+Bản `2.0.1` chạy công khai tại https://khuongdev.io.vn/ với mô hình Một cửa sinh viên và 40 hồ sơ mẫu.
 Đăng nhập bằng một trong bốn tài khoản thử dưới đây, cùng mật khẩu `15c9777835f0dfcf4e8d`.
 
 | Tài khoản | Vai |

@@ -14,8 +14,6 @@ A pull request that moves a tag is therefore checked at the version it proposes.
 The license found must be the one the catalog declares and must be allowed (an OSI approved license).
 A license GitHub cannot identify (NOASSERTION), a version it cannot find and a network error all fail:
 an unknown license is not an open one.
-On an API rate limit, the complete LICENSE from the same upstream ref may instead match the
-canonical declared license in LICENSES/, ignoring whitespace only; unreadable or different text fails.
 An entry of the catalog says how it is verified:
   upstream  the GitHub project, as owner/name; it defaults to the project in `source`;
   refs      the git refs of that project that match a version, as templates with {version} (1.4.1) and
@@ -49,10 +47,6 @@ class Unreadable(Exception):
     """GitHub could not be reached or answered something unexpected."""
 
 
-class RateLimited(Unreadable):
-    """The GitHub API rate limit remains exhausted after retries."""
-
-
 def github(path: str, raw: bool = False):
     """The answer of the GitHub API, or None when the path does not exist; a failure raises Unreadable.
 
@@ -62,7 +56,6 @@ def github(path: str, raw: bool = False):
     headers = {"User-Agent": "dxos-license-check", "Accept": "application/vnd.github.raw" if raw else "application/vnd.github+json"}
     token = os.environ.get("GITHUB_TOKEN")
     last = path
-    limited = False
     for attempt in range(4):
         request = urllib.request.Request(f"https://api.github.com/{path}", headers=dict(headers))
         if token:
@@ -76,7 +69,6 @@ def github(path: str, raw: bool = False):
                 return None
             detail = error.read().decode("utf-8", "replace")[:160].replace("\n", " ")
             last = f"{path}: HTTP {error.code} {detail}"
-            limited = error.code == 429 or (error.code == 403 and "rate limit" in detail.lower())
             if error.code in (401, 403) and token:
                 token = None
                 continue
@@ -85,27 +77,9 @@ def github(path: str, raw: bool = False):
                 continue
             raise Unreadable(last) from error
         except (urllib.error.URLError, TimeoutError) as error:
-            limited = False
             last = f"{path}: {error}"
             time.sleep(2 * (attempt + 1))
-    raise (RateLimited if limited else Unreadable)(last)
-
-
-def canonical_license_at(project: str, ref: str, declared: str) -> tuple[bool, str]:
-    """Match the entire same-ref upstream LICENSE to its canonical text, without API credentials."""
-    canonical = ROOT / "LICENSES" / f"{declared}.txt"
-    if not canonical.is_file():
-        raise Unreadable(f"{declared}: no canonical license text for same-ref verification")
-    url = f"https://raw.githubusercontent.com/{project}/{urllib.parse.quote(ref, safe='')}/LICENSE"
-    request = urllib.request.Request(url, headers={"User-Agent": "dxos-license-check"})
-    try:
-        with urllib.request.urlopen(request, timeout=30) as response:
-            body = response.read(1048577)
-    except (urllib.error.URLError, TimeoutError) as error:
-        raise Unreadable(f"{project} at {ref}: upstream LICENSE could not be read: {error}") from error
-    if len(body) > 1048576 or " ".join(body.decode("utf-8", "replace").split()) != " ".join(canonical.read_text(encoding="utf-8").split()):
-        raise Unreadable(f"{project} at {ref}: complete LICENSE differs from canonical {declared}")
-    return True, declared
+    raise Unreadable(last)
 
 
 def version_of(tag: str) -> str | None:
@@ -143,10 +117,7 @@ def verify(name: str, entry: dict, version: str, fetch=github) -> str | None:
         return f"{name} {version}: the catalog names no GitHub project; add `upstream`, or `unverified` with the reason"
     found_ref = found = None
     for ref in refs_for(entry, version):
-        try:
-            exists, spdx = license_at(project, ref, fetch)
-        except RateLimited:
-            exists, spdx = canonical_license_at(project, ref, declared)
+        exists, spdx = license_at(project, ref, fetch)
         if exists:
             found_ref, found = ref, spdx
             break

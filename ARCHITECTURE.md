@@ -31,6 +31,7 @@ Keycloak giữ tài khoản, mật khẩu và vai; realm `dxos` được nhập 
 |---|---|
 | `dxos-web` | Người dùng đăng nhập vào ứng dụng web |
 | `dxos-monitor` | Đăng nhập vào màn hình giám sát |
+| `dxos-assistant` | Liên kết phiên người dùng với trợ lý bằng Authorization Code và PKCE, khi bật dịch vụ tùy chọn |
 | `dxos-cli` | Lệnh `dxos plan`, `dxos apply` và `dxos gitops`; tài khoản dịch vụ giữ vai `ADMIN` |
 | `dxos-backend-admin` | Tài khoản dịch vụ của backend gọi Admin API: tạo client, vai, nhóm và quản trị người dùng |
 | `dxos-m-<mô hình>` | Chỉ để chứa vai của mô hình, không cho ai đăng nhập |

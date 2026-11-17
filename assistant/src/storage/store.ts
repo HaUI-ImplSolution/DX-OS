@@ -36,6 +36,23 @@ export class Store {
     this.db.exec(`PRAGMA foreign_keys=ON; PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;`);
     const version = Number((this.db.prepare('PRAGMA user_version').get() as { user_version: number }).user_version);
     if (version > 5) { this.db.close(); throw new Error('The assistant database needs a newer application'); }
+    if (version > 0) {
+      try {
+        for (const [table, name, value] of [
+          ['secrets', 'name', 'value'], ['proposals', 'id', 'snapshot'],
+          ...(version >= 2 ? [['oauth_flows', 'state', 'value']] : []),
+        ]) {
+          const row = this.db.prepare(`SELECT owner, ${name} AS name, ${value} AS value FROM ${table} LIMIT 1`).get() as { owner: string; name: string; value: string } | undefined;
+          if (row) {
+            const [issuer, subject] = JSON.parse(row.owner) as [string, string];
+            this.unseal({ issuer, subject }, row.name, row.value);
+          }
+        }
+      } catch {
+        this.db.close();
+        throw new Error('Restore the matching master key and intact assistant state');
+      }
+    }
     if (version === 0) this.db.exec(`BEGIN IMMEDIATE;
       CREATE TABLE secrets (owner TEXT NOT NULL, name TEXT NOT NULL, value TEXT NOT NULL,
         PRIMARY KEY(owner,name));

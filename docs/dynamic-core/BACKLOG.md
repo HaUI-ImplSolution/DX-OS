@@ -35,7 +35,7 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 
 | Việc | Issue | Ghi chú |
 |---|---|---|
-| Phần AI | #210 | Pipeline AI nguồn mở chưa có mã: hỏi đáp sinh câu trả lời và tác tử đề xuất có người duyệt cần mô hình ngôn ngữ và embedding đạt định nghĩa Open Source AI của OSI (trọng số và dữ liệu huấn luyện đều mở), chưa chọn; khi làm sẽ là dịch vụ mới nối vào lõi; ứng viên LLM là Apertus 8B (Apache-2.0) và OLMo 2, cần thử tiếng Việt và tốc độ trên CPU; reranker và embedding phải thay bằng mô hình đạt chuẩn rồi đo lại chất lượng truy xuất; mô hình mở hoàn toàn có thể trả lời tiếng Việt kém và chậm hơn trên CPU nên cần đo trước khi trình diễn; không có LLM đạt thì Qwen chỉ là tùy chọn người dùng tự gắn, ghi rõ là mở trọng số; hỏi đáp quy chế cần một kho văn bản đạt cam kết nguồn mở (CC0, CC BY, ODbL hoặc không thuộc diện bảo hộ), vì kho văn bản của trường đã gỡ do thuộc bản quyền của trường |
+| Phần AI | #210 | Hỏi đáp sinh câu trả lời, tác tử tự đề xuất theo sự kiện và embedding chưa triển khai; cần mô hình ngôn ngữ và embedding đạt định nghĩa Open Source AI của OSI (trọng số và dữ liệu huấn luyện đều mở), chưa chọn; ứng viên LLM là Apertus 8B (Apache-2.0) và OLMo 2, cần thử tiếng Việt và tốc độ trên CPU; reranker và embedding phải thay bằng mô hình đạt chuẩn rồi đo lại chất lượng truy xuất; mô hình mở hoàn toàn có thể trả lời tiếng Việt kém và chậm hơn trên CPU nên cần đo trước khi trình diễn; không có LLM đạt thì Qwen chỉ là tùy chọn người dùng tự gắn, ghi rõ là mở trọng số; hỏi đáp quy chế cần một kho văn bản đạt cam kết nguồn mở (CC0, CC BY, ODbL hoặc không thuộc diện bảo hộ), vì kho văn bản của trường đã gỡ do thuộc bản quyền của trường |
 | Chất lượng đề xuất trợ lý | #210 | Kiểm và giảm lỗi đoán khi thiếu dữ kiện, bỏ sót đối chiếu, từ chối nhầm, diễn đạt sai quan hệ số và lẫn mã kỹ thuật; chưa có kiểm ngữ nghĩa đáng tin cậy để tự chặn các lỗi này |
 | Đầu vào và trường đối chiếu của trợ lý | #210 | Phân biệt dữ kiện cần giữ và giá trị cần kiểm; nhiệm vụ phụ thuộc giá trị hiện tại của chính trường đối chiếu chưa được hỗ trợ |
 | Ứng dụng Tầng 2 | #211 | Chưa phủ I của H-P-D-I; hỏi BTC trên nhóm Telegram của họ xem ứng dụng minh họa có cần phủ cả bốn không gian H, P, D, I không |
@@ -47,9 +47,9 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 |---|---|
 | Ứng dụng mẫu gọi lõi từ bên ngoài | Chưa có ứng dụng có giao diện nào ngoài ứng dụng của đội gọi lõi qua API, nên câu "PaaS phục vụ các ứng dụng tầng trên" của đề chưa có bằng chứng chạy được; đã chốt làm một ứng dụng mẫu ở `examples/`, viết bằng khung khác react-admin, chỉ dùng OpenAPI theo mô hình và đăng nhập Keycloak |
 | Chỉ số mục tiêu | Chưa có người thật làm bài thử "trong một buổi" (bài thử và bản mô phỏng ở `docs/TARGETS.md`), chưa đo công vận hành mỗi tháng và thời gian lần cài đầu có tải image |
-| Thử tải trợ lý nhiều chủ | Chưa đo đầy đủ cold/warm, độ trễ, RAM/VRAM/swap và ảnh hưởng Core khi nhiều chủ dùng chung một inference slot |
 | Egress trợ lý | Chưa có allowlist kết nối cho toàn container; cần kiểm giới hạn mạng ngoài endpoint inference cố định |
-| Khóa/token backup trợ lý | Master key và state mã hóa nằm cùng kho restic; cần tách quyền giữ khóa và quy trình thu hồi, thay mới |
+| Thu hồi và thay khóa/token trợ lý | Hoàn thiện quy trình thu hồi, thay mới khóa/token và xử lý snapshot cũ có chứa khóa |
+| Nâng cấp và rollback bản cài trợ lý | CP-20c bắt buộc trong đợt nghiệm thu hiện tại: nâng cấp hai chủ, rollback provider và toàn bộ Core/SSO/provider bằng bộ image/schema/snapshot tương thích; restore state riêng và migration fixture chưa đủ |
 
 ## 4. Giới hạn chấp nhận
 
@@ -57,6 +57,7 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 
 | Việc | Ghi chú |
 |---|---|
+| Quy mô vận hành trợ lý | Một provider và một slot suy luận, không chạy nhiều replica trên cùng SQLite; chưa có SLA hoặc số đo model cold/warm, RAM/VRAM/swap; cần đo trên host và model đã chọn trước khi cam kết tải |
 | Tìm người cho trường `user` | `GET /api/v1/people` cho mọi người đã đăng nhập tìm cả người ngoài phạm vi mô hình, khớp theo tên, tên đăng nhập hoặc email, và chỉ trả id với tên hiển thị; thu hẹp theo vai của mô hình thì phải đối chiếu vai của từng người |
 | Đổi mô hình khi còn hồ sơ mở | Hồ sơ chưa lưu phiên bản mô hình và hồ sơ đang chạy giữ bản BPMN cũ (Flowable không chuyển chúng sang bản mới); hạn xử lý, quyền tự quyết, hành động hoàn tất, đặt chỗ, trạng thái, hành động và điều kiện `when` vì thế chỉ đổi được khi thực thể không còn hồ sơ đang xử lý, phải hoàn tất hoặc rút hết hồ sơ trước; đổi vai xử lý thì có hiệu lực ngay vì quyền xét theo mô hình, hồ sơ đã giao cho người không còn giữ vai mới chỉ người điều phối giao lại được, và nhóm ứng viên ghi trong task Flowable đang chạy vẫn là vai cũ (không nơi nào đọc nó) |
 | Ngôn ngữ giao diện | Chữ do mô hình định nghĩa (tên thực thể, nhãn trường, nhãn trạng thái và hành động tự khai, nội dung tệp mẫu) không được dịch |

@@ -9,6 +9,7 @@ Tận dụng test Node trong `assistant/test/`, bộ kiểm API/E2E và test bac
 Không thêm framework/test file, snapshot response hoặc test chỉ lặp lại validation; ưu tiên guard quyền, race, timeout và tính động.
 Kiểm compile/diff khi sửa mã; test/model/Docker chỉ chạy ở mốc kiểm được cho phép và cần bằng chứng, không dựng stack trong đợt lập kế hoạch.
 CONTRIBUTING và các check CI bắt buộc vẫn áp dụng; chưa chạy thì ghi rõ chưa chạy.
+Kiểm vòng đời/UI bằng Core/SSO/provider thật với inference giả lập không thay nghiệm thu ngữ nghĩa CP-08/09; migration bằng fixture schema cũ không thay rollback toàn bản phát hành.
 
 ## 2. Ma trận nghiệm thu
 
@@ -32,7 +33,7 @@ Các hậu tố a/b trong checklist chia phần công việc của cùng một m
 | CP-14 | Snapshot state dưới bảo trì, restore thành công và lỗi migration: không sinh lại key/AAD, lỗi nâng cấp không tự tạo lại key | Snapshot, nâng cấp và restore |
 | CP-15 | State 0/1/nhiều chủ, proposal pending/executing và migration lỗi: giữ lịch sử/chủ, không gửi lại ghi | Migration và dữ liệu phiên bản cũ |
 | CP-16 | Route ngoài hợp đồng: JWT/Origin/body vẫn kiểm đúng, không lưu credential, gọi model hoặc ghi Core | HTTP và rà consumer |
-| CP-17 | Dockerfile/Compose/env/APISIX/CLI/backup/CI chỉ có consumer của chức năng được hỗ trợ; Core workflow/outbox/nhắc hạn và dữ liệu cũ được giữ | Compose, CLI và rà consumer |
+| CP-17 | Dockerfile/Compose/env/APISIX/CLI/backup/CI chỉ có consumer của chức năng được hỗ trợ; chờ bootstrap SSO kết thúc, lỗi mật khẩu/client unmanaged không chạy control hoặc chặn Core; giữ workflow/outbox/nhắc hạn và dữ liệu cũ | Compose, CLI và rà consumer |
 | CP-18 | Các ca owner/claim/encryption/timeout vẫn được kiểm khi tích hợp provider; không xóa guard để tránh lỗi | Bộ kiểm guard hiện có |
 | CP-19 | Lockfile/SBOM/catalog/notices/REUSE/docs nhất quán; không bỏ giấy phép dùng chung hoặc hướng dẫn không khớp chức năng | CI/compliance và rà tài liệu |
 | CP-20 | Cài mới/nâng cấp/rollback và cấu hình model off: Core khởi động độc lập, không tải trọng số lúc boot/request, restore không gửi lại ghi | Cài mới, nâng cấp và rollback |

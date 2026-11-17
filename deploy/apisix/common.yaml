@@ -104,7 +104,7 @@ routes:
       timeout:
         connect: 5
         send: 120
-        read: 120
+        read: 240
     plugins:
       limit-count:
         count: 120

@@ -100,15 +100,20 @@ do_backup() {
   echo "==> Dumping Postgres"
   compose exec -T postgres pg_dumpall -U "$POSTGRES_USER" | gzip > "$STAGE/postgres.sql.gz"
   [[ -s "$STAGE/postgres.sql.gz" ]] || { echo "The database dump is empty." >&2; exit 1; }
-  if [[ -d data/assistant ]]; then ENV_FILE="$ENV_FILE" ./assistant.sh snapshot "$STAGE/assistant"; fi
+  local paths=(/stage) mounts=() excludes=()
+  if [[ -d data/assistant ]]; then
+    mkdir -p "$STAGE/assistant"
+    touch "$STAGE/assistant-key-external"
+    mounts+=(-v "$(pwd)/data/assistant:/stage/assistant:ro")
+    excludes+=(--exclude /stage/assistant/private/master.key)
+  fi
+  for dir in seaweedfs; do [[ -d "data/$dir" ]] && paths+=("/data/$dir"); done
+  echo "==> Writing the snapshot (${paths[*]})"
+  restic -v "$STAGE:/stage:ro" -v "$(pwd)/data:/data:ro" "${mounts[@]}" -- backup --tag dxos "${excludes[@]}" "${paths[@]}"
   if [[ "$ASSISTANT_BACKUP_PAUSED" == true ]]; then
     ENV_FILE="$ENV_FILE" ./assistant.sh resume "${ASSISTANT_BACKUP_SERVICES[@]}"
     ASSISTANT_BACKUP_PAUSED=false
   fi
-  local paths=(/stage)
-  for dir in seaweedfs; do [[ -d "data/$dir" ]] && paths+=("/data/$dir"); done
-  echo "==> Writing the snapshot (${paths[*]})"
-  restic -v "$STAGE:/stage:ro" -v "$(pwd)/data:/data:ro" -- backup --tag dxos "${paths[@]}"
   # A removed file stays in the store for DXOS_FILE_DELETE_DELAY, so a file named in the dump is
   # still there when the store is copied, as long as the dump and the copy fit in that time.
   local took=$(( $(date +%s) - started )) delay; delay="$(seconds "$FILE_DELETE_DELAY")"
@@ -126,8 +131,8 @@ do_backup() {
 
 # A backup nobody restored is a hope: load the dump into a throwaway Postgres and look inside.
 do_verify() {
-  local name="dxos-backup-verify-$$" store="dxos-backup-verify-store-$$"
-  trap "docker rm -f $name $store >/dev/null 2>&1 || true; docker volume rm -f $store >/dev/null 2>&1 || true" EXIT
+  local name="dxos-backup-verify-$$" store="dxos-backup-verify-store-$$" assistant="dxos-backup-verify-assistant-$$"
+  trap "docker rm -f $name $store >/dev/null 2>&1 || true; docker volume rm -f $store $assistant >/dev/null 2>&1 || true" EXIT
   docker run -d --name "$name" -e POSTGRES_PASSWORD=verify "$POSTGRES_IMAGE" >/dev/null
   until docker exec "$name" pg_isready -U postgres >/dev/null 2>&1; do sleep 1; done
   sleep 2
@@ -142,6 +147,7 @@ do_verify() {
   echo "Databases restored: $databases"
   echo "Tables in $POSTGRES_DB: $tables"
   [[ "$tables" -gt 0 ]] || { echo "Verify FAILED: the business database is empty." >&2; exit 1; }
+  verify_assistant
   if [[ "$(sql "SELECT to_regclass('engine.model_version') IS NOT NULL")" != t ]]; then
     echo "No model applied yet (engine.model_version is missing)."
     echo "Verify OK."
@@ -158,6 +164,39 @@ do_verify() {
   [[ -z "$missing" ]] || { echo "Verify FAILED: no tables for the models: $missing" >&2; exit 1; }
   verify_files
   echo "Verify OK."
+}
+
+# SQLite integrity can be checked without the independently held encryption key.
+verify_assistant() {
+  local listing image
+  listing="$(restic -- ls latest)"
+  if ! grep -q '/stage/assistant/' <<<"$listing"; then
+    echo "Assistant: no state in this snapshot."
+    return
+  fi
+  if grep -q '/stage/assistant/private/master.key$' <<<"$listing"; then
+    if grep -q '/stage/assistant-key-external$' <<<"$listing"; then
+      echo "Verify FAILED: assistant master key is present in a snapshot that requires independent key storage." >&2
+      exit 1
+    fi
+    echo "WARNING: legacy snapshot contains the assistant key; keep it restricted and rotate sessions if exposed." >&2
+  fi
+  docker volume create "$assistant" >/dev/null
+  restic -v "$assistant:/restore" -- restore latest --target /restore --include /stage/assistant >/dev/null
+  image="$(compose --profile assistant config | sed -n '/^  assistant-control:/,/^  [[:alnum:]_-]*:/s/^    image: //p')"
+  [[ -n "$image" ]] || { echo "Verify FAILED: the assistant image could not be resolved." >&2; exit 1; }
+  docker run --rm --network none --user 0 --entrypoint node -v "$assistant:/restore" "$image" -e '
+    const fs = require("node:fs");
+    const path = "/restore/stage/assistant/control/assistant.sqlite";
+    if (!fs.existsSync(path)) { console.log("Assistant: no account database yet."); process.exit(0); }
+    const { DatabaseSync } = require("node:sqlite");
+    const db = new DatabaseSync(path, { readOnly: true });
+    try {
+      const rows = db.prepare("PRAGMA integrity_check").all();
+      if (rows.length !== 1 || rows[0].integrity_check !== "ok") throw new Error("Assistant database integrity failed");
+      console.log("Assistant database integrity: OK; decryption needs the separately restored key.");
+    } finally { db.close(); }
+  '
 }
 
 # Every attachment row of the dump must have its object in the copy of the store: the copy is

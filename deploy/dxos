@@ -162,9 +162,11 @@ EOF
 # A container is ready when it is healthy, running without a healthcheck, or a one-shot job
 # that exited with code 0.
 pending_services() {
-  local pending=() id name status health exit_code
+  local pending=() id name status health exit_code service
   while read -r id; do
     [[ -n "$id" ]] || continue
+    service="$(docker inspect -f '{{index .Config.Labels "com.docker.compose.service"}}' "$id")"
+    [[ "$service" == assistant-* ]] && continue
     read -r name status health exit_code <<<"$(docker inspect -f \
       '{{.Name}} {{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{else}}-{{end}} {{.State.ExitCode}}' "$id")"
     case "$status:$health:$exit_code" in
@@ -267,7 +269,7 @@ trap 'rm -f /tmp/dxos-kcadm.config' EXIT
 kc config credentials --server http://localhost:8080 --realm master \
   --user "$KC_BOOTSTRAP_ADMIN_USERNAME" --password "$KC_BOOTSTRAP_ADMIN_PASSWORD" >/dev/null 2>&1 \
   || { echo "cannot sign in to Keycloak as $KC_BOOTSTRAP_ADMIN_USERNAME" >&2; exit 3; }
-if [[ "$MODE" == ensure ]] && kc get roles/ADMIN/users -r dxos --fields username | grep '"username"' | grep -qv '"service-account-'; then
+if [[ "$MODE" == ensure ]] && kc get roles/ADMIN/users -r dxos --fields username | grep -q '"username"'; then
   exit 10
 fi
 if ! kc get users -r dxos -q exact=true -q username="$ADMIN_USER" --fields id | grep -q '"id"'; then
@@ -292,8 +294,6 @@ EOF
 }
 
 cmd_start() {
-  "$DEPLOY_DIR/make_env.sh" "$DEPLOY_DIR/.env" --update-assistant
-  "$DEPLOY_DIR/assistant.sh" retire
   local since since_epoch was_running=false model_status=0 started mode=""
   while (( $# )); do
     case "$1" in
@@ -313,11 +313,17 @@ cmd_start() {
   rm -f "$STOPPED_MARK"
   echo "==> Checking this machine"
   "$DEPLOY_DIR/doctor.sh" >/dev/null || { "$DEPLOY_DIR/doctor.sh" || true; die "fix the FAIL lines above, then run dxos start again"; }
+  if "$DEPLOY_DIR/assistant.sh" enabled; then
+    "$DEPLOY_DIR/make_env.sh" "$DEPLOY_DIR/.env" --update-assistant
+  fi
   [[ -n "$(compose ps -q --status running backend)" ]] && was_running=true
   since="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
   since_epoch="$(date +%s)"
   echo "==> Starting DX-OS $(env_value DXOS_IMAGE_TAG), $(stack_mode) mode (images are downloaded on the first start)"
-  compose up -d --no-build --pull missing
+  local platform=()
+  mapfile -t platform < <("$DEPLOY_DIR/assistant.sh" platform-services)
+  (( ${#platform[@]} )) || die "no platform services configured"
+  compose up -d --no-build --pull missing "${platform[@]}"
   started="$(date -d "$(docker inspect -f '{{.State.StartedAt}}' "$(compose ps -q backend)")" +%s)"
   # A backend that kept running is started again so it reads a model file whose content changed.
   if $was_running && (( $# > 0 )) && ((started < since_epoch)); then
@@ -333,6 +339,7 @@ cmd_start() {
     model_status=$?
   fi
   set -e
+  "$DEPLOY_DIR/assistant.sh" start || echo "WARNING: assistant startup failed; Core is available. See dxos logs assistant-sso." >&2
   print_addresses
   return "$model_status"
 }
@@ -935,10 +942,14 @@ reconcile_once() {
   if command -v flock >/dev/null 2>&1 && ! flock -n 9; then
     return 0
   fi
-  if ! compose up -d --no-build --pull missing >"$out" 2>&1; then
+  local platform=()
+  mapfile -t platform < <("$DEPLOY_DIR/assistant.sh" platform-services)
+  (( ${#platform[@]} )) || return 1
+  if ! compose up -d --no-build --pull missing "${platform[@]}" >"$out" 2>&1; then
     echo "$(date -Iseconds) failed: $(tail -n1 "$out")" >>"$log"
     return 1
   fi
+  "$DEPLOY_DIR/assistant.sh" start >>"$out" 2>&1 || echo "$(date -Iseconds) assistant unavailable; Core reconciled" >>"$log"
   # The one-shot jobs (apisix-config, monitor-init) run on every up and are not a change.
   changed="$(grep -E ' (Created|Recreated|Started)$' "$out" | grep -vE 'apisix-config|monitor-init' | sed 's/^ *//' | paste -sd';' - || true)"
   [[ -z "$changed" ]] || echo "$(date -Iseconds) $changed" >>"$log"

@@ -7,6 +7,14 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ## [Unreleased]
 
+### Ứng dụng ngoài
+
+- Thêm trợ lý nghiệp vụ tùy chọn dùng inference self-host để đề xuất một giá trị trường từ hồ sơ và nguồn được cấu hình; người dùng sửa, hủy hoặc xác nhận, Core kiểm quyền và phiên bản trước khi ghi.
+
+### Triển khai
+
+- Trợ lý tắt mặc định qua profile `assistant`; CLI tách lỗi khởi động trợ lý khỏi Core, cập nhật image theo profile và sao lưu state bằng container với master key giữ riêng.
+
 ## [2.0.1] - 2026-11-17
 
 Bổ sung và sửa sau bản `2.0.0`, nâng cấp từ `2.0.0` giữ nguyên dữ liệu, migration mới tự chạy khi backend khởi động.
@@ -45,7 +53,6 @@ Bổ sung và sửa sau bản `2.0.0`, nâng cấp từ `2.0.0` giữ nguyên d�
 
 ### Ứng dụng ngoài
 
-- Thêm trợ lý nghiệp vụ tùy chọn dùng inference self-host để đề xuất một giá trị trường từ hồ sơ và nguồn được cấu hình; người dùng sửa, hủy hoặc xác nhận, Core kiểm quyền và phiên bản trước khi ghi.
 - Route riêng của bản cài nằm trong `apisix/local.yaml`, được kiểm trước khi ghép với cấu hình lõi và giữ nguyên qua cập nhật.
 - Ứng dụng ngoài đổi sang vai khác của cùng mô hình bằng `dxos client role`, nút Đổi vai ở tab Ứng dụng ngoài hoặc `PUT /api/v1/clients/{name}`, giữ nguyên tên và mã bí mật; token đã cấp giữ vai cũ đến khi hết hạn.
 - `dxos client browser add` đăng ký public OIDC client dùng Authorization Code với PKCE S256 cho giao diện ở tên miền khác, đồng thời thêm origin chính xác vào allowlist CORS; backend và `dxos doctor` từ chối wildcard, HTTP ngoài loopback, path hoặc URI không hợp lệ.

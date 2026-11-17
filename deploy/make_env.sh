@@ -36,6 +36,11 @@ if [[ "$UPDATE_ASSISTANT" == true ]]; then
     [[ "$line" == ASSISTANT_*=* ]] || continue
     key="${line%%=*}"
     if ! grep -q "^${key}=" "$tmp"; then
+      if [[ "$key" == ASSISTANT_IMAGE ]]; then
+        prefix="$(sed -n 's/^DXOS_IMAGE_PREFIX=//p' "$tmp" | tail -1)"
+        tag="$(sed -n 's/^DXOS_IMAGE_TAG=//p' "$tmp" | tail -1)"
+        line="ASSISTANT_IMAGE=${prefix:-dxos}-assistant:${tag:-local}"
+      fi
       [[ -z "$(tail -c1 "$tmp")" ]] || echo >> "$tmp"
       printf '%s\n' "$line" >> "$tmp"
     fi

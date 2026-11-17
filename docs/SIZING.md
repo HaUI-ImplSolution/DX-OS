@@ -3,6 +3,7 @@
 Tài liệu này trả lời hai câu hỏi: lõi chịu được bao nhiêu người dùng đồng thời, và cấu hình nhỏ nhất đáp ứng ngưỡng công bố là bao nhiêu nhân.
 Số liệu do `e2e/api/load_test.py` đo trên một stack tạm, ngày 2026-11-12.
 Mọi số là cận dưới vì bộ tạo tải chạy cùng máy với hệ thống được đo.
+Các số đo chưa gồm dịch vụ trợ lý và inference/model; trợ lý tắt mặc định.
 
 ## Ngưỡng công bố
 

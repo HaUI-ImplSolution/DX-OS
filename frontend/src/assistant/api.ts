@@ -49,7 +49,7 @@ async function loadAvailability(): Promise<boolean> {
 export async function assistantRequest<T>(path: string, method = "GET", payload?: unknown, signal?: AbortSignal): Promise<T> {
   const token = await getToken();
   const response = await fetch(`${API_BASE}/assistant-api/v1${path}`, {
-    method, signal: AbortSignal.any([AbortSignal.timeout(path === "/me/proposals" && method === "POST" ? 180000 : 60000), ...(signal ? [signal] : [])]),
+    method, signal: AbortSignal.any([AbortSignal.timeout(path === "/me/proposals" && method === "POST" ? 270000 : 60000), ...(signal ? [signal] : [])]),
     headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(payload === undefined ? {} : { "Content-Type": "application/json" }) },
     ...(payload === undefined ? {} : { body: JSON.stringify(payload) }),
   });

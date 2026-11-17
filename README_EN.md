@@ -135,8 +135,8 @@ Why Supabase, Strapi and Directus were read for ideas or not used as a base is o
 |---|---|---|
 | Operating system | Linux, or Windows 10/11 through WSL2 | With Docker and Docker Compose v2; on Windows use Docker Desktop and run the commands in WSL, see [Windows (WSL2)](./docs/OPERATIONS.md#windows-wsl2) (Vietnamese) |
 | Source code | Not needed with the installer | Only to build it yourself |
-| JDK, Node | 21, 22 | Only to build and test outside Docker |
-| RAM | About 1.8 GiB for the eight services when idle | Measured numbers in [`docs/OPERATIONS.md`](./docs/OPERATIONS.md#tài-nguyên-và-số-bản-sao) (Vietnamese); ClamAV adds about 1 GB, turn it off with `dxos av off` |
+| JDK, Node | JDK 21; Node 22 for the web app, Node 24 for the assistant | Only to build and test outside Docker |
+| RAM | About 1.8 GiB for the eight services when idle, excluding the assistant and inference/model | Measured numbers in [`docs/OPERATIONS.md`](./docs/OPERATIONS.md#tài-nguyên-và-số-bản-sao) (Vietnamese); ClamAV adds about 1 GB, turn it off with `dxos av off` |
 | Disk | About 3.5 GiB for the images | The database and the attachments grow with the data |
 
 `dxos doctor` (or `deploy/doctor.sh`) checks Docker, RAM, disk, `deploy/.env` and the ports before you run.

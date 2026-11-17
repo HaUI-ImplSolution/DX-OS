@@ -27,7 +27,7 @@ Nguồn và dữ liệu khảo sát do bản cài quản lý, nằm ngoài Git.
 Chất lượng khi thiếu dữ kiện, văn phong, ngân sách tài nguyên và nghiệm thu nâng cấp/rollback còn mở.
 Các việc còn lại ở [checklist](./02_CHECKLIST.md) và [BACKLOG](../dynamic-core/BACKLOG.md).
 
-Đối chiếu [API](../API.md), [MODEL](../MODEL.md), [ARCHITECTURE](../../ARCHITECTURE.md) và [EXTENSIONS](../EXTENSIONS.md) khi sửa hợp đồng.
+Đối chiếu định hướng [Dynamic Core](../dynamic-core/README.md), [API](../API.md), [MODEL](../MODEL.md), [ARCHITECTURE](../../ARCHITECTURE.md) và [EXTENSIONS](../EXTENSIONS.md) khi sửa hợp đồng.
 
 ## 3. Hợp đồng nhiệm vụ động
 
@@ -130,12 +130,26 @@ Không thêm manifest/artifact mới chỉ vì tên model được nêu trong k�
 
 1. Khởi tạo thư mục state và master key với quyền hạn chế; từ chối khởi động khi database có sẵn nhưng thiếu key.
 2. Cấu hình inference, framing và catalog nguồn riêng cho bản cài; không tải trọng số trong request hoặc khi Core khởi động.
-3. Sao lưu SQLite cùng key dưới chế độ bảo trì trước khi nâng phiên bản schema; kiểm restore trên bản sao độc lập.
+3. Sao lưu SQLite nhất quán trước khi nâng phiên bản schema; giữ master key độc lập ngoài kho restic và kiểm restore trên bản sao.
 4. Migration phải giữ owner, SSO, snapshot và lịch sử; không thực thi lại thao tác có kết quả chưa rõ.
 5. Kiểm cài mới, nâng cấp, model tắt và rollback bằng snapshot/image tương thích; xác nhận vẫn kiểm phiên bản Core.
 
 Purge dữ liệu, thu hồi key hoặc xóa backup là quyết định vận hành riêng.
-Rollback không đảo ngược dữ liệu nghiệp vụ đã ghi Core và không tự gửi lại lệnh ghi.
+
+### Nâng cấp và rollback
+
+CP-20c là phần bắt buộc của đợt nghiệm thu này, còn mở đến khi kiểm trên bản cài riêng.
+
+1. Ghim image, schema và cấu hình trước/sau nâng cấp; cất master key độc lập, giữ snapshot nhất quán và bản sao cấu hình để phục hồi.
+   Giữ snapshot rollback ở kho độc lập hoặc nhóm tag riêng và kiểm retention để lần backup tiếp theo không dọn mất mốc phục hồi.
+2. Rollback riêng provider dùng image/cấu hình tương thích; phục hồi SQLite trước migration nếu bản cũ không đọc được schema mới, giữ dữ liệu Core hiện tại.
+3. Rollback toàn bản cài phải phục hồi bộ image, cấu hình, Postgres/Core/SSO, kho tệp và state trợ lý tương thích; không chạy image cơ sở dữ liệu hoặc Keycloak cũ trên dữ liệu đã nâng cấp khi chưa xác minh tương thích.
+4. Kiểm hai chủ, liên kết SSO, quyền, lịch sử, proposal cũ và trạng thái `pending`/`executing`/`uncertain`; không đọc chéo chủ, ghi lặp hoặc tự xác nhận sau phục hồi.
+5. Kiểm thiếu/sai khóa, snapshot lỗi và schema không tương thích; giữ trợ lý dừng khi chưa phục hồi được, không tự tạo key hoặc database thay thế.
+
+Rollback provider không hoàn tác giao dịch đã ghi Core; phục hồi toàn bản cài về snapshot cũ có thể mất dữ liệu phát sinh sau snapshot.
+Trước phục hồi toàn bản cài, dừng nhận ghi và tác vụ cập nhật tự động, chụp thêm trạng thái hiện tại, xác định khoảng dữ liệu có thể mất và điểm quay lại khi phục hồi lỗi.
+Kiểm bằng Core/SSO/provider thật và inference giả lập trên dữ liệu giả; migration fixture hoặc restore SQLite riêng chưa đủ đóng CP-20c.
 
 ## 7. Tài nguyên và cách đo
 

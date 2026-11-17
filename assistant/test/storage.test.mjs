@@ -82,3 +82,18 @@ test('bootstrap preserves master key and legacy runtime files, and refuses a los
   assert.equal(readFileSync(join(dir, 'runtime-1/transcript'), 'utf8'), 'legacy');
   rmSync(join(dir, 'private/master.key')); assert.notEqual(prepare().status, 0);
 });
+
+test('a wrong restore key is refused before an executing proposal is changed', t => {
+  const { store, key, path } = setup(t);
+  store.setSecret(a, 'core', 'synthetic');
+  const id = store.createProposal(a, snapshot);
+  store.claim(a, id, 'web'); store.close();
+  assert.throws(() => new Store(path, randomBytes(32)), /matching master key/);
+  const db = new DatabaseSync(path, { readOnly: true });
+  assert.equal(db.prepare('SELECT state FROM proposals WHERE id=?').get(id).state, 'executing'); db.close();
+  const restored = new Store(path, key);
+  try {
+    assert.equal(restored.getSecret(a, 'core'), 'synthetic');
+    assert.equal(restored.proposal(a, id).state, 'uncertain');
+  } finally { restored.close(); }
+});

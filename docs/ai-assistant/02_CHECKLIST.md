@@ -2,8 +2,10 @@
 
 Các mục CP theo dõi trợ lý nghiệp vụ; chỉ tick phần đã kiểm đủ theo [test plan](./03_TEST_PLAN.md).
 Chưa nghiệm thu cuối hoặc chọn model phát hành.
-Mục có hậu tố a/b tách phần đã kiểm và phần còn thiếu; chỉ hoàn tất tiêu chí CP tương ứng khi mọi phần đều đạt.
+Mục có hậu tố tách phần đã kiểm và phần còn thiếu; chỉ hoàn tất tiêu chí CP tương ứng khi mọi phần đều đạt.
 Dấu tick kỹ thuật không thay nghiệm thu bản phát hành.
+Các ca UI/restore bổ sung dùng Core, SSO và provider thật với inference giả lập; không chứng nhận chất lượng model hoặc nâng cấp/rollback toàn bản cài.
+Mục chuyển thành giới hạn không được tính là tiêu chí đã đạt.
 
 ## Quyết định và review
 
@@ -17,7 +19,7 @@ Dấu tick kỹ thuật không thay nghiệm thu bản phát hành.
 - [x] CP-01a Kiểm giấy phép và hồ sơ dependency mã nguồn, catalog, NOTICE, SBOM và REUSE.
 - [ ] CP-01b Chốt model/artifact mặc định, provenance và cam kết OSAID trước phân phối; chưa đủ audit model/dữ liệu.
 - [x] CP-02a Triển khai khai báo nhiệm vụ trong YAML, parser/schema, Console, diff/plan và model upgrade; kiểm parser, Core và build Console.
-- [ ] CP-02b Kiểm đủ vòng tạo/sửa nhiệm vụ bằng form Console, load lại và apply; chưa có nghiệm thu vòng form này.
+- [x] CP-02b Thêm/sửa nhiệm vụ bằng form Console, xem kế hoạch, apply và tải lại giữ đúng cấu hình trên Core thật.
 - [x] CP-03 Metadata/nhiệm vụ theo quyền người gọi; mô hình không có AI vẫn hoạt động.
 - [x] CP-04 Đổi/bỏ trường, lựa chọn, nhiệm vụ hoặc nguồn làm proposal cũ mất hiệu lực.
 - [x] CP-05 Chốt spec rồi cập nhật OpenAPI/schema và code cùng thay đổi; giữ envelope/status/errorCode/i18n.
@@ -33,25 +35,28 @@ Dấu tick kỹ thuật không thay nghiệm thu bản phát hành.
 - [x] CP-10 Proposal có chủ/snapshot/TTL/revision; confirm ngoài LLM, sửa nội dung phải xác nhận snapshot mới.
 - [x] CP-11 Hai confirm chỉ một claim; mất quyền/đổi trạng thái/phiên bản cũ bị Core chặn; timeout sau ghi là uncertain.
 - [x] CP-12a UI dùng metadata, hiển thị giá trị/nguồn/lưu ý, sửa/hủy/xác nhận, no-op và lịch sử sau lưu đã được kiểm.
-- [ ] CP-12b Kiểm đồng thời hai tab và bản nháp đang sửa; chưa có bằng chứng đủ cho toàn tình huống.
+- [x] CP-12b Hai tab giữ bản nháp chưa lưu; lưu trên phiên bản cũ và xác nhận đề xuất sau thay đổi cạnh tranh bị Core chặn.
 - [x] CP-13a Kiểm busy, timeout/hủy, ngân sách input/output và giải phóng slot bằng transport; không có fallback cloud.
-- [ ] CP-13b Kiểm trọn luồng UI khi model tắt hoặc phiên Core hết hạn; chưa đủ kiểm tích hợp các tình huống này.
+- [x] CP-13b UI báo lỗi khi dừng inference mà Core vẫn đọc/ghi được; phiên Core bị thu hồi yêu cầu liên kết lại và phục hồi qua SSO/PKCE thật.
 
 ## P4–P5: Triển khai và state
 
-- [x] CP-14 Snapshot nhất quán và thử restore trước migration; lỗi nâng cấp không tạo lại key.
+- [x] CP-14a Snapshot state bằng container, loại master key và kiểm tính toàn vẹn SQLite trên bản restore.
+- [x] CP-14b Restore state hai chủ bằng khóa giữ độc lập: liên kết/đề xuất giữ đúng chủ, chặn truy cập chéo và replay; migration schema v1 được kiểm bằng fixture tái dựng từ snapshot này.
 - [x] CP-15 Giữ owner/SSO/lịch sử/key khi migration; trạng thái chưa rõ không replay.
 - [x] CP-16 Route ngoài hợp đồng không được tạo credential, gọi inference hoặc ghi Core.
-- [x] CP-17 Dọn Dockerfile/Compose/env/network/APISIX/CLI/backup và CI đúng consumer; không ảnh hưởng Core hoặc dữ liệu cũ.
+- [x] CP-17a Trợ lý sau profile; CLI chờ bootstrap SSO thật, từ chối client unmanaged/mật khẩu sai, không chạy control khi lỗi và giữ Core hoạt động.
+- [ ] CP-17b Kiểm trọn bộ khởi động, update và backup trợ lý trên bản tích hợp trong CI.
 - [x] CP-18 Kiểm owner, claim, encryption và timeout bằng bộ kiểm hiện có; không thêm test file/framework.
 - [x] CP-19 Đồng bộ license/catalog/NOTICE/DEPENDENCIES/SBOM/REUSE và docs VI/EN; không xóa mục license còn dùng chung.
-- [x] CP-20a Cài từ release archive, khởi động Core và backup/restore được CI kiểm; không tải trọng số trong request/boot.
-- [ ] CP-20b Kiểm nâng cấp nhiều chủ và rollback toàn bản cài với state trợ lý; chưa đủ nghiệm thu.
+- [x] CP-20a Cài archive từ mã hiện tại qua bộ cài và khởi động Core thật khi trợ lý tắt; không cần image trợ lý hoặc tải trọng số.
+- [ ] CP-20b CI xác nhận cài archive, khởi động và backup/restore trên bản sửa tích hợp; chờ kết quả CI của bản sửa.
+- [ ] CP-20c Kiểm nâng cấp hai chủ, rollback provider và toàn bản cài trong đợt này theo [kế hoạch rollback](./01_PLAN.md#nâng-cấp-và-rollback); chưa chạy đủ để nghiệm thu.
 
 ## P6: Tính động, tài nguyên và nghiệm thu
 
 - [x] CP-21 Hai domain thật dùng cùng provider/UI, thay YAML không sửa mã; hồi quy ba họ workflow hiện có.
-- [ ] CP-22 Đo đúng workload mới trên host thực, tách Core/provider/model và cold/warm/busy/cancel; chưa công bố giảm RAM hoặc SLA khi chưa đo.
+- CP-22 Giới hạn vận hành: một provider và một slot, chưa có SLA hoặc số đo model cold/warm/RAM/VRAM; xem mục 4 của [BACKLOG](../dynamic-core/BACKLOG.md).
 - [x] CP-23 Kiểm build/compliance/doc refs/secret/diff đúng phần thay đổi; không để reference vận hành treo hoặc dependency vô dụng.
 - [ ] CP-24 Người dùng chạy kịch bản demo, tech lead review giới hạn và giấy phép; chưa đánh dấu hoàn tất toàn bộ #210.
 

@@ -91,3 +91,18 @@ test('inference busy and cancellation do not create a second generation or keep 
   await assert.rejects(inference.suggest('Classify.',{},{}),{ errorCode:'ERR_INFERENCE_BUSY' });
   abort.abort(); await assert.rejects(pending,{ errorCode:'ERR_INFERENCE_CANCELLED' }); assert.equal(calls,1);
 });
+test('an inference timeout returns a bounded error and releases the slot', async t => {
+  let stalled = true;
+  const endpoint = await listen(t, (req, res) => {
+    req.resume();
+    if (!stalled) {
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ choices: [{ message: { content: '{"value":"ok"}' } }] }));
+    }
+  });
+  const inference = new LocalInference({ endpoint, model:'synthetic', revision:'1', key:'',
+    timeoutMs:1000, maxInputBytes:4000, maxOutputTokens:64 });
+  await assert.rejects(inference.suggest('Classify.', {}, {}), { status:503, errorCode:'ERR_INFERENCE_OUTPUT' });
+  stalled = false;
+  assert.deepEqual(await inference.suggest('Classify.', {}, {}), { value:'ok' });
+});

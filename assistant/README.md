@@ -7,7 +7,8 @@ Inference do người vận hành cấu hình và chạy tại máy chủ của 
 
 ## Cấu hình và sử dụng
 
-1. Khởi động DX-OS theo [README](../README.md#chạy-thử), mở **Trợ lý nghiệp vụ** và liên kết tài khoản DX-OS.
+1. Thêm `assistant` vào `COMPOSE_PROFILES` trong `deploy/.env`, giữ các profile đang dùng, rồi chạy `dxos start` theo [README](../README.md#chạy-thử).
+   Mở **Trợ lý nghiệp vụ** và liên kết tài khoản DX-OS; tắt mặc định thì Core và web không cần dịch vụ này.
 2. Người vận hành cấu hình inference và catalog nguồn bằng các biến đầy đủ trong [`deploy/.env.example`](../deploy/.env.example).
 3. Người quản trị mô hình khai báo nhiệm vụ trong `ai.tasks` của thực thể bằng YAML hoặc tab trợ lý trong Console, rồi áp dụng mô hình.
 4. Người dùng mở hồ sơ đã lưu, chọn nhiệm vụ, tạo đề xuất và đọc nguồn trước khi xác nhận.
@@ -25,6 +26,7 @@ Khai báo nhiệm vụ không cấp thêm quyền đọc/ghi hoặc thay cơ ch�
 
 Người dùng không nhập endpoint, API key hoặc model trên giao diện.
 Endpoint do người vận hành cố định trong bản cài; transport chặn redirect, giới hạn input/output, timeout và một lượt suy luận đồng thời.
+Timeout inference tối đa 180 giây, cổng vào chờ 240 giây để còn thời gian đọc Core và trả lỗi; giao diện chờ tối đa 270 giây cho một lượt tạo đề xuất.
 Model không nhận JWT/refresh token Core, quyền xác nhận, công cụ shell, filesystem hoặc quyền gọi HTTP tùy ý.
 Trường đơn vị có thể làm đầu vào chỉ đọc để phát hiện mâu thuẫn theo nguồn; vẫn không được chọn làm đầu ra.
 Một lượt chỉ gửi các trường được nhiệm vụ khai báo cùng các nguồn liên quan, không gửi lịch sử hội thoại hoặc toàn bộ metadata hệ thống.
@@ -81,8 +83,9 @@ Receipt chỉ nói đã lưu khi Core trả thành công; người dùng đối 
 
 ## State, sao lưu và giới hạn
 
-Trước nâng cấp, dừng dịch vụ trợ lý và chụp snapshot nhất quán gồm SQLite, master key và state theo [quy trình backup](../docs/OPERATIONS.md#sao-lưu-và-khôi-phục).
-Database có sẵn nhưng thiếu master key phải khôi phục đúng key, không tạo khóa thay thế.
+Trước nâng cấp, chụp snapshot nhất quán của SQLite và state theo [quy trình backup](../docs/OPERATIONS.md#sao-lưu-và-khôi-phục).
+Master key ở `deploy/data/assistant/private/master.key` phải được cất riêng ngoài kho restic; thiếu hoặc sai khóa thì không giải mã được credential đã sao lưu.
+Database có sẵn nhưng thiếu hoặc sai master key phải khôi phục đúng key, không tạo khóa thay thế.
 Migration giữ lịch sử, liên kết SSO và owner; kết quả ghi chưa rõ không được thực thi lại.
 Khôi phục dùng snapshot và image tương thích, không tự xóa dữ liệu hoặc đảo ngược thay đổi đã ghi Core.
 

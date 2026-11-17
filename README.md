@@ -134,8 +134,8 @@ Lý do đọc hoặc không dùng làm nền với Supabase, Strapi và Directus
 |---|---|---|
 | Hệ điều hành | Linux, hoặc Windows 10/11 qua WSL2 | Có Docker và Docker Compose v2; trên Windows dùng Docker Desktop và chạy lệnh trong WSL, xem [Windows (WSL2)](./docs/OPERATIONS.md#windows-wsl2) |
 | Mã nguồn | Không cần khi dùng bộ cài | Chỉ cần khi tự build |
-| JDK, Node | 21, 22 | Chỉ cần để build và kiểm thử ngoài Docker |
-| RAM | Khoảng 1,8 GiB cho tám service lúc rảnh | Số đo thật ở [`docs/OPERATIONS.md`](./docs/OPERATIONS.md#tài-nguyên-và-số-bản-sao); ClamAV thêm khoảng 1 GB, tắt bằng `dxos av off` |
+| JDK, Node | JDK 21; Node 22 cho web, Node 24 cho trợ lý | Chỉ cần để build và kiểm thử ngoài Docker |
+| RAM | Khoảng 1,8 GiB cho tám service lúc rảnh | Số đo thật ở [`docs/OPERATIONS.md`](./docs/OPERATIONS.md#tài-nguyên-và-số-bản-sao); chưa tính trợ lý và inference/model; ClamAV thêm khoảng 1 GB, tắt bằng `dxos av off` |
 | Đĩa | Khoảng 3,5 GiB cho image | Cơ sở dữ liệu và tệp đính kèm tăng theo dữ liệu |
 
 `dxos doctor` (hoặc `deploy/doctor.sh`) kiểm Docker, RAM, ổ đĩa, `deploy/.env` và các cổng trước khi chạy.

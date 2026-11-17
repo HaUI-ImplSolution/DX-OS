@@ -3,7 +3,7 @@
 Đọc cùng [overview](./00_OVERVIEW.md), [plan](./01_PLAN.md), [checklist](./02_CHECKLIST.md) và [test plan](./03_TEST_PLAN.md).
 Các điều kiện chất lượng, restore toàn stack và nghiệm thu còn mở; tiêu chí kiểm ở [test plan](./03_TEST_PLAN.md).
 
-## 1. Đánh đổi của phạm vi mới
+## 1. Đánh đổi của phạm vi
 
 | Lựa chọn | Lợi ích | Giới hạn phải công bố |
 |---|---|---|
@@ -49,7 +49,7 @@ Rollback không tự gửi lại ghi, hoặc đảo ngược dữ liệu nghiệ
 
 ## 4. Những việc chưa được chốt hoặc chưa làm
 
-- Model/runtime/artifact mặc định, context, chất lượng VI, thời gian chờ và ngân sách cần P0 cùng đo thật.
+- Model/runtime/artifact mặc định, context, chất lượng tiếng Việt, thời gian chờ và ngân sách cần được chốt bằng khảo sát thực tế.
 - Dữ liệu demo, nguồn khảo sát và bằng chứng nằm ngoài Git theo quyết định người dùng; giữ kiểm tra giấy phép của repository.
 - Nguồn demo tiếng Việt đã hỗ trợ đối chiếu trường có tập lựa chọn; model vẫn có thể đoán loại hồ sơ khi lý do mơ hồ, nên gate chất lượng và review nguồn còn mở.
   Cần bộ đánh giá nội dung trước phát hành.

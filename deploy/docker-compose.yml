@@ -277,9 +277,10 @@ services:
   # Business assistant
   # ---------------------------------------------------------------------------
   assistant-init:
+    profiles: [assistant]
     <<: *hardened
     logging: *default-logging
-    image: ${ASSISTANT_IMAGE:?}
+    image: ${ASSISTANT_IMAGE:-${DXOS_IMAGE_PREFIX:-dxos}-assistant:${DXOS_IMAGE_TAG:-local}}
     build:
       context: ../assistant
     user: "0:0"
@@ -294,6 +295,7 @@ services:
     tmpfs: ["/tmp:rw,nosuid,nodev,noexec,size=64m"]
 
   assistant-sso:
+    profiles: [assistant]
     <<: *hardened
     logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-sso:${DXOS_IMAGE_TAG:-local}
@@ -314,14 +316,15 @@ services:
     tmpfs: ["/tmp:rw,nosuid,nodev,noexec,size=64m,mode=1777"]
 
   assistant-control:
+    profiles: [assistant]
     <<: *hardened
     logging: *default-logging
-    image: ${ASSISTANT_IMAGE:?}
+    image: ${ASSISTANT_IMAGE:-${DXOS_IMAGE_PREFIX:-dxos}-assistant:${DXOS_IMAGE_TAG:-local}}
     user: "1000:1000"
     restart: unless-stopped
     read_only: true
-    mem_limit: ${ASSISTANT_CONTROL_MEMORY:?}
-    cpus: ${ASSISTANT_CONTROL_CPUS:?}
+    mem_limit: ${ASSISTANT_CONTROL_MEMORY:-256m}
+    cpus: ${ASSISTANT_CONTROL_CPUS:-0.5}
     pids_limit: 128
     networks: [assistant-core, assistant-ingress]
     depends_on:

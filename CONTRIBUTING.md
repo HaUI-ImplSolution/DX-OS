@@ -14,6 +14,7 @@ Mọi người tham gia theo [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md).
 ## Dựng môi trường
 
 Cần Docker với Compose v2, JDK 21, Node 22 và Python 3.
+Build dịch vụ trợ lý ngoài Docker cần Node 24, theo `assistant/package.json`.
 
 ```bash
 deploy/make_env.sh                          # sinh deploy/.env

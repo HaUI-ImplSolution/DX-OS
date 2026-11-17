@@ -46,7 +46,6 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 | Việc | Ghi chú |
 |---|---|
 | Ứng dụng mẫu gọi lõi từ bên ngoài | Chưa có ứng dụng có giao diện nào ngoài ứng dụng của đội gọi lõi qua API, nên câu "PaaS phục vụ các ứng dụng tầng trên" của đề chưa có bằng chứng chạy được; đã chốt làm một ứng dụng mẫu ở `examples/`, viết bằng khung khác react-admin, chỉ dùng OpenAPI theo mô hình và đăng nhập Keycloak |
-| Cài và chạy trên Windows | Bộ cài, `dxos` và `doctor.sh` là Bash nên chỉ chạy trên Linux; đã chốt không viết CLI PowerShell mà ghi đường Windows 10/11 qua WSL2 và Docker Desktop: bảng Yêu cầu hệ thống ở `README.md` và `README_EN.md` ghi Linux hoặc Windows qua WSL2, `docs/OPERATIONS.md` thêm mục ngắn về bật WSL integration của Docker Desktop, chạy `get.sh` và `dxos` trong WSL, mở `/console` và cổng vào từ trình duyệt Windows qua `localhost` (cần thử thật trên một máy Windows và ghi kết quả), và `docker info` không chạy được thì `doctor.sh` đã báo `FAIL` nên không sửa script |
 | Chỉ số mục tiêu | Chưa có người thật làm bài thử "trong một buổi" (bài thử và bản mô phỏng ở `docs/TARGETS.md`), chưa đo công vận hành mỗi tháng và thời gian lần cài đầu có tải image |
 
 ## 4. Giới hạn chấp nhận

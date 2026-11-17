@@ -1,7 +1,8 @@
 // SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
+import { useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { alpha, Box, Card, Chip, Typography, useTheme } from "@mui/material";
+import { Alert, alpha, Box, Card, Chip, Typography, useTheme } from "@mui/material";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import FullCalendar from "@fullcalendar/react";
@@ -18,12 +19,18 @@ import { splitResource, type EntityMeta, type Page } from "./types";
 import { getLocale } from "../shell/locale";
 import { t } from "../shell/t";
 
+// The calendar reads the bookings of a range page by page, up to this many bookings.
+const PAGE_SIZE = 200;
+const MAX_PAGES = 25;
+
 // The bookings of an entity of the reservation family on a calendar.
 export default function CalendarPage({ byResource }: { byResource: Record<string, EntityMeta> }) {
   const { resource = "" } = useParams();
   const navigate = useNavigate();
   const notify = useNotify();
   const theme = useTheme();
+  const [cut, setCut] = useState<{ shown: number; total: number } | null>(null);
+  const loads = useRef(0);
   const entity = byResource[resource];
   const booking = entity?.process?.booking;
   if (!entity || !booking) return <Typography sx={{ p: 2 }}>{t("Thực thể này không có lịch.")}</Typography>;
@@ -40,14 +47,26 @@ export default function CalendarPage({ byResource }: { byResource: Record<string
   };
 
   const load = async (range: { start: Date; end: Date }): Promise<EventInput[]> => {
-    const page = await request<Page<Record<string, unknown>>>(
-      `/data/${model}/${name}${queryString({
-        [`filter.${booking.starts}.lt`]: range.end.toISOString(),
-        [`filter.${booking.ends}.gt`]: range.start.toISOString(),
-        size: 200,
-      })}`,
-    );
-    return page.items.map((row) => ({
+    const current = ++loads.current;
+    const rows: Record<string, unknown>[] = [];
+    let total = 0;
+    for (let index = 0; index < MAX_PAGES; index++) {
+      const page = await request<Page<Record<string, unknown>>>(
+        `/data/${model}/${name}${queryString({
+          [`filter.${booking.starts}.lt`]: range.end.toISOString(),
+          [`filter.${booking.ends}.gt`]: range.start.toISOString(),
+          sort: "id",
+          order: "asc",
+          page: index,
+          size: PAGE_SIZE,
+        })}`,
+      );
+      rows.push(...page.items);
+      total = page.totalElements;
+      if (index + 1 >= page.totalPages) break;
+    }
+    if (current === loads.current) setCut(rows.length < total ? { shown: rows.length, total } : null);
+    return rows.map((row) => ({
       id: String(row.id),
       title: `${String(row[title] ?? `#${row.id}`)} · ${label(String(row.status))}`,
       editable: entity.canWrite && !states.find((state) => state.name === row.status)?.terminal,
@@ -97,6 +116,11 @@ export default function CalendarPage({ byResource }: { byResource: Record<string
           />
         ))}
       </Box>
+      {cut && (
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          {t("Lịch chỉ hiện {shown} trong {total} lượt của khoảng này; chuyển sang khoảng ngắn hơn (ngày hoặc tuần) để xem phần còn lại.", { shown: cut.shown, total: cut.total })}
+        </Alert>
+      )}
       <Card
         sx={{
           p: 2,

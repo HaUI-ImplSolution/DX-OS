@@ -69,6 +69,8 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Giao diện
 
+- Lịch của thực thể đặt chỗ tải đủ các lượt của khoảng đang xem từng trang 200 lượt (tối đa 5000) thay vì chỉ trang đầu, và báo số lượt đang hiện trên tổng số khi khoảng vượt mức đó.
+- Ô chọn bản ghi tham chiếu tìm theo trường tên của thực thể được chọn (`filter.<trường>.like`), nên chọn được bản ghi ngoài 25 mục tải sẵn; không có kết quả khớp thì ô nói rõ.
 - `npm run lint` trong `frontend/` phân tích tĩnh mã web bằng Biome (cấu hình ở `frontend/biome.json`) và chạy ở workflow `Frontend`; phát hiện nghiêm trọng làm job đỏ, cảnh báo về phụ thuộc của hook và khóa theo chỉ số mảng chỉ hiện trong kết quả.
 - Lưu biểu mẫu bỏ trường tệp khỏi dữ liệu tạo/sửa hồ sơ, giữ tệp đính kèm hiện có khi sửa thông tin khác.
 - Trình sửa mô hình chọn `default` của trường nhiều lựa chọn từ danh sách `options`, và trình soạn YAML không còn cảnh báo khi `default` là danh sách.
@@ -95,6 +97,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Hướng dẫn kết nối công cụ báo cáo bằng `report_ro` ở `docs/REPORTING.md`: giữ PostgreSQL trong mạng riêng, kết nối Apache Superset, xoay mật khẩu và truy vấn dữ liệu xuyên hai mô hình.
 - Mục Dữ liệu cá nhân ra nước ngoài ở `docs/OPERATIONS.md` nêu khi nào cấu hình làm phát sinh nghĩa vụ đánh giá tác động theo Luật 91/2025/QH15 và Nghị định 356/2025/NĐ-CP, đối chiếu với bản đăng trên Công báo.
 - Hướng dẫn phát triển dịch vụ, bên nhận webhook, giao diện và trang mở rộng ở `docs/EXTENSIONS.md`: quyền, gateway, chạy local, kiểm thử, đóng gói, nâng cấp và ranh giới hỗ trợ hiện tại.
+- Windows 10/11 cài và chạy DX-OS qua WSL2 và Docker Desktop: bảng Yêu cầu hệ thống ở `README.md` và `README_EN.md` ghi đường này, và `docs/OPERATIONS.md` có mục Windows (WSL2).
 - Điều kiện tải chữ ký virus của ClamAV và hạn hỗ trợ của image đang ghim ở `DEPENDENCIES.txt` và `docs/OPERATIONS.md`.
 
 ## [2.0.0] - 2026-11-11

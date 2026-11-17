@@ -33,7 +33,7 @@ The person deploying it describes their business in one model file — what a re
 Changing the business means changing the file, not the code.
 
 The whole system is assembled from open-source software under OSI-approved licenses, installs on your own machine, and the data stays there.
-The current version is `2.0.0`; the changes of each version are in [`CHANGELOG.md`](./CHANGELOG.md).
+The current version is `2.0.1`; the changes of each version are in [`CHANGELOG.md`](./CHANGELOG.md).
 
 ## Architecture
 
@@ -181,7 +181,7 @@ The full testing guide is in [`docs/TESTING.md`](./docs/TESTING.md) (Vietnamese)
 
 ## Try it
 
-Version `2.0.0` runs publicly at https://khuongdev.io.vn/ with the One-stop student model and 40 sample requests.
+Version `2.0.1` runs publicly at https://khuongdev.io.vn/ with the One-stop student model and 40 sample requests.
 Sign in with one of the four trial accounts below, all with the password `15c9777835f0dfcf4e8d`.
 
 | Account | Role |

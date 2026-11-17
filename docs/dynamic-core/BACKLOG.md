@@ -13,17 +13,15 @@ Thứ tự dưới đây xếp theo số điểm đang để hở; chi tiết t�
 
 | Thứ tự | Việc | Điểm liên quan |
 |---|---|---|
-| 1 | Pull request vào `main`, bản phát hành mới và rà soát cuối của mục 2 trên bản đó | Điều kiện để kho mã được chấm trên bản dự thi; bản phát hành 5, dịch từ mã nguồn 10 |
-| 2 | Tài liệu và giao tiếp: lịch sử issue (mục 3) | Tài liệu và giao tiếp 10, phát triển bền vững 10 |
-| 3 | Bằng chứng lõi là PaaS: ứng dụng mẫu (mục 3) | Nguyên gốc 10, phát triển bền vững 10 |
-| 4 | Bài trình bày chung kết (mục 2) | Hoàn thiện 10, trình diễn 10 |
-| 5 | Phần AI và chữ I của ứng dụng Tầng 2 (mục 3) | Hoàn thiện 10, nguyên gốc 10 |
+| 1 | Tài liệu và giao tiếp: lịch sử issue (mục 3) | Tài liệu và giao tiếp 10, phát triển bền vững 10 |
+| 2 | Bằng chứng lõi là PaaS: ứng dụng mẫu (mục 3) | Nguyên gốc 10, phát triển bền vững 10 |
+| 3 | Bài trình bày chung kết (mục 2) | Hoàn thiện 10, trình diễn 10 |
+| 4 | Phần AI và chữ I của ứng dụng Tầng 2 (mục 3) | Hoàn thiện 10, nguyên gốc 10 |
 
 ## 2. Phải xử lý trước khi phát hành
 
 | Việc | Ghi chú |
 |---|---|
-| Pull request vào `main` và bản phát hành mới | Nhánh `main` chậm 40 commit so với `Khuong/main` và `v2.0.0` không chứa phần đó; mở pull request `Khuong/main` vào `main` (đóng luôn khoảng 20 issue đã xong), rồi gắn tag, chạy `Release Package` và `Release Images`; rà soát cuối làm trên bản mới này |
 | Kiểm attestation của image phát hành trên GHCR | Workflow đã bật `sbom: true` và `provenance: mode=min` ở bước đẩy (#309), chỉ mới thử trên registry local; chạy `Release Images` với `services = portal`, đọc SBOM và Provenance theo digest bằng lệnh ở `docs/OPERATIONS.md`, xem Provenance có ghi commit không (có thì thêm câu so commit với tag vào mục đó, không thì giữ nguyên), rồi thử `dxos update` và kéo image trên máy sạch; xong thì đóng #309 |
 | Rà soát cuối trên bản phát hành | Trước 17:00 ngày 06/12: clone vào máy sạch rồi `deploy/make_env.sh` và `docker compose up -d --build` thành công; mở repository bằng trình duyệt ẩn danh thấy được không cần đăng nhập; trang Contributors hiện đủ ba thành viên (API `contributors` hiện chỉ trả hai người); `check_licenses.py` báo 0 vấn đề, `reuse lint` xanh và `gh api repos/HaUI-ImplSolution/DX-OS/license` vẫn trả Apache-2.0 khi có `LICENSES/`; CI xanh trên commit gắn tag (`Platform`, `Compliance`, `Backend`, `Frontend`, `Dependencies`); trang docs mô tả đúng bản `2.0.0`; số issue, pull request và commit ở `website/docs/pof-audit.md` lấy lại theo ngày gắn tag |
 | Gửi bài | Thư tới `olpvietnam@vaip.vn` và `thuky@vfossa.vn` trước 17:00 ngày 06/12/2026, tiêu đề `BÀI THI PMNM 2026 - [Tên Đội] - [Tên Trường]`, nội dung gồm thành viên đội, người hướng dẫn, đường dẫn kho mã nguồn và cam kết bản quyền theo mẫu trong đề; trước đó xác nhận với trường rằng đội đã có trong danh sách đăng ký gửi BTC, và ghi người hướng dẫn vào mục Nhóm phát triển của `README.md` |

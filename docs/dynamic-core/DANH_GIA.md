@@ -19,7 +19,7 @@ Nguồn: [đề thi](https://vfossa.vn/tin-tuc/de-thi-phan-mem-nguon-mo-olp-2026
 | Dữ liệu phi cấu trúc | SeaweedFS, tệp đính kèm theo quyền của hồ sơ, ClamAV | Đạt; quét mã độc bật mặc định, tệp EICAR bị chặn trong CI |
 | Động cơ luồng công việc | Flowable nhúng, BPMN sinh từ mô hình, ba họ mẫu | Đạt |
 | Ít nhất một ứng dụng Tầng 2 trong H-P-D-I | Ứng dụng web dựng từ metadata và bảng điều khiển, chạm H, P và D | Đạt theo cách đọc của đội ("ít nhất một ứng dụng"); chữ I chưa có, và chưa hỏi Ban tổ chức xem có bắt buộc phủ cả bốn không gian (#211); `README.md` có mục đối chiếu với đề |
-| Giấy phép OSI, mã công khai, có bản phát hành trước khi nộp | Apache-2.0; bảy bản `v1.0.0` đến `v2.0.0` | Đạt có điều kiện: bản phát hành mới nhất (`v2.0.0`, 11/11) không chứa 40 commit sau đó, và nhánh mặc định `main` chưa có chúng (mục 4) |
+| Giấy phép OSI, mã công khai, có bản phát hành trước khi nộp | Apache-2.0; tám bản `v1.0.0` đến `v2.0.1` | Đạt |
 
 Các giao diện đi kèm được tính như sau.
 Giao diện của DX-OS là giao diện web, bảng điều khiển, trang liên kết (portal) và màn hình giám sát, đều ở Tầng 2; lõi chạy riêng không kèm giao diện nào.
@@ -56,7 +56,7 @@ Phần còn lại của bảy cụm là tầm nhìn của đề, phủ thêm là
 |---|---|---|---|---|
 | Quản lý mã nguồn trên Internet | 5 | GitHub công khai; 998 commit trên `Khuong/main`; 201 pull request đã gộp; 20 kiểm tra của CI đều xanh trên pull request gần nhất | Đạt | Đóng góp tập trung: trong 757 commit của người thật, một thành viên có 534 (khoảng 70%), hai người còn lại 116 và 106 |
 | Giấy phép OSI | 10 | Apache-2.0 cho mã, tài liệu, ảnh, video và sơ đồ; OFL-1.1 cho hai tệp phông; `LICENSE` toàn văn; `NOTICE` có mục "Mục đích của giấy phép"; dòng SPDX ở tệp mã; `reuse lint` đạt 564 trên 564 tệp; CI kiểm giấy phép của mọi gói, của `REUSE.toml` và của `LICENSES/`; chỉ hai gói dữ liệu chỉ đọc lúc dựng trang docs nằm ngoài danh sách OSI, nêu tên kèm lý do ở mục 7 của `DEPENDENCIES.txt` | Đạt | Không có |
-| Bản phát hành | 5 | Bảy bản theo SemVer, mỗi bản có `.tar.gz`, `.sha256` và SBOM, không có `.zip` do đội đăng | Rủi ro | Nhánh `main` mà ban giám khảo mở chậm 40 commit (160 tệp) so với `Khuong/main`, và `v2.0.0` không chứa phần đó; cần một pull request vào `main` và một bản phát hành mới trước 17:00 ngày 06/12; bản phát hành chỉ có SHA-256, chưa ký |
+| Bản phát hành | 5 | Tám bản theo SemVer, mỗi bản có `.tar.gz`, `.sha256` và SBOM, không có `.zip` do đội đăng | Đạt | Bản phát hành chỉ có SHA-256, chưa ký |
 | Dịch từ mã nguồn | 10 | Cấu hình ở `.env` trước khi dựng, Docker, Maven wrapper và npm, cài ra ngoài thư mục mã nguồn, CI cài từ gói phát hành và chạy trình duyệt trên stack rỗng; công cụ cần có trên máy chạy đã khai giấy phép; ngày 14/11 mình clone `Khuong/main` vào thư mục trống và chạy đúng các lệnh của README (`make_env.sh`, `docker compose up -d --build`, `dxos admin`): 9 dịch vụ `healthy`, 5 địa chỉ trả 200, 122 giây | Đạt | Lần chạy dùng bộ nhớ đệm của Docker nên chưa đo trên máy hoàn toàn mới; mới chạy trên `Khuong/main`, chưa chạy trên `main` |
 | Thư viện và gói đính kèm | 10 | `DEPENDENCIES.txt` có tên, phiên bản, giấy phép, vai trò, trang chủ và nguồn; SBOM khớp tệp khóa; image ghim digest; không chép và không vá mã của dự án khác | Đạt | Không có |
 | Tài liệu và giao tiếp | 10 | README hai thứ tiếng, CHANGELOG, mẫu issue, CONTRIBUTING, SECURITY, quy tắc ứng xử, trang docs, `ROADMAP.md`, Discussions; trang Contributors hiện đủ ba thành viên (GitHub đếm 689, 144 và 124 lần đóng góp, kể cả commit gộp) | Đạt có điều kiện | Lịch sử issue mỏng so với việc đã làm: 55 issue (36 đã đóng) so với 201 pull request, và khoảng 20 issue đã xong chờ pull request vào `main` đóng; 30 sao, 0 fork, một chủ đề ở Discussions; không issue nào gắn nhãn `good first issue` hay `help wanted`; phần lớn tài liệu chỉ có tiếng Việt |
@@ -173,12 +173,9 @@ Backend dùng SpotBugs và web dùng Biome (ESLint không chạy được với 
 
 Điểm yếu, theo mức nặng giảm dần:
 
-1. **Nhánh `main` và bản phát hành đang không phản ánh sản phẩm.**
-   Ban giám khảo mở `main` và `v2.0.0`; cả hai thiếu 40 commit gần nhất.
-   Đây là việc duy nhất có thể mất điểm nặng ở hai tiêu chí cùng lúc, và đội chủ động xử lý được.
-2. **Chưa có phần AI.** Chữ I của H-P-D-I chưa có và chưa hỏi Ban tổ chức; ảnh hưởng đến mức hoàn thiện và tính nguyên gốc ở buổi chung kết, không ảnh hưởng điểm kho mã.
-3. **Lịch sử issue mỏng và đóng góp tập trung vào một người.** Không mất điểm trực tiếp theo thể lệ, nhưng làm yếu bằng chứng về dự án có cộng đồng.
-4. **Chưa kiểm được:** kết quả OpenSSF Scorecard, và việc dựng trên máy hoàn toàn mới không có bộ nhớ đệm của Docker.
-5. **Thiếu so với chuẩn repository:** `CODEOWNERS` chưa chia theo vùng; ở mọi vùng của repository một người viết từ 62 đến 100% commit, nên việc chia người phụ trách là quyết định của nhóm.
+1. **Chưa có phần AI.** Chữ I của H-P-D-I chưa có và chưa hỏi Ban tổ chức; ảnh hưởng đến mức hoàn thiện và tính nguyên gốc ở buổi chung kết, không ảnh hưởng điểm kho mã.
+2. **Lịch sử issue mỏng và đóng góp tập trung vào một người.** Không mất điểm trực tiếp theo thể lệ, nhưng làm yếu bằng chứng về dự án có cộng đồng.
+3. **Chưa kiểm được:** kết quả OpenSSF Scorecard, và việc dựng trên máy hoàn toàn mới không có bộ nhớ đệm của Docker.
+4. **Thiếu so với chuẩn repository:** `CODEOWNERS` chưa chia theo vùng; ở mọi vùng của repository một người viết từ 62 đến 100% commit, nên việc chia người phụ trách là quyết định của nhóm.
 
 Các việc còn lại và thứ tự làm nằm ở `BACKLOG.md`.

@@ -87,6 +87,15 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 File route riêng `deploy/apisix/local.yaml` được giữ khi cập nhật và ghép với cấu hình lõi mới sau khi kiểm; cấu hình xung đột làm cập nhật dừng trước khi thay container.
 Cách khai báo và nạp lại ở [Route riêng trong APISIX](EXTENSIONS.md#route-riêng-trong-apisix).
 
+### Windows (WSL2)
+
+DX-OS chạy trên Windows 10/11 bằng Docker Desktop với WSL2; bộ cài và lệnh `dxos` là Bash nên chạy trong một bản phân phối WSL, không chạy trong PowerShell.
+Trong Docker Desktop, bật WSL integration cho bản phân phối đó (Settings, Resources, WSL integration).
+Mở terminal của bản phân phối WSL rồi chạy lệnh cài và `dxos start` như ở trên.
+Thư mục cài mặc định `~/.dxos` nằm trong ổ của WSL; không đặt nó dưới `/mnt/c`.
+`dxos doctor` báo FAIL khi `docker info` không chạy được trong WSL, tức là WSL integration chưa bật hoặc Docker Desktop chưa chạy.
+Gateway ở cổng `APISIX_HOST_PORT` (mặc định 9080); từ trình duyệt Windows mở `http://localhost:9080/console`.
+
 ### Kiểm image phát hành theo digest
 
 Mỗi image `ghcr.io/haui-implsolution/dxos-*` do `release-images.yml` đẩy lên kèm SBOM (SPDX) và thông tin dựng (SLSA), nên mỗi tag là một chỉ mục gồm image và manifest attestation.

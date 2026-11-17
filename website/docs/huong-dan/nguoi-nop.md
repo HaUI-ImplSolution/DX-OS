@@ -16,6 +16,8 @@ Bạn chỉ thấy hồ sơ của chính mình.
 3. Nếu có ô **Đơn vị xử lý**, chọn nơi sẽ xử lý hồ sơ.
 4. Lưu.
 
+Ô chọn một bản ghi khác (ví dụ sản phẩm hay phòng) cho gõ một phần của tên để thu hẹp danh sách, kể cả bản ghi nằm ngoài những mục hiện sẵn; gõ đúng dấu tiếng Việt, và không có bản ghi khớp thì ô báo không có kết quả.
+
 Hồ sơ vào trạng thái đầu của quy trình, thường là **Chờ xử lý**, và người xử lý thấy nó trong hộp việc của họ.
 
 ## Đính kèm tệp

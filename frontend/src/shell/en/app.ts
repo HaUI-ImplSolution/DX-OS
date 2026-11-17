@@ -93,6 +93,7 @@ export const app: Record<string, string> = {
   "Quá hạn": "Overdue",
   "Gõ ít nhất 2 ký tự của tên": "Type at least 2 characters of the name",
   "Không tìm thấy ai": "No one found",
+  "Không có kết quả khớp": "No matching result",
   "Đang tìm…": "Searching…",
   "Bỏ chọn": "Clear",
   // Calendar

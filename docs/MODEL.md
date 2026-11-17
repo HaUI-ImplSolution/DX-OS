@@ -98,6 +98,9 @@ Kết quả lint hợp lệ không có nghĩa là `apply` thành công; kết qu
   API nhận và trả một mảng, mỗi lựa chọn một lần và theo thứ tự của `options`, và lọc bằng `filter.<tên>.contains=<lựa chọn>`.
   `default` là một danh sách các lựa chọn của `options`, không trùng nhau và không rỗng, ví dụ `default: [Mới, Đã sửa]`; bản ghi tạo mà không gửi trường này nhận danh sách đó.
   Trường này không đi cùng `unique`.
+- Trường `reference` trỏ tới một thực thể cùng mô hình.
+  Ô chọn bản ghi ở giao diện tìm theo một phần của trường `text` đặt tên cho bản ghi đích (`name`, `title` hoặc `code`, nếu không có thì trường `text` đầu tiên) bằng `filter.<trường>.like`, không phân biệt hoa thường nhưng phải đúng dấu.
+  Thực thể đích không có trường `text` thì ô tìm theo số `id`.
 - Trường `user` giữ id của một tài khoản; giao diện cho chọn theo tên, và API từ chối id không có thật.
 - Đơn vị khai báo ở `units`, mỗi đơn vị là một nhóm Keycloak; trường kiểu `unit` cho biết hồ sơ thuộc đơn vị nào.
   Ví dụ đầy đủ ở [`onestop.yaml`](../backend/dx-engine/src/main/resources/templates/onestop.yaml).
@@ -302,6 +305,7 @@ entities:
 
 `family: reservation` (có thể mở rộng như trên) kèm `booking: {resource, starts, ends, capacity}`.
 Lượt đặt làm số lượt chạy cùng lúc vượt sức chứa thì bị từ chối, và ứng dụng có chế độ xem lịch.
+Lịch tải mọi lượt người xem được trong khoảng đang xem, từng trang 200 lượt và tối đa 5000 lượt; khoảng nhiều hơn thì lịch báo số lượt đang hiện trên tổng số và dặn chuyển sang khoảng ngắn hơn.
 Ví dụ ở [`room_booking.yaml`](../backend/dx-engine/src/main/resources/templates/room_booking.yaml).
 
 ### Hành động hoàn tất

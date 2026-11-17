@@ -54,6 +54,16 @@ API của mô hình khác, API quản trị và API người dùng trả `403`.
 
 ### 2. Lấy token và OpenAPI của mô hình
 
+Các giá trị dịch vụ cần và nơi lấy chúng:
+
+| Giá trị | Lấy ở đâu |
+|---|---|
+| Địa chỉ cổng vào (`DXOS_BASE_URL`) | `GATEWAY_PUBLIC_URL` trong `deploy/.env`, mặc định `http://localhost:9080` |
+| Địa chỉ lấy token | `<địa chỉ cổng vào>/realms/dxos/protocol/openid-connect/token` |
+| `clientId` | `dxos client add` in ra, hoặc tab **Ứng dụng ngoài**; có dạng `dxos-app-<tên>` |
+| secret | Hiện một lần khi đăng ký hoặc khi `dxos client rotate <tên>` |
+| Tên mô hình và thực thể | Tệp mô hình, hoặc `GET /api/v1/meta/models` |
+
 Ví dụ dưới đây giữ secret trong tệp có quyền `600` và không đặt giá trị secret trên dòng lệnh:
 
 ```bash
@@ -73,6 +83,20 @@ curl -fsS \
   -o equipment.openapi.json
 ```
 
+Bản PowerShell của hai lệnh trên, chạy trong Windows Terminal; secret đọc từ tệp, không đặt trên dòng lệnh:
+
+```powershell
+$base = "https://dxos.example.org"
+$secret = (Get-Content -Raw $env:DXOS_SECRET_FILE).Trim()
+
+$token = (Invoke-RestMethod -Method Post `
+  -Uri "$base/realms/dxos/protocol/openid-connect/token" `
+  -Body @{ grant_type = "client_credentials"; client_id = "dxos-app-equipment-sync"; client_secret = $secret }).access_token
+
+Invoke-RestMethod -Headers @{ Authorization = "Bearer $token" } `
+  -Uri "$base/api/v1/meta/models/equipment/openapi" -OutFile equipment.openapi.json
+```
+
 OpenAPI này được sinh từ phiên bản mô hình đang chạy và chỉ chứa các thực thể người gọi được đọc.
 Dùng nó để sinh client hoặc làm đầu vào cho kiểm thử hợp đồng; không sao chép một schema cũ vào mã rồi coi đó là nguồn thật.
 
@@ -87,12 +111,27 @@ curl -fsS \
   "$DXOS_BASE_URL/api/v1/data/equipment/loan?page=0&size=20"
 ```
 
+```powershell
+Invoke-RestMethod -Headers @{ Authorization = "Bearer $token" } `
+  -Uri "$base/api/v1/data/equipment/loan?page=0&size=20"
+```
+
 Khi tạo hồ sơ hoặc gọi hành động, sinh một khóa ổn định cho chính yêu cầu nghiệp vụ và gửi ở header `Idempotency-Key`.
 Gửi lại cùng khóa và cùng nội dung nhận lại kết quả đầu; dùng cùng khóa cho nội dung khác trả `409`.
 Khi sửa hồ sơ, gửi `version` đã đọc và xử lý `ERR_CONCURRENT_MODIFICATION` thay vì ghi đè.
 
 Không ghi trực tiếp PostgreSQL và không đổi cột `status` qua API dữ liệu.
 Mọi chuyển trạng thái đi qua `/actions/{action}` để các quy tắc, Flowable, lịch sử và sự kiện cùng được áp dụng.
+
+Cách xử lý lỗi của một lời gọi:
+
+| Mã | Từ đâu | Việc cần làm |
+|---|---|---|
+| `401` | Cổng vào, khi token thiếu hoặc không hợp lệ; thân trả về là HTML, không phải JSON | Lấy token mới rồi gọi lại một lần |
+| `403` | Backend, `ERR_ACTION_NOT_ALLOWED` kèm `data.reason` (ví dụ `OWNER_ONLY`, `ASSIGNED_TO_OTHER`, `CHECK_DENIED`) | Không thử lại; đổi vai hoặc sửa yêu cầu |
+| `409` | Backend, `data.reason` là `WRONG_STATE`, `RECORD_CLOSED`, `IDEMPOTENCY_KEY_REUSED` hoặc `CONDITION_NOT_MET`; sửa hồ sơ trả `ERR_CONCURRENT_MODIFICATION` | Đọc lại hồ sơ rồi quyết định; `IDEMPOTENCY_KEY_REUSED` nghĩa là khóa đã dùng cho nội dung khác |
+| `429` | Cổng vào hoặc backend | Chờ rồi gọi lại; chỉ backend (`ERR_TOO_MANY_REQUESTS`) gửi `Retry-After`, cổng vào gửi `X-RateLimit-Reset` là số giây còn lại của cửa sổ |
+| `503` và timeout | Backend, hoặc mạng giữa hai bên | Thử lại có giới hạn số lần và giãn cách tăng dần, giữ nguyên `Idempotency-Key` |
 
 ### 4. Chạy local và kiểm thử
 
@@ -105,7 +144,7 @@ Kiểm ít nhất các tình huống sau:
 - Mô phỏng token hết hạn, `429`, timeout và `409` mà không retry vô hạn.
 - Đổi tên hoặc bỏ trường trong bản mô hình thử và để kiểm thử hợp đồng chỉ ra chỗ tích hợp phải đổi.
 
-[`examples/itot-simulator`](../examples/itot-simulator/README.md) minh họa dịch vụ ngoài lấy token máy, tạo hồ sơ, thực hiện hành động và chống gửi trùng.
+[`examples/itot-simulator`](../examples/itot-simulator/README.md) minh họa dịch vụ ngoài lấy token máy, tạo hồ sơ, thực hiện hành động và chống gửi trùng; nó chỉ cần Python 3.9 trở lên nên chạy được cả trên Windows.
 Lệnh `setup` của ví dụ tự gọi Keycloak để ví dụ chạy độc lập; bản triển khai thật dùng `dxos client add` để client xuất hiện trong quản trị và danh mục dữ liệu.
 
 ### 5. Đóng gói và nâng cấp

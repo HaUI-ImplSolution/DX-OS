@@ -88,6 +88,33 @@ Trợ lý được chuẩn bị cùng stack; mỗi người tự liên kết và
 File route riêng `deploy/apisix/local.yaml` được giữ khi cập nhật và ghép với cấu hình lõi mới sau khi kiểm; cấu hình xung đột làm cập nhật dừng trước khi thay container.
 Cách khai báo và nạp lại ở [Route riêng trong APISIX](EXTENSIONS.md#route-riêng-trong-apisix).
 
+### Windows (WSL2)
+
+DX-OS chạy trên Windows 10/11 bằng Docker Desktop với WSL2; bộ cài và lệnh `dxos` là Bash nên chạy trong một bản phân phối WSL, không chạy trong PowerShell.
+Trong Docker Desktop, bật WSL integration cho bản phân phối đó (Settings, Resources, WSL integration).
+Mở terminal của bản phân phối WSL rồi chạy lệnh cài và `dxos start` như ở trên.
+Thư mục cài mặc định `~/.dxos` nằm trong ổ của WSL; không đặt nó dưới `/mnt/c`.
+`dxos doctor` báo FAIL khi `docker info` không chạy được trong WSL, tức là WSL integration chưa bật hoặc Docker Desktop chưa chạy.
+Gateway ở cổng `APISIX_HOST_PORT` (mặc định 9080); từ trình duyệt Windows mở `http://localhost:9080/console`.
+
+### Kiểm image phát hành theo digest
+
+Mỗi image `ghcr.io/haui-implsolution/dxos-*` do `release-images.yml` đẩy lên kèm SBOM (SPDX) và thông tin dựng (SLSA), nên mỗi tag là một chỉ mục gồm image và manifest attestation.
+`docker pull` và `dxos update` kéo image như bình thường.
+
+Lấy digest của tag đang chạy, rồi đọc hai attestation theo digest đó:
+
+```bash
+D=$(docker buildx imagetools inspect ghcr.io/haui-implsolution/dxos-backend:vX.Y.Z --format '{{.Manifest.Digest}}')
+docker buildx imagetools inspect ghcr.io/haui-implsolution/dxos-backend:vX.Y.Z@$D --format '{{json .SBOM}}'
+docker buildx imagetools inspect ghcr.io/haui-implsolution/dxos-backend:vX.Y.Z@$D --format '{{json .Provenance}}'
+```
+
+SBOM liệt kê các gói trong image; thông tin dựng ghi lần dựng của image đó.
+Digest không đổi giữa các lần kiểm thì vẫn là cùng một image.
+
+Attestation này không chứng minh chữ ký hay danh tính người phát hành.
+
 ### Tệp mô hình lúc khởi động
 
 `dxos start <tệp>...` chép các tệp vào `deploy/model/` (chỉ giữ các tệp vừa đưa vào), ghi tên chúng theo thứ tự, cách nhau bằng dấu phẩy, vào `DXOS_MODEL_FILE` trong `.env` và khởi động lại backend nếu nó đang chạy.

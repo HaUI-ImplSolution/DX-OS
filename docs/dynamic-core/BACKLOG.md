@@ -13,17 +13,16 @@ Thứ tự dưới đây xếp theo số điểm đang để hở; chi tiết t�
 
 | Thứ tự | Việc | Điểm liên quan |
 |---|---|---|
-| 1 | Pull request vào `main`, bản phát hành mới và rà soát cuối của mục 2 trên bản đó | Điều kiện để kho mã được chấm trên bản dự thi; bản phát hành 5, dịch từ mã nguồn 10 |
-| 2 | Tài liệu và giao tiếp: lịch sử issue (mục 3) | Tài liệu và giao tiếp 10, phát triển bền vững 10 |
-| 3 | Bằng chứng lõi là PaaS: ứng dụng mẫu (mục 3) | Nguyên gốc 10, phát triển bền vững 10 |
-| 4 | Bài trình bày chung kết (mục 2) | Hoàn thiện 10, trình diễn 10 |
-| 5 | Phần AI và chữ I của ứng dụng Tầng 2 (mục 3) | Hoàn thiện 10, nguyên gốc 10 |
+| 1 | Tài liệu và giao tiếp: lịch sử issue (mục 3) | Tài liệu và giao tiếp 10, phát triển bền vững 10 |
+| 2 | Bằng chứng lõi là PaaS: ứng dụng mẫu (mục 3) | Nguyên gốc 10, phát triển bền vững 10 |
+| 3 | Bài trình bày chung kết (mục 2) | Hoàn thiện 10, trình diễn 10 |
+| 4 | Phần AI và chữ I của ứng dụng Tầng 2 (mục 3) | Hoàn thiện 10, nguyên gốc 10 |
 
 ## 2. Phải xử lý trước khi phát hành
 
 | Việc | Ghi chú |
 |---|---|
-| Pull request vào `main` và bản phát hành mới | Nhánh `main` chậm 40 commit so với `Khuong/main` và `v2.0.0` không chứa phần đó; mở pull request `Khuong/main` vào `main` (đóng luôn khoảng 20 issue đã xong), rồi gắn tag, chạy `Release Package` và `Release Images`; rà soát cuối làm trên bản mới này |
+| Kiểm attestation của image phát hành trên GHCR | Workflow đã bật `sbom: true` và `provenance: mode=min` ở bước đẩy (#309), chỉ mới thử trên registry local; chạy `Release Images` với `services = portal`, đọc SBOM và Provenance theo digest bằng lệnh ở `docs/OPERATIONS.md`, xem Provenance có ghi commit không (có thì thêm câu so commit với tag vào mục đó, không thì giữ nguyên), rồi thử `dxos update` và kéo image trên máy sạch; xong thì đóng #309 |
 | Rà soát cuối trên bản phát hành | Trước 17:00 ngày 06/12: clone vào máy sạch rồi `deploy/make_env.sh` và `docker compose up -d --build` thành công; mở repository bằng trình duyệt ẩn danh thấy được không cần đăng nhập; trang Contributors hiện đủ ba thành viên (API `contributors` hiện chỉ trả hai người); `check_licenses.py` báo 0 vấn đề, `reuse lint` xanh và `gh api repos/HaUI-ImplSolution/DX-OS/license` vẫn trả Apache-2.0 khi có `LICENSES/`; CI xanh trên commit gắn tag (`Platform`, `Compliance`, `Backend`, `Frontend`, `Dependencies`); trang docs mô tả đúng bản `2.0.0`; số issue, pull request và commit ở `website/docs/pof-audit.md` lấy lại theo ngày gắn tag |
 | Gửi bài | Thư tới `olpvietnam@vaip.vn` và `thuky@vfossa.vn` trước 17:00 ngày 06/12/2026, tiêu đề `BÀI THI PMNM 2026 - [Tên Đội] - [Tên Trường]`, nội dung gồm thành viên đội, người hướng dẫn, đường dẫn kho mã nguồn và cam kết bản quyền theo mẫu trong đề; trước đó xác nhận với trường rằng đội đã có trong danh sách đăng ký gửi BTC, và ghi người hướng dẫn vào mục Nhóm phát triển của `README.md` |
 | Bài trình bày chung kết | 15 phút ngày 10/12: giải pháp và lựa chọn công nghệ, tính năng nền tảng và bài toán minh họa, kết quả và demo, định hướng phát triển; kịch bản demo đã có ở `docs/DEMO.md`, chưa thấy phần trình chiếu trong kho |
@@ -41,7 +40,6 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 | Đầu vào và trường đối chiếu của trợ lý | #210 | Phân biệt dữ kiện cần giữ và giá trị cần kiểm; nhiệm vụ phụ thuộc giá trị hiện tại của chính trường đối chiếu chưa được hỗ trợ |
 | Ứng dụng Tầng 2 | #211 | Chưa phủ I của H-P-D-I; hỏi BTC trên nhóm Telegram của họ xem ứng dụng minh họa có cần phủ cả bốn không gian H, P, D, I không |
 | Khách hàng | #231 | Chưa nói chuyện với khách hàng nào; mục Khách hàng và giá trị của `README.md` là giả thuyết |
-| Chứng thực image phát hành | #309 | `release-images.yml` đặt `provenance: false` ở cả bước dựng để quét lẫn bước đẩy, nên image trên GHCR không kèm SBOM hay thông tin dựng; làm: bật `sbom: true` và `provenance: mode=min` ở bước đẩy, kiểm sau phát hành rằng image có attestation đúng commit và ghi cách kiểm theo digest ở tài liệu cài đặt; attestation của BuildKit không chứng minh chữ ký hay danh tính người phát hành, ký bản phát hành là việc riêng (`DANH_GIA.md`, mục 9); image đẩy lên thành chỉ mục có thêm manifest attestation nên phải thử `dxos update` và kéo image trên máy sạch trước khi gộp; tiêu chí bản phát hành, thư viện và gói đính kèm |
 
 ### 3.2. Chưa có issue
 
@@ -82,6 +80,9 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 | Quyền theo từng trường | Không có; phải phủ mọi đường dữ liệu đi ra: danh sách, bộ lọc, số đếm, lịch sử và webhook |
 | Tham chiếu sang mô hình khác | Trường `reference` chỉ trỏ tới thực thể cùng mô hình; trỏ sang mô hình khác thì mô hình không còn áp dụng và quay lui độc lập, và quyền của hai mô hình thuộc hai client khác nhau |
 | Kiểm tài liệu và OpenAPI chiều ngược | `check_docs.py` kiểm endpoint tài liệu nêu có trong OpenAPI; không kiểm chiều ngược vì `docs/API.md` chỉ liệt kê các đường dẫn chính và viết tắt đường dẫn, nên sẽ báo nhầm |
+| CLI và bộ cài riêng cho Windows | Không viết `dxos` bằng PowerShell hay bộ cài `.ps1`: `dxos` là Bash dài và hai bản sẽ lệch nhau; người dùng Windows chạy bản Linux trong WSL2 với Docker Desktop, và `/console` trong trình duyệt đã đưa mô hình (`plan`, `apply`) và đăng ký client mà không cần dòng lệnh |
+| Gói phát hành riêng cho Windows | Release giữ `dxos-install.sh` và `dx-os-X.Y.Z.tar.gz`, không thêm tài sản riêng cho Windows hay gói công cụ tích hợp: mẫu mô hình có ở `/console` và `docs/MODEL.md`, hợp đồng API có ở OpenAPI của mô hình đang chạy |
+| Mẫu cấu hình và gói ví dụ cho ứng dụng ngoài | Không phát hành tệp `.env` mẫu cho ứng dụng ngoài (dễ nhầm với `.env` của nền tảng, và tên biến là quy ước của từng ứng dụng) và không phát hành gói ví dụ client riêng: `docs/EXTENSIONS.md` nêu giá trị cần và `examples/itot-simulator` là ví dụ chạy được |
 | Cảnh báo bảo mật của thư viện bắc cầu | Sáu cảnh báo Dependabot còn mở: `react-router` có bản vá ở nhánh 7 mà `react-admin` 5 chạy trên nhánh 6, `decode-uri-component` có bản vá chỉ ở dạng ESM mà `query-string` 7 của `react-admin` nạp bằng `require`, `deepmerge` chưa có bản vá, `uuid` nằm trong công cụ dựng của site tài liệu; không ghi đè phiên bản để khỏi làm hỏng giao diện, và Dependabot đề xuất khi `react-admin` hoặc Docusaurus nâng |
 | Kiểm thử tự động chưa phủ một số ý | Chưa phủ khe hở khi áp dụng (áp dụng một mô hình đổi bảng trong lúc có yêu cầu ghi hồ sơ), vì kiểm chạy đua dễ lúc đỏ lúc xanh; ý này kiểm tay theo mục 6 của `docs/TESTING.md`; bộ hẹn giờ của `dxos archive schedule`, tab Danh mục dữ liệu, ứng dụng ngoài loại máy (`dxos client`), kiểu và ràng buộc mới, `required_when`, `ui:`, tài liệu OpenAPI theo mô hình, giới hạn luồng thông báo, khóa chống chạy lặp, bảng theo trạng thái, xuất CSV, kế hoạch đổi quyền truy cập, hạn theo lịch làm việc và mục Báo cáo theo trường của trang Thống kê cũng chỉ kiểm tay theo mục đó, chưa có script trong CI |
 | Thông lượng ghi lịch sử | Chuỗi hash nối mọi dòng theo thứ tự id trên toàn hệ thống nên các lần ghi lịch sử lần lượt qua một khóa tư vấn của PostgreSQL (`HistoryChain.lock()`), giữ đến hết giao dịch; thông lượng của API chung đứng dưới khoảng 1.000 yêu cầu mỗi giây dù CPU còn dư (`docs/SIZING.md`), ở 50 đến 100 người dùng đồng thời vẫn đạt p95 dưới 500 ms; chưa kiểm chứng riêng rằng khóa này là nguyên nhân; chuỗi theo từng hồ sơ hoặc nối hash bất đồng bộ bỏ được khóa nhưng đổi hợp đồng của chuỗi hash và của `hash` trong thông điệp webhook |

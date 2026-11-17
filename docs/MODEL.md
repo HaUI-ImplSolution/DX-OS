@@ -305,6 +305,7 @@ entities:
 
 `family: reservation` (có thể mở rộng như trên) kèm `booking: {resource, starts, ends, capacity}`.
 Lượt đặt làm số lượt chạy cùng lúc vượt sức chứa thì bị từ chối, và ứng dụng có chế độ xem lịch.
+Lịch tải mọi lượt người xem được trong khoảng đang xem, từng trang 200 lượt và tối đa 5000 lượt; khoảng nhiều hơn thì lịch báo số lượt đang hiện trên tổng số và dặn chuyển sang khoảng ngắn hơn.
 Ví dụ ở [`room_booking.yaml`](../backend/dx-engine/src/main/resources/templates/room_booking.yaml).
 
 ### Hành động hoàn tất

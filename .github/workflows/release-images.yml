@@ -135,7 +135,8 @@ jobs:
           file: ${{ steps.image.outputs.context }}/Dockerfile
           target: ${{ steps.image.outputs.target }}
           push: true
-          provenance: false
+          sbom: true
+          provenance: mode=min
           platforms: linux/amd64
           build-args: ${{ steps.image.outputs.args }}
           tags: |

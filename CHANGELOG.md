@@ -69,6 +69,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Giao diện
 
+- Ô chọn bản ghi tham chiếu tìm theo trường tên của thực thể được chọn (`filter.<trường>.like`), nên chọn được bản ghi ngoài 25 mục tải sẵn; không có kết quả khớp thì ô nói rõ.
 - `npm run lint` trong `frontend/` phân tích tĩnh mã web bằng Biome (cấu hình ở `frontend/biome.json`) và chạy ở workflow `Frontend`; phát hiện nghiêm trọng làm job đỏ, cảnh báo về phụ thuộc của hook và khóa theo chỉ số mảng chỉ hiện trong kết quả.
 - Lưu biểu mẫu bỏ trường tệp khỏi dữ liệu tạo/sửa hồ sơ, giữ tệp đính kèm hiện có khi sửa thông tin khác.
 - Trình sửa mô hình chọn `default` của trường nhiều lựa chọn từ danh sách `options`, và trình soạn YAML không còn cảnh báo khi `default` là danh sách.

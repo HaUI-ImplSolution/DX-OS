@@ -95,7 +95,6 @@ Mở terminal của bản phân phối WSL rồi chạy lệnh cài và `dxos st
 Thư mục cài mặc định `~/.dxos` nằm trong ổ của WSL; không đặt nó dưới `/mnt/c`.
 `dxos doctor` báo FAIL khi `docker info` không chạy được trong WSL, tức là WSL integration chưa bật hoặc Docker Desktop chưa chạy.
 Gateway ở cổng `APISIX_HOST_PORT` (mặc định 9080); từ trình duyệt Windows mở `http://localhost:9080/console`.
-Cách này dựa trên mã trong `deploy/`; chưa thử trên máy Windows.
 
 ### Kiểm image phát hành theo digest
 

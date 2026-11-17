@@ -60,7 +60,9 @@ function compact(source: Rec): Rec {
 // The same mapping with one key renamed, in the same place.
 function renameKey(source: Rec, from: string, to: string): Rec {
   const renamed: Rec = {};
-  Object.entries(source).forEach(([key, item]) => (renamed[key === from ? to : key] = item));
+  Object.entries(source).forEach(([key, item]) => {
+    renamed[key === from ? to : key] = item;
+  });
   return renamed;
 }
 
@@ -231,6 +233,7 @@ export default function ModelForm({ schema, value, onChange }: Props) {
 
   const roles = list(value.roles).map(rec);
   const roleNames = roles.map((role) => text(role.name));
+  const calendarNames = Object.keys(rec(value.calendars));
   const units = list(value.units).map(rec);
   const entities = rec(value.entities);
   const entityKeys = Object.keys(entities);
@@ -1161,6 +1164,32 @@ export default function ModelForm({ schema, value, onChange }: Props) {
           )}
           <Row>
             <DurationInput label={t("Hạn xử lý")} value={text(process.deadline)} onChange={(deadline) => setProcess({ deadline })} />
+            {(calendarNames.length > 0 || process.calendar !== undefined) && (
+              <TextField
+                variant="outlined"
+                select
+                size="small"
+                label={t("Lịch làm việc")}
+                value={text(process.calendar)}
+                sx={{ ...DENSE, width: 220 }}
+                error={process.calendar !== undefined && !calendarNames.includes(text(process.calendar))}
+                helperText={
+                  process.calendar !== undefined && !calendarNames.includes(text(process.calendar))
+                    ? t("Lịch chưa khai ở calendars: {calendar}", { calendar: text(process.calendar) })
+                    : process.calendar === undefined
+                      ? t("Không chọn thì hạn đếm liên tục")
+                      : t("Hạn chỉ đếm trong giờ làm")
+                }
+                onChange={(event) => setProcess({ calendar: event.target.value || undefined })}
+              >
+                <MenuItem value="">{t("Không có (đếm liên tục)")}</MenuItem>
+                {[...new Set([...calendarNames, ...(process.calendar !== undefined ? [text(process.calendar)] : [])])].map((name) => (
+                  <MenuItem key={name} value={name}>
+                    {name}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
             <DurationInput label={t("Tự đóng sau")} value={autoAfter} onChange={(after) => setAuto(after, autoAction)} />
             {autoAfter !== "" && (
               <TextField
@@ -1189,7 +1218,7 @@ export default function ModelForm({ schema, value, onChange }: Props) {
           </Row>
           {(PARAM_HELP.deadline || PARAM_HELP.escalate || PARAM_HELP.auto_close) && (
             <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
-              {PARAM_HELP.deadline}. {PARAM_HELP.escalate}. {PARAM_HELP.auto_close}.
+              {PARAM_HELP.deadline}. {PARAM_HELP.calendar}. {PARAM_HELP.escalate}. {PARAM_HELP.auto_close}.
             </Typography>
           )}
           {params.includes("booking") && (

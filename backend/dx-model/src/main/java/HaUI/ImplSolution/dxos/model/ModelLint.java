@@ -11,10 +11,12 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 // Checks model files with the reader the backend uses, so a file passes here exactly when the
 // backend accepts it as a model. Needs no running system; what depends on the running models is
-// left to a plan.
+// left to a plan. A file that extends a template is checked only for its own part; the merge with
+// the template is checked by a plan.
 //
 //   java -jar dxos-lint.jar [--name LABEL] FILE... | -
 //
@@ -82,8 +84,17 @@ public final class ModelLint {
         continue;
       }
       try {
-        ModelParser.parse(content);
-        out.println(name + ": ok");
+        Optional<String> template = ModelExtends.check(content);
+        if (template.isPresent()) {
+          out.println(
+              name
+                  + ": ok (extends "
+                  + template.get()
+                  + ": the merge with the template is checked by a plan)");
+        } else {
+          ModelParser.parse(content);
+          out.println(name + ": ok");
+        }
       } catch (ModelException e) {
         e.problems().forEach(problem -> out.println(describe(name, problem)));
         exit = Math.max(exit, PROBLEMS);

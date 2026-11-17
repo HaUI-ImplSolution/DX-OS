@@ -37,7 +37,7 @@ cd ../frontend && npm install && npm run dev
 | Phần đổi | Lệnh kiểm |
 |---|---|
 | Backend | `./mvnw spotless:check` rồi `./mvnw verify` trong `backend/` |
-| Frontend | `npx tsc --noEmit` trong `frontend/` |
+| Frontend | `npx tsc --noEmit` rồi `npm run lint` trong `frontend/` |
 | Toàn stack | Các script `e2e/api/check_*.py` theo thứ tự ở [`docs/TESTING.md`](./docs/TESTING.md), mục 4, trên stack mới dựng |
 | Giấy phép | `python3 .github/scripts/check_licenses.py` |
 | Header giấy phép | `pipx run --spec reuse==6.3.0 reuse lint` |

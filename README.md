@@ -33,7 +33,7 @@ Người triển khai mô tả nghiệp vụ của mình trong một tệp mô h
 Đổi nghiệp vụ là đổi tệp, không đổi mã.
 
 Toàn bộ hệ thống lắp từ phần mềm nguồn mở có giấy phép được OSI công nhận, tự cài trên máy của bạn, dữ liệu nằm hoàn toàn ở đó.
-Phiên bản hiện tại là `2.0.0`; thay đổi theo từng phiên bản ở [`CHANGELOG.md`](./CHANGELOG.md).
+Phiên bản hiện tại là `2.0.1`; thay đổi theo từng phiên bản ở [`CHANGELOG.md`](./CHANGELOG.md).
 
 ## Kiến trúc
 
@@ -131,7 +131,7 @@ Lý do đọc hoặc không dùng làm nền với Supabase, Strapi và Directus
 
 | Thành phần | Yêu cầu | Ghi chú |
 |---|---|---|
-| Hệ điều hành | Linux | Có Docker và Docker Compose v2 |
+| Hệ điều hành | Linux, hoặc Windows 10/11 qua WSL2 | Có Docker và Docker Compose v2; trên Windows dùng Docker Desktop và chạy lệnh trong WSL, xem [Windows (WSL2)](./docs/OPERATIONS.md#windows-wsl2) |
 | Mã nguồn | Không cần khi dùng bộ cài | Chỉ cần khi tự build |
 | JDK, Node | 21, 22 | Chỉ cần để build và kiểm thử ngoài Docker |
 | RAM | Khoảng 1,8 GiB cho tám service lúc rảnh | Số đo thật ở [`docs/OPERATIONS.md`](./docs/OPERATIONS.md#tài-nguyên-và-số-bản-sao); ClamAV thêm khoảng 1 GB, tắt bằng `dxos av off` |
@@ -142,7 +142,7 @@ Cỡ máy theo số người dùng đồng thời ở [`docs/SIZING.md`](./docs/
 
 ### Cài nhanh bằng bộ cài
 
-Cần máy Linux có Docker với Compose v2; không cần mã nguồn.
+Cần máy Linux (hoặc WSL2 trên Windows) có Docker với Compose v2; không cần mã nguồn.
 
 ```bash
 curl -fsSL https://github.com/HaUI-ImplSolution/DX-OS/releases/latest/download/dxos-install.sh | bash
@@ -180,7 +180,7 @@ Hướng dẫn kiểm thử đầy đủ ở [`docs/TESTING.md`](./docs/TESTING.
 
 ## Chạy thử
 
-Bản `2.0.0` chạy công khai tại https://khuongdev.io.vn/ với mô hình Một cửa sinh viên và 40 hồ sơ mẫu.
+Bản `2.0.1` chạy công khai tại https://khuongdev.io.vn/ với mô hình Một cửa sinh viên và 40 hồ sơ mẫu.
 Đăng nhập bằng một trong bốn tài khoản thử dưới đây, cùng mật khẩu `15c9777835f0dfcf4e8d`.
 
 | Tài khoản | Vai |

@@ -170,7 +170,11 @@ export default function AdminApp() {
 
   const byResource = useMemo(() => {
     const map: Record<string, EntityMeta> = {};
-    models?.forEach((model) => model.entities.forEach((entity) => (map[resourceName(model.name, entity.name)] = entity)));
+    models?.forEach((model) => {
+      model.entities.forEach((entity) => {
+        map[resourceName(model.name, entity.name)] = entity;
+      });
+    });
     return map;
   }, [models]);
   const dataProvider = useMemo(() => createDataProvider((resource) => byResource[resource]), [byResource]);

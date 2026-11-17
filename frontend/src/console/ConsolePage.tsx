@@ -15,7 +15,7 @@ import { getSchema, listTemplates, type Template } from "./api";
 import { describeSchema } from "./formGuide";
 import EditorTab from "./EditorTab";
 import ModelsTab from "./ModelsTab";
-import { useModelSchema } from "./monacoSetup";
+import { registerModelSchema } from "./monacoSetup";
 import OutboxTab from "./OutboxTab";
 import TemplatesTab from "./TemplatesTab";
 import AppsTab from "./AppsTab";
@@ -57,7 +57,7 @@ export default function ConsolePage() {
     Promise.all([getSchema(), listTemplates()]).then(
       ([loadedSchema, loadedTemplates]) => {
         const described = describeSchema(loadedSchema);
-        useModelSchema(described);
+        registerModelSchema(described);
         setSchema(described);
         setTemplates(loadedTemplates);
       },

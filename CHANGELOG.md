@@ -7,6 +7,10 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ## [Unreleased]
 
+## [2.0.1] - 2026-11-17
+
+Bổ sung và sửa sau bản `2.0.0`, nâng cấp từ `2.0.0` giữ nguyên dữ liệu, migration mới tự chạy khi backend khởi động.
+
 ### Giấy phép
 
 - `DEPENDENCIES.txt` khai thêm công cụ cần có trên máy chạy (Docker Engine, Docker Compose v2, curl, jq, Git, OpenSSH, Python) và draw.io, kèm trang chủ và mã nguồn của các thành phần ngoài SBOM.
@@ -37,6 +41,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - `e2e/api/load_test.py` đo thông lượng, p50, p95, p99 và lỗi của API chung ở nhiều mức người dùng đồng thời, và đo đăng nhập riêng; `e2e/api/load_override.yml` ghim mọi dịch vụ vào N nhân và đặt giới hạn bộ nhớ để một máy đóng vai máy nhỏ hơn. Kết quả theo số nhân và cấu hình nhỏ nhất đạt ngưỡng nằm ở `docs/SIZING.md`.
 - Flowable dùng id UUID sinh trong bộ nhớ, nên lấy id không cần thêm kết nối cơ sở dữ liệu và backend không còn treo khi có từ 50 người dùng đồng thời.
 - Hành động của quy trình có thêm khóa `check: <tên đích>`: dịch vụ riêng được hỏi trước khi trạng thái đổi và có thể từ chối (403, `CHECK_DENIED`). Đích có `on_error` (`deny` mặc định hoặc `allow`) cho lúc dịch vụ không trả lời (503, `CHECK_UNAVAILABLE`, hồ sơ giữ nguyên) và `bypass` cho vận hành. Lịch sử ghi `check_denied`, `check_unavailable`, `check_skipped`.
+- Image phát hành lên GHCR kèm SBOM (SPDX) và thông tin dựng (SLSA); mỗi tag là một chỉ mục gồm image và manifest attestation, đọc theo digest bằng `docker buildx imagetools inspect` (cách kiểm ở `docs/OPERATIONS.md`).
 
 ### Ứng dụng ngoài
 
@@ -47,6 +52,8 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Tệp mô hình
 
+- Kế hoạch của một lần đổi `access` ghi mỗi vai đổi mức thành một dòng `vai: cũ → mới`, phân loại là cấp thêm, thu hồi, mở rộng, thu hẹp hoặc đổi ở API kế hoạch, `dxos plan` và tab Kế hoạch; mức rủi ro vẫn là `SAFE`.
+- Khóa `extends: <mẫu>` cho một tệp bắt đầu từ mẫu của thư viện và chỉ ghi phần khác: lõi ghép lúc xem kế hoạch và áp dụng, lưu tệp đã ghép kèm tên và hash của mẫu; `POST /api/v1/models/merge` và `dxos model merge` in tệp đầy đủ, còn `dxos lint` kiểm phần của tệp ngắn và để `dxos plan` kiểm phần ghép.
 - Kiểu trường `code` sinh mã hồ sơ đọc được theo khuôn `format`, ví dụ `HS-{year}-{seq:5}`: chữ cố định, năm tạo và số thứ tự có độ dài cố định, đếm riêng theo mô hình, thực thể và trường, và đếm lại mỗi năm khi khuôn có `{year}`. Mã gán một lần lúc tạo hồ sơ, không ghi hay sửa được, tra bằng `filter.<trường>`; thêm trường vào thực thể đã có hồ sơ là thay đổi `MIGRATION` và điền mã cho hồ sơ cũ.
 - Thực thể khai báo mẫu in bằng khóa `documents`: tiêu đề, đoạn văn, bảng trường và khối chữ ký với chỗ trống `{{trường}}`, kèm tên tệp và trạng thái cho in. `GET /api/v1/data/{model}/{entity}/{id}/documents` liệt kê mẫu và `.../documents/{tên}` trả PDF tiếng Việt cho người đọc được hồ sơ; mỗi lần in vào `audit_log`, và màn hình hồ sơ có nút In.
 - Format hiện hành là `1`; lõi tự nâng format `0` trong bộ nhớ, API `/models/upgrade` và `dxos model upgrade` cho xem diff trước khi tùy chọn ghi nguyên tử, còn format tương lai hoặc thiếu bước migration bị từ chối.
@@ -56,6 +63,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Trường nhiều lựa chọn nhận `default` là một danh sách các lựa chọn.
 - `escalate` trong quy trình khai các mức leo thang khi hồ sơ quá hạn, mỗi mức có thời gian sau hạn, vai nhận và số lần nhắc lại; mỗi thông báo là một dòng lịch sử `escalated` gửi qua webhook của mô hình, không đổi trạng thái hồ sơ, và sau lúc dịch vụ tắt chỉ gửi mức mới nhất đã đến hạn.
 - Trường `date` làm nguồn của điều kiện `when` và `required_when`, so sánh bằng `==`, `!=`, `<`, `<=`, `>` và `>=`.
+- `calendars` khai các lịch làm việc (ngày làm, khoảng giờ, ngày nghỉ) và `calendar` trong quy trình đếm `deadline` theo lịch đó: `m` và `h` chỉ đếm qua giờ làm, `d` là ngày làm, hồ sơ vào ngoài giờ tính từ lần mở cửa kế tiếp; không khai `calendar` thì hạn đếm liên tục như trước. Đổi lịch là thay đổi `SAFE` (`CHANGE_CALENDAR`) và bị từ chối khi quy trình còn hồ sơ mở, như đổi `deadline`; kế hoạch, bảng điều khiển (ô chọn lịch ở form quy trình, nhãn tiếng Việt và tiếng Anh) và trình soạn YAML đều hiểu khóa mới.
 
 ### Dữ liệu
 
@@ -65,6 +73,9 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Giao diện
 
+- Lịch của thực thể đặt chỗ tải đủ các lượt của khoảng đang xem từng trang 200 lượt (tối đa 5000) thay vì chỉ trang đầu, và báo số lượt đang hiện trên tổng số khi khoảng vượt mức đó.
+- Ô chọn bản ghi tham chiếu tìm theo trường tên của thực thể được chọn (`filter.<trường>.like`), nên chọn được bản ghi ngoài 25 mục tải sẵn; không có kết quả khớp thì ô nói rõ.
+- `npm run lint` trong `frontend/` phân tích tĩnh mã web bằng Biome (cấu hình ở `frontend/biome.json`) và chạy ở workflow `Frontend`; phát hiện nghiêm trọng làm job đỏ, cảnh báo về phụ thuộc của hook và khóa theo chỉ số mảng chỉ hiện trong kết quả.
 - Lưu biểu mẫu bỏ trường tệp khỏi dữ liệu tạo/sửa hồ sơ, giữ tệp đính kèm hiện có khi sửa thông tin khác.
 - Trình sửa mô hình chọn `default` của trường nhiều lựa chọn từ danh sách `options`, và trình soạn YAML không còn cảnh báo khi `default` là danh sách.
 - Các mức leo thang hiện ở ghi chú dưới sơ đồ quy trình, ở dòng lịch sử của hồ sơ kèm vai được báo và lần nhắc, và ở kế hoạch khi tệp đổi các mức này; trình soạn YAML gợi ý các khóa `escalate`, `after`, `to` và `repeat`.
@@ -75,7 +86,9 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Tài liệu
 
+- Đối chiếu toàn bộ giáo trình DX-OS với thuật ngữ, kiến trúc và hợp đồng hiện tại của lõi, gồm phân tích riêng DX-Ticket và các khoảng trống đã có issue theo dõi.
 - `CONTRIBUTING.md` ghi rõ tính năng mới đi kèm kiểm tự động (test backend hoặc mục kiểm trong `e2e/api/check_*.py`) và issue, pull request viết được bằng tiếng Việt hoặc tiếng Anh; README có huy hiệu OpenSSF Best Practices mức passing.
+- `.github/CODEOWNERS` khai ba thành viên là người sở hữu của mọi đường dẫn, ruleset của `main` đòi một người trong số đó duyệt, và workflow `Scorecard` chạy OpenSSF Scorecard mỗi tuần và khi đẩy lên `main`, đưa kết quả vào tab Security mà không công bố ra ngoài.
 - `docs/INTEGRATIONS.md` ghi cấu hình và kết quả kiểm webhook `chat` với Mattermost Team Edition 11.7.15: thông báo, hiển thị tiếng Việt, gửi lại khi lỗi và khả năng trùng tin.
 - Bài so sánh luồng ticket cơ bản ở `examples/effort-benchmark/`: mã API/xử lý của Lab với khai báo Core, cách đếm tái lập và kết quả kiểm API/UI.
 - `docs/TARGETS.md` ghi cách đo và kết quả của các chỉ số mục tiêu: mức 1, 2 và 3 của một hệ thống, quy tắc đếm mã tự viết (`tools/count_own_code.py`), thời gian dựng và đổi, bài thử có hướng dẫn kèm một bản mô phỏng người mới, và chi phí hạ tầng của cấu hình tham chiếu.
@@ -88,6 +101,8 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Hướng dẫn kết nối công cụ báo cáo bằng `report_ro` ở `docs/REPORTING.md`: giữ PostgreSQL trong mạng riêng, kết nối Apache Superset, xoay mật khẩu và truy vấn dữ liệu xuyên hai mô hình.
 - Mục Dữ liệu cá nhân ra nước ngoài ở `docs/OPERATIONS.md` nêu khi nào cấu hình làm phát sinh nghĩa vụ đánh giá tác động theo Luật 91/2025/QH15 và Nghị định 356/2025/NĐ-CP, đối chiếu với bản đăng trên Công báo.
 - Hướng dẫn phát triển dịch vụ, bên nhận webhook, giao diện và trang mở rộng ở `docs/EXTENSIONS.md`: quyền, gateway, chạy local, kiểm thử, đóng gói, nâng cấp và ranh giới hỗ trợ hiện tại.
+- Windows 10/11 cài và chạy DX-OS qua WSL2 và Docker Desktop: bảng Yêu cầu hệ thống ở `README.md` và `README_EN.md` ghi đường này, và `docs/OPERATIONS.md` có mục Windows (WSL2).
+- Hướng dẫn tích hợp REST cho ứng dụng ngoài ở `docs/EXTENSIONS.md`: bảng giá trị lấy ở đâu, ví dụ PowerShell cho bước lấy token, đọc OpenAPI và gọi dữ liệu, và bảng xử lý `401`, `403`, `409`, `429`, `503` và timeout.
 - Điều kiện tải chữ ký virus của ClamAV và hạn hỗ trợ của image đang ghim ở `DEPENDENCIES.txt` và `docs/OPERATIONS.md`.
 
 ## [2.0.0] - 2026-11-11
@@ -350,7 +365,8 @@ Bản phát hành đầu tiên của DX-OS.
 - Backend, Keycloak và frontend không publish cổng, mọi truy cập đi qua gateway; `deploy/demo/seed_demo.py` tạo tài khoản và dữ liệu demo.
 - Tài liệu và nguồn mở: `LICENSE`, `LICENSES.md`, SBOM CycloneDX, `CONTRIBUTING.md`, mẫu issue và pull request.
 
-[Unreleased]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v2.0.0...main
+[Unreleased]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v2.0.1...main
+[2.0.1]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v1.1.1...v2.0.0
 [1.1.1]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v1.0.3...v1.1.0

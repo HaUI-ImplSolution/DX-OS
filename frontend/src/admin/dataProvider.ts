@@ -68,13 +68,17 @@ async function call<T>(action: () => Promise<T>): Promise<T> {
 function addFilter(params: Record<string, string>, name: string, value: unknown) {
   if (value === undefined || value === null || value === "") return;
   if (Array.isArray(value)) params[`filter.${name}.in`] = value.join(",");
-  else if (typeof value === "object") Object.entries(value).forEach(([op, inner]) => addFilter(params, `${name}.${op}`, inner));
+  else if (typeof value === "object") Object.entries(value).forEach(([op, inner]) => {
+      addFilter(params, `${name}.${op}`, inner);
+    });
   else params[`filter.${name}`] = String(value);
 }
 
 function filterParams(filter: Row | undefined, extra: Row = {}) {
   const params: Record<string, string> = {};
-  Object.entries({ ...filter, ...extra }).forEach(([name, value]) => addFilter(params, name, value));
+  Object.entries({ ...filter, ...extra }).forEach(([name, value]) => {
+    addFilter(params, name, value);
+  });
   return params;
 }
 

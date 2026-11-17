@@ -51,6 +51,7 @@ Mỗi từ được giải thích trong một hoặc hai dòng, kèm tài liệu
 | Trạng thái cuối | Trạng thái đóng hồ sơ: sau đó hồ sơ bị đóng băng và ghi ai quyết định, lúc nào | [`MODEL.md`](./MODEL.md#tự-khai-báo-hoặc-mở-rộng-quy-trình) |
 | Hộp việc | Danh sách việc đang chờ của một người; tự làm mới khi hồ sơ đổi | [`TESTING.md`](./TESTING.md#giao-diện-web) |
 | Hạn xử lý | Thời gian một hồ sơ được xử lý (`deadline`); quá hạn thì ghi vào lịch sử và nhắc | [`MODEL.md`](./MODEL.md#quy-trình) |
+| Lịch làm việc | Ngày làm, giờ làm và ngày nghỉ khai ở `calendars`; quy trình chọn một lịch bằng `calendar` để hạn xử lý chỉ đếm trong giờ làm | [`MODEL.md`](./MODEL.md#lịch-làm-việc) |
 | Leo thang | Các mức báo tiếp cho vai khác khi hồ sơ quá hạn lâu; chỉ thông báo, không đổi trạng thái hay người giữ hồ sơ | [`MODEL.md`](./MODEL.md#quy-trình) |
 | Hành động hoàn tất | Thao tác chạy sau khi hồ sơ đến một trạng thái cuối, như thêm người vào nhóm Keycloak; chạy sau giao dịch và thử lại nếu lỗi | [`MODEL.md`](./MODEL.md#hành-động-hoàn-tất) |
 | `check` | Khóa của một hành động cho một dịch vụ riêng quyết định trước khi trạng thái đổi; bị từ chối thì trả 403 | [`MODEL.md`](./MODEL.md#tự-khai-báo-hoặc-mở-rộng-quy-trình) |

@@ -23,7 +23,7 @@ on:
         default: false
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: release-package-${{ inputs.tag || github.ref_name }}
@@ -34,6 +34,8 @@ jobs:
     name: Package the release
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    permissions:
+      contents: write
     env:
       TAG: ${{ inputs.tag || github.ref_name }}
       GH_TOKEN: ${{ github.token }}

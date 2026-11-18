@@ -49,7 +49,7 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 | Chỉ số mục tiêu | Chưa có người thật làm bài thử "trong một buổi" (bài thử và bản mô phỏng ở `docs/TARGETS.md`), chưa đo công vận hành mỗi tháng và thời gian lần cài đầu có tải image |
 | Egress trợ lý | Chưa có allowlist kết nối cho toàn container; cần kiểm giới hạn mạng ngoài endpoint inference cố định |
 | Thu hồi và thay khóa/token trợ lý | Hoàn thiện quy trình thu hồi, thay mới khóa/token và xử lý snapshot cũ có chứa khóa |
-| Nâng cấp và rollback bản cài trợ lý | CP-20c bắt buộc trong đợt nghiệm thu hiện tại: nâng cấp hai chủ, rollback provider và toàn bộ Core/SSO/provider bằng bộ image/schema/snapshot tương thích; restore state riêng và migration fixture chưa đủ |
+| Nghiệm thu nâng cấp và rollback trợ lý | CP-20c chờ người dùng/tech lead review kết quả và giới hạn kiểm local; vòng đời trợ lý trong CI còn thiếu ở CP-17b |
 
 ## 4. Giới hạn chấp nhận
 

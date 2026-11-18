@@ -4,7 +4,7 @@ Các mục CP theo dõi trợ lý nghiệp vụ; chỉ tick phần đã kiểm �
 Chưa nghiệm thu cuối hoặc chọn model phát hành.
 Mục có hậu tố tách phần đã kiểm và phần còn thiếu; chỉ hoàn tất tiêu chí CP tương ứng khi mọi phần đều đạt.
 Dấu tick kỹ thuật không thay nghiệm thu bản phát hành.
-Các ca UI/restore bổ sung dùng Core, SSO và provider thật với inference giả lập; không chứng nhận chất lượng model hoặc nâng cấp/rollback toàn bản cài.
+Các ca UI và vòng đời dùng Core, SSO và provider thật với inference giả lập; kết quả local không chứng nhận chất lượng model hoặc hai bản phát hành.
 Mục chuyển thành giới hạn không được tính là tiêu chí đã đạt.
 
 ## Quyết định và review
@@ -50,8 +50,8 @@ Mục chuyển thành giới hạn không được tính là tiêu chí đã đ�
 - [x] CP-18 Kiểm owner, claim, encryption và timeout bằng bộ kiểm hiện có; không thêm test file/framework.
 - [x] CP-19 Đồng bộ license/catalog/NOTICE/DEPENDENCIES/SBOM/REUSE và docs VI/EN; không xóa mục license còn dùng chung.
 - [x] CP-20a Cài archive từ mã hiện tại qua bộ cài và khởi động Core thật khi trợ lý tắt; không cần image trợ lý hoặc tải trọng số.
-- [ ] CP-20b CI xác nhận cài archive, khởi động và backup/restore trên bản sửa tích hợp; chờ kết quả CI của bản sửa.
-- [ ] CP-20c Kiểm nâng cấp hai chủ, rollback provider và toàn bản cài trong đợt này theo [kế hoạch rollback](./01_PLAN.md#nâng-cấp-và-rollback); chưa chạy đủ để nghiệm thu.
+- [x] CP-20b CI của bản sửa tích hợp đạt cài archive, các bài khởi động Core và backup/restore Postgres/kho tệp; phần tích hợp trợ lý còn ở CP-17b.
+- [ ] CP-20c Đã kiểm local nâng cấp hai chủ, rollback provider/toàn bản cài, quay lại checkpoint và chặn ghi sai sau restore theo [kế hoạch rollback](./01_PLAN.md#nâng-cấp-và-rollback); chờ người dùng/tech lead review kết quả và giới hạn source/artifact local.
 
 ## P6: Tính động, tài nguyên và nghiệm thu
 

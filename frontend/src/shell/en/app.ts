@@ -8,6 +8,7 @@ export const app: Record<string, string> = {
   "Điều chỉnh đề xuất": "Adjust suggestion",
   "Cần kiểm tra": "Review needed",
   "Nguồn tham khảo": "References",
+  "là": "is",
   "Xác nhận chỉ lưu trường đề xuất; các lưu ý không tự thay đổi hồ sơ.": "Confirmation saves only the proposed field; review notes do not change other fields.",
   "Bị từ chối": "Rejected",
   "Chưa rõ kết quả": "Outcome uncertain",

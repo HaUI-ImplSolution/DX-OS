@@ -8,6 +8,20 @@ import { resourceName, type EntityMeta } from "../admin/types";
 import { t } from "../shell/t";
 
 type Result = { insufficient: boolean; proposal: Proposal | null };
+
+function sourceText(text: string, entity: EntityMeta, units: Record<string, string>): string {
+  const labels = new Map([...entity.fields.map(f => [f.name, f.label] as const), ...Object.entries(units)]);
+  const escapeRegex = (name: string) => name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const names = [...labels.keys()].filter(name => name && labels.get(name) !== name).sort((a, b) => b.length - a.length);
+  const readable = text.replace(/\b([a-z][a-z0-9_]*)\s*=\s*([\p{L}\p{N}_-]+)/gu, (whole, name: string, value: string) => {
+    const field = entity.fields.find(f => f.name === name);
+    return field ? `${field.label} ${t("là")} ${value}` : whole;
+  });
+  const result = names.length ? readable.replace(new RegExp(`\\b(${names.map(escapeRegex).join("|")})\\b`, "g"), name => labels.get(name)!) : readable;
+  const unitLabels = [...new Set(Object.values(units))].filter(Boolean).sort((a, b) => b.length - a.length);
+  return unitLabels.length ? result.replace(new RegExp(`(${unitLabels.map(escapeRegex).join("|")})[ \\t]*\\(\\1\\)`, "gi"), "$1") : result;
+}
+
 export default function RecordAssistant({ model, entity, units }: { model: string; entity: EntityMeta; units: Record<string, string> }) {
   const record = useRecordContext(); const refresh = useRefresh();
   const active = useRef<AbortController | null>(null);
@@ -78,7 +92,7 @@ export default function RecordAssistant({ model, entity, units }: { model: strin
           <Stack spacing={1} sx={{ mt: 1 }}>
             {proposal.snapshot.sources.map(source => <Box key={source.id}>
               <Typography variant="subtitle2">{source.title}</Typography>
-              <Typography variant="body2" sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{source.text}</Typography>
+              <Typography variant="body2" sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{sourceText(source.text, entity, units)}</Typography>
               <Typography variant="caption" color="text.secondary">{source.license} · {source.revision}</Typography>
             </Box>)}
           </Stack>

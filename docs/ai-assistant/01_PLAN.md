@@ -138,7 +138,7 @@ Purge dữ liệu, thu hồi key hoặc xóa backup là quyết định vận h�
 
 ### Nâng cấp và rollback
 
-CP-20c là phần bắt buộc của đợt nghiệm thu này, còn mở đến khi kiểm trên bản cài riêng.
+CP-20c đã được kiểm local trên bản cài riêng từ hai bộ source/artifact; còn chờ review kết quả, chưa đại diện cho nâng cấp giữa hai bản phát hành.
 
 1. Ghim image, schema và cấu hình trước/sau nâng cấp; cất master key độc lập, giữ snapshot nhất quán và bản sao cấu hình để phục hồi.
    Giữ snapshot rollback ở kho độc lập hoặc nhóm tag riêng và kiểm retention để lần backup tiếp theo không dọn mất mốc phục hồi.

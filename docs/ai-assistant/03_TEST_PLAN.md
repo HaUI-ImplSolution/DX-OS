@@ -45,6 +45,7 @@ Các hậu tố a/b trong checklist chia phần công việc của cùng một m
 ## 3. Điều kiện đánh giá chất lượng và độ nhẹ
 
 Tạo bộ dữ liệu giả có giấy phép mở cho hai domain, gồm nhiệm vụ text và choice; có ca thiếu thông tin, nguồn mâu thuẫn, injection và câu tiếng Việt không rõ.
+Đánh giá theo đầu ra của nhiệm vụ đã cấu hình và khả năng người dùng sửa/xác nhận đề xuất.
 Chốt đáp án chấp nhận, lỗi chặn nghiệm thu và ngưỡng chất lượng với tech lead trước khi đo; không hạ ngưỡng sau khi nhìn kết quả.
 Các ca phân quyền, ghi trước xác nhận, bịa nguồn hoặc báo đã lưu sai phải không có lỗi trong bộ nghiệm thu.
 Ghi riêng số đề xuất đúng, sai, từ chối đúng/sai và số ca cần người sửa; không dùng JSON hợp lệ làm thước đo đúng nghiệp vụ.

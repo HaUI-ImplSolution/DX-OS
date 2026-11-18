@@ -1,7 +1,7 @@
 # Checklist trợ lý nghiệp vụ động
 
 Các mục CP theo dõi trợ lý nghiệp vụ; chỉ tick phần đã kiểm đủ theo [test plan](./03_TEST_PLAN.md).
-Chưa nghiệm thu cuối hoặc chọn model phát hành.
+Model mặc định đã chọn; nghiệm thu cuối và hồ sơ phân phối còn mở.
 Mục có hậu tố tách phần đã kiểm và phần còn thiếu; chỉ hoàn tất tiêu chí CP tương ứng khi mọi phần đều đạt.
 Dấu tick kỹ thuật không thay nghiệm thu bản phát hành.
 Các ca UI và vòng đời dùng Core, SSO và provider thật với inference giả lập; kết quả local không chứng nhận chất lượng model hoặc hai bản phát hành.
@@ -12,12 +12,13 @@ Mục chuyển thành giới hạn không được tính là tiêu chí đã đ�
 - [x] Người dùng chốt trợ lý nghiệp vụ nhiều domain, self-host và có xác nhận trước ghi.
 - [x] Đã xác minh worktree/nhánh và fetch nhánh cha `Khuong/main` trước khi lập kế hoạch.
 - [ ] Tech lead review schema nhiệm vụ, trải nghiệm trên hồ sơ, ranh giới dịch vụ và phần #210 chưa thực hiện.
-- [ ] Chốt model/artifact, nguồn mở, chất lượng tiếng Việt và ngân sách từ khảo sát nhiệm vụ mới.
+- [x] Chọn Apertus-8B-Instruct-2509 làm model mặc định, bản local GGUF Q4 theo [cấu hình inference](../../assistant/README.md#inference-và-nguồn-tri-thức).
+- [ ] Hoàn thiện hồ sơ nguồn mở, chất lượng tiếng Việt và ngân sách của model đã chọn theo nhiệm vụ hiện có.
 
 ## P0–P1: Hợp đồng và mô hình
 
 - [x] CP-01a Kiểm giấy phép và hồ sơ dependency mã nguồn, catalog, NOTICE, SBOM và REUSE.
-- [ ] CP-01b Chốt model/artifact mặc định, provenance và cam kết OSAID trước phân phối; chưa đủ audit model/dữ liệu.
+- [ ] CP-01b Hoàn thiện provenance/GGUF Q4, điều khoản model card, phạm vi binary/Web UI/notice của runtime và bằng chứng OSAID trước phân phối; giấy phép upstream và thư viện đã xác minh có trong DEPENDENCIES/NOTICE.
 - [x] CP-02a Triển khai khai báo nhiệm vụ trong YAML, parser/schema, Console, diff/plan và model upgrade; kiểm parser, Core và build Console.
 - [x] CP-02b Thêm/sửa nhiệm vụ bằng form Console, xem kế hoạch, apply và tải lại giữ đúng cấu hình trên Core thật.
 - [x] CP-03 Metadata/nhiệm vụ theo quyền người gọi; mô hình không có AI vẫn hoạt động.

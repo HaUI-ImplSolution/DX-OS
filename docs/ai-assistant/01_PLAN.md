@@ -4,7 +4,7 @@ Kế hoạch cho trợ lý đề xuất giá trị trường trên hồ sơ, k�
 Sản phẩm có API, cấu hình và vòng đời dịch vụ riêng; kết nối Dynamic Core bằng hợp đồng tích hợp trung tính.
 Giao diện hồ sơ là điểm tích hợp ban đầu, dùng lại frontend để tránh xây thêm một ứng dụng giao diện riêng.
 Chất lượng với nguồn tiếng Việt khác và bộ đánh giá rộng vẫn là gate mở.
-Chưa nghiệm thu sản phẩm hoặc chọn model mặc định để phát hành.
+Đã chọn model mặc định theo [cấu hình inference](../../assistant/README.md#inference-và-nguồn-tri-thức); nghiệm thu sản phẩm và hồ sơ phân phối còn mở.
 
 ## 1. Quy tắc thực hiện
 
@@ -112,7 +112,7 @@ Một trích dẫn tồn tại không chứng minh kết luận đúng; bộ ngh
 | P6 — Kiểm và demo | Ma trận CP, hai domain thật, thay YAML và đo cùng workload | Guard đạt toàn bộ; chất lượng/tài nguyên có bằng chứng; người dùng review đầu ra |
 
 P0 và đặc tả P1 phải rõ trước triển khai; khảo sát tập trung vào nhiệm vụ và ngân sách đã chốt.
-Không chọn model mặc định chỉ từ khảo sát GPU; trọng số mở chưa chứng minh đáp ứng cam kết OSAID của đội.
+Việc chọn model mặc định không thay bằng chứng về chất lượng, tài nguyên và cam kết OSAID của đội.
 Khảo sát model trên nhiệm vụ ngắn; cấu trúc JSON hợp lệ không chứng minh chất lượng tiếng Việt hoặc đáp ứng ngân sách tài nguyên.
 Nếu chưa có model đạt cam kết nguồn mở và chất lượng thì giữ gate đó mở; prototype tùy chọn không được công bố là bản phát hành đạt OSAID.
 Không thêm manifest/artifact mới chỉ vì tên model được nêu trong kế hoạch.

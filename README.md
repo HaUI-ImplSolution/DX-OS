@@ -228,7 +228,7 @@ DX-OS ở Tầng 1 là lõi không giao diện, ở Tầng 2 là giao diện web
 | H, môi trường số chung | Một lần đăng nhập; vai và đơn vị khai trong mô hình; mỗi người chỉ thấy phần việc của mình trong hộp việc, bảng theo trạng thái và lịch | Có |
 | P, rào chắn và luồng tự động | Trạng thái chỉ đổi qua quy trình; từ chối và trả lại bắt buộc có lý do; người tạo không tự duyệt hồ sơ của mình; hạn xử lý, quá hạn và leo thang lên vai khác; việc sau khi duyệt chạy qua hàng đợi và được thử lại | Có |
 | D, một nguồn sự thật | Dữ liệu, lịch sử và hàng đợi cùng nằm ở một cơ sở dữ liệu; lịch sử nối thành chuỗi chống sửa; mọi thay đổi báo ra ngoài bằng webhook có chữ ký; thống kê và danh mục dữ liệu | Có |
-| I, trí tuệ nhân tạo | Chưa có; chỉ dùng mô hình mở hoàn toàn theo định nghĩa của OSI, chưa chọn được mô hình đạt | Chưa làm |
+| I, trí tuệ nhân tạo | Trợ lý đề xuất giá trị trường có người duyệt, mặc định Apertus-8B-Instruct-2509 self-host; hồ sơ OSAID và nghiệm thu chất lượng còn mở | Một phần; hỏi đáp và tác tử theo sự kiện chưa có |
 
 Cách tính các giao diện đi kèm và đối chiếu chi tiết từng ý của đề ở [`DANH_GIA.md`](./docs/dynamic-core/DANH_GIA.md), việc còn lại ở [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md).
 

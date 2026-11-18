@@ -40,7 +40,7 @@ Không cho phép từ chối mọi hồ sơ để làm đẹp tỷ lệ an toàn
 
 ## 3. Điều kiện dừng và rollback
 
-Prototype local dùng cấu hình inference do người vận hành cung cấp; chưa phát hành model/artifact mặc định khi audit và chất lượng chưa đủ bằng chứng.
+Model mặc định theo [cấu hình inference](../../assistant/README.md#inference-và-nguồn-tri-thức); đóng gói trọng số cần đủ audit artifact và bằng chứng chất lượng.
 Chưa chuyển state thật nếu chưa kiểm snapshot/restore và khả năng dừng runtime cũ.
 Không chấp nhận đọc chéo quyền, ghi trước xác nhận, nguồn giả hoặc lời báo đã lưu khi Core chưa xác nhận.
 Nếu ngân sách không đạt, trình lại model/context/nơi chạy; không thay bằng cloud fallback hoặc mở quyền cho model.
@@ -49,7 +49,7 @@ Rollback không tự gửi lại ghi, hoặc đảo ngược dữ liệu nghiệ
 
 ## 4. Những việc chưa được chốt hoặc chưa làm
 
-- Model/runtime/artifact mặc định, context, chất lượng tiếng Việt, thời gian chờ và ngân sách cần được chốt bằng khảo sát thực tế.
+- Hoàn thiện hồ sơ artifact/runtime của model đã chọn và kiểm chất lượng tiếng Việt, context, thời gian chờ, ngân sách theo khảo sát thực tế.
 - Dữ liệu demo, nguồn khảo sát và bằng chứng nằm ngoài Git theo quyết định người dùng; giữ kiểm tra giấy phép của repository.
 - Nguồn demo tiếng Việt đã hỗ trợ đối chiếu trường có tập lựa chọn; model vẫn có thể đoán loại hồ sơ khi lý do mơ hồ, nên gate chất lượng và review nguồn còn mở.
   Cần bộ đánh giá nội dung trước phát hành.

@@ -24,6 +24,10 @@ Khai báo nhiệm vụ không cấp thêm quyền đọc/ghi hoặc thay cơ ch�
 
 ## Inference và nguồn tri thức
 
+Model mặc định là **Apertus-8B-Instruct-2509**, self-host; bản local dùng trọng số GGUF lượng tử hóa Q4.
+Giấy phép upstream của model là Apache-2.0; mã llama.cpp `b12387` là MIT, các thư viện hệ thống và mã vendor giữ giấy phép riêng theo [`DEPENDENCIES.txt`](../DEPENDENCIES.txt), ghi chú [9]–[12].
+Người vận hành cấu hình endpoint phục vụ model này bằng các biến inference trong [`deploy/.env.example`](../deploy/.env.example); việc chọn model không tự tải hoặc đóng gói trọng số.
+
 Người dùng không nhập endpoint, API key hoặc model trên giao diện.
 Endpoint do người vận hành cố định trong bản cài; transport chặn redirect, giới hạn input/output, timeout và một lượt suy luận đồng thời.
 Timeout inference tối đa 180 giây, cổng vào chờ 240 giây để còn thời gian đọc Core và trả lỗi; giao diện chờ tối đa 270 giây cho một lượt tạo đề xuất.

@@ -9,6 +9,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Ứng dụng ngoài
 
+- Chọn Apertus-8B-Instruct-2509 self-host làm model mặc định của trợ lý, bản local GGUF Q4.
 - Nguồn tham khảo của trợ lý hiển thị nhãn trường và tên đơn vị theo metadata của mô hình.
 - Thêm trợ lý nghiệp vụ tùy chọn dùng inference self-host để đề xuất một giá trị trường từ hồ sơ và nguồn được cấu hình; người dùng sửa, hủy hoặc xác nhận, Core kiểm quyền và phiên bản trước khi ghi.
 

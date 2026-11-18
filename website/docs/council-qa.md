@@ -76,10 +76,9 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 
 ## 6. AI nằm ở đâu, dữ liệu và giới hạn là gì?
 
-- Phần AI chưa có.
-  Dịch vụ tìm kiếm tri thức từng có đã gỡ khỏi repository, vì chưa nối vào lõi và mô hình embedding của nó chưa kiểm được dữ liệu huấn luyện theo định nghĩa Open Source AI của OSI.
-- Hướng làm: hỏi đáp có trích nguồn và tác tử đề xuất giá trị cho một trường, luôn có người duyệt trước khi ghi, chạy tại chỗ để dữ liệu không ra ngoài máy.
-- Điều kiện: chỉ dùng mô hình có trọng số và dữ liệu huấn luyện đều mở; chưa chọn mô hình nào.
+- Trợ lý nghiệp vụ đã đề xuất giá trị một trường từ hồ sơ và nguồn cấu hình; người dùng sửa, hủy hoặc xác nhận trước khi ghi qua API Core.
+- Phần còn lại: hỏi đáp có trích nguồn và tác tử nghe sự kiện; giữ xác nhận trước khi ghi và suy luận tại chỗ.
+- Model mặc định: Apertus-8B-Instruct-2509 self-host, local dùng GGUF Q4; hồ sơ artifact/dữ liệu theo cam kết nguồn mở và nghiệm thu chất lượng còn mở.
 - Lõi đã có sẵn chỗ để nối: hàng đợi sự kiện, webhook có chữ ký và `GET /api/v1/events` cho tác tử đọc việc mới, còn ghi lại vẫn đi qua API chung nên quyền, quy tắc và quy trình vẫn áp dụng.
 - **Bằng chứng:** [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md), dòng "Phần AI"; `docs/dynamic-core/README.md`, mục "Cam kết nguồn mở".
 

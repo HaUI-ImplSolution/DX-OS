@@ -76,5 +76,5 @@ Phạm vi trợ lý được theo dõi tại [#210](https://github.com/HaUI-Impl
 - Chất lượng tiếng Việt, tài nguyên và giấy phép được kiểm trên luồng nghiệp vụ hiện hành.
 
 Mã/runtime phải có giấy phép OSI; model và dữ liệu còn phải đạt cam kết nguồn mở chặt hơn trong Dynamic Core.
-Self-host và trọng số Apache-2.0 không tự chứng minh OSAID; chưa chốt model mặc định trước khi kiểm.
+Model mặc định là [Apertus-8B-Instruct-2509](../../assistant/README.md#inference-và-nguồn-tri-thức), bản local GGUF Q4; hồ sơ artifact và dữ liệu vẫn cần kiểm theo cam kết OSAID.
 Chi tiết ở [plan](./01_PLAN.md), [checklist](./02_CHECKLIST.md), [test plan](./03_TEST_PLAN.md) và [đánh đổi/rủi ro](./04_TRADEOFFS_RISKS.md).

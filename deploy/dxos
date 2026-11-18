@@ -273,7 +273,7 @@ wait_ready() {
 }
 
 # Creates or resets the account "admin" of the dxos realm through kcadm.sh inside the Keycloak container.
-# mode "ensure" does nothing when some user already has the ADMIN role; mode "reset" always sets a new
+# mode "ensure" does nothing when a user other than a service account already has the ADMIN role; mode "reset" always sets a new
 # temporary password. Prints the password when it set one.
 admin_account() {
   local mode="$1" password
@@ -285,7 +285,7 @@ trap 'rm -f /tmp/dxos-kcadm.config' EXIT
 kc config credentials --server http://localhost:8080 --realm master \
   --user "$KC_BOOTSTRAP_ADMIN_USERNAME" --password "$KC_BOOTSTRAP_ADMIN_PASSWORD" >/dev/null 2>&1 \
   || { echo "cannot sign in to Keycloak as $KC_BOOTSTRAP_ADMIN_USERNAME" >&2; exit 3; }
-if [[ "$MODE" == ensure ]] && kc get roles/ADMIN/users -r dxos --fields username | grep -q '"username"'; then
+if [[ "$MODE" == ensure ]] && kc get roles/ADMIN/users -r dxos --fields username | grep '"username"' | grep -vq 'service-account-'; then
   exit 10
 fi
 if ! kc get users -r dxos -q exact=true -q username="$ADMIN_USER" --fields id | grep -q '"id"'; then

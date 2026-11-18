@@ -18,7 +18,7 @@ Nguồn: [đề thi](https://vfossa.vn/tin-tuc/de-thi-phan-mem-nguon-mo-olp-2026
 | Dữ liệu có cấu trúc | PostgreSQL; lược đồ, ràng buộc và API có quyền theo dòng sinh từ mô hình | Đạt |
 | Dữ liệu phi cấu trúc | SeaweedFS, tệp đính kèm theo quyền của hồ sơ, ClamAV | Đạt; quét mã độc bật mặc định, tệp EICAR bị chặn trong CI |
 | Động cơ luồng công việc | Flowable nhúng, BPMN sinh từ mô hình, ba họ mẫu | Đạt |
-| Ít nhất một ứng dụng Tầng 2 trong H-P-D-I | Ứng dụng web dựng từ metadata và bảng điều khiển, chạm H, P và D | Đạt theo cách đọc của đội ("ít nhất một ứng dụng"); chữ I chưa có, và chưa hỏi Ban tổ chức xem có bắt buộc phủ cả bốn không gian (#211); `README.md` có mục đối chiếu với đề |
+| Ít nhất một ứng dụng Tầng 2 trong H-P-D-I | Ứng dụng web dựng từ metadata và bảng điều khiển, chạm H, P và D | Đạt theo cách đọc của đội ("ít nhất một ứng dụng"); chữ I (đề mô tả là tìm kiếm toàn văn và theo ngữ nghĩa, quản trị tác tử AI, OCR và trợ lý hỏi đáp trên tri thức nội bộ) chưa có, và chưa hỏi Ban tổ chức xem có bắt buộc phủ cả bốn không gian (#211); `README.md` có mục đối chiếu với đề |
 | Giấy phép OSI, mã công khai, có bản phát hành trước khi nộp | Apache-2.0; tám bản `v1.0.0` đến `v2.0.1` | Đạt |
 
 Các giao diện đi kèm được tính như sau.
@@ -30,22 +30,22 @@ Keycloak Admin Console là giao diện của dịch vụ nguồn mở đi kèm c
 
 | Nguyên lý | Hiện có | Mức |
 |---|---|---|
-| (i) Tách theo vòng đời dữ liệu, đẩy lịch sử xuống hồ dữ liệu | Hồ sơ đã đóng tự ghi ra Parquet trong kho đối tượng theo lịch, kèm manifest và hash; `dxos archive query` truy vấn chỉ đọc từng lần chạy bằng DuckDB | Đủ trong phạm vi kho hồ sơ |
+| (i) Tách theo vòng đời dữ liệu, đẩy lịch sử xuống hồ dữ liệu | Hồ sơ đã đóng tự ghi ra Parquet trong kho đối tượng theo lịch (kho lạnh; PostgreSQL là kho ấm, không có lớp bảng như Iceberg), kèm manifest và hash; `dxos archive query` truy vấn chỉ đọc từng lần chạy bằng DuckDB | Đủ trong phạm vi kho hồ sơ |
 | (ii) Hội tụ IT và OT, bản sao số | Số đo của thiết bị giả lập thành hồ sơ sự cố, đi cùng quy trình và quyền với hồ sơ hành chính | Minh họa: không có bản sao số |
 | (iii) Dòng chảy, phả hệ, chất lượng dữ liệu | Mô hình là danh mục dữ liệu, tab Danh mục dữ liệu kèm phả hệ từng trường, lịch sử nối chuỗi hash | Đáp ứng: phả hệ đến từng trường, không có bước biến đổi vì lõi giữ nguyên giá trị |
 | (iv) Zero-Trust, GitOps, kiểm dịch mã độc, tự phục hồi | Token kiểm ở cổng và ở lõi; mô hình áp dụng theo kế hoạch, phần lệch được sửa khi áp dụng lại; container bị xóa được chạy lại; hạ tầng và mô hình kéo từ git bằng `dxos gitops` | Đáp ứng trong phạm vi một máy: quét mã độc bật mặc định, và nhóm chế độ lõi của CI kiểm tệp EICAR bị chặn; GitOps và tự phục hồi chạy trên Compose, không có Kubernetes |
 
 ## 3. Bảy cụm dịch vụ của Tầng 1
 
-Chỉ bốn dịch vụ ở mục 1 là bắt buộc.
-Phần còn lại của bảy cụm là tầm nhìn của đề, phủ thêm là điểm cộng ở tính nguyên gốc và mức hoàn thiện.
+Phần mục đích yêu cầu của đề nêu bốn dịch vụ bắt buộc, còn phần giới thiệu Tầng 1 gọi cả bảy cụm là cần cho ứng dụng quy mô doanh nghiệp.
+Cách đọc của đội là bốn dịch vụ ở mục 1 là điều kiện bắt buộc, phần còn lại của bảy cụm là tầm nhìn, và phủ thêm là điểm cộng ở tính nguyên gốc và mức hoàn thiện; chưa có xác nhận của Ban tổ chức (#211).
 
 | Cụm | Có | Không có |
 |---|---|---|
 | Định danh, bảo mật | SSO, MFA của Keycloak, quét tệp | Két bí mật, chữ ký số và PKI |
 | Đa thuê, biên mạng | Cổng API kiểm token; cách ly theo đơn vị và theo mô hình (mỗi mô hình một schema và một client); giao diện tiếng Việt và tiếng Anh | Che dữ liệu cá nhân, đa thuê giữa các tổ chức, dịch chữ của mô hình |
-| Dữ liệu có cấu trúc | Giao dịch toàn vẹn, API sinh từ mô hình có quyền theo dòng, lịch sử giá trị từng trường, phiên bản mô hình | Số liệu đóng băng theo kỳ, lớp ngữ nghĩa cho báo cáo |
-| Dữ liệu phi cấu trúc | Lưu trữ đối tượng, tệp gắn với hồ sơ phê duyệt | Tìm toàn văn, trộn dữ liệu sinh biểu mẫu |
+| Dữ liệu có cấu trúc | Giao dịch toàn vẹn, API sinh từ mô hình có quyền theo dòng, lịch sử giá trị từng trường, phiên bản mô hình, API gộp và thống kê theo quyền của người gọi, vai `report_ro` chỉ đọc cho công cụ báo cáo | Số liệu đóng băng theo kỳ, lớp ngữ nghĩa dựng sẵn cho công cụ báo cáo |
+| Dữ liệu phi cấu trúc | Lưu trữ đối tượng, tệp gắn với hồ sơ phê duyệt, mẫu in khai báo ra PDF | Tìm toàn văn |
 | Quy trình, tự động hóa | BPMN sinh từ mô hình, hành động hoàn tất | Kịch bản serverless, nạp dữ liệu theo lô |
 | Vận hành, kiểm toán | Truy vết theo mã yêu cầu, nhật ký, chuỗi hash, sao lưu và khôi phục, GitOps cho hạ tầng và nghiệp vụ | Trục streaming riêng |
 | Truyền thông | Hàng đợi gửi đi có thứ tự và chữ ký, webhook chat, kênh sự kiện cho hộp việc | Thông báo đa kênh tới từng người |
@@ -137,6 +137,7 @@ Cột Trạng thái ghi quyết định của đội: đề xuất đã chốt l
 | Kubernetes và Argo CD | Có trong bảng tham chiếu của đề, nhưng bản cài là Compose trên một máy; thêm cụm chỉ để có GitOps kéo là đổi cả cách cài |
 | GraphQL | API chung đã có lọc, sắp xếp, phân trang và OpenAPI theo mô hình; thêm một kiểu API là hai bề mặt cùng phải giữ quyền theo dòng |
 | Két bí mật, tường lửa ứng dụng, che dữ liệu cá nhân | Thuộc bảy cụm của đề nhưng không phục vụ quy trình trên bản ghi; là thành phần người triển khai gắn ở biên |
+| Chữ ký số và PKI, đa thuê giữa tổ chức, số liệu đóng băng theo kỳ, lớp ngữ nghĩa dựng sẵn, trục streaming riêng | Phần còn thiếu của cụm Tầng 1 ở mục 3; không phục vụ quy trình trên bản ghi hoặc đổi cách cài một máy; đã chốt không làm, ghi ở `BACKLOG.md`, mục 4 |
 | Kịch bản serverless trong lõi | Trái nguyên tắc không chạy mã tùy ý trong tiến trình lõi; mở rộng đi qua webhook và kiểm tra trước khi chuyển trạng thái |
 | Trình kéo thả BPMN | `README.md` đã chốt người dùng không viết BPMN |
 | Tham chiếu sang mô hình khác | Hợp ý chống ốc đảo dữ liệu của đề, nhưng mô hình không còn áp dụng và quay lui độc lập, và quyền của hai mô hình thuộc hai client khác nhau; đã chốt không làm, ghi ở `BACKLOG.md`, mục 4 |

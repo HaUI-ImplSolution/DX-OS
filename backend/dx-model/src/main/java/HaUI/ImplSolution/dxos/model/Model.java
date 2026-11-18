@@ -6,6 +6,8 @@ import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -51,7 +53,8 @@ public record Model(
 
     public Entity {
       documents = documents == null ? List.of() : List.copyOf(documents);
-      aiTasks = aiTasks == null ? Map.of() : Map.copyOf(aiTasks);
+      aiTasks =
+          aiTasks == null ? Map.of() : Collections.unmodifiableMap(new LinkedHashMap<>(aiTasks));
     }
 
     public Entity(

@@ -87,8 +87,10 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 | `dxos client browser add <tên> --redirect-uri URL [...]`, `dxos client browser list`, `dxos client browser remove <tên>` | Đăng ký và quản lý public OIDC client dùng PKCE cho giao diện trình duyệt ở origin khác |
 | `dxos uninstall [--purge]` | Xóa container và lệnh `dxos`; `--purge` xóa cả dữ liệu và thư mục cài, phải gõ xác nhận |
 
-Trợ lý tắt mặc định; người vận hành thêm profile `assistant` vào `COMPOSE_PROFILES` rồi khởi động, mỗi người tự liên kết trên giao diện theo [`assistant/README.md`](../assistant/README.md).
-Lỗi bootstrap SSO của trợ lý được báo riêng khi dùng `dxos start`, không chặn Core; không ghi đè client `dxos-assistant` tạo tay.
+Trợ lý tắt mặc định: không container, network hay route nào của trợ lý được tạo và không kéo image của nó.
+Người vận hành đặt `COMPOSE_FILE=docker-compose.yml:docker-compose.assistant.yml` và các biến `ASSISTANT_*` ở [Biến tùy chọn](#biến-tùy-chọn), rồi khởi động; mỗi người tự liên kết trên giao diện theo [`assistant/README.md`](../assistant/README.md).
+Lỗi đăng ký client SSO của trợ lý chỉ là cảnh báo trong log của `assistant-sso`, không chặn Core; client `dxos-assistant` tạo tay không bị ghi đè.
+Trợ lý lỗi hoặc chưa sẵn sàng không làm `dxos start` chờ hay báo lỗi.
 File route riêng `deploy/apisix/local.yaml` được giữ khi cập nhật và ghép với cấu hình lõi mới sau khi kiểm; cấu hình xung đột làm cập nhật dừng trước khi thay container.
 Cách khai báo và nạp lại ở [Route riêng trong APISIX](EXTENSIONS.md#route-riêng-trong-apisix).
 
@@ -357,6 +359,7 @@ Trong `.env` các biến này nằm dưới dạng dòng chú thích (`# TÊN=gi
 | Kéo từ git | `GITOPS_REPO`, `GITOPS_REF` (`main`), `GITOPS_PATH` (`models`), `GITOPS_MODE` (`report`), `GITOPS_INFRA_REPO`, `GITOPS_INFRA_REF` (`main`), `GITOPS_INFRA_MODE` (`report`), `GITOPS_SSH_KEY`, `GITOPS_KNOWN_HOSTS`, `GITOPS_REQUIRE_SIGNED` (`false`), `GITOPS_ALLOWED_SIGNERS` | Xem [Kéo từ git](#kéo-từ-git-gitops) |
 | Giám sát | `METRICS_REFRESH_MS` (`30000`), `ALERT_WEBHOOK_URL`, `ALERT_WEBHOOK_URL_ADMIN` | Nhịp cập nhật số đo và kênh nhận cảnh báo; xem [`MONITORING.md`](./MONITORING.md) |
 | Sao lưu | `BACKUP_DIR` (`./backups`), `BACKUP_REPOSITORY` (trống) | Nơi đặt kho sao lưu; xem [Sao lưu và khôi phục](#sao-lưu-và-khôi-phục) |
+| Trợ lý nghiệp vụ | `ASSISTANT_CONTROL_MEMORY` (`256m`), `ASSISTANT_CONTROL_CPUS` (`0.5`), `ASSISTANT_INFERENCE_URL` (trống), `ASSISTANT_MODEL` (trống), `ASSISTANT_MODEL_REVISION` (trống), `ASSISTANT_INFERENCE_KEY_FILE` (trống), `ASSISTANT_SOURCES_FILE` (trống), `ASSISTANT_PROMPT_FRAMING_FILE` (trống), `ASSISTANT_INFERENCE_TIMEOUT_MS` (`120000`), `ASSISTANT_MAX_INPUT_BYTES` (`6000`), `ASSISTANT_MAX_OUTPUT_TOKENS` (`256`) | `COMPOSE_FILE` (`docker-compose.yml:docker-compose.assistant.yml`) bật trợ lý; các biến còn lại chỉ có tác dụng khi trợ lý bật; chi tiết ở [`assistant/README.md`](../assistant/README.md) |
 
 ## Kiểm tra trước khi chạy
 
@@ -402,7 +405,7 @@ Dựng stack rỗng khi image đã có trên máy, với một tệp mô hình: 
 Trên mô hình đã có 40 hồ sơ, `dxos plan` và `dxos apply` một trường mới mất dưới 1 giây và các hồ sơ còn nguyên.
 Giao diện, cổng vào, trang đăng nhập Keycloak và bảng điều khiển không tải tài nguyên từ ngoài cổng vào của hệ thống.
 
-Trợ lý chỉ chạy khi bật profile `assistant`; số đo trên chưa tính trợ lý và inference/model.
+Trợ lý chỉ chạy khi bật qua `COMPOSE_FILE`; số đo trên chưa tính trợ lý và inference/model.
 Giới hạn CPU và RAM của dịch vụ trợ lý được cấu hình trong `deploy/.env`, theo mẫu `.env.example`; giới hạn container không phải số đo sử dụng thực tế.
 
 `backend` chạy một bản.
@@ -426,10 +429,9 @@ Script dùng restic chạy trong container nên chỉ cần Docker.
 Bản sao lưu khử trùng lặp và mã hóa bằng `BACKUP_PASSWORD`.
 Cất mật khẩu này ở nơi khác máy chủ, vì mất nó là không đọc lại được.
 
-Khi chụp dữ liệu trợ lý, script dừng các container trợ lý rồi khôi phục những container đang chạy trước đó, kể cả khi sao chép lỗi; Core vẫn hoạt động.
+Khi chụp dữ liệu trợ lý, script dừng container `assistant-control` nếu nó đang chạy rồi khởi động lại, kể cả khi sao chép lỗi; Core vẫn hoạt động.
 Trong khoảng dừng, chức năng tạo và xác nhận đề xuất của trợ lý không khả dụng.
 Master key phải được người vận hành giữ riêng ngoài kho restic, Git và log; script không sao lưu khóa cùng state mã hóa.
-Snapshot cũ có thể vẫn chứa khóa; thay đổi này không xóa lịch sử backup, cần bảo vệ và áp dụng retention hoặc thu hồi phiên theo quyết định vận hành.
 Trước nâng cấp, dừng dịch vụ trợ lý và chụp snapshot nhất quán; migration phải giữ lịch sử, liên kết và owner.
 Khôi phục dùng snapshot cùng image tương thích; không tự thực thi lại thao tác có kết quả chưa rõ.
 
@@ -443,8 +445,8 @@ cd deploy
 `verify` in số mô hình đã áp dụng và tổng số dòng trong các bảng `m_*` của bản dump.
 Mô hình có phiên bản trong `engine.model_version` mà không có bảng nào trong schema `m_<mô hình>` làm `verify` báo `FAILED` kèm tên mô hình.
 `verify` còn khôi phục bản chụp của kho vào một Docker volume tạm và khởi động một SeaweedFS tạm trên đó (filer HTTP chỉ mở trong container), rồi kiểm mọi khóa trong `engine.attachment` của bản dump đều có tệp.
-`verify` kiểm tính toàn vẹn SQLite trợ lý khi snapshot có state, không cần master key; snapshot cũ chứa khóa được cảnh báo.
-Kiểm này cần image trợ lý tương thích có sẵn; không kiểm giải mã hoặc quyền sau khôi phục, không so nội dung từng tệp hay kiểm quy trình đang chạy.
+`verify` kiểm tính toàn vẹn SQLite trợ lý khi snapshot có state, không cần master key.
+Kiểm này cần image trợ lý có sẵn trên máy, thiếu thì bỏ qua và báo rõ; không kiểm giải mã hoặc quyền sau khôi phục, không so nội dung từng tệp hay kiểm quy trình đang chạy.
 Thiếu tệp thì `verify` báo `FAILED` kèm tên các tệp thiếu và thoát với mã 1.
 `backup.sh` dump Postgres rồi mới chụp kho, và tệp bị gỡ chỉ rời kho sau `DXOS_FILE_DELETE_DELAY`, nên bản sao lưu luôn có tệp của mọi dòng trong bản dump, miễn là cả hai bước ngắn hơn khoảng đó.
 Lượt chạy lâu hơn khoảng đó thì `backup.sh` in `WARNING`; khi đó tăng `DXOS_FILE_DELETE_DELAY`.

@@ -169,14 +169,20 @@ export default function AdminApp() {
   const [assistantEnabled, setAssistantEnabled] = useState(false);
 
   useEffect(() => {
+    listModels().then(setModels, (e: unknown) => setError(e instanceof Error ? e.message : t("Không đọc được metadata")));
+  }, []);
+
+  // The assistant is asked about only when a model declares ai tasks.
+  const hasAiTasks = useMemo(
+    () => !!models?.some((model) => model.entities.some((entity) => Object.keys(entity.aiTasks ?? {}).length > 0)),
+    [models],
+  );
+  useEffect(() => {
+    if (!hasAiTasks) return;
     let active = true;
     void assistantAvailable().then(enabled => { if (active) setAssistantEnabled(enabled); });
     return () => { active = false; };
-  }, []);
-
-  useEffect(() => {
-    listModels().then(setModels, (e: unknown) => setError(e instanceof Error ? e.message : t("Không đọc được metadata")));
-  }, []);
+  }, [hasAiTasks]);
 
   const byResource = useMemo(() => {
     const map: Record<string, EntityMeta> = {};

@@ -7,9 +7,12 @@ Inference do người vận hành cấu hình và chạy tại máy chủ của 
 
 ## Cấu hình và sử dụng
 
-1. Thêm `assistant` vào `COMPOSE_PROFILES` trong `deploy/.env`, giữ các profile đang dùng, rồi chạy `dxos start` theo [README](../README.md#chạy-thử).
-   Mở **Trợ lý nghiệp vụ** và liên kết tài khoản DX-OS; tắt mặc định thì Core và web không cần dịch vụ này.
-2. Người vận hành cấu hình inference và catalog nguồn bằng các biến đầy đủ trong [`deploy/.env.example`](../deploy/.env.example).
+1. Trợ lý tắt mặc định: không container nào của trợ lý được tạo, Core và web không cần dịch vụ này.
+   Để bật, đặt `COMPOSE_FILE=docker-compose.yml:docker-compose.assistant.yml` trong `deploy/.env`, rồi chạy `dxos start` theo [README](../README.md#chạy-thử).
+   Bỏ dòng đó và chạy `docker compose up -d --remove-orphans` để tắt.
+   Mở **Trợ lý nghiệp vụ** và liên kết tài khoản DX-OS.
+2. Người vận hành cấu hình inference và catalog nguồn bằng các biến `ASSISTANT_*` ở mục 9 của [`deploy/.env.example`](../deploy/.env.example), là danh sách đầy đủ kèm chú thích.
+   Cần tối thiểu `ASSISTANT_INFERENCE_URL`, `ASSISTANT_MODEL`, `ASSISTANT_MODEL_REVISION` và `ASSISTANT_SOURCES_FILE` để tạo được đề xuất.
 3. Người quản trị mô hình khai báo nhiệm vụ trong `ai.tasks` của thực thể bằng YAML hoặc tab trợ lý trong Console, rồi áp dụng mô hình.
 4. Người dùng mở hồ sơ đã lưu, chọn nhiệm vụ, tạo đề xuất và đọc nguồn trước khi xác nhận.
 5. Nếu sửa giá trị, chọn xem lại để tạo snapshot mới, sau đó xác nhận lưu trong một thao tác riêng.
@@ -96,4 +99,3 @@ Khôi phục dùng snapshot và image tương thích, không tự xóa dữ li�
 
 Một provider phục vụ nhiều chủ với state riêng và một inference slot dùng chung; không triển khai nhiều replica trên cùng SQLite.
 Hỏi đáp mở, embedding/reranker và tác tử tự tạo đề xuất theo sự kiện chưa thuộc bản này.
-Tiêu chí compile, kiểm mô phỏng và nghiệm thu Core/model thật được phân biệt trong [test plan](../docs/ai-assistant/03_TEST_PLAN.md).

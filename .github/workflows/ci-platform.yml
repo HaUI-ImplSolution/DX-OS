@@ -60,6 +60,9 @@ jobs:
       - name: Validate compose file
         run: docker compose -f deploy/docker-compose.yml config --quiet
 
+      - name: Validate compose file with the optional assistant
+        run: docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.assistant.yml config --quiet
+
       - name: Compose must stop when a secret is missing
         run: |
           sed -E 's/^(KEYCLOAK_DB_PASSWORD)=.*$/\1=/' deploy/.env > deploy/.env.missing
@@ -84,6 +87,7 @@ jobs:
               if [[ "$admin" == true ]]; then args+=(--admin-console); fi
               python3 e2e/api/check_routes.py "${args[@]}"
               python3 e2e/api/check_routes.py "${args[@]}" --local deploy/apisix/local.example.yaml
+              python3 e2e/api/check_routes.py "${args[@]}" --assistant
             done
           done
 

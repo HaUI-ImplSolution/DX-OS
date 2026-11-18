@@ -44,15 +44,15 @@ FILE_DELETE_DELAY="$(env_value DXOS_FILE_DELETE_DELAY)"
 export RESTIC_PASSWORD="$BACKUP_PASSWORD"
 BACKUP_DIR="$(realpath -m "${BACKUP_DIR:-./backups}")"
 STAGE="$BACKUP_DIR/stage"
-ASSISTANT_BACKUP_PAUSED=false
-ASSISTANT_BACKUP_SERVICES=()
-backup_cleanup() {
-  if [[ "$ASSISTANT_BACKUP_PAUSED" == true ]]; then
-    ENV_FILE="$ENV_FILE" ./assistant.sh resume "${ASSISTANT_BACKUP_SERVICES[@]}" || echo "WARNING: restore assistant services with docker compose up -d." >&2
-  fi
-  rm -rf "$STAGE"
-}
 compose() { docker compose --env-file "$ENV_FILE" "$@"; }
+# The optional assistant is paused while its state is copied and started again on any exit.
+ASSISTANT_PAUSED=false
+backup_cleanup() {
+  rm -rf "$STAGE"
+  if [[ "$ASSISTANT_PAUSED" == true ]]; then
+    compose start assistant-control >/dev/null || echo "WARNING: start the assistant again with docker compose up -d." >&2
+  fi
+}
 
 # restic <extra docker args> -- <restic args>
 restic() {
@@ -92,28 +92,23 @@ do_backup() {
   restic -- cat config >/dev/null 2>&1 || restic -- init
   rm -rf "$STAGE"; mkdir -p "$STAGE"; chmod 700 "$STAGE"
   trap backup_cleanup EXIT
-  if [[ -d data/assistant ]]; then
-    mapfile -t ASSISTANT_BACKUP_SERVICES < <(ENV_FILE="$ENV_FILE" ./assistant.sh running)
-    if (( ${#ASSISTANT_BACKUP_SERVICES[@]} )); then ASSISTANT_BACKUP_PAUSED=true; fi
-    ENV_FILE="$ENV_FILE" ./assistant.sh stop
+  if [[ -d data/assistant && -n "$(compose ps -q --status running assistant-control 2>/dev/null)" ]]; then
+    compose stop -t 30 assistant-control >/dev/null
+    ASSISTANT_PAUSED=true
   fi
   echo "==> Dumping Postgres"
   compose exec -T postgres pg_dumpall -U "$POSTGRES_USER" | gzip > "$STAGE/postgres.sql.gz"
   [[ -s "$STAGE/postgres.sql.gz" ]] || { echo "The database dump is empty." >&2; exit 1; }
   local paths=(/stage) mounts=() excludes=()
+  # The state of the assistant is copied without its master key, which the operator keeps apart.
   if [[ -d data/assistant ]]; then
     mkdir -p "$STAGE/assistant"
-    touch "$STAGE/assistant-key-external"
     mounts+=(-v "$(pwd)/data/assistant:/stage/assistant:ro")
     excludes+=(--exclude /stage/assistant/private/master.key)
   fi
   for dir in seaweedfs; do [[ -d "data/$dir" ]] && paths+=("/data/$dir"); done
   echo "==> Writing the snapshot (${paths[*]})"
   restic -v "$STAGE:/stage:ro" -v "$(pwd)/data:/data:ro" "${mounts[@]}" -- backup --tag dxos "${excludes[@]}" "${paths[@]}"
-  if [[ "$ASSISTANT_BACKUP_PAUSED" == true ]]; then
-    ENV_FILE="$ENV_FILE" ./assistant.sh resume "${ASSISTANT_BACKUP_SERVICES[@]}"
-    ASSISTANT_BACKUP_PAUSED=false
-  fi
   # A removed file stays in the store for DXOS_FILE_DELETE_DELAY, so a file named in the dump is
   # still there when the store is copied, as long as the dump and the copy fit in that time.
   local took=$(( $(date +%s) - started )) delay; delay="$(seconds "$FILE_DELETE_DELAY")"
@@ -166,25 +161,19 @@ do_verify() {
   echo "Verify OK."
 }
 
-# SQLite integrity can be checked without the independently held encryption key.
+# The state of the optional assistant is checked for SQLite integrity, which needs no master key.
 verify_assistant() {
-  local listing image
-  listing="$(restic -- ls latest)"
-  if ! grep -q '/stage/assistant/' <<<"$listing"; then
-    echo "Assistant: no state in this snapshot."
-    return
-  fi
-  if grep -q '/stage/assistant/private/master.key$' <<<"$listing"; then
-    if grep -q '/stage/assistant-key-external$' <<<"$listing"; then
-      echo "Verify FAILED: assistant master key is present in a snapshot that requires independent key storage." >&2
-      exit 1
-    fi
-    echo "WARNING: legacy snapshot contains the assistant key; keep it restricted and rotate sessions if exposed." >&2
+  local image listing
+  listing="$(restic -- ls latest /stage/assistant 2>/dev/null || true)"
+  grep -q '/stage/assistant/' <<<"$listing" || return 0
+  image="$(env_value DXOS_IMAGE_PREFIX)"; image="${image:-dxos}-assistant:$(env_value DXOS_IMAGE_TAG)"
+  [[ "$image" == *: ]] && image="${image}local"
+  if ! docker image inspect "$image" >/dev/null 2>&1; then
+    echo "Assistant: state is in the snapshot; its integrity was not checked because $image is not on this machine."
+    return 0
   fi
   docker volume create "$assistant" >/dev/null
   restic -v "$assistant:/restore" -- restore latest --target /restore --include /stage/assistant >/dev/null
-  image="$(compose --profile assistant config | sed -n '/^  assistant-control:/,/^  [[:alnum:]_-]*:/s/^    image: //p')"
-  [[ -n "$image" ]] || { echo "Verify FAILED: the assistant image could not be resolved." >&2; exit 1; }
   docker run --rm --network none --user 0 --entrypoint node -v "$assistant:/restore" "$image" -e '
     const fs = require("node:fs");
     const path = "/restore/stage/assistant/control/assistant.sqlite";

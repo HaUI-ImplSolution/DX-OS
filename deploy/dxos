@@ -183,6 +183,7 @@ pending_services() {
   local pending=() id name status health exit_code service
   while read -r id; do
     [[ -n "$id" ]] || continue
+    # The optional assistant never holds the start of the platform.
     service="$(docker inspect -f '{{index .Config.Labels "com.docker.compose.service"}}' "$id")"
     [[ "$service" == assistant-* ]] && continue
     read -r name status health exit_code <<<"$(docker inspect -f \
@@ -331,17 +332,11 @@ cmd_start() {
   rm -f "$STOPPED_MARK"
   echo "==> Checking this machine"
   "$DEPLOY_DIR/doctor.sh" >/dev/null || { "$DEPLOY_DIR/doctor.sh" || true; die "fix the FAIL lines above, then run dxos start again"; }
-  if "$DEPLOY_DIR/assistant.sh" enabled; then
-    "$DEPLOY_DIR/make_env.sh" "$DEPLOY_DIR/.env" --update-assistant
-  fi
   [[ -n "$(compose ps -q --status running backend)" ]] && was_running=true
   since="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
   since_epoch="$(date +%s)"
   echo "==> Starting DX-OS $(env_value DXOS_IMAGE_TAG), $(stack_mode) mode (images are downloaded on the first start)"
-  local platform=()
-  mapfile -t platform < <("$DEPLOY_DIR/assistant.sh" platform-services)
-  (( ${#platform[@]} )) || die "no platform services configured"
-  compose up -d --no-build --pull missing "${platform[@]}"
+  compose up -d --no-build --pull missing
   started="$(date -d "$(docker inspect -f '{{.State.StartedAt}}' "$(compose ps -q backend)")" +%s)"
   # A backend that kept running is started again so it reads a model file whose content changed.
   if $was_running && (( $# > 0 )) && ((started < since_epoch)); then
@@ -357,7 +352,6 @@ cmd_start() {
     model_status=$?
   fi
   set -e
-  "$DEPLOY_DIR/assistant.sh" start || echo "WARNING: assistant startup failed; Core is available. See dxos logs assistant-sso." >&2
   print_addresses
   print_next_steps
   return "$model_status"
@@ -1061,14 +1055,10 @@ reconcile_once() {
   if command -v flock >/dev/null 2>&1 && ! flock -n 9; then
     return 0
   fi
-  local platform=()
-  mapfile -t platform < <("$DEPLOY_DIR/assistant.sh" platform-services)
-  (( ${#platform[@]} )) || return 1
-  if ! compose up -d --no-build --pull missing "${platform[@]}" >"$out" 2>&1; then
+  if ! compose up -d --no-build --pull missing >"$out" 2>&1; then
     echo "$(date -Iseconds) failed: $(tail -n1 "$out")" >>"$log"
     return 1
   fi
-  "$DEPLOY_DIR/assistant.sh" start >>"$out" 2>&1 || echo "$(date -Iseconds) assistant unavailable; Core reconciled" >>"$log"
   # The one-shot jobs (apisix-config, monitor-init) run on every up and are not a change.
   changed="$(grep -E ' (Created|Recreated|Started)$' "$out" | grep -vE 'apisix-config|monitor-init' | sed 's/^ *//' | paste -sd';' - || true)"
   [[ -z "$changed" ]] || echo "$(date -Iseconds) $changed" >>"$log"

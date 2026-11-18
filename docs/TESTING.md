@@ -260,7 +260,6 @@ Kiểm bằng đúng các lệnh và thao tác trong tài liệu.
     Mở hồ sơ, tạo đề xuất, xem nguồn, sửa hoặc hủy, rồi xác nhận và đối chiếu phiên bản/lịch sử Core.
     Kiểm hai chủ không đọc/ghi chéo; giá trị trùng không tạo lịch sử sửa và model tắt không cản nghiệp vụ.
     Kiểm nâng cấp/restore giữ SSO, key và lịch sử, không thực thi lại đề xuất cũ.
-    Ma trận đầy đủ ở [kế hoạch kiểm trợ lý](./ai-assistant/03_TEST_PLAN.md).
 
 ## 7. Hồi quy
 

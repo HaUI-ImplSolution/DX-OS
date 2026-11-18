@@ -27,7 +27,8 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Triển khai
 
-- Trợ lý tắt mặc định qua profile `assistant`; CLI tách lỗi khởi động trợ lý khỏi Core, cập nhật image theo profile và sao lưu state bằng container với master key giữ riêng.
+- Trợ lý nằm trong `deploy/docker-compose.assistant.yml`, chỉ nạp khi `COMPOSE_FILE` trong `deploy/.env` nêu tệp đó; chưa bật thì stack không có container, network hay route của trợ lý.
+  Sao lưu chụp state của trợ lý bằng container, không gồm master key.
 
 ### Phát hành
 

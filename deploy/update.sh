@@ -30,11 +30,6 @@ if [[ $# -gt 0 ]]; then
     [[ -z "$(tail -c1 .env)" ]] || echo >> .env
     echo "DXOS_IMAGE_TAG=$1" >> .env
   fi
-  image_prefix="$(sed -n 's/^DXOS_IMAGE_PREFIX=//p' .env | tail -1)"
-  assistant_image="$(sed -n 's/^ASSISTANT_IMAGE=//p' .env | tail -1)"
-  if [[ -n "$image_prefix" && ( "$assistant_image" == dxos-assistant:local || "$assistant_image" == "$image_prefix-assistant:"* ) ]]; then
-    sed -i "s|^ASSISTANT_IMAGE=.*|ASSISTANT_IMAGE=$image_prefix-assistant:$1|" .env
-  fi
   echo "==> DXOS_IMAGE_TAG=$1 written to deploy/.env"
 fi
 
@@ -51,10 +46,8 @@ if [[ "$(grep -E '^DXOS_MODE=' .env | tail -n1 | cut -d= -f2-)" == core ]]; then
 else
   SERVICES=(backend monitor frontend portal keycloak)
 fi
-if ./assistant.sh enabled; then
-  ./make_env.sh .env --update-assistant
-  SERVICES+=(assistant-control)
-fi
+# The optional assistant is part of the project only when COMPOSE_FILE names its file.
+if docker compose config --services | grep -qx assistant-control; then SERVICES+=(assistant-control); fi
 BEHIND_GATEWAY=("${SERVICES[@]}")
 declare -A BEFORE
 for service in "${BEHIND_GATEWAY[@]}"; do
@@ -70,10 +63,7 @@ for service in "${SERVICES[@]}"; do
 done
 
 echo "==> Recreating the services whose image changed"
-mapfile -t PLATFORM < <(./assistant.sh platform-services)
-(( ${#PLATFORM[@]} )) || { echo "No platform services configured." >&2; exit 1; }
-docker compose up -d --no-build "${PLATFORM[@]}"
-./assistant.sh start || echo "WARNING: assistant update failed; Core is available." >&2
+docker compose up -d --no-build
 
 REPLACED=false
 for service in "${BEHIND_GATEWAY[@]}"; do
@@ -87,7 +77,6 @@ fi
 # Keycloak 26.8 refuses Admin API calls from a client that lacks this scope; a realm imported earlier does not have it.
 echo "==> Checking the Keycloak admin client"
 ./keycloak-admin-scope.sh || echo "WARNING: model apply stays refused until this works; run ./keycloak-admin-scope.sh once Keycloak is up." >&2
-
 
 docker image prune -f >/dev/null
 echo "==> Up to date. Check: docker compose ps"

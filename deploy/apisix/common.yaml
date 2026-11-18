@@ -93,6 +93,7 @@ global_rules:
       # app-tier:end
 
 routes:
+  # assistant:begin
   - id: assistant-api
     vars: [["server_port", "==", "9080"]]
     priority: 20
@@ -112,6 +113,7 @@ routes:
         key_type: var
         key: remote_addr
         rejected_code: 429
+  # assistant:end
   # Service status for the portal: public, limited per client address.
   - id: api-system-status
     vars: [["server_port", "==", "9080"]]

@@ -13,12 +13,15 @@ def main():
     parser.add_argument("--local", type=Path, help="installation routes to check instead of apisix/local.yaml")
     parser.add_argument("--mode", choices=("full", "core"), default="full")
     parser.add_argument("--admin-console", action="store_true", help="check with the Keycloak Admin Console enabled")
+    parser.add_argument("--assistant", action="store_true", help="check with the optional assistant route enabled")
     args = parser.parse_args()
     source = Path(__file__).resolve().parents[2] / "deploy" / "apisix"
     compose = yaml.safe_load((source.parent / "docker-compose.yml").read_text())
     command = ["docker", "run", "--rm", "--network", "none", "-v", f"{source}:/src:ro",
                "-e", f"DXOS_MODE={args.mode}",
                "-e", f"KEYCLOAK_ADMIN_CONSOLE={str(args.admin_console).lower()}"]
+    if args.assistant:
+        command += ["-e", "DXOS_ASSISTANT=true"]
     if args.local:
         if not args.local.is_file():
             parser.error("--local must name an existing file")

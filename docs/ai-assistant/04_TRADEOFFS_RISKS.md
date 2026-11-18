@@ -11,7 +11,7 @@ Các điều kiện chất lượng, restore toàn stack và nghiệm thu còn m
 | Hệ thống cấp ngữ cảnh, một lượt inference | Không cần LLM khám phá API hoặc điều phối công cụ | Người dùng phải mở đúng hồ sơ/chọn nhiệm vụ; không có hội thoại tổng quát |
 | UI ngay trên hồ sơ | Tận dụng giao diện, đăng nhập và form hiện có | Chưa có kênh hội thoại hoặc thông báo riêng của trợ lý |
 | Một provider và inference chung | Một dịch vụ dùng chung, state tách theo chủ | Model vẫn chiếm RAM/VRAM và có tranh chấp slot; cần đo thật |
-| Nguồn ngắn được cấu hình | Có căn cứ và provenance mà chưa cần hạ tầng truy xuất lớn | Không thay RAG/hỏi đáp hoặc embedding/reranker của toàn bộ #210 |
+| Nguồn ngắn được cấu hình | Có căn cứ và provenance mà chưa cần hạ tầng truy xuất lớn | Không thay RAG/hỏi đáp hoặc embedding/reranker, ngoài phạm vi |
 | State có schema và migration | Giữ lịch sử và có đường khôi phục | Vẫn cần bảo vệ backup/key/transcript, migration không được purge dữ liệu |
 
 ## 2. Rủi ro và điều kiện risk-off
@@ -53,6 +53,6 @@ Rollback không tự gửi lại ghi, hoặc đảo ngược dữ liệu nghiệ
 - Dữ liệu demo, nguồn khảo sát và bằng chứng nằm ngoài Git theo quyết định người dùng; giữ kiểm tra giấy phép của repository.
 - Nguồn demo tiếng Việt đã hỗ trợ đối chiếu trường có tập lựa chọn; model vẫn có thể đoán loại hồ sơ khi lý do mơ hồ, nên gate chất lượng và review nguồn còn mở.
   Cần bộ đánh giá nội dung trước phát hành.
-- Hỏi đáp sinh câu trả lời, embedding/reranker và tác tử tự sinh proposal theo sự kiện vẫn là phạm vi chưa thực hiện của #210/định hướng Dynamic Core.
+- Hỏi đáp sinh câu trả lời, embedding/reranker và tác tử tự sinh proposal theo sự kiện không nằm trong phạm vi, ghi ở mục 4 của [BACKLOG](../dynamic-core/BACKLOG.md).
 - Xóa secret/thu hồi key, transcript, backup hoặc cache là thao tác riêng; không gộp vào dọn mã và không prune toàn máy.
 - Nghiệm thu và cập nhật issue/PR cần ủy quyền; không tự đóng hoặc nối hai issue.

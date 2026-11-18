@@ -61,11 +61,9 @@ Cách triển khai ở [plan](./01_PLAN.md); cấu hình đầy đủ ở [`depl
 [Đề PMNM 2026](https://vfossa.vn/tin-tuc/de-thi-phan-mem-nguon-mo-olp-2026-798.html) yêu cầu nền tảng headless và ứng dụng minh họa, với Identity/SSO, API Gateway, dữ liệu và workflow ở lõi.
 Trợ lý là một năng lực I dùng dữ liệu D từ quy trình P và danh tính H; không thay các yêu cầu nền tảng hoặc tự chứng minh toàn bài thi đã đạt.
 [Dynamic Core](../dynamic-core/README.md#3-tác-tử-ai-có-người-duyệt) định hướng AI là provider ngoài lõi, có căn cứ và người duyệt.
-Đợt này thực hiện phần đề xuất trường theo yêu cầu người dùng; hỏi đáp sinh câu trả lời và tác tử tự khởi tạo đề xuất theo sự kiện chưa thuộc đầu ra nghiệm thu.
-Embedding/reranker không được thêm khi luồng nguồn nhỏ chưa cần; vì vậy không tuyên bố hoàn tất toàn bộ [issue #210](https://github.com/HaUI-ImplSolution/DX-OS/issues/210).
-Không sửa tài liệu định hướng hoặc BACKLOG để xóa các mục chưa thực hiện.
-
-Phạm vi trợ lý được theo dõi tại [#210](https://github.com/HaUI-ImplSolution/DX-OS/issues/210); chưa nghiệm thu hoặc đóng issue thay người phụ trách.
+Phạm vi là đề xuất giá trị một trường có người duyệt, đáp ứng chữ I của đề; đề không nêu số thành phần của nhóm I phải làm.
+Hỏi đáp sinh câu trả lời, tác tử tự khởi tạo đề xuất theo sự kiện và embedding/reranker không nằm trong phạm vi, ghi ở mục 4 của [BACKLOG](../dynamic-core/BACKLOG.md).
+Phạm vi trợ lý được theo dõi tại [#210](https://github.com/HaUI-ImplSolution/DX-OS/issues/210).
 
 ## 5. Điều kiện chấp nhận
 

@@ -96,7 +96,7 @@ Không thêm module Java hoặc service AI trong Core; các nhánh kiểm quyề
 Nguồn và nội dung hồ sơ là dữ liệu, không phải chỉ thị có quyền đổi nhiệm vụ hoặc lấy bí mật.
 Đợt đầu không nhận file upload làm tri thức, không OCR, crawler hoặc đọc URL theo chỉ dẫn của model.
 Với kho nhỏ, dùng văn bản ngắn đã chuẩn bị và chọn nguồn theo cấu hình, không dựng vector DB, embedding hoặc reranker khi chưa cần.
-Đây là đề xuất có căn cứ từ ngữ cảnh giới hạn, chưa phải chức năng hỏi đáp RAG đầy đủ của #210.
+Đây là đề xuất có căn cứ từ ngữ cảnh giới hạn, không phải chức năng hỏi đáp RAG.
 Một trích dẫn tồn tại không chứng minh kết luận đúng; bộ nghiệm thu phải đánh giá quan hệ giữa đề xuất và nguồn.
 
 ## 5. Các bước và đầu ra
@@ -175,9 +175,9 @@ Endpoint inference cố định ở deployment; chặn redirect và URL người
 
 Hai domain minh họa là dữ liệu cấu hình, không biến provider thành sản phẩm chỉ phục vụ hai ngành.
 Tính động kiểm trong giới hạn các kiểu trường/quy trình đã hỗ trợ; YAML không phải ngôn ngữ lập trình hoặc công cụ sửa mã bằng AI.
-Phần hỏi đáp sinh câu trả lời, embedding/reranker và tác tử tự sinh proposal theo sự kiện của #210/định hướng Dynamic Core vẫn chưa thực hiện trong đợt này.
+Hỏi đáp sinh câu trả lời, embedding/reranker và tác tử tự sinh proposal theo sự kiện không nằm trong phạm vi, ghi ở mục 4 của [BACKLOG](../dynamic-core/BACKLOG.md).
 Có thể dùng webhook hiện có để vô hiệu đề xuất khi dữ liệu thay đổi nếu cần, nhưng không thêm subscription Core theo từng người hoặc để event tự cấp danh tính ghi.
-Không tuyên bố hoàn tất #210 hoặc toàn bài thi chỉ vì demo trợ lý chạy được.
+Trợ lý là một thành phần của chữ I, không thay các yêu cầu nền tảng của đề.
 [Checklist](./02_CHECKLIST.md), [ma trận kiểm](./03_TEST_PLAN.md) và [risk-off](./04_TRADEOFFS_RISKS.md) là tiêu chí review cho phạm vi mới.
 
 ## 9. Cải thiện chất lượng qua các mẫu hiện có

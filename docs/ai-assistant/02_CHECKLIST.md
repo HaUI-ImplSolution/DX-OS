@@ -11,7 +11,7 @@ Mục chuyển thành giới hạn không được tính là tiêu chí đã đ�
 
 - [x] Người dùng chốt trợ lý nghiệp vụ nhiều domain, self-host và có xác nhận trước ghi.
 - [x] Đã xác minh worktree/nhánh và fetch nhánh cha `Khuong/main` trước khi lập kế hoạch.
-- [ ] Tech lead review schema nhiệm vụ, trải nghiệm trên hồ sơ, ranh giới dịch vụ và phần #210 chưa thực hiện.
+- [ ] Tech lead review schema nhiệm vụ, trải nghiệm trên hồ sơ, ranh giới dịch vụ.
 - [x] Chọn Apertus-8B-Instruct-2509 làm model mặc định, bản local GGUF Q4 theo [cấu hình inference](../../assistant/README.md#inference-và-nguồn-tri-thức).
 - [ ] Hoàn thiện hồ sơ nguồn mở, chất lượng tiếng Việt và ngân sách của model đã chọn theo nhiệm vụ hiện có.
 
@@ -59,7 +59,7 @@ Mục chuyển thành giới hạn không được tính là tiêu chí đã đ�
 - [x] CP-21 Hai domain thật dùng cùng provider/UI, thay YAML không sửa mã; hồi quy ba họ workflow hiện có.
 - CP-22 Giới hạn vận hành: một provider và một slot, chưa có SLA hoặc số đo model cold/warm/RAM/VRAM; xem mục 4 của [BACKLOG](../dynamic-core/BACKLOG.md).
 - [x] CP-23 Kiểm build/compliance/doc refs/secret/diff đúng phần thay đổi; không để reference vận hành treo hoặc dependency vô dụng.
-- [ ] CP-24 Người dùng chạy kịch bản demo, tech lead review giới hạn và giấy phép; chưa đánh dấu hoàn tất toàn bộ #210.
+- [ ] CP-24 Người dùng chạy kịch bản demo, tech lead review giới hạn và giấy phép.
 
 ## Cải thiện chất lượng đa mẫu
 

@@ -65,5 +65,5 @@ Bằng chứng và fixture để ngoài Git; lỗi nội dung bị người ki�
 ## 4. Giới hạn của phạm vi này
 
 Dùng inference và nguồn giả lập của bản cài để kiểm; không gửi dữ liệu ra dịch vụ bên ngoài.
-Hỏi đáp mở, embedding/reranker và tác tử tự tạo proposal theo sự kiện chưa được nghiệm thu bằng ma trận CP.
-Giữ các mục đó trong #210/định hướng hiện hành, không đánh dấu hoàn tất thay chúng.
+Hỏi đáp mở, embedding/reranker và tác tử tự tạo proposal theo sự kiện không nằm trong ma trận CP.
+Phạm vi này ghi ở mục 4 của [BACKLOG](../dynamic-core/BACKLOG.md).

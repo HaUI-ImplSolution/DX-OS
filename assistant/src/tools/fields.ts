@@ -142,7 +142,7 @@ export class FieldProposals {
     this.validateValue(c.entity, c.task, c.proposal.snapshot.value);
     if (c.proposal.snapshot.value === c.record[c.task.outputField])
       throw new ApiError(409, 'ERR_PROPOSAL_NO_CHANGE', 'The proposed value already matches the record');
-    const s = this.store.claim(owner, id, 'web');
+    const s = this.store.claim(owner, id);
     try {
       const result = await this.core.patch<Record<string, unknown>>(owner, targetPath(c.target), {
         [s.field!]: s.value, version: s.version, modelVersion: s.modelVersion,

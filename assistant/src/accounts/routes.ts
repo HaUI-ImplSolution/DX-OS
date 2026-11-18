@@ -57,12 +57,4 @@ export function fieldRoutes(app: FastifyInstance, services: {
     await services.records.proposal(identity, request.params.id);
     services.store.cancel(identity, request.params.id); return ok(null);
   });
-  for (const path of ['providers','telegram','runtime','notifications']) {
-    for (const route of [`/assistant-api/v1/me/${path}`, `/assistant-api/v1/me/${path}/*`]) {
-      app.route({ method: ['GET','POST','PUT','PATCH','DELETE'], url: route, handler: async request => {
-        await owner(request);
-        throw new ApiError(410, 'ERR_FEATURE_RETIRED', 'This assistant feature has been retired');
-      } });
-    }
-  }
 }

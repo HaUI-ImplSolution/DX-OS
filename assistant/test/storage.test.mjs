@@ -31,20 +31,19 @@ test('encrypted secrets and proposals are bound to issuer, subject and purpose',
   db.close(); const reopened = new Store(path, key);
   try { assert.throws(() => reopened.getSecret(b, 'core')); } finally { reopened.close(); }
 });
-test('one claim, expiry and web confirmation remain mandatory', t => {
+test('one claim and expiry remain mandatory', t => {
   const { store } = setup(t), id = store.createProposal(a, snapshot);
-  assert.throws(() => store.claim(a, id, 'telegram'), { errorCode: 'ERR_WEB_CONFIRMATION_REQUIRED' });
-  store.claim(a, id, 'web'); assert.throws(() => store.claim(a, id, 'web'), { status: 409 });
+  store.claim(a, id); assert.throws(() => store.claim(a, id), { status: 409 });
   const expired = store.createProposal(a, snapshot, 0);
-  assert.throws(() => store.claim(a, expired, 'web', 120000), { status: 409 });
+  assert.throws(() => store.claim(a, expired, 120000), { status: 409 });
 });
 test('an interrupted execution remains uncertain after restart and cannot be claimed again', t => {
   const { store, key, path } = setup(t), id = store.createProposal(a, snapshot);
-  store.claim(a, id, 'web'); store.close();
+  store.claim(a, id); store.close();
   const restarted = new Store(path, key);
   try {
     assert.equal(restarted.proposal(a, id).state, 'uncertain');
-    assert.throws(() => restarted.claim(a, id, 'web'), { status: 409 });
+    assert.throws(() => restarted.claim(a, id), { status: 409 });
   } finally { restarted.close(); }
 });
 test('OAuth state belongs to one browser and can only be consumed once before expiry', t => {
@@ -87,7 +86,7 @@ test('a wrong restore key is refused before an executing proposal is changed', t
   const { store, key, path } = setup(t);
   store.setSecret(a, 'core', 'synthetic');
   const id = store.createProposal(a, snapshot);
-  store.claim(a, id, 'web'); store.close();
+  store.claim(a, id); store.close();
   assert.throws(() => new Store(path, randomBytes(32)), /matching master key/);
   const db = new DatabaseSync(path, { readOnly: true });
   assert.equal(db.prepare('SELECT state FROM proposals WHERE id=?').get(id).state, 'executing'); db.close();

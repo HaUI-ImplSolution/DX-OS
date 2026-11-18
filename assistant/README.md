@@ -79,6 +79,7 @@ Sửa nội dung tạo proposal thay thế và vô hiệu bản cũ nguyên tử
 | `POST /me/proposals/{id}/confirm`, `/cancel` | Xác nhận hoặc hủy ngoài LLM, kiểm Origin và danh tính |
 
 Luồng trạng thái là `pending` → `executing` → `succeeded`, `failed` hoặc `uncertain`, với TTL 120 giây tính từ lúc lưu proposal.
+Đề xuất được xóa sau 30 ngày kể từ lúc tạo, trừ đề xuất đang thực hiện.
 Atomic claim chỉ cho một lần ghi; Core kiểm lại version/modelVersion và quyền trong giao dịch.
 Sau timeout hoặc dừng tiến trình khi ghi, kết quả chưa rõ giữ `uncertain`, không tự gửi lại.
 Xác nhận giá trị trùng hồ sơ trả 409 `ERR_PROPOSAL_NO_CHANGE`, không gọi PATCH và không tạo lịch sử sửa giả.

@@ -25,7 +25,6 @@ registerErrorMessages({
   ERR_PROPOSAL_NO_CHANGE: "Giá trị đề xuất đã trùng với hồ sơ. Không có thay đổi để lưu.",
   ERR_PROPOSAL_STALE: "Hồ sơ, mô hình hoặc nguồn đã đổi. Hãy tạo đề xuất mới.",
   ERR_PROPOSAL_RETIRED: "Đề xuất của phiên bản cũ chỉ dùng để xem lịch sử.",
-  ERR_FEATURE_RETIRED: "Chức năng này đã được thay bằng trợ lý nghiệp vụ.",
   ERR_PROPOSAL_CLOSED: "Đề xuất đã hết hạn hoặc đã được xử lý. Hãy tải lại.",
   ERR_EXECUTION_UNCERTAIN: "Chưa rõ kết quả. Kiểm tra lịch sử hồ sơ trước khi thử lại.",
   ERR_CONDITIONAL_API_REQUIRED: "Backend cần hỗ trợ điều kiện phiên bản trước khi trợ lý được ghi dữ liệu.",

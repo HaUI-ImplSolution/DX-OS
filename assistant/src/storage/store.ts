@@ -123,6 +123,8 @@ export class Store {
   }
 
   createProposal(owner: Owner, snapshot: Proposal, now = Date.now()): string {
+    // Proposals hold record values and source text, so they are kept for 30 days at most.
+    this.db.prepare("DELETE FROM proposals WHERE created<=? AND state<>'executing'").run(now - 30 * 86400000);
     const count = this.db.prepare("SELECT count(*) AS count FROM proposals WHERE owner=? AND state='pending' AND expires>?")
       .get(ownerKey(owner), now) as { count: number };
     if (count.count >= 20) throw new ApiError(429, 'ERR_PROPOSAL_LIMIT', 'Handle existing proposals before creating more');
@@ -159,11 +161,9 @@ export class Store {
     return rows.map(row => this.proposal(owner, row.id));
   }
 
-  claim(owner: Owner, id: string, channel: 'web' | 'telegram', now = Date.now()): Proposal {
+  claim(owner: Owner, id: string, now = Date.now()): Proposal {
     // The conditional update is the claim; reading a snapshot alone never authorizes execution.
     const proposal = this.proposal(owner, id);
-    if (proposal.snapshot.webOnly && channel !== 'web')
-      throw new ApiError(409, 'ERR_WEB_CONFIRMATION_REQUIRED', 'Confirm this proposal on the web');
     const result = this.db.prepare(`UPDATE proposals SET state='executing'
       WHERE id=? AND owner=? AND state='pending' AND expires>?`)
       .run(id, ownerKey(owner), now);

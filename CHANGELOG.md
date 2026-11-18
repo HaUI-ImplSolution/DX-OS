@@ -7,15 +7,31 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ## [Unreleased]
 
+### Lõi chạy ngầm
+
+- `dxos start` tạo tài khoản `admin` và in mật khẩu tạm trên bản cài mới, vì tài khoản dịch vụ giữ vai ADMIN không được tính là đã có admin.
+- `dxos update` và `install.sh --upgrade` so sánh danh sách file runtime theo thứ tự `C`, nên cập nhật giữ đủ file ở mọi locale của máy.
+- Ghi có điều kiện: `PATCH` một hồ sơ, hành động và giao việc nhận thêm `version` và `modelVersion`; hồ sơ hoặc mô hình đã đổi thì trả 409, `data.reason` là `MODEL_VERSION_CHANGED` khi mô hình đổi; `PATCH` kèm `version` cũ trả 409 kể cả khi giá trị không đổi.
+- `GET /api/v1/meta/models` trả `modelVersion` của từng mô hình và thực thể, `process.effects` (việc hoàn tất xếp vào hàng đợi, `asynchronous: true`) và `aiTasks`.
+- Thực thể khai báo được khối `ai.tasks` trong tệp mô hình: trường đầu vào, trường đề xuất, hướng dẫn và mã nguồn tham khảo; lõi chỉ kiểm khai báo, không gọi model.
+
 ### Ứng dụng ngoài
 
-- Chọn Apertus-8B-Instruct-2509 self-host làm model mặc định của trợ lý, bản local GGUF Q4.
-- Nguồn tham khảo của trợ lý hiển thị nhãn trường và tên đơn vị theo metadata của mô hình.
+- `dxos client add` và `dxos client rotate` nhận `--env <TIỀN_TỐ>` và chỉ in hai dòng `<TIỀN_TỐ>_CLIENT_ID` và `<TIỀN_TỐ>_CLIENT_SECRET`, nối thẳng vào tệp `.env` của ứng dụng được.
+- `dxos client test <tên>` đăng nhập bằng client đó, gọi API của mô hình của nó và nêu bước nào hỏng; mã bí mật lấy từ tệp, biến môi trường hoặc hỏi lúc chạy, không nằm trên dòng lệnh.
+- `dxos start` in bước tiếp theo và liên kết tới hướng dẫn bắt đầu nhanh.
+- `docs/QUICKSTART.md` đi từ máy sạch đến một quy trình chạy được, có đường không cần code và đường có code; `examples/order_approval` là ví dụ chạy được của đường có code.
 - Thêm trợ lý nghiệp vụ tùy chọn dùng inference self-host để đề xuất một giá trị trường từ hồ sơ và nguồn được cấu hình; người dùng sửa, hủy hoặc xác nhận, Core kiểm quyền và phiên bản trước khi ghi.
+- Model mặc định của trợ lý là Apertus-8B-Instruct-2509 self-host, bản local GGUF Q4.
+- Nguồn tham khảo của trợ lý hiển thị nhãn trường và tên đơn vị theo metadata của mô hình.
 
 ### Triển khai
 
 - Trợ lý tắt mặc định qua profile `assistant`; CLI tách lỗi khởi động trợ lý khỏi Core, cập nhật image theo profile và sao lưu state bằng container với master key giữ riêng.
+
+### Phát hành
+
+- Workflow `Release Images` và `Release Package` đặt quyền ghi ở job cần ghi, còn cấp workflow chỉ đọc.
 
 ## [2.0.1] - 2026-11-17
 

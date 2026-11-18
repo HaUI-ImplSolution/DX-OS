@@ -16,6 +16,7 @@ const branch = 'main';
 
 // Repository path -> name of the page and its label in the sidebar.
 export const DOCS = {
+  'docs/QUICKSTART.md': {page: 'bat-dau-nhanh', label: 'Bắt đầu nhanh'},
   'docs/MODEL.md': {page: 'viet-mo-hinh', label: 'Viết tệp mô hình'},
   'docs/API.md': {page: 'api', label: 'API'},
   'docs/OPERATIONS.md': {page: 'van-hanh', label: 'Cài đặt và vận hành'},

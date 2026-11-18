@@ -77,7 +77,7 @@ set_env() {
 NEW_FILES="$(runtime_files)"
 if [[ "$UPGRADE" == true && -f "$MANIFEST" ]]; then
   echo "==> Removing the runtime files the new version no longer has"
-  comm -23 <(LC_ALL=C sort "$MANIFEST") <(printf '%s\n' "$NEW_FILES") | while IFS= read -r stale; do
+  LC_ALL=C comm -23 <(LC_ALL=C sort "$MANIFEST") <(printf '%s\n' "$NEW_FILES") | while IFS= read -r stale; do
     [[ "$stale" == deploy/apisix/local.yaml ]] && continue
     [[ -n "$stale" ]] && rm -f "$PREFIX/$stale"
   done

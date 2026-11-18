@@ -55,9 +55,15 @@
 #   dxos demo [--password PASSWORD] | dxos demo remove
 #                              create the accounts judge_student, judge_officer, judge_officer2 and
 #                              judge_supervisor and file sample requests; remove deletes the accounts
-#   dxos client add <name> --model M --role R | list | role <name> --role R | rotate <name> | remove <name>
+#   dxos client add <name> --model M --role R [--env PREFIX] | list | role <name> --role R
+#                              | rotate <name> [--env PREFIX] | remove <name>
 #                              register an outside application that calls the API with its own secret and
-#                              one role of one model; the secret is shown once, rotate gives a new one
+#                              one role of one model; the secret is shown once, rotate gives a new one;
+#                              --env prints only PREFIX_CLIENT_ID and PREFIX_CLIENT_SECRET, ready to append to
+#                              the .env file of the application
+#   dxos client test <name> [--url URL] [--secret-file FILE]
+#                              sign in as the application and call the API of its model, and say what is wrong
+#                              when it fails; the secret comes from FILE, DXOS_CLIENT_SECRET or a prompt
 #   dxos client browser add <name> --redirect-uri URL [...] | list | remove <name>
 #                              manage public OIDC clients for browser applications; add enables PKCE S256
 #                              and adds each exact redirect origin to the API CORS allowlist
@@ -159,6 +165,18 @@ EOF
   fi
 }
 
+# What to do after a start: pointers only, so a new user knows where to go.
+print_next_steps() {
+  local guide="https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/QUICKSTART.md"
+  echo
+  if [[ "$(stack_mode)" == core ]]; then
+    echo "Next: dxos apply <model-file>, then dxos client add <name> --model M --role R for your application."
+  else
+    echo "Next: apply a model at $(public_url)/console or with dxos apply <model-file>."
+  fi
+  echo "Guide: $guide"
+}
+
 # A container is ready when it is healthy, running without a healthcheck, or a one-shot job
 # that exited with code 0.
 pending_services() {
@@ -257,7 +275,7 @@ wait_ready() {
 }
 
 # Creates or resets the account "admin" of the dxos realm through kcadm.sh inside the Keycloak container.
-# mode "ensure" does nothing when some user already has the ADMIN role; mode "reset" always sets a new
+# mode "ensure" does nothing when a user other than a service account already has the ADMIN role; mode "reset" always sets a new
 # temporary password. Prints the password when it set one.
 admin_account() {
   local mode="$1" password
@@ -269,7 +287,7 @@ trap 'rm -f /tmp/dxos-kcadm.config' EXIT
 kc config credentials --server http://localhost:8080 --realm master \
   --user "$KC_BOOTSTRAP_ADMIN_USERNAME" --password "$KC_BOOTSTRAP_ADMIN_PASSWORD" >/dev/null 2>&1 \
   || { echo "cannot sign in to Keycloak as $KC_BOOTSTRAP_ADMIN_USERNAME" >&2; exit 3; }
-if [[ "$MODE" == ensure ]] && kc get roles/ADMIN/users -r dxos --fields username | grep -q '"username"'; then
+if [[ "$MODE" == ensure ]] && kc get roles/ADMIN/users -r dxos --fields username | grep '"username"' | grep -vq 'service-account-'; then
   exit 10
 fi
 if ! kc get users -r dxos -q exact=true -q username="$ADMIN_USER" --fields id | grep -q '"id"'; then
@@ -341,6 +359,7 @@ cmd_start() {
   set -e
   "$DEPLOY_DIR/assistant.sh" start || echo "WARNING: assistant startup failed; Core is available. See dxos logs assistant-sso." >&2
   print_addresses
+  print_next_steps
   return "$model_status"
 }
 
@@ -832,7 +851,7 @@ EOF
 # Registers, lists, renews and removes the outside applications of the API; the work is the
 # API's, this only calls it.
 cmd_client() {
-  local action="${1:-}" name model="" role="" body work
+  local action="${1:-}" name model="" role="" body work env_prefix=""
   case "$action" in
     browser)
       shift
@@ -845,7 +864,7 @@ cmd_client() {
     add)
       shift
       name="${1:-}"
-      [[ "$name" =~ ^[a-z][a-z0-9_-]{0,39}$ ]] || die "usage: dxos client add <name> --model M --role R (name: lower case letters, digits, - and _)"
+      [[ "$name" =~ ^[a-z][a-z0-9_-]{0,39}$ ]] || die "usage: dxos client add <name> --model M --role R [--env PREFIX] (name: lower case letters, digits, - and _)"
       shift
       while (( $# )); do
         case "$1" in
@@ -853,9 +872,12 @@ cmd_client() {
           --model=*) model="${1#--model=}"; shift ;;
           --role) role="${2:?--role needs a role name}"; shift 2 ;;
           --role=*) role="${1#--role=}"; shift ;;
+          --env) env_prefix="${2:?--env needs a prefix such as DXOS_REQUESTER}"; shift 2 ;;
+          --env=*) env_prefix="${1#--env=}"; shift ;;
           *) die "unknown option: $1" ;;
         esac
       done
+      check_env_prefix "$env_prefix"
       [[ "$model" =~ ^[a-z][a-z0-9_]*$ ]] || die "--model needs the name of an applied model"
       [[ "$role" =~ ^[A-Z][A-Z0-9_]*$ ]] || die "--role needs a role of that model"
       work="$(mktemp)"
@@ -864,14 +886,25 @@ cmd_client() {
       rm -f "$work"
       if [[ "$API_STATUS" != 200 ]]; then pretty "$API_BODY"; return 1; fi
       print_client_secret "$(json_field clientId "$API_BODY")" "$(json_field secret "$API_BODY")" \
-        "role $role of the model $model" ;;
+        "role $role of the model $model" "$env_prefix" ;;
     rotate)
-      (( $# == 2 )) || die "usage: dxos client rotate <name>"
-      [[ "$2" =~ ^[a-z][a-z0-9_-]{0,39}$ ]] || die "not an application name: $2"
-      api POST "/clients/$2/secret"
+      shift
+      name="${1:-}"
+      [[ "$name" =~ ^[a-z][a-z0-9_-]{0,39}$ ]] || die "usage: dxos client rotate <name> [--env PREFIX]"
+      shift
+      while (( $# )); do
+        case "$1" in
+          --env) env_prefix="${2:?--env needs a prefix such as DXOS_REQUESTER}"; shift 2 ;;
+          --env=*) env_prefix="${1#--env=}"; shift ;;
+          *) die "unknown option: $1" ;;
+        esac
+      done
+      check_env_prefix "$env_prefix"
+      api POST "/clients/$name/secret"
       if [[ "$API_STATUS" != 200 ]]; then pretty "$API_BODY"; return 1; fi
       print_client_secret "$(json_field clientId "$API_BODY")" "$(json_field secret "$API_BODY")" \
-        "the old secret no longer works" ;;
+        "the old secret no longer works" "$env_prefix" ;;
+    test) shift; cmd_client_test "$@" ;;
     role)
       shift
       name="${1:-}"
@@ -897,13 +930,24 @@ cmd_client() {
       api DELETE "/clients/$2"
       if [[ "$API_STATUS" != 200 ]]; then pretty "$API_BODY"; return 1; fi
       echo "Removed dxos-app-$2." ;;
-    *) die "usage: dxos client add <name> --model M --role R | list | role <name> --role R | rotate <name> | remove <name> | browser add|list|remove" ;;
+    *) die "usage: dxos client add <name> --model M --role R [--env PREFIX] | list | role <name> --role R | rotate <name> [--env PREFIX] | remove <name> | test <name> | browser add|list|remove" ;;
   esac
 }
 
-# The secret of an application, shown once and never kept.
+# An --env prefix is a name an application can use for environment variables.
+check_env_prefix() {
+  [[ -z "$1" || "$1" =~ ^[A-Z][A-Z0-9_]*$ ]] || die "--env needs a prefix of capital letters, digits and _, such as DXOS_REQUESTER"
+}
+
+# The secret of an application, shown once and never kept. With a prefix only the two variable lines
+# go to stdout, so they can be appended to the .env file of the application.
 print_client_secret() {
   [[ -n "$2" ]] || die "the API answered without a secret"
+  if [[ -n "${4:-}" ]]; then
+    printf '%s_CLIENT_ID=%s\n%s_CLIENT_SECRET=%s\n' "$4" "$1" "$4" "$2"
+    echo "The secret is shown only now: append these lines to the .env file of your application." >&2
+    return 0
+  fi
   cat <<EOF
 
 Outside application $1 ($3):
@@ -914,6 +958,81 @@ The secret is shown only now. Get a token with the client credentials grant:
   POST $(public_url)/realms/dxos/protocol/openid-connect/token
   grant_type=client_credentials, client_id=$1, client_secret=<the secret>
 EOF
+}
+
+# Signs in as an outside application and calls the API of its model, then says which step failed.
+# The secret never appears on a command line: it comes from a file, DXOS_CLIENT_SECRET or a prompt.
+cmd_client_test() {
+  local name="${1:-}" url secret_file="" secret="" work token token_status api_status row model role
+  [[ "$name" =~ ^[a-z][a-z0-9_-]{0,39}$ ]] || die "usage: dxos client test <name> [--url URL] [--secret-file FILE]"
+  shift
+  url="$(public_url)"
+  while (( $# )); do
+    case "$1" in
+      --url) url="${2:?--url needs the address of the gateway}"; shift 2 ;;
+      --url=*) url="${1#--url=}"; shift ;;
+      --secret-file) secret_file="$(from_caller "${2:?--secret-file needs a file}")"; shift 2 ;;
+      --secret-file=*) secret_file="$(from_caller "${1#--secret-file=}")"; shift ;;
+      *) die "unknown option: $1" ;;
+    esac
+  done
+  url="${url%/}"
+  command -v curl >/dev/null 2>&1 || die "curl is required"
+  if [[ -n "$secret_file" ]]; then
+    [[ -r "$secret_file" ]] || die "cannot read $secret_file"
+    secret="$(<"$secret_file")"
+  elif [[ -n "${DXOS_CLIENT_SECRET:-}" ]]; then
+    secret="$DXOS_CLIENT_SECRET"
+  else
+    read -r -s -p "Secret of dxos-app-$name: " secret
+    echo
+  fi
+  [[ -n "$secret" ]] || die "no secret given"
+
+  api GET /clients
+  [[ "$API_STATUS" == 200 ]] || { pretty "$API_BODY"; return 1; }
+  row="$(tr '{' '\n' <<<"$API_BODY" | grep "\"name\":\"$name\"" | head -n1 || true)"
+  [[ -n "$row" ]] || die "no application called $name; dxos client list shows the registered ones"
+  model="$(json_field model "$row")"
+  role="$(json_field role "$row")"
+
+  work="$(mktemp -d)"
+  chmod 700 "$work"
+  # shellcheck disable=SC2064 # expand now: the directory is local
+  trap "rm -rf '$work'" RETURN
+  printf '%s' "$secret" >"$work/secret"
+
+  echo "1. Reaching $url"
+  if ! curl -sS -o /dev/null --max-time 10 "$url/realms/dxos/.well-known/openid-configuration" 2>"$work/err"; then
+    echo "   FAIL: $(cat "$work/err")"
+    echo "   Check the address (PUBLIC_HOST in $DEPLOY_DIR/.env); from a container use the host name or IP of this machine, not localhost."
+    return 1
+  fi
+  echo "   ok"
+
+  echo "2. Signing in as dxos-app-$name"
+  token_status="$(curl -sS -o "$work/token" -w '%{http_code}' --max-time 10 --data-urlencode grant_type=client_credentials \
+    --data-urlencode "client_id=dxos-app-$name" --data-urlencode "client_secret@$work/secret" \
+    "$url/realms/dxos/protocol/openid-connect/token")" || die "Keycloak did not answer at $url"
+  if [[ "$token_status" != 200 ]]; then
+    echo "   FAIL: HTTP $token_status $(cat "$work/token")"
+    echo "   The client id is dxos-app-$name; a lost or wrong secret is replaced with: dxos client rotate $name"
+    return 1
+  fi
+  token="$(sed -n 's/.*"access_token":"\([^"]*\)".*/\1/p' "$work/token")"
+  printf 'Authorization: Bearer %s\n' "$token" >"$work/header"
+  echo "   ok"
+
+  echo "3. Calling the API of the model $model with the role $role"
+  api_status="$(curl -sS -o "$work/body" -w '%{http_code}' --max-time 20 -H "@$work/header" \
+    "$url/api/v1/meta/models/$model/openapi")" || die "the API did not answer at $url"
+  if [[ "$api_status" != 200 ]]; then
+    echo "   FAIL: HTTP $api_status"
+    echo "   The model $model may not be applied (dxos plan <file>, then dxos apply <file>), or the role $role has no access to it."
+    return 1
+  fi
+  echo "   ok"
+  echo "dxos-app-$name works: role $role of the model $model."
 }
 
 cmd_history() {

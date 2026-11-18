@@ -54,11 +54,6 @@ test('field API verifies real JWTs, origin and owner; retired APIs never store c
   assert.equal(other.statusCode,404);
   const stolen = await app.inject({ method:'POST',url:`/assistant-api/v1/me/proposals/${id}/confirm`,headers:{ ...headers,authorization:`Bearer ${b}` },payload:{} });
   assert.equal(stolen.statusCode,404);
-  for (const path of ['providers','providers/old/select','telegram','telegram/pairing','runtime/start','notifications']) {
-    const response = await app.inject({ method:'POST',url:'/assistant-api/v1/me/'+path,headers,payload:{ apiKey:'synthetic-discarded-key' } });
-    assert.equal(response.statusCode,410,response.body);
-  }
-  assert.equal(store.getSecret({ issuer,subject:'A' },'providers'),undefined);
   const openapi = await app.inject({ method:'GET',url:'/assistant-api/v1/openapi.json',headers });
   assert.equal(openapi.statusCode,200); assert.ok(openapi.json().paths['/assistant-api/v1/me/proposals']);
 });

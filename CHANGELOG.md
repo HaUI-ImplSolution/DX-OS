@@ -7,6 +7,21 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ## [Unreleased]
 
+### Lõi chạy ngầm
+
+- `dxos update` và `install.sh --upgrade` so sánh danh sách file runtime theo thứ tự `C`, nên cập nhật giữ đủ file ở mọi locale của máy.
+
+### Ứng dụng ngoài
+
+- `dxos client add` và `dxos client rotate` nhận `--env <TIỀN_TỐ>` và chỉ in hai dòng `<TIỀN_TỐ>_CLIENT_ID` và `<TIỀN_TỐ>_CLIENT_SECRET`, nối thẳng vào tệp `.env` của ứng dụng được.
+- `dxos client test <tên>` đăng nhập bằng client đó, gọi API của mô hình của nó và nêu bước nào hỏng; mã bí mật lấy từ tệp, biến môi trường hoặc hỏi lúc chạy, không nằm trên dòng lệnh.
+- `dxos start` in bước tiếp theo và liên kết tới hướng dẫn bắt đầu nhanh.
+- `docs/QUICKSTART.md` đi từ máy sạch đến một quy trình chạy được, có đường không cần code và đường có code; `examples/order_approval` là ví dụ chạy được của đường có code.
+
+### Phát hành
+
+- Workflow `Release Images` và `Release Package` đặt quyền ghi ở job cần ghi, còn cấp workflow chỉ đọc.
+
 ## [2.0.1] - 2026-11-17
 
 Bổ sung và sửa sau bản `2.0.0`, nâng cấp từ `2.0.0` giữ nguyên dữ liệu, migration mới tự chạy khi backend khởi động.

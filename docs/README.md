@@ -31,7 +31,7 @@ Tự cài và nối vào ứng dụng của bạn thì theo [`QUICKSTART.md`](./
 | [`TARGETS.md`](./TARGETS.md) | Kiểm chứng các chỉ số mục tiêu: mã tự viết, thời gian dựng, chi phí tự cài |
 | [`COMPATIBILITY.md`](./COMPATIBILITY.md) | Những gì giữ nguyên giữa các bản: API, số đo, tệp mô hình, webhook, cơ sở dữ liệu |
 | [`GLOSSARY.md`](./GLOSSARY.md) | Thuật ngữ dùng trong tài liệu và giao diện |
-| [`dynamic-core/DX_OS_TEXTBOOK.md`](./dynamic-core/DX_OS_TEXTBOOK.md) | Đối chiếu giáo trình DX-OS, H-P-D-I và dự án DX-Ticket với lõi hiện tại |
+| [`DX_OS_TEXTBOOK.md`](./DX_OS_TEXTBOOK.md) | Đối chiếu giáo trình DX-OS, H-P-D-I và dự án DX-Ticket với lõi hiện tại |
 | [`dynamic-core/`](./dynamic-core/README.md) | Hướng thiết kế của lõi, [đối chiếu với đề thi](./dynamic-core/DANH_GIA.md) và [việc còn lại](./dynamic-core/BACKLOG.md) |
 | [`diagrams/`](./diagrams) | Nguồn draw.io của sơ đồ kiến trúc |
 

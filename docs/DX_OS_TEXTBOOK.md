@@ -10,8 +10,8 @@ Tác giả công bố tài nguyên theo [CC BY 4.0](https://creativecommons.org/
 Lõi được đối chiếu tại commit [`abc07089`](https://github.com/HaUI-ImplSolution/DX-OS/tree/abc07089135b08e1c33adc6bf740852b275d74bb) của `Khuong/main`.
 
 Giáo trình là nguồn cho khái niệm và ví dụ DX-Ticket.
-[Đề thi chính thức](https://vfossa.vn/tin-tuc/de-thi-phan-mem-nguon-mo-olp-2026-798.html) và [thể lệ](https://vfossa.vn/tin-tuc/the-le-olp-phan-mem-nguon-mo-nam-2026-760.html) mới là nguồn cho yêu cầu bắt buộc và tiêu chí chấm; phần đánh giá đó nằm ở [`DANH_GIA.md`](./DANH_GIA.md).
-Mã nguồn, [`ARCHITECTURE.md`](../../ARCHITECTURE.md), [ma trận bằng chứng](../../website/docs/evidence-matrix.md) và [`BACKLOG.md`](./BACKLOG.md) lần lượt là nguồn cho contract đã triển khai, mức kiểm chứng và giới hạn hiện tại.
+[Đề thi chính thức](https://vfossa.vn/tin-tuc/de-thi-phan-mem-nguon-mo-olp-2026-798.html) và [thể lệ](https://vfossa.vn/tin-tuc/the-le-olp-phan-mem-nguon-mo-nam-2026-760.html) mới là nguồn cho yêu cầu bắt buộc và tiêu chí chấm; phần đánh giá đó nằm ở [`DANH_GIA.md`](./dynamic-core/DANH_GIA.md).
+Mã nguồn, [`ARCHITECTURE.md`](../ARCHITECTURE.md), [ma trận bằng chứng](../website/docs/evidence-matrix.md) và [`BACKLOG.md`](./dynamic-core/BACKLOG.md) lần lượt là nguồn cho contract đã triển khai, mức kiểm chứng và giới hạn hiện tại.
 
 ## 1. Cách đọc hai kiến trúc
 
@@ -33,10 +33,10 @@ Các mức dưới đây đánh giá phạm vi contract, không phải mức tr�
 
 Mỗi kết luận phải đi kèm một trong các mức bằng chứng sau:
 
-- **Tự động:** có kiểm backend, API hoặc trình duyệt được liệt kê trong [ma trận bằng chứng](../../website/docs/evidence-matrix.md).
+- **Tự động:** có kiểm backend, API hoặc trình duyệt được liệt kê trong [ma trận bằng chứng](../website/docs/evidence-matrix.md).
 - **Kiểm tại mốc:** có kết quả tái lập được ghi tại một commit cụ thể, nhưng tài liệu này không khẳng định đã chạy lại trong lần đối chiếu.
 - **Đọc mã:** xác nhận contract từ mã và tài liệu kiến trúc, chưa có kiểm tự động cho toàn bộ nhận định.
-- **Giới hạn:** năng lực chỉ đúng trong ranh giới hoặc hạn chế được ghi ở [`BACKLOG.md`](./BACKLOG.md).
+- **Giới hạn:** năng lực chỉ đúng trong ranh giới hoặc hạn chế được ghi ở [`BACKLOG.md`](./dynamic-core/BACKLOG.md).
 
 ## 2. Ánh xạ thuật ngữ và kiến trúc
 
@@ -54,10 +54,10 @@ Nguồn giáo trình cho từng nhóm hàng trong bảng:
 | Giáo trình | Ý nghĩa | DX-OS hiện tại | Kết luận | Bằng chứng và giới hạn |
 |---|---|---|---|---|
 | Kiến trúc doanh nghiệp và luồng giá trị | Căn chỉnh nghiệp vụ, dữ liệu, ứng dụng và công nghệ theo một luồng có giá trị | Tệp mô hình giữ nghiệp vụ; PostgreSQL giữ dữ liệu; API và giao diện đọc cùng metadata; hạ tầng nằm ở `deploy/` | Phù hợp một phần ở phạm vi một hệ thống hồ sơ; lõi không thay công cụ lập kiến trúc doanh nghiệp | Đọc mã; chưa đánh giá hiệu quả của một luồng giá trị tại tổ chức thật |
-| H-P-D-I | Chuyển quyền điều khiển từ con người sang quy trình, dữ liệu và trí tuệ, nhưng vẫn giữ con người trong vòng quyết định | H có SSO và hộp việc; P có quy trình và rào chắn; D có dữ liệu, lịch sử, báo cáo và danh mục; I chưa có | Có các contract H, P và D trong phạm vi sản phẩm; không đồng nghĩa đã bao phủ đầy đủ từng không gian; I còn thiếu và được theo dõi ở #210, #211 | Tự động cho SSO, quy trình và API dữ liệu; giới hạn phạm vi H-P-D-I ở [`DANH_GIA.md`](./DANH_GIA.md) |
+| H-P-D-I | Chuyển quyền điều khiển từ con người sang quy trình, dữ liệu và trí tuệ, nhưng vẫn giữ con người trong vòng quyết định | H có SSO và hộp việc; P có quy trình và rào chắn; D có dữ liệu, lịch sử, báo cáo và danh mục; I chưa có | Có các contract H, P và D trong phạm vi sản phẩm; không đồng nghĩa đã bao phủ đầy đủ từng không gian; I còn thiếu và được theo dõi ở #210, #211 | Tự động cho SSO, quy trình và API dữ liệu; giới hạn phạm vi H-P-D-I ở [`DANH_GIA.md`](./dynamic-core/DANH_GIA.md) |
 | DTI và radar HPDI | Đánh giá mức trưởng thành số của cả tổ chức | Không có bộ khảo sát hoặc thuật toán DTI; `docs/TARGETS.md` và `docs/SIZING.md` chỉ đo sản phẩm | Ngoài phạm vi contract của lõi; không được dùng số đo kỹ thuật thay cho DTI tổ chức | Đọc mã; chưa có đánh giá trưởng thành của một tổ chức thật |
 | 5 RÕ, RACI, SMART | Làm rõ vai, trách nhiệm, quy trình, tiêu chuẩn và công cụ trước khi số hóa | Vai, quyền theo dòng, người xử lý, trạng thái, hành động, hạn và ràng buộc nằm trong tệp mô hình | Phù hợp một phần về khả năng thực thi; KPI, OKR và thiết kế tổ chức vẫn do người triển khai quyết định | Tự động cho quyền và quy trình; không kiểm chứng chất lượng thiết kế tổ chức |
-| Poka-Yoke | Chặn thao tác sai tại giao diện và nơi lưu dữ liệu | API kiểm trường và quy trình; PostgreSQL giữ các ràng buộc có thể biên dịch; trạng thái chỉ đổi qua Flowable | Phù hợp trong phạm vi các quy tắc mà tệp mô hình biểu diễn được | Tự động; điều kiện `when` và quyền theo trường còn giới hạn trong [`BACKLOG.md`](./BACKLOG.md) |
+| Poka-Yoke | Chặn thao tác sai tại giao diện và nơi lưu dữ liệu | API kiểm trường và quy trình; PostgreSQL giữ các ràng buộc có thể biên dịch; trạng thái chỉ đổi qua Flowable | Phù hợp trong phạm vi các quy tắc mà tệp mô hình biểu diễn được | Tự động; điều kiện `when` và quyền theo trường còn giới hạn trong [`BACKLOG.md`](./dynamic-core/BACKLOG.md) |
 | Kiến trúc lắp ghép | Tách công cụ và nối qua API để thay từng phần khi chạm ngưỡng | Lõi headless, OpenAPI theo mô hình, OIDC/PKCE, client máy, webhook và các điểm mở rộng | Phù hợp ở bề mặt tích hợp; chưa chứng minh mọi thành phần lõi thay được độc lập | Tự động cho chế độ lõi, client và webhook; chưa có giao diện ngoài thật gọi lõi |
 | Một nguồn sự thật | Không nhập lại và không có nhiều bản dữ liệu cạnh tranh | Dữ liệu nghiệp vụ, lịch sử quy trình và outbox nằm trong PostgreSQL; backend là kết nối ghi duy nhất | Phù hợp trong ranh giới dữ liệu do một bản cài lõi quản lý | Đọc mã; không đánh giá đồng bộ với nguồn dữ liệu ngoài |
 | SSO và RBAC | Một định danh, vai và thu hồi quyền tập trung | Keycloak giữ tài khoản; vai theo từng mô hình; đơn vị dùng chung; gateway và backend cùng kiểm token | Phù hợp trong phạm vi vai và quyền theo dòng | Tự động; thay đổi vai và đơn vị có thể chậm tối đa tuổi token |
@@ -73,8 +73,8 @@ Nguồn giáo trình cho từng nhóm hàng trong bảng:
 | GitOps, sao lưu và phục hồi | Cấu hình có phiên bản, tự phát hiện lệch và phục hồi có kiểm soát | `dxos gitops`, plan/apply/rollback, `dxos reconcile`, sao lưu mã hóa và lệnh kiểm khôi phục | Phù hợp trong phạm vi bản cài Compose một máy | Tự động cho sao lưu/khôi phục; GitOps và reconcile có phần kiểm tay, chưa chứng minh phục hồi thảm họa đa máy |
 | Quản trị thay đổi, ROI và 5S Số | Chọn luồng trọng yếu, đào tạo, duy trì kỷ luật và chỉ mở rộng khi có số đo | Tài liệu có bài thử, số đo công sức, sizing và chi phí tham khảo; lõi không quản trị hành vi tổ chức | Ngoài phạm vi contract của lõi; thuộc đội triển khai và chủ quy trình | Kiểm tại mốc cho benchmark; chưa có khách hàng thật, bài thử người thật hoặc số đo công vận hành hằng tháng |
 
-Các contract trên được mô tả trong [`ARCHITECTURE.md`](../../ARCHITECTURE.md), [`MODEL.md`](../MODEL.md), [`INTEGRATIONS.md`](../INTEGRATIONS.md), [`REPORTING.md`](../REPORTING.md) và [`OPERATIONS.md`](../OPERATIONS.md).
-Trạng thái kiểm và giới hạn chi tiết không được suy ra từ bảng này; chúng nằm trong [ma trận bằng chứng](../../website/docs/evidence-matrix.md) và [`BACKLOG.md`](./BACKLOG.md).
+Các contract trên được mô tả trong [`ARCHITECTURE.md`](../ARCHITECTURE.md), [`MODEL.md`](./MODEL.md), [`INTEGRATIONS.md`](./INTEGRATIONS.md), [`REPORTING.md`](./REPORTING.md) và [`OPERATIONS.md`](./OPERATIONS.md).
+Trạng thái kiểm và giới hạn chi tiết không được suy ra từ bảng này; chúng nằm trong [ma trận bằng chứng](../website/docs/evidence-matrix.md) và [`BACKLOG.md`](./dynamic-core/BACKLOG.md).
 
 ## 3. Đối chiếu DX-Ticket
 
@@ -96,8 +96,8 @@ Nguồn chính là [mục 6.2](https://github.com/tanhtanhvn/DX-OS/blob/a955d4ab
 | Lịch sử và bằng chứng | Cột cờ chống gửi lặp, snapshot và báo cáo kỳ | Idempotency, outbox, lịch sử nối hash, điểm neo, archive Parquet và mẫu in PDF | Khác cách làm và có thêm cơ chế phát hiện sửa trong phạm vi đã kiểm | Tự động; chuỗi hash phát hiện chứ không ngăn sửa, điểm neo cùng máy chủ không chống được người kiểm soát cả cơ sở dữ liệu và kho tệp |
 | Phân tích và AI | Looker theo SLA/CSAT; Gemini đọc CSV và gợi ý hướng xử lý | `stats`, `report`, CSV và `report_ro` đã có; AI chưa có | Có contract báo cáo cơ bản của D; chưa có I | Tự động một phần cho báo cáo; AI chưa có mã hoặc kiểm |
 
-Mẫu [`examples/effort-benchmark/support.yaml`](../../examples/effort-benchmark/support.yaml) kiểm một lát cắt tương đương: tạo và sửa, quyền xem, giao và bắt đầu, nhập kết quả, đánh giá và đóng, lịch sử và tệp đính kèm.
-Kết quả ở [`examples/effort-benchmark/README.md`](../../examples/effort-benchmark/README.md) là 28 dòng YAML thay cho 347 dòng Java trong phạm vi đó, cùng 33 kiểm API và 9 bước giao diện đã đạt tại commit và môi trường ghi trong bài đo.
+Mẫu [`examples/effort-benchmark/support.yaml`](../examples/effort-benchmark/support.yaml) kiểm một lát cắt tương đương: tạo và sửa, quyền xem, giao và bắt đầu, nhập kết quả, đánh giá và đóng, lịch sử và tệp đính kèm.
+Kết quả ở [`examples/effort-benchmark/README.md`](../examples/effort-benchmark/README.md) là 28 dòng YAML thay cho 347 dòng Java trong phạm vi đó, cùng 33 kiểm API và 9 bước giao diện đã đạt tại commit và môi trường ghi trong bài đo.
 Đây là bằng chứng tại mốc, không phải xác nhận rằng lần đối chiếu tài liệu này đã chạy lại các kiểm đó.
 Kết quả này chứng minh khả năng biểu diễn luồng cơ bản, không chứng minh lõi là bản sao đầy đủ của DX-Ticket trong giáo trình.
 
@@ -118,4 +118,4 @@ Ba nhóm không nên đưa vào lõi chỉ để giống giáo trình:
 AI đã có issue #210 và việc xác minh yêu cầu phủ H-P-D-I đã có issue #211, nên tài liệu không tạo backlog trùng cho hai việc đó.
 Những phần còn thiếu khác gồm không gian tri thức tích hợp, biểu mẫu công khai của DX-Ticket và các năng lực dữ liệu đa nguồn.
 Việc xếp chúng vào lõi, ứng dụng Tầng 2 hay điểm mở rộng phải dựa trên yêu cầu chính thức, ít nhất ba miền sử dụng hoặc một nhu cầu tích hợp cụ thể.
-Chưa có quyết định nào về ba phần này nên chúng chưa có dòng trong [`BACKLOG.md`](./BACKLOG.md); bản đối chiếu với đề thi ở [`DANH_GIA.md`](./DANH_GIA.md).
+Chưa có quyết định nào về ba phần này nên chúng chưa có dòng trong [`BACKLOG.md`](./dynamic-core/BACKLOG.md); bản đối chiếu với đề thi ở [`DANH_GIA.md`](./dynamic-core/DANH_GIA.md).

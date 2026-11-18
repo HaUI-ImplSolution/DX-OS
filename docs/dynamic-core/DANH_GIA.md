@@ -2,7 +2,7 @@
 
 Đối chiếu lõi dynamic với đề thi, thể lệ, chuẩn của một repository nguồn mở và tài liệu dự thi công khai của đội Signet, rồi nêu các hướng mở rộng lõi.
 Việc còn thiếu và chỗ lệch hướng nằm ở [`BACKLOG.md`](./BACKLOG.md); hướng đi của lõi ở [`README.md`](./README.md).
-Số liệu kiểm ngày 14/11/2026 trên nhánh `Khuong/main` và API công khai của GitHub.
+Số liệu kiểm ngày 18/11/2026 trên nhánh `Khuong/main` và API công khai của GitHub.
 Mỗi mục ghi một trong bốn mức: Đạt, Đạt có điều kiện, Rủi ro, Chưa kiểm; tài liệu này không ghi số điểm, vì việc chấm là của Ban giám khảo.
 Bản đánh giá nêu cả điểm yếu và những chỗ mình chưa kiểm được.
 
@@ -54,12 +54,12 @@ Phần còn lại của bảy cụm là tầm nhìn của đề, phủ thêm là
 
 | Tiêu chí | Điểm | Đã có | Mức | Còn thiếu |
 |---|---|---|---|---|
-| Quản lý mã nguồn trên Internet | 5 | GitHub công khai; 998 commit trên `Khuong/main`; 201 pull request đã gộp; 20 kiểm tra của CI đều xanh trên pull request gần nhất | Đạt | Đóng góp tập trung: trong 757 commit của người thật, một thành viên có 534 (khoảng 70%), hai người còn lại 116 và 106 |
-| Giấy phép OSI | 10 | Apache-2.0 cho mã, tài liệu, ảnh, video và sơ đồ; OFL-1.1 cho hai tệp phông; `LICENSE` toàn văn; `NOTICE` có mục "Mục đích của giấy phép"; dòng SPDX ở tệp mã; `reuse lint` đạt 564 trên 564 tệp; CI kiểm giấy phép của mọi gói, của `REUSE.toml` và của `LICENSES/`; chỉ hai gói dữ liệu chỉ đọc lúc dựng trang docs nằm ngoài danh sách OSI, nêu tên kèm lý do ở mục 7 của `DEPENDENCIES.txt` | Đạt | Không có |
+| Quản lý mã nguồn trên Internet | 5 | GitHub công khai; 1065 commit trên `Khuong/main`; 220 pull request đã gộp; 23 kiểm tra của CI đều xanh trên pull request #296, và workflow trên `main` đều xanh | Đạt | Đóng góp tập trung: trong 776 commit không gộp (tính theo tên tác giả), một thành viên có 521 (khoảng 67%), hai người còn lại 117 và 92 |
+| Giấy phép OSI | 10 | Apache-2.0 cho mã, tài liệu, ảnh, video và sơ đồ; OFL-1.1 cho hai tệp phông; `LICENSE` toàn văn; `NOTICE` có mục "Mục đích của giấy phép"; dòng SPDX ở tệp mã; `reuse lint` đạt 579 trên 579 tệp; CI kiểm giấy phép của mọi gói, của `REUSE.toml` và của `LICENSES/`; chỉ hai gói dữ liệu chỉ đọc lúc dựng trang docs nằm ngoài danh sách OSI, nêu tên kèm lý do ở mục 7 của `DEPENDENCIES.txt` | Đạt | Không có |
 | Bản phát hành | 5 | Tám bản theo SemVer, mỗi bản có `.tar.gz`, `.sha256` và SBOM, không có `.zip` do đội đăng | Đạt | Bản phát hành chỉ có SHA-256, chưa ký |
-| Dịch từ mã nguồn | 10 | Cấu hình ở `.env` trước khi dựng, Docker, Maven wrapper và npm, cài ra ngoài thư mục mã nguồn, CI cài từ gói phát hành và chạy trình duyệt trên stack rỗng; công cụ cần có trên máy chạy đã khai giấy phép; ngày 14/11 mình clone `Khuong/main` vào thư mục trống và chạy đúng các lệnh của README (`make_env.sh`, `docker compose up -d --build`, `dxos admin`): 9 dịch vụ `healthy`, 5 địa chỉ trả 200, 122 giây | Đạt | Lần chạy dùng bộ nhớ đệm của Docker nên chưa đo trên máy hoàn toàn mới; mới chạy trên `Khuong/main`, chưa chạy trên `main` |
+| Dịch từ mã nguồn | 10 | Cấu hình ở `.env` trước khi dựng, Docker, Maven wrapper và npm, cài ra ngoài thư mục mã nguồn, CI cài từ gói phát hành và chạy trình duyệt trên stack rỗng; công cụ cần có trên máy chạy đã khai giấy phép; ngày 18/11 mình clone `Khuong/main` vào thư mục trống và chạy đúng các lệnh của README (`make_env.sh`, `docker compose up -d --build`, `dxos admin`): 9 dịch vụ `healthy`, 4 địa chỉ trả 200; cùng ngày cài `v2.0.1` từ release bằng `dxos-install.sh` và làm theo `docs/QUICKSTART.md` cả hai đường (CLI và giao diện web) đều chạy đúng | Đạt | Lần chạy dùng bộ nhớ đệm image của Docker nên chưa đo trên máy hoàn toàn mới; mới chạy trên `Khuong/main`, chưa chạy trên `main` hoặc Windows; `dxos start` chưa tạo `admin` (#328) |
 | Thư viện và gói đính kèm | 10 | `DEPENDENCIES.txt` có tên, phiên bản, giấy phép, vai trò, trang chủ và nguồn; SBOM khớp tệp khóa; image ghim digest; không chép và không vá mã của dự án khác | Đạt | Không có |
-| Tài liệu và giao tiếp | 10 | README hai thứ tiếng, CHANGELOG, mẫu issue, CONTRIBUTING, SECURITY, quy tắc ứng xử, trang docs, `ROADMAP.md`, Discussions; trang Contributors hiện đủ ba thành viên (GitHub đếm 689, 144 và 124 lần đóng góp, kể cả commit gộp) | Đạt có điều kiện | Lịch sử issue mỏng so với việc đã làm: 55 issue (36 đã đóng) so với 201 pull request, và khoảng 20 issue đã xong chờ pull request vào `main` đóng; 30 sao, 0 fork, một chủ đề ở Discussions; không issue nào gắn nhãn `good first issue` hay `help wanted`; phần lớn tài liệu chỉ có tiếng Việt |
+| Tài liệu và giao tiếp | 10 | README hai thứ tiếng, CHANGELOG, mẫu issue, CONTRIBUTING, SECURITY, quy tắc ứng xử, trang docs, `ROADMAP.md`, Discussions; trang Contributors ngày 18/11 liệt kê ba thành viên (555, 117 và 93 commit trong ba tháng gần nhất, không kể commit gộp), cùng `claude` (394) và `codex` (32) do dòng đồng tác giả trong commit, và dependabot; API `contributors` chỉ trả hai người | Đạt có điều kiện | Lịch sử issue mỏng so với việc đã làm: 63 issue (59 đã đóng) so với 220 pull request đã gộp; 30 sao, 0 fork, một chủ đề ở Discussions; hai nhãn `good first issue` và `help wanted` đã có nhưng chưa issue nào dùng; phần lớn tài liệu chỉ có tiếng Việt |
 
 Các việc ở cột cuối nằm ở `BACKLOG.md`, mục 2 và 3.
 Thư gửi bài (thành viên, người hướng dẫn, đường dẫn kho, cam kết bản quyền) không nằm trong bảng chấm và do đội gửi; đề không đòi báo cáo kỹ thuật, slide hay video.
@@ -87,7 +87,7 @@ Số liệu của họ ghi theo ngày họ tra.
 | Kho của đội được mô tả là "DX-Farm và DX-Lab, một lõi nhiều ứng dụng" | Mô tả này là của bản cũ; nhánh `main` nay là lõi dynamic, nên người ngoài đọc đúng bản hiện hành |
 | Giám khảo vòng trường của họ nhận xét thêm một ứng dụng vẫn phải viết nhiều mã; họ đáp bằng bảng tạo không cần mã, mẫu in và báo cáo khai báo bằng dữ liệu | Hướng "khai báo là có" đang được đội khác đi theo; phần còn riêng của đội là vòng đời mô hình và quy tắc bất biến của quy trình |
 | Họ phủ rộng bảy cụm: két bí mật, tường lửa ứng dụng, che dữ liệu cá nhân, tìm toàn văn, NGSI-LD, kịch bản tự động | Đội đi sâu thay vì rộng; bài trình bày cần nói rõ đây là lựa chọn |
-| Kho mã của họ: mọi tệp đạt chuẩn REUSE, 209 issue, bảy bản phát hành, Discussions bật, bản chạy công khai được CI kiểm hằng ngày | Đội nay cũng đạt REUSE cho cả 564 tệp, có bảy bản phát hành và một bản chạy công khai; còn kém ở số issue và mức hoạt động của Discussions, và bản công khai chưa được CI kiểm hằng ngày (có `deploy/online-check.sh` để chạy tay hoặc theo cron) |
+| Kho mã của họ: mọi tệp đạt chuẩn REUSE, 209 issue, bảy bản phát hành, Discussions bật, bản chạy công khai được CI kiểm hằng ngày | Đội nay cũng đạt REUSE cho cả 579 tệp, có bảy bản phát hành và một bản chạy công khai; còn kém ở số issue và mức hoạt động của Discussions, và bản công khai chưa được CI kiểm hằng ngày (có `deploy/online-check.sh` để chạy tay hoặc theo cron) |
 | Họ đọc Tầng 2 là cổng dịch vụ dùng chung, còn ứng dụng ngành thuộc Tầng 3 | Cùng kết luận với mục "Đối chiếu với đề thi" của `README.md` |
 | Bảng tham chiếu của đề có năm thành phần không đạt OSI: Vault, n8n, Redpanda, MongoDB, immudb | Đội không dùng thành phần nào trong số này; nên nêu thành một quyết định thiết kế khi trình bày |
 | Câu hội đồng dễ hỏi: lõi không giao diện mà sao có trang quản trị Keycloak | Đã trả lời ở mục 1: `/admin` mặc định đóng và `dxos start --core` chạy riêng Tầng 1 |
@@ -145,8 +145,7 @@ Cột Trạng thái ghi quyết định của đội: đề xuất đã chốt l
 
 Đối chiếu với hồ sơ cộng đồng của GitHub, tiêu chí của huy hiệu OpenSSF Best Practices và Scorecard, và tệp có ở bảy dự án khác (Keycloak, APISIX, Supabase, Directus, Frappe, Strapi, Signet).
 Huy hiệu OpenSSF Best Practices mức passing đã được cấp; workflow `Scorecard` chạy hằng tuần và khi đẩy lên `main`, chưa có kết quả.
-GitHub chấm hồ sơ cộng đồng của repository là 87 trên 100, trong khi Signet được 100.
-Phần thiếu không phải mẫu issue (cả hai repository đều bị API ghi `issue_template: false`) mà là cài đặt "Reported content", Signet bật còn DX-OS chưa; đó là cài đặt của chủ repository.
+GitHub chấm hồ sơ cộng đồng của repository là 100 trên 100, cùng mức với Signet; mẫu issue có thật dù API ghi `issue_template: false`.
 
 | Hạng mục | DX-OS | Các dự án khác | Mức |
 |---|---|---|---|
@@ -154,15 +153,15 @@ Phần thiếu không phải mẫu issue (cả hai repository đều bị API gh
 | Mẫu issue | Có `.github/ISSUE_TEMPLATE` (hai mẫu và `config.yml`); API hồ sơ cộng đồng ghi `false` cho cả DX-OS lẫn Signet nên không phải điểm trừ riêng | Phần lớn có | Đạt |
 | `SECURITY.md`, quy trình báo lỗ hổng | Có, kèm mốc phản hồi và quy tắc thử trên bản trực tuyến; private vulnerability reporting đang bật (API trả `enabled: true`) | Một nửa có | Đạt |
 | `CHANGELOG`, `ROADMAP`, `NOTICE` | Có cả ba | Rất ít dự án có đủ | Đạt |
-| Giấy phép đọc được bằng máy | `reuse lint` đạt 564 trên 564 tệp; SBOM kèm mỗi bản phát hành | Ít dự án có | Đạt |
-| Cập nhật và quét phụ thuộc | Dependabot, Trivy, gitleaks; tab Security ngày 14/11 có 6 cảnh báo mở (1 cao, 4 vừa, 1 thấp), đều ở thư viện npm gián tiếp (`decode-uri-component`, `react-router` trong web; `uuid`, `deepmerge` trong trang docs) và đều mở từ 6 đến 11/11, chưa cái nào quá 60 ngày; quét độc lập bằng Trivy 0.58.1 (cùng image với CI) trên các tệp khóa thấy 0 lỗ hổng cao hoặc nghiêm trọng, và các lỗ hổng mức vừa bị giới hạn bởi phiên bản mà `react-admin` và Docusaurus cho phép | Phần lớn có công cụ cập nhật | Đạt có điều kiện: cần nâng các thư viện này khi bản vá tương thích ra |
+| Giấy phép đọc được bằng máy | `reuse lint` đạt 579 trên 579 tệp; SBOM kèm mỗi bản phát hành | Ít dự án có | Đạt |
+| Cập nhật và quét phụ thuộc | Dependabot, Trivy, gitleaks; tab Security ngày 18/11 có 5 cảnh báo Dependabot mở (1 cao, 4 vừa), đều ở thư viện npm gián tiếp (`decode-uri-component`, `react-router` trong web; `uuid` trong trang docs) và đều mở từ 6 đến 11/11, chưa cái nào quá 60 ngày; quét độc lập ngày 14/11 bằng Trivy 0.58.1 (cùng image với CI) trên các tệp khóa thấy 0 lỗ hổng cao hoặc nghiêm trọng, và các lỗ hổng mức vừa bị giới hạn bởi phiên bản mà `react-admin` và Docusaurus cho phép | Phần lớn có công cụ cập nhật | Đạt có điều kiện: cần nâng các thư viện này khi bản vá tương thích ra |
 | Bảo vệ nhánh và tag | Hai ruleset đang `active`: `main` (bắt buộc pull request, 16 kiểm tra phải xanh, một đối tượng được bỏ qua) và tag `v*` bất biến | Không đo được từ ngoài | Đạt |
 | `.editorconfig` | Thêm ngày 14/11 | 6 trên 7 dự án có | Đạt |
 | `CODEOWNERS` | `.github/CODEOWNERS` nêu ba thành viên là chủ sở hữu của mọi đường dẫn, và ruleset của `main` đòi một chủ sở hữu duyệt pull request; chưa chia người phụ trách theo vùng | 4 trên 7 có | Đạt |
 | Phân tích tĩnh (SAST) | Mã web chạy Biome (`npm run lint`) ở workflow `Frontend`; SpotBugs với find-sec-bugs chạy ở bước `verify` của backend và làm hỏng build khi có phát hiện chưa được giải thích; ngày 14/11 đã duyệt 67 phát hiện còn lại sau khi lọc cảnh báo lộ tham chiếu của record và DTO: 37 về SQL (tên bảng và cột đều qua `Sql.ident`, giá trị qua tham số `?`), 7 về giá trị có thể null, 5 về đa luồng và 18 khác, không phát hiện chỗ nào khai thác được; mỗi nhóm có lý do ở `backend/spotbugs-exclude.xml` | 2 trên 7 có CodeQL | Đạt: công cụ chạy ở mọi lần build, mọi phát hiện đã duyệt và build chặn phát hiện mới |
 | Bản phát hành có chữ ký | Chỉ có SHA-256; chưa ký | Không có trong khảo sát | Thiếu, ưu tiên thấp |
 | `GOVERNANCE.md`, `MAINTAINERS` | Chưa có | Chỉ Keycloak có | Chưa cần với nhóm ba người |
-| Huy hiệu OpenSSF Best Practices, Scorecard | Huy hiệu mức passing đã cấp ngày 14/11 ([hồ sơ](https://www.bestpractices.dev/projects/16682)): 57 tiêu chí Met, 7 N/A và 3 Unmet ở mức khuyến nghị (`test_most`, `warnings_strict`, `dynamic_analysis`); lời giải thích từng tiêu chí trỏ về tệp của repository trên `main`, nên hồ sơ chỉ khớp sau khi nhánh tích hợp vào `main`; workflow `Scorecard` đưa kết quả vào tab Security, chưa có lần chạy nào | Không có dự án nào trong khảo sát chạy Scorecard | Đạt cho huy hiệu; Scorecard chưa có kết quả |
+| Huy hiệu OpenSSF Best Practices, Scorecard | Huy hiệu mức passing đã cấp ngày 14/11 ([hồ sơ](https://www.bestpractices.dev/projects/16682)): 57 tiêu chí Met, 7 N/A và 3 Unmet ở mức khuyến nghị (`test_most`, `warnings_strict`, `dynamic_analysis`); lời giải thích từng tiêu chí trỏ về tệp của repository trên `main`, nên hồ sơ chỉ khớp sau khi nhánh tích hợp vào `main`; workflow `Scorecard` chạy ngày 17/11 và đưa 8 cảnh báo vào tab Security (Maintained, CodeReview, Vulnerabilities, Fuzzing, SAST, TokenPermissions hai cảnh báo, BranchProtection), chưa duyệt từng cảnh báo | Không có dự án nào trong khảo sát chạy Scorecard | Đạt cho huy hiệu; Scorecard có kết quả, còn 8 cảnh báo chờ duyệt |
 
 Về phân tích tĩnh, CodeQL không hợp nguyên tắc công cụ phải có giấy phép OSI của dự án vì điều khoản của công cụ dòng lệnh không thuộc OSI.
 Backend dùng SpotBugs và web dùng Biome (ESLint không chạy được với TypeScript 7), cả hai đều là phần mềm nguồn mở.
@@ -175,7 +174,8 @@ Backend dùng SpotBugs và web dùng Biome (ESLint không chạy được với 
 
 1. **Chưa có phần AI.** Chữ I của H-P-D-I chưa có và chưa hỏi Ban tổ chức; ảnh hưởng đến mức hoàn thiện và tính nguyên gốc ở buổi chung kết, không ảnh hưởng điểm kho mã.
 2. **Lịch sử issue mỏng và đóng góp tập trung vào một người.** Không mất điểm trực tiếp theo thể lệ, nhưng làm yếu bằng chứng về dự án có cộng đồng.
-3. **Chưa kiểm được:** kết quả OpenSSF Scorecard, và việc dựng trên máy hoàn toàn mới không có bộ nhớ đệm của Docker.
-4. **Thiếu so với chuẩn repository:** `CODEOWNERS` chưa chia theo vùng; ở mọi vùng của repository một người viết từ 62 đến 100% commit, nên việc chia người phụ trách là quyết định của nhóm.
+3. **Lỗi khi cài trên máy sạch:** `dxos start` không tạo `admin` (#328), đã có issue, chưa sửa.
+4. **Chưa kiểm được:** việc dựng trên máy hoàn toàn mới không có bộ nhớ đệm của Docker, cài trên Windows, và 8 cảnh báo của OpenSSF Scorecard chưa duyệt.
+5. **Thiếu so với chuẩn repository:** `CODEOWNERS` chưa chia theo vùng; một người viết khoảng hai phần ba commit, nên việc chia người phụ trách là quyết định của nhóm.
 
 Các việc còn lại và thứ tự làm nằm ở `BACKLOG.md`.

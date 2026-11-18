@@ -2,7 +2,7 @@
 
 Định hướng và phạm vi của lõi dynamic.
 Việc chưa làm, chưa kiểm và giới hạn đã biết nằm ở [`BACKLOG.md`](./BACKLOG.md); cách kiểm ở [`docs/TESTING.md`](../TESTING.md).
-Đối chiếu thuật ngữ, kiến trúc H-P-D-I và DX-Ticket của giáo trình nằm ở [`DX_OS_TEXTBOOK.md`](./DX_OS_TEXTBOOK.md).
+Đối chiếu thuật ngữ, kiến trúc H-P-D-I và DX-Ticket của giáo trình nằm ở [`DX_OS_TEXTBOOK.md`](../DX_OS_TEXTBOOK.md).
 
 ## Tóm tắt
 

@@ -1,0 +1,15 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
+# SPDX-License-Identifier: Apache-2.0
+format: 1
+name: order_approval
+roles:
+  - {name: REQUESTER, description: Người nộp đơn}
+  - {name: APPROVER, description: Người duyệt đơn, staff: true}
+entities:
+  order_request:
+    label: Đơn đặt hàng
+    fields:
+      title: {type: text, label: Tiêu đề, required: true}
+      amount: {type: number, label: Số tiền, required: true}
+    access: {REQUESTER: own, APPROVER: all}
+    process: {family: approval, handler: APPROVER}

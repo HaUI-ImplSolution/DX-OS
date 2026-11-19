@@ -7,10 +7,6 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ## [Unreleased]
 
-### Phát hành
-
-- Workflow `Platform` dựng năm image một lần và giữ trong cache theo hash của mã nguồn, các job kiểm đầu-cuối nạp image từ đó thay vì tự dựng; thời gian chờ giữa các lần chạy lại có thêm phần ngẫu nhiên.
-
 ## [2.0.2] - 2026-11-19
 
 Sửa và bổ sung sau bản `2.0.1`: cài mới tạo được tài khoản `admin`, Hộp việc đưa hồ sơ mới lên đầu, kế hoạch mở rộng quyền chờ duyệt, điều kiện nối nhiều phép, hướng dẫn bắt đầu nhanh và chữ ký cho bản phát hành.
@@ -26,6 +22,10 @@ Nâng cấp từ `2.0.1` giữ nguyên dữ liệu.
 - Điều kiện `when` của hành động và `required_when` của trường ghép được nhiều phép so sánh bằng `and`, `or`, `not` và ngoặc; điều kiện một phép viết như cũ.
 - Tệp của bản phát hành và image `dxos-*` được ký bằng Sigstore khi phát hành, kiểm bằng `gh attestation verify` (xem `docs/OPERATIONS.md`).
 
+### Giao diện
+
+- Nút Xuất CSV chờ rồi hỏi lại khi cổng API từ chối vì hết hạn mức (429), thay vì dừng hoặc bỏ tên người, và báo khi có tên người không tra được nên được ghi bằng mã.
+
 ### Ứng dụng ngoài
 
 - `dxos client add` và `dxos client rotate` nhận `--env <TIỀN_TỐ>` và chỉ in hai dòng `<TIỀN_TỐ>_CLIENT_ID` và `<TIỀN_TỐ>_CLIENT_SECRET`, nối thẳng vào tệp `.env` của ứng dụng được.
@@ -38,6 +38,7 @@ Nâng cấp từ `2.0.1` giữ nguyên dữ liệu.
 - Workflow `Release Images` và `Release Package` đặt quyền ghi ở job cần ghi, còn cấp workflow chỉ đọc.
 - CI tự chạy lại khi một job lỗi vì mạng hoặc hạn mức của dịch vụ tải về (Maven Central, GitHub API): bước dựng image chạy lại trong job, workflow `Rerun` chạy lại job lỗi, và kiểm giấy phép của phiên bản giữ câu trả lời của GitHub trong cache.
 - `backend/Dockerfile` tải Maven một lần cho cả hai image và thử `repo1.maven.org` khi host mặc định từ chối.
+- Workflow `Platform` dựng năm image một lần và giữ trong cache theo hash của mã nguồn, các job kiểm đầu-cuối nạp image từ đó thay vì tự dựng; thời gian chờ giữa các lần chạy lại có thêm phần ngẫu nhiên.
 
 ## [2.0.1] - 2026-11-17
 

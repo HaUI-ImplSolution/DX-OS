@@ -25,6 +25,8 @@ export const app: Record<string, string> = {
   "Xuất CSV": "Export CSV",
   "Đã xuất {n} hồ sơ": "Exported {n} records",
   "Đã xuất {n} hồ sơ đầu tiên trong {total}": "Exported the first {n} of {total} records",
+  "Hệ thống đang giới hạn tốc độ, đang chờ để xuất tiếp": "The system is limiting the rate, waiting to continue the export",
+  "Một số tên người không tra được nên được ghi bằng mã.": "Some names could not be found, so those people are written as their ids.",
   // Several records at once
   "{action}: {n} hồ sơ": "{action}: {n} records",
   "Mỗi hồ sơ vẫn qua đủ luật của quy trình; hồ sơ không thực hiện được sẽ báo lý do, các hồ sơ khác vẫn được xử lý.":

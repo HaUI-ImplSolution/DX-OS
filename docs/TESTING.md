@@ -151,6 +151,8 @@ Mỗi mục nêu điều phải thấy; lệnh và biến cấu hình chi tiết
     Hành động cần ghi chú bắt buộc nhập ghi chú; chọn hơn 50 hồ sơ thì nút mờ; vai không có quyền xử lý không có ô chọn.
 15. **Bảng theo trạng thái:** mỗi trạng thái là một cột có tổng số và tối đa 10 thẻ; thẻ mở đúng chi tiết, "Xem cả N hồ sơ" mở danh sách đã lọc; tải lại vẫn ở chế độ bảng; bộ lọc áp cho mọi cột; ở 360 px các cột cuộn bên trong, trang không tràn ngang.
 16. **Xuất CSV:** tệp `<thực thể>-<ngày>.csv` có BOM, một dòng tiêu đề và đúng số dòng của danh sách đã lọc; ô bắt đầu bằng `=` hoặc `@` được thêm dấu nháy; vai chỉ thấy hồ sơ của mình chỉ nhận các dòng đó.
+    Khi cổng API trả 429 giữa lúc xuất (ví dụ hạ `limit-count` của route `api` xuống vài lượt mỗi phút), nút hiện "Hệ thống đang giới hạn tốc độ, đang chờ để xuất tiếp", chờ tối đa khoảng một phút rồi hỏi lại và xuất đủ; còn bị từ chối thì báo lỗi.
+    Khi chỉ việc tra tên người bị từ chối, tệp vẫn được tạo, cột người ghi mã và thông báo cuối nêu "Một số tên người không tra được nên được ghi bằng mã."
 17. **Khối `ui:`:** menu hiện nhóm và biểu tượng khai báo; danh sách mở đúng cột và thứ tự khai báo, nút Cột vẫn hiện đủ cột; biểu mẫu chia nhóm theo `ui.form` với nhóm Khác ở cuối và hiện lời gợi ý; đổi `ui:` khi còn hồ sơ mở vẫn áp dụng được.
 18. **Kiểu và quy tắc trên biểu mẫu** (mẫu Sổ tài sản): `boolean`, `date` và nhiều lựa chọn có ô nhập riêng; mã sai mẫu báo "Không đúng định dạng"; giá trị ngoài khoảng bị từ chối; "Bắt buộc nhập khi" hiện đúng với `required_when`.
     Trường nhiều lựa chọn có `default` là danh sách thì hồ sơ tạo không gửi trường đó nhận danh sách ấy; ở chế độ Điền form, ô mặc định chọn từ `options` và YAML ghi danh sách.

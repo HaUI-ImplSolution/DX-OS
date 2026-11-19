@@ -8,7 +8,9 @@ import HaUI.ImplSolution.dxos.model.Model.Entity;
 import HaUI.ImplSolution.dxos.model.Model.Field;
 import HaUI.ImplSolution.dxos.model.Model.Process;
 import HaUI.ImplSolution.dxos.model.ProcessFamily;
+import HaUI.ImplSolution.dxos.model.Scope;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -17,6 +19,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 // What changes between the running version of a model and a new one, and how risky it is. The
 // names of fields only say what happened through renamed_from: a dropped field and a new one look
@@ -57,6 +60,9 @@ public final class ModelDiff {
   public final Set<String> touchedProcesses = new LinkedHashSet<>();
   // The tables and columns the schema tool may remove, as its plan names them.
   public final Set<String> allowedDrops = new LinkedHashSet<>();
+  // The working calendars of the running model and of the new one, by name.
+  private Map<String, Model.Calendar> calendarsBefore = Map.of();
+  private Map<String, Model.Calendar> calendarsAfter = Map.of();
 
   private ModelDiff() {}
 
@@ -64,6 +70,8 @@ public final class ModelDiff {
   public static ModelDiff between(
       Model running, Model target, Map<String, Map<String, String>> renamesOverride) {
     ModelDiff diff = new ModelDiff();
+    diff.calendarsBefore = running == null ? Map.of() : running.calendars();
+    diff.calendarsAfter = target.calendars();
     Map<String, Entity> before = running == null ? Map.of() : running.entities();
     Set<String> roles = new LinkedHashSet<>();
     if (running != null) {
@@ -102,7 +110,28 @@ public final class ModelDiff {
         diff.touchedProcesses.add(old.name());
       }
     }
+    diff.compareCalendars(before.values(), target.entities().values());
     return diff;
+  }
+
+  // A calendar that no process uses, before or after, would otherwise change the model without a
+  // line in the plan; one a process uses is reported with that process.
+  private void compareCalendars(Collection<Entity> was, Collection<Entity> now) {
+    Set<String> used = new LinkedHashSet<>();
+    Stream.concat(was.stream(), now.stream())
+        .map(Entity::process)
+        .filter(Objects::nonNull)
+        .map(Process::calendar)
+        .filter(Objects::nonNull)
+        .forEach(used::add);
+    Set<String> names = new LinkedHashSet<>(calendarsBefore.keySet());
+    names.addAll(calendarsAfter.keySet());
+    for (String name : names) {
+      if (!used.contains(name)
+          && !Objects.equals(calendarsBefore.get(name), calendarsAfter.get(name))) {
+        changes.add(new Change(Level.SAFE, "CHANGE_CALENDAR", null, null, name));
+      }
+    }
   }
 
   public Level level() {
@@ -333,10 +362,66 @@ public final class ModelDiff {
     return lower ? order > 0 : order < 0;
   }
 
-  private void compareRest(Entity old, Entity entity) {
-    if (!old.access().equals(entity.access())) {
-      changes.add(new Change(Level.SAFE, "CHANGE_ACCESS", entity.name(), null, null));
+  // One change per role whose level moved, named by what it does to the rows the role reaches. No
+  // data moves and the access is read from the model at run time, so a change is SAFE unless it
+  // gives a role more: that takes effect for everyone who holds the role, so it needs accept.
+  private void compareAccess(Entity old, Entity entity) {
+    Set<String> roles = new LinkedHashSet<>(old.access().keySet());
+    roles.addAll(entity.access().keySet());
+    for (String role : roles) {
+      Scope was = old.access().get(role);
+      Scope now = entity.access().get(role);
+      if (was == now) {
+        continue;
+      }
+      String kind =
+          was == null ? "GRANT_ACCESS" : now == null ? "REVOKE_ACCESS" : accessKind(was, now);
+      String detail =
+          role
+              + ": "
+              + (was == null ? "none" : was.key())
+              + " → "
+              + (now == null ? "none" : now.key());
+      boolean gives = "GRANT_ACCESS".equals(kind) || "WIDEN_ACCESS".equals(kind);
+      changes.add(
+          new Change(gives ? Level.MIGRATION : Level.SAFE, kind, entity.name(), null, detail));
+      if (gives) {
+        questions.add(
+            "role "
+                + role
+                + " gets wider access to "
+                + entity.name()
+                + " ("
+                + detail.substring(role.length() + 2)
+                + "); applying gives it at once to everyone who holds the role");
+      }
     }
+  }
+
+  // The levels do not form a line, so they are compared on two counts: how many rows the role
+  // reaches (own and assigned, then unit, then all and read) and whether it may write. Gaining on
+  // either count without losing on the other widens the access, the reverse narrows it, and a move
+  // that gains on one and loses on the other, or on neither, is only reported as a change.
+  private static String accessKind(Scope was, Scope now) {
+    boolean gains = reach(now) > reach(was) || (writes(now) && !writes(was));
+    boolean loses = reach(now) < reach(was) || (!writes(now) && writes(was));
+    return gains == loses ? "CHANGE_ACCESS" : gains ? "WIDEN_ACCESS" : "NARROW_ACCESS";
+  }
+
+  private static int reach(Scope scope) {
+    return switch (scope) {
+      case OWN, ASSIGNED -> 1;
+      case UNIT -> 2;
+      case ALL, READ -> 3;
+    };
+  }
+
+  private static boolean writes(Scope scope) {
+    return scope != Scope.READ;
+  }
+
+  private void compareRest(Entity old, Entity entity) {
+    compareAccess(old, entity);
     if (!Objects.equals(old.ownerVia(), entity.ownerVia())) {
       changes.add(new Change(Level.SAFE, "CHANGE_OWNER_VIA", entity.name(), null, null));
     }
@@ -405,7 +490,8 @@ public final class ModelDiff {
     if (!Objects.equals(before.booking(), after.booking())) {
       changes.add(new Change(Level.SAFE, "CHANGE_BOOKING", entity.name(), null, null));
     }
-    if (!Objects.equals(before.deadline(), after.deadline())) {
+    if (!Objects.equals(before.deadline(), after.deadline())
+        || before.deadlineInDays() != after.deadlineInDays()) {
       changes.add(
           new Change(
               Level.SAFE,
@@ -413,6 +499,18 @@ public final class ModelDiff {
               entity.name(),
               null,
               after.deadline() == null ? "none" : after.deadline().toString()));
+    }
+    if (!Objects.equals(before.calendar(), after.calendar())
+        || (after.calendar() != null
+            && !Objects.equals(
+                calendarsBefore.get(after.calendar()), calendarsAfter.get(after.calendar())))) {
+      changes.add(
+          new Change(
+              Level.SAFE,
+              "CHANGE_CALENDAR",
+              entity.name(),
+              null,
+              after.calendar() == null ? "none" : after.calendar()));
     }
     if (!Objects.equals(before.escalations(), after.escalations())) {
       changes.add(

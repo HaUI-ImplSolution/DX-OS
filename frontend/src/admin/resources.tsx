@@ -75,6 +75,15 @@ export function displayField(entity: EntityMeta | undefined): string {
   return (preferred ?? texts[0])?.name ?? "id";
 }
 
+// The filter a typed text puts on the records a reference input offers: a part of the name that shows them.
+function searchOf(field: string) {
+  return (text: string) => {
+    if (text === "") return {};
+    if (field !== "id") return { [field]: { like: text } };
+    return /^\d+$/.test(text) ? { id: text } : { id: -1 };
+  };
+}
+
 const DATE_OPTIONS = { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" } as const;
 
 function statusField(entity: EntityMeta) {
@@ -271,7 +280,13 @@ function inputField(field: FieldMeta, catalog: Catalog, fields: FieldMeta[], hin
           label={mark(field.label)}
           reference={resourceName(catalog.model, field.reference ?? "")}
         >
-          <AutocompleteInput label={mark(field.label)} optionText={displayField(target)} validate={validate} />
+          <AutocompleteInput
+            label={mark(field.label)}
+            optionText={displayField(target)}
+            filterToQuery={searchOf(displayField(target))}
+            noOptionsText={t("Không có kết quả khớp")}
+            validate={validate}
+          />
         </ReferenceInput>
       );
     }
@@ -476,16 +491,19 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
 
   // The model file may choose the columns and the sort a list opens with; what a person picks later with
   // the Columns button is kept in the browser and wins over it.
+  // Without a choice, a record with a process opens by the latest change, so a record just resubmitted comes first.
   const listUi = entity.ui?.list;
   const shown = listUi?.columns ?? null;
   const known = [...entity.fields.filter((field) => field.type !== "file").map((field) => field.name), ...(entity.hasProcess ? ["status"] : [])];
   const omit = [
     ...known.filter((name) => shown !== null && !shown.includes(name)),
-    ...EXTRA_COLUMNS.filter((name) => !(shown ?? []).includes(name)),
+    ...EXTRA_COLUMNS.filter((name) => !(shown ?? (entity.hasProcess ? ["updated_at"] : [])).includes(name)),
   ];
   const defaultSort = listUi?.sort
     ? { field: listUi.sort.replace(/^-/, ""), order: listUi.sort.startsWith("-") ? ("DESC" as const) : ("ASC" as const) }
-    : { field: "id", order: "DESC" as const };
+    : entity.hasProcess
+      ? { field: "updated_at", order: "DESC" as const }
+      : { field: "id", order: "DESC" as const };
 
   // The records as a table, or, for an entity with a process, by state; the choice is kept in the browser.
   const ListBody = () => {

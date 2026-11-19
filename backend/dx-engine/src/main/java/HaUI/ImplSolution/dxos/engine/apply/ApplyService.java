@@ -20,6 +20,9 @@ import HaUI.ImplSolution.dxos.model.Model;
 import HaUI.ImplSolution.dxos.model.Model.Entity;
 import HaUI.ImplSolution.dxos.model.Model.Role;
 import HaUI.ImplSolution.dxos.model.ModelParser;
+import HaUI.ImplSolution.dxos.model.ProcessFamily.Comparison;
+import HaUI.ImplSolution.dxos.model.ProcessFamily.Condition;
+import HaUI.ImplSolution.dxos.model.ProcessFamily.Group;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -104,6 +107,7 @@ public class ApplyService {
           "CHANGE_COMPLETION",
           "CHANGE_BOOKING",
           "CHANGE_DEADLINE",
+          "CHANGE_CALENDAR",
           "CHANGE_FLOW");
 
   private final JdbcTemplate jdbc;
@@ -117,6 +121,7 @@ public class ApplyService {
   private final AuditRecorder audit;
   private final ProcessDeployer processes;
   private final RecordCodes codes;
+  private final TemplateResolver templates;
   private final String reportPassword;
   // Kind of step that fails on purpose, so that a stopped apply can be produced in tests.
   private final String faultStep;
@@ -133,6 +138,7 @@ public class ApplyService {
       AuditRecorder audit,
       ProcessDeployer processes,
       RecordCodes codes,
+      TemplateResolver templates,
       @Value("${engine.report-db-password:}") String reportPassword,
       @Value("${engine.fault.apply-step:}") String faultStep) {
     this.jdbc = jdbc;
@@ -146,12 +152,20 @@ public class ApplyService {
     this.audit = audit;
     this.processes = processes;
     this.codes = codes;
+    this.templates = templates;
     this.reportPassword = reportPassword;
     this.faultStep = faultStep.strip();
   }
 
-  public Plan plan(String content) {
-    Model model = ModelParser.parse(content);
+  // The file with extends resolved and parsed; a file without extends is parsed as it is.
+  public TemplateResolver.Parsed parse(String source) {
+    return templates.parse(source);
+  }
+
+  public Plan plan(String source) {
+    TemplateResolver.Parsed file = parse(source);
+    String content = file.content();
+    Model model = file.model();
     return leavingNoSchema(model, () -> plan(model, hash(content), Map.of()));
   }
 
@@ -166,8 +180,10 @@ public class ApplyService {
   // Who applies a model: the token "sub" and the name shown in the version history.
   public record Actor(String id, String name) {}
 
-  public Applied apply(String content, Actor actor, Integer base, Level accept) {
-    Model model = ModelParser.parse(content);
+  public Applied apply(String source, Actor actor, Integer base, Level accept) {
+    TemplateResolver.Parsed file = parse(source);
+    String content = file.content();
+    Model model = file.model();
     return announced(
         "MODEL_APPLIED",
         actor,
@@ -983,11 +999,9 @@ public class ApplyService {
     if (when == null) {
       return null;
     }
-    String source =
-        diff.renames
-            .getOrDefault(check.entity(), Map.of())
-            .getOrDefault(when.field(), when.field());
-    if (!columns.contains(source)) {
+    Map<String, String> renames = diff.renames.getOrDefault(check.entity(), Map.of());
+    if (when.fields().stream()
+        .noneMatch(name -> columns.contains(renames.getOrDefault(name, name)))) {
       return null;
     }
     boolean text =
@@ -1001,17 +1015,40 @@ public class ApplyService {
             : text
                 ? "(" + Sql.ident(column) + " IS NULL OR btrim(" + Sql.ident(column) + ") = '')"
                 : Sql.ident(column) + " IS NULL";
-    String operator =
-        switch (when.op()) {
-          case "==" -> "=";
-          case "!=" -> "<>";
-          default -> when.op();
-        };
-    String value =
-        when.value() instanceof Number number
-            ? new java.math.BigDecimal(number.toString()).toPlainString()
-            : Sql.literal(String.valueOf(when.value()));
-    return "(" + empty + ") AND " + Sql.ident(source) + " " + operator + " " + value;
+    return "(" + empty + ") AND " + conditionSql(when, renames, columns);
+  }
+
+  // The condition as SQL over the columns the table has now; a comparison on a field that has no
+  // column yet is false, and every comparison is true or false so that and, or and not combine
+  // them as they do on a record.
+  private static String conditionSql(
+      Condition condition, Map<String, String> renames, Set<String> columns) {
+    return switch (condition) {
+      case Comparison comparison -> {
+        String source = renames.getOrDefault(comparison.field(), comparison.field());
+        if (!columns.contains(source)) {
+          yield "FALSE";
+        }
+        String operator =
+            switch (comparison.op()) {
+              case "==" -> "=";
+              case "!=" -> "<>";
+              default -> comparison.op();
+            };
+        String value =
+            comparison.value() instanceof Number number
+                ? new java.math.BigDecimal(number.toString()).toPlainString()
+                : Sql.literal(String.valueOf(comparison.value()));
+        yield "COALESCE(" + Sql.ident(source) + " " + operator + " " + value + ", FALSE)";
+      }
+      case Group group -> {
+        List<String> parts =
+            group.conditions().stream().map(part -> conditionSql(part, renames, columns)).toList();
+        yield "not".equals(group.op())
+            ? "(NOT " + parts.get(0) + ")"
+            : "(" + String.join("and".equals(group.op()) ? " AND " : " OR ", parts) + ")";
+      }
+    };
   }
 
   // Records of the touched entities still moving through their process.

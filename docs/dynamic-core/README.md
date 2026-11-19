@@ -2,6 +2,7 @@
 
 Định hướng và phạm vi của lõi dynamic.
 Việc chưa làm, chưa kiểm và giới hạn đã biết nằm ở [`BACKLOG.md`](./BACKLOG.md); cách kiểm ở [`docs/TESTING.md`](../TESTING.md).
+Đối chiếu thuật ngữ, kiến trúc H-P-D-I và DX-Ticket của giáo trình nằm ở [`DX_OS_TEXTBOOK.md`](../DX_OS_TEXTBOOK.md).
 
 ## Tóm tắt
 
@@ -224,7 +225,7 @@ Tham số của từng họ mẫu và cách tự khai báo quy trình ở [`docs
 - Một lần áp dụng sinh cả phần mềm lẫn quy trình từ cùng một tệp mô hình: lược đồ, vai Keycloak, quy trình và phiên bản mô hình nằm chung một kế hoạch.
   Lược đồ và Keycloak nằm ngoài giao dịch của Flowable, nên "một lần" nghĩa là một kế hoạch có thứ tự, chạy lại được hoặc quay lui, không phải một giao dịch duy nhất.
 - Kế hoạch cho xem khác biệt của quy trình, kiểm tra không có trạng thái cụt và vai có thật, và báo số bản ghi đang chạy bị ảnh hưởng.
-- Luật của quy trình (người xử lý, hạn xử lý, quyền tự quyết, hành động hoàn tất, đặt chỗ) chỉ đổi được khi thực thể không còn hồ sơ đang xử lý, nên mỗi hồ sơ chỉ chịu một bộ luật từ lúc nộp đến lúc đóng.
+- Luật của quy trình (người xử lý, hạn xử lý, lịch làm việc của hạn, quyền tự quyết, hành động hoàn tất, đặt chỗ) chỉ đổi được khi thực thể không còn hồ sơ đang xử lý, nên mỗi hồ sơ chỉ chịu một bộ luật từ lúc nộp đến lúc đóng.
   Đổi họ mẫu của một thực thể bị từ chối; muốn đổi hình dạng quy trình thì thêm thực thể mới.
 
 **Họ mẫu tùy biến:**
@@ -279,7 +280,7 @@ Bảng điều khiển thuộc tầng 2, nằm ở tuyến `/console` của ứn
 
 - **Thư viện mẫu:** chọn họ mẫu và mô hình mẫu, kèm mô tả mỗi mẫu cần gì.
 - **Soạn mô hình có hướng dẫn:** form dựng từ JSON Schema của định dạng mô hình, trình soạn YAML có gợi ý và báo lỗi theo schema, và sơ đồ quy trình vẽ từ tệp đang soạn.
-- **Màn hình kế hoạch:** khác biệt, mức rủi ro, dòng vi phạm và xác nhận thay đổi mất dữ liệu.
+- **Màn hình kế hoạch:** khác biệt, mức rủi ro, dòng vi phạm và xác nhận thay đổi mất dữ liệu; mỗi vai đổi quyền truy cập là một dòng `vai: cũ → mới`, phân loại là cấp thêm, thu hồi, mở rộng, thu hẹp hoặc đổi.
 - **Lịch sử áp dụng:** từng phiên bản và từng bước của mỗi lần áp dụng, kèm quay về phiên bản trước.
 - **Sơ đồ quy trình:** trạng thái và hành động của quy trình mà thực thể dùng, vẽ cả từ tệp đang soạn, chỉ để xem.
 - **Người dùng:** tìm, gán và gỡ vai và đơn vị, tạo người dùng với mật khẩu tạm, khóa và mở, đặt lại mật khẩu; mỗi thay đổi được ghi vào nhật ký: ai đổi gì, lúc nào.
@@ -416,7 +417,7 @@ Không thể áp dụng: còn 3 dòng vi phạm.
 
 | Mức                       | Ví dụ                                                       | Cách xử lý                               | Quay lui            |
 | ---------------------------- | --------------------------------------------------------------- | --------------------------------------------- | --------------------- |
-| **An toàn**               | Thêm trường tùy chọn, thực thể, vai, kênh thông báo | Áp dụng sau khi xác nhận kế hoạch     | Được             |
+| **An toàn**               | Thêm trường tùy chọn, thực thể, vai, kênh thông báo, đổi quyền truy cập của vai | Áp dụng sau khi xác nhận kế hoạch     | Được             |
 | **Cần chuyển dữ liệu** | Đổi tên, thêm trường bắt buộc, thêm quy tắc         | Dữ liệu vi phạm thì dừng và liệt kê | Kế hoạch nêu rõ |
 | **Mất dữ liệu**         | Xóa trường, xóa thực thể                                | Sao lưu trước và xác nhận riêng      | Chỉ từ sao lưu   |
 
@@ -436,7 +437,7 @@ Những chỗ khó:
 
 Flowable thay phần workflow viết tay, người dùng không đụng tới BPMN.
 Đội viết sẵn và kiểm thử các họ mẫu quy trình, người dùng chọn họ mẫu rồi điền tham số như ai duyệt, hạn bao lâu, báo cho ai, hoặc tự khai báo trạng thái và hành động; xem [Quy trình chung](#quy-trình-chung).
-Hạn xử lý lưu trên bản ghi và quá hạn được tính khi đọc, một tác vụ định kỳ ghi dòng quá hạn và các dòng leo thang vào lịch sử; Flowable lo phiên bản quy trình.
+Hạn xử lý lưu trên bản ghi, tính một lần lúc hồ sơ chờ xử lý và đếm trong giờ làm của lịch nếu quy trình khai lịch, và quá hạn được tính khi đọc, một tác vụ định kỳ ghi dòng quá hạn và các dòng leo thang vào lịch sử; Flowable lo phiên bản quy trình.
 
 Trạng thái hồ sơ không thể bị đi vòng:
 

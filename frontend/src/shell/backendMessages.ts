@@ -6,9 +6,9 @@ import { getLocale } from "./locale";
 // text can follow the language of the interface. A message that no rule matches is shown as the backend sent it.
 type Rule = [RegExp, string];
 
-const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 // A message that never changes, and one with parts that are kept (written as regular expression groups).
-const fixed = (english: string, vietnamese: string): Rule => [new RegExp(`^${escape(english)}$`), vietnamese];
+const fixed = (english: string, vietnamese: string): Rule => [new RegExp(`^${escapeRegExp(english)}$`), vietnamese];
 const pattern = (english: string, vietnamese: string): Rule => [new RegExp(`^${english}$`), vietnamese];
 
 const NAME = "\\[a-z\\]\\[a-z0-9_\\]\\*";
@@ -145,6 +145,7 @@ const VI: Rule[] = [
   pattern("This change is at level (.+); read the plan and pass accept=(.+)", "Thay đổi này ở mức $1; hãy đọc kế hoạch và truyền accept=$2"),
   pattern("(\\d+) rules are broken by existing rows, first (.+) with (\\d+) rows; see the plan", "$1 quy tắc bị dữ liệu hiện có vi phạm, đầu tiên là $2 với $3 dòng; hãy xem kế hoạch"),
   pattern("role (.+) is declared again and (\\d+) users still hold it; applying gives them its access back", "Vai $1 được khai báo lại và còn $2 người đang giữ; áp dụng sẽ trả lại quyền của vai cho họ"),
+  pattern("role (.+) gets wider access to (.+) \\((.+)\\); applying gives it at once to everyone who holds the role", "Vai $1 được mở rộng quyền trên $2 ($3); áp dụng sẽ cấp ngay cho mọi người đang giữ vai"),
   pattern("Model (.+) is being applied right now","Mô hình $1 đang được áp dụng"),
   pattern("Model (.+) is busy; try again", "Mô hình $1 đang có yêu cầu chưa xong; hãy thử lại sau ít giây"),
   pattern("Model (.+) has no earlier version", "Mô hình $1 chưa có phiên bản trước"),

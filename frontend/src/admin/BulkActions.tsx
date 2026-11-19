@@ -110,6 +110,7 @@ export default function BulkActions({ model, entity }: Props) {
     <>
       {offered.map((action) => {
         const button = (
+          // biome-ignore lint/correctness/useJsxKeyInIterable: the key is set on the wrapper that holds the button
           <Button {...style(action)} size="small" disabled={tooMany} sx={{ ml: 1 }} onClick={() => setPending(action)}>
             {ta(action.label)}
           </Button>

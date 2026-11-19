@@ -36,7 +36,8 @@ public class InboxController {
       String status,
       String assignee,
       boolean overdue,
-      Instant createdAt) {}
+      Instant createdAt,
+      Instant updatedAt) {}
 
   private final ModelRegistry registry;
   private final DataService data;
@@ -48,11 +49,13 @@ public class InboxController {
 
   @GetMapping
   @Operation(
-      summary = "The records the caller can act on now, overdue first and then oldest first",
+      summary =
+          "The records the caller can act on now, overdue first and then the most recently changed",
       description =
           "Records in a state the handler role of the caller can act on, within the"
               + " rows it reaches and held by nobody else, and the caller's own records waiting for"
-              + " them, on every applied model. page starts at 0 and size is at most "
+              + " them, on every applied model. A record that was just created, resubmitted or reopened"
+              + " comes before one that has waited unchanged. page starts at 0 and size is at most "
               + MAX_SIZE
               + ".")
   public ApiResponse<PageResponse<Item>> inbox(
@@ -75,7 +78,9 @@ public class InboxController {
         }
       }
       items.sort(
-          Comparator.comparing((Item item) -> !item.overdue()).thenComparing(Item::createdAt));
+          Comparator.comparing((Item item) -> !item.overdue())
+              .thenComparing(Item::updatedAt, Comparator.reverseOrder())
+              .thenComparing(Item::id, Comparator.reverseOrder()));
     }
     List<Item> shown =
         items.subList(
@@ -101,6 +106,7 @@ public class InboxController {
         (String) row.get("status"),
         (String) row.get("assignee"),
         Boolean.TRUE.equals(row.get("overdue")),
-        (Instant) row.get("created_at"));
+        (Instant) row.get("created_at"),
+        (Instant) row.get("updated_at"));
   }
 }

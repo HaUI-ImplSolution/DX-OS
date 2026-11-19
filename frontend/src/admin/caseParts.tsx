@@ -106,6 +106,7 @@ export function ActionButtons({ model, entity }: Props) {
       {allowed.map((action) => {
         const waiting = !conditionMet(action.when, record);
         const button = (
+          // biome-ignore lint/correctness/useJsxKeyInIterable: the key is set on the wrapper that holds the button
           <Button
             {...actionStyle(action)}
             sx={{ ml: 1 }}

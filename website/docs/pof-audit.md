@@ -18,12 +18,12 @@ Một tiêu chí chỉ được ✅ khi mọi dòng của nó và mọi điều 
 | --- | --- | --- | --- |
 | 1. Kho mã nguồn và lịch sử phát triển | 5 | ⚠️ | Lịch sử issue mỏng so với số pull request |
 | 2. Giấy phép và tính tương thích | 10 | ✅ | |
-| 3. Release và quản lý phiên bản | 5 | ⚠️ | `main` chậm 40 commit so với `Khuong/main`; bản `v2.0.0` chưa chứa phần mới |
+| 3. Release và quản lý phiên bản | 5 | ✅ | |
 | 4. Build và cài đặt từ mã nguồn | 10 | ⚠️ | Bài dựng từ bản clone chưa chạy lại trên máy sạch |
 | 5. Thư viện, phụ thuộc, nguồn gốc | 10 | ✅ | |
 | 6. Tài liệu, quản lý lỗi, giao tiếp | 10 | ⚠️ | Chưa kiểm được private vulnerability reporting |
 
-Không có lỗi loại trừ: repository công khai, có `LICENSE`, đã có release (hiện đến `v2.0.0`), không phát hiện bí mật.
+Không có lỗi loại trừ: repository công khai, có `LICENSE`, đã có release (hiện đến `v2.0.2`), không phát hiện bí mật.
 
 ## 2. Điều kiện kiểm tra trước khi chấm
 
@@ -31,7 +31,7 @@ Không có lỗi loại trừ: repository công khai, có `LICENSE`, đã có re
 |---|---|---|---|
 | 1 | Repository công khai, có web viewer | ✅ | `HaUI-ImplSolution/DX-OS`, `visibility: public`, API trả 200 không đăng nhập |
 | 2 | Giấy phép OSI, có `LICENSE` toàn văn, có thông báo | ✅ | `LICENSE` Apache-2.0, GitHub nhận đúng `Apache-2.0`; `NOTICE`; `DEPENDENCIES.txt` |
-| 3 | Có release hoặc tag trước hạn nộp, không dùng định dạng độc quyền | ✅ | 7 release `v1.0.0` đến `v2.0.0`, mỗi release có `.tar.gz` |
+| 3 | Có release hoặc tag trước hạn nộp, không dùng định dạng độc quyền | ✅ | 9 release `v1.0.0` đến `v2.0.2`, mỗi release có `.tar.gz` |
 | 4 | Có hướng dẫn build và cài, chạy lại được | ⚠️ | `README.md` mục Chạy thử; `dxos-install.sh` của `v2.0.0` đã chạy được trên máy sạch, còn bài dựng từ bản clone (`docker compose up -d --build`) chưa chạy lại trên máy sạch |
 | 5 | Khai báo thư viện, phiên bản, nguồn, giấy phép | ✅ | `DEPENDENCIES.txt`, `sbom/`, `.github/component-catalog.json` |
 | 6 | README, CHANGELOG, bug tracker, tài liệu đúng trạng thái | ✅ | Xem tiêu chí 6 |
@@ -76,8 +76,8 @@ head -3 LICENSE                                # toàn văn, không phải liên
 
 | Trạng thái | Yêu cầu | Bằng chứng | Mức trừ nếu thiếu |
 |---|---|---|---|
-| ✅ | Có ít nhất một release trước hạn nộp | Trang Releases: `v1.0.0`, `v1.0.1`, `v1.0.2`, `v1.0.3`, `v1.1.0`, `v1.1.1`, `v2.0.0` | −5 |
-| ⚠️ | Release là sản phẩm dự thi | Tag `v2.0.0` đã tạo (11/11); các việc gộp vào `Khuong/main` sau đó (#270 đến #295: Prometheus, mã hồ sơ, mẫu in, phả hệ dữ liệu, lint mô hình, điện thoại, quét mã độc e2e...) chưa nằm trong bản tag nào; nhánh mặc định `main` chậm 40 commit so với `Khuong/main` (kiểm 14/11), nên cần một pull request vào `main` rồi một bản phát hành mới trước khi nộp | −5 |
+| ✅ | Có ít nhất một release trước hạn nộp | Trang Releases: `v1.0.0`, `v1.0.1`, `v1.0.2`, `v1.0.3`, `v1.1.0`, `v1.1.1`, `v2.0.0`, `v2.0.1`, `v2.0.2` | −5 |
+| ✅ | Release là sản phẩm dự thi | `main` chứa mọi việc đã gộp và tag `v2.0.2` đặt trên `main` | −5 |
 | ✅ | Phát hành theo phiên bản | Thẻ SemVer; `CHANGELOG.md` theo Keep a Changelog có mục cho mọi bản và `[Unreleased]` | −3 |
 | ✅ | Định dạng mở cho gói phát hành | Workflow `Release Package` chạy khi đẩy tag `v*`, đính kèm `dx-os-X.Y.Z.tar.gz`, `.sha256` và SBOM `.cdx.json`; không có `.zip` | −3 |
 | ✅ | Gói được kiểm trước khi đăng | `check_archive.sh` kiểm gói có `LICENSE`, `NOTICE`, `DEPENDENCIES.txt`, `README.md`, `CHANGELOG.md` và không có tệp giống bí mật; chạy ở job `Install from the release archive` của workflow `Platform` của mọi pull request và trong `Release Package` trước khi đăng | |
@@ -131,7 +131,7 @@ git ls-files | grep -E '(^|/)(vendor|third_party|node_modules)/|\.patch$' && ech
 | Trạng thái | Yêu cầu | Bằng chứng | Mức trừ nếu thiếu |
 |---|---|---|---|
 | ✅ | Có bug tracker | GitHub Issues đã bật; mẫu `bug_report.yml`, `feature_request.yml`; 55 issue | −5 |
-| ✅ | Có changelog | `CHANGELOG.md` theo Keep a Changelog, mục `[Unreleased]` và mục cho mọi bản đến `[2.0.0]` | −5 |
+| ✅ | Có changelog | `CHANGELOG.md` theo Keep a Changelog, mục `[Unreleased]` và mục cho mọi bản đến `[2.0.2]` | −5 |
 | ✅ | Có README và hướng dẫn | `README.md`, `README_EN.md`; `ARCHITECTURE.md`; `docs/TESTING.md`; `docs/OPERATIONS.md`; API qua đặc tả OpenAPI và `check_docs.py` kiểm tài liệu khớp OpenAPI; job `Check required files and scripts` báo lỗi nếu thiếu một tài liệu bắt buộc hoặc `CHANGELOG.md` mất mục `[Unreleased]`; job `Build the docs site` dựng trang docs, trong đó có các tài liệu của `docs/` và `deploy/` chép lại mỗi lần dựng, và dừng khi có liên kết hỏng | −5 |
 | ✅ | Hướng dẫn đóng góp | `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, mẫu pull request | |
 | ✅ | Chính sách bảo mật | `SECURITY.md` | |
@@ -153,7 +153,7 @@ git ls-files | grep -E '(^|/)(vendor|third_party|node_modules)/|\.patch$' && ech
 |---|---|---|
 | Repository không công khai | Không chấm PoF | Không vi phạm |
 | Không có `LICENSE` hoặc giấy phép không rõ | −5 đến −10 | Không vi phạm |
-| Không có release hoặc tag | −5 | Không vi phạm; `v2.0.0` đã tag, bản nộp cuối cần một tag mới nhất |
+| Không có release hoặc tag | −5 | Không vi phạm; `v2.0.2` là tag mới nhất |
 | Không build hoặc cài được từ mã nguồn | −5 đến −10 | Rủi ro thấp; còn cần chạy lại trên máy sạch với image phát hành |
 | Không có README hoặc hướng dẫn chạy | −5 | Không vi phạm |
 | Không có CHANGELOG hoặc bug tracker | −3 đến −5 | Không vi phạm |

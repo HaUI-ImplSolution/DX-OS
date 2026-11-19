@@ -45,6 +45,36 @@ Tệp tạm nằm cùng thư mục với tệp gốc và giữ quyền, chủ s�
 Lỗi ở bước migration hay ghi tệp tạm thì tệp gốc giữ nguyên; tiến trình dừng trước rename thì xóa tệp `.dxos-model-upgrade.*` còn sót rồi chạy lại.
 Muốn quay lại sau rename, dùng lịch sử Git hoặc bản sao lưu.
 
+## Mở rộng từ mẫu
+
+Một tệp bắt đầu từ mẫu của thư viện bằng khóa `extends` ở mức đầu và chỉ ghi phần khác mẫu:
+
+```yaml
+extends: asset_register
+name: school_assets
+roles:
+  - name: AUDITOR
+    description: Kiểm kê
+entities:
+  asset:
+    fields:
+      price: null
+      serial: {type: text, label: Số seri, unique: true}
+    access: {CUSTODIAN: all, AUDITOR: read}
+```
+
+Quy tắc ghép:
+
+- `name` luôn ghi trong tệp; `format` bỏ trống được, nếu ghi thì phải bằng format của mẫu.
+- Mapping ghép từng khóa, khóa đặt `null` xóa khóa của mẫu.
+- `roles` và `units` ghép theo `name`: mục cùng tên ghép từng khóa, mục mới nối sau mục của mẫu; vai hay đơn vị của mẫu không xóa được.
+- Mọi danh sách khác (`options`, `columns`, `groups`, trạng thái, hành động) được thay nguyên bằng danh sách của tệp.
+- Kết quả ghép được kiểm như một tệp đầy đủ; xóa một trường mà chỗ khác còn nhắc tới thì báo lỗi với số dòng của tệp đã ghép.
+
+`dxos plan` và `dxos apply` ghép lúc chạy, và `dxos model merge <tệp>` in tệp đầy đủ để đối chiếu.
+Tên mẫu không có trong thư viện thì bị từ chối, và tệp đã ghép lưu kèm tên và hash của mẫu.
+`dxos lint` chỉ kiểm phần của tệp ngắn (YAML, `extends` là chữ, có `name`) và báo `ok (extends <mẫu>)`; phần ghép với mẫu do `dxos plan` kiểm.
+
 ## Kiểm tệp trước khi áp dụng
 
 `dxos lint <tệp>...` đọc tệp bằng đúng bộ đọc của backend và không cần hệ thống đang chạy.
@@ -68,6 +98,9 @@ Kết quả lint hợp lệ không có nghĩa là `apply` thành công; kết qu
   API nhận và trả một mảng, mỗi lựa chọn một lần và theo thứ tự của `options`, và lọc bằng `filter.<tên>.contains=<lựa chọn>`.
   `default` là một danh sách các lựa chọn của `options`, không trùng nhau và không rỗng, ví dụ `default: [Mới, Đã sửa]`; bản ghi tạo mà không gửi trường này nhận danh sách đó.
   Trường này không đi cùng `unique`.
+- Trường `reference` trỏ tới một thực thể cùng mô hình.
+  Ô chọn bản ghi ở giao diện tìm theo một phần của trường `text` đặt tên cho bản ghi đích (`name`, `title` hoặc `code`, nếu không có thì trường `text` đầu tiên) bằng `filter.<trường>.like`, không phân biệt hoa thường nhưng phải đúng dấu.
+  Thực thể đích không có trường `text` thì ô tìm theo số `id`.
 - Trường `user` giữ id của một tài khoản; giao diện cho chọn theo tên, và API từ chối id không có thật.
 - Đơn vị khai báo ở `units`, mỗi đơn vị là một nhóm Keycloak; trường kiểu `unit` cho biết hồ sơ thuộc đơn vị nào.
   Ví dụ đầy đủ ở [`onestop.yaml`](../backend/dx-engine/src/main/resources/templates/onestop.yaml).
@@ -111,11 +144,11 @@ fields:
 note: {type: text, required_when: "kind == Phần mềm"}
 ```
 
-- Điều kiện là một phép so sánh, viết như `when` của hành động: `==` và `!=` cho mọi kiểu, `<`, `<=`, `>`, `>=` chỉ cho số và ngày.
+- Điều kiện viết như `when` của hành động: một phép so sánh, hoặc nhiều phép nối bằng `and`, `or`, `not` và ngoặc; `==` và `!=` cho mọi kiểu, `<`, `<=`, `>`, `>=` chỉ cho số và ngày.
 - Trường được so sánh là `number`, `date`, `text`, `choice` một lựa chọn hoặc `boolean` (`foreign == true`) của cùng thực thể.
 - Giá trị của trường `date` viết như `YYYY-MM-DD`, ví dụ `due >= 2026-01-31`; ngày không có thật bị từ chối khi đọc mô hình.
 - API kiểm khi tạo và khi sửa, trên hồ sơ sau khi gộp giá trị mới; trường còn trống thì báo `is required when kind == Phần mềm`.
-- Không đi cùng `required`, không đặt trên trường `boolean` hay `file`, và không so sánh trường với chính nó.
+- Không đi cùng `required`, không đặt trên trường `boolean` hay `file`, và không so sánh trường với chính nó, kể cả trong một điều kiện nối nhiều phép.
 - Chỉ kiểm ở API, cơ sở dữ liệu không có ràng buộc này.
 
 ## Giao diện `ui`
@@ -138,6 +171,7 @@ ui:
 - `menu.group` gom các thực thể thành một nhóm trong menu và `menu.order` là thứ tự.
 - `list.columns` là các cột của danh sách: trường của thực thể, hoặc `created_at`, `updated_at`, và `status`, `assignee` khi thực thể có quy trình.
   `list.sort` là tên cột, thêm dấu `-` ở đầu để sắp giảm dần.
+  Không khai thì danh sách mở theo `-id`; thực thể có quy trình mở theo `-updated_at` và hiện cột `updated_at`.
 - `form.groups` chia form thành nhóm có nhãn; trường không nằm trong nhóm nào xếp vào nhóm cuối.
 - `hints` đặt dòng gợi ý dưới ô nhập của một trường.
 - `ui` chỉ chọn trong những gì giao diện đã có và không đổi quyền; sai tên trường, cột hay biểu tượng thì tệp bị từ chối kèm dòng và cột.
@@ -158,13 +192,20 @@ Ví dụ đầy đủ ở [`asset_register.yaml`](../backend/dx-engine/src/main/
 | `unit` | Dòng của đơn vị mình |
 | `assigned` | Dòng được giao cho mình |
 
+Đổi `access` không chạm dữ liệu, và kế hoạch ghi mỗi vai có mức đổi thành một dòng `vai: cũ → mới`.
+Cấp thêm (`GRANT_ACCESS`) và mở rộng (`WIDEN_ACCESS`) ở mức `MIGRATION`, kèm một câu hỏi nêu vai và thực thể, vì người đang giữ vai có quyền mới ngay khi áp dụng; cần `--accept MIGRATION` hoặc xác nhận ở tab Kế hoạch.
+Ba loại còn lại ở mức `SAFE`.
+Dòng đó thuộc một trong năm loại: cấp thêm cho một vai chưa có (`GRANT_ACCESS`), thu hồi (`REVOKE_ACCESS`), mở rộng (`WIDEN_ACCESS`), thu hẹp (`NARROW_ACCESS`) và đổi (`CHANGE_ACCESS`).
+Mở rộng hay thu hẹp so theo hai điều: số dòng vai chạm tới (`own` và `assigned`, rồi `unit`, rồi `all` và `read`) và quyền ghi (`read` không ghi).
+Một lần đổi vừa tăng vừa giảm, như `own` sang `read`, hoặc không tăng không giảm, như `own` sang `assigned`, được ghi là đổi.
+
 `owner_via` cho thực thể con theo chủ sở hữu của thực thể cha, qua nhiều cấp.
 
 ## Quy trình
 
 - `handler` là vai xử lý, hoặc một danh sách vai như `[MANAGER, SELLER]`; ai giữ một trong các vai đó thì xử lý được.
 - `family` chọn một họ mẫu để bắt đầu: `approval`, `work_item` hoặc `reservation`; bỏ trống thì tự khai báo đủ `states` và `actions`.
-- `deadline` là hạn xử lý tùy chọn (ví dụ `72h`).
+- `deadline` là hạn xử lý tùy chọn, một số kèm `m` (phút), `h` (giờ) hoặc `d` (ngày), ví dụ `72h`; thêm `calendar` để đếm theo lịch làm việc ([Lịch làm việc](#lịch-làm-việc)).
 - `escalate` là danh sách tối đa 5 mức leo thang tính từ lúc hồ sơ quá `deadline`, nên quy trình phải khai `deadline`.
   Mỗi mức khai `after` (thời gian sau hạn) và `to` (một vai hoặc danh sách vai, mỗi vai phải đọc được hồ sơ), cùng `repeat: {every: 12h, times: 3}` nếu muốn nhắc lại; bỏ `repeat` thì mỗi mức gửi một lần.
   Ví dụ: `escalate: [{after: 24h, to: MANAGER}, {after: 72h, to: [DIRECTOR], repeat: {every: 12h, times: 3}}]`.
@@ -185,12 +226,16 @@ Ví dụ đầy đủ ở [`asset_register.yaml`](../backend/dx-engine/src/main/
   Nút `label` để trống thì giao diện hiện mã hành động.
   `needs_note: true` bắt buộc có lý do.
   `require` liệt kê trường phải có giá trị trước khi hành động được thực hiện.
-  `when` là một phép so sánh một trường của hồ sơ với một giá trị, viết thành chuỗi `trường toán_tử giá trị`, ví dụ `when: "amount > 5000000"`.
-  Hành động chỉ thực hiện được khi phép so sánh đúng với hồ sơ ở lúc thực hiện.
+  `when` là một điều kiện trên các trường của hồ sơ: một phép so sánh một trường với một giá trị, viết thành chuỗi `trường toán_tử giá trị`, ví dụ `when: "amount > 5000000"`, hoặc nhiều phép nối bằng `and`, `or`, `not` và ngoặc.
+  Hành động chỉ thực hiện được khi điều kiện đúng với hồ sơ ở lúc thực hiện.
   Toán tử là `==`, `!=`, `<`, `<=`, `>` hoặc `>=`.
   Trường là trường `number`, `date`, `choice`, `text` hoặc `boolean` của thực thể; `<`, `<=`, `>` và `>=` chỉ dùng cho trường `number` và `date`.
   Giá trị của trường `number` là số, của trường `date` là ngày `YYYY-MM-DD`, của trường `choice` là một trong `options` của nó.
-  Trường chưa có giá trị thì không đạt điều kiện nào.
+  Trường chưa có giá trị thì không đạt phép so sánh nào, nên `not` của phép đó là đúng.
+  Nối nhiều phép: `when: "amount > 5000000 and (kind == book or kind == pen)"`.
+  `not` được tính trước `and`, `and` trước `or`, và ngoặc đổi thứ tự.
+  Khi nối nhiều phép, giá trị có khoảng trắng, ngoặc hoặc là `and`, `or`, `not` đặt trong nháy, ví dụ `kind == "Phần mềm"`; một phép đơn không cần nháy.
+  Một điều kiện có tối đa 8 phép so sánh và ngoặc lồng tối đa 3 cấp; cú pháp sai bị từ chối kèm dòng, cột và chỗ sai.
   `when` chỉ dùng cho hành động của người xử lý, nên không dùng được với `withdraw` và hành động của `auto_close`.
   Viết `when: null` để bỏ điều kiện của một hành động trong họ mẫu.
   Hành động không đạt điều kiện trả 409 `ERR_INVALID_STATE` với `data.reason` là `CONDITION_NOT_MET`.
@@ -236,10 +281,38 @@ actions:
   approve: {from: lead_approved, to: approved, role: DIRECTOR}
 ```
 
+### Lịch làm việc
+
+`calendars` ở đầu tệp khai các lịch làm việc, và một quy trình có `deadline` chọn một lịch bằng `calendar: <tên>`.
+Quy trình không khai `calendar` thì đếm hạn liên tục cả ngày lẫn đêm.
+
+```yaml
+calendars:
+  office:
+    days: [mon, tue, wed, thu, fri]
+    hours: ['08:00-12:00', '13:30-17:30']
+    holidays: [2026-12-25]
+entities:
+  leave_request:
+    process: {family: approval, handler: MANAGER, deadline: 2d, calendar: office}
+```
+
+- `days` là các ngày làm trong tuần (`mon` đến `sun`) và bắt buộc có ít nhất một ngày.
+- `hours` là danh sách khoảng giờ `HH:MM-HH:MM` theo thứ tự thời gian, không chạm hay chồng nhau, và `24:00` chỉ dùng làm giờ kết thúc; bỏ `hours` thì cả ngày là giờ làm.
+- `holidays` là danh sách ngày nghỉ (`2026-12-25`), tối đa 1000 ngày.
+- Giờ tính theo múi giờ `Asia/Ho_Chi_Minh`.
+- `deadline` tính bằng `m` hoặc `h` chỉ đếm qua giờ làm; tính bằng `d` là chừng đó ngày làm, rơi đúng giờ trong ngày của lúc bắt đầu.
+- Hồ sơ bắt đầu chờ ngoài giờ làm thì tính từ lần mở cửa kế tiếp; chiều thứ Sáu 16:00 với hạn `1d` kết thúc 16:00 thứ Hai.
+- Hạn của hồ sơ (`handle_by`) tính một lần lúc hồ sơ vào trạng thái chờ xử lý, nên đổi lịch không dời hạn của hồ sơ đã có.
+- `due_soon` và `escalate` vẫn tính theo giờ thường từ hạn đó, nên một thông báo có thể rơi vào ngày nghỉ.
+- Đổi lịch của quy trình, hoặc đổi giờ, ngày làm, ngày nghỉ của một lịch, là thay đổi `SAFE` (`CHANGE_CALENDAR`) và bị từ chối khi còn hồ sơ mở, như đổi `deadline`.
+- Một lịch không quy trình nào dùng vẫn được lưu, và `extends` ghép `calendars` theo tên lịch.
+
 ### Đặt chỗ
 
 `family: reservation` (có thể mở rộng như trên) kèm `booking: {resource, starts, ends, capacity}`.
 Lượt đặt làm số lượt chạy cùng lúc vượt sức chứa thì bị từ chối, và ứng dụng có chế độ xem lịch.
+Lịch tải mọi lượt người xem được trong khoảng đang xem, từng trang 200 lượt và tối đa 5000 lượt; khoảng nhiều hơn thì lịch báo số lượt đang hiện trên tổng số và dặn chuyển sang khoảng ngắn hơn.
 Ví dụ ở [`room_booking.yaml`](../backend/dx-engine/src/main/resources/templates/room_booking.yaml).
 
 ### Hành động hoàn tất

@@ -25,6 +25,8 @@ export const app: Record<string, string> = {
   "Xuất CSV": "Export CSV",
   "Đã xuất {n} hồ sơ": "Exported {n} records",
   "Đã xuất {n} hồ sơ đầu tiên trong {total}": "Exported the first {n} of {total} records",
+  "Hệ thống đang giới hạn tốc độ, đang chờ để xuất tiếp": "The system is limiting the rate, waiting to continue the export",
+  "Một số tên người không tra được nên được ghi bằng mã.": "Some names could not be found, so those people are written as their ids.",
   // Several records at once
   "{action}: {n} hồ sơ": "{action}: {n} records",
   "Mỗi hồ sơ vẫn qua đủ luật của quy trình; hồ sơ không thực hiện được sẽ báo lý do, các hồ sơ khác vẫn được xử lý.":
@@ -93,12 +95,14 @@ export const app: Record<string, string> = {
   "Quá hạn": "Overdue",
   "Gõ ít nhất 2 ký tự của tên": "Type at least 2 characters of the name",
   "Không tìm thấy ai": "No one found",
+  "Không có kết quả khớp": "No matching result",
   "Đang tìm…": "Searching…",
   "Bỏ chọn": "Clear",
   // Calendar
   "Thực thể này không có lịch.": "This kind of record has no calendar.",
   "Không đổi được giờ": "Could not change the time",
   "Lịch {what}": "Calendar of {what}",
+  "Lịch chỉ hiện {shown} trong {total} lượt của khoảng này; chuyển sang khoảng ngắn hơn (ngày hoặc tuần) để xem phần còn lại.": "The calendar shows {shown} of {total} bookings in this range; switch to a shorter range (day or week) to see the rest.",
   "Kéo chọn một khoảng giờ để tạo lượt đặt mới, kéo một lượt để đổi giờ, bấm vào một lượt để xem chi tiết.": "Drag over a time range to make a new booking, drag a booking to change its time, click a booking to see its details.",
   "Bấm vào một lượt để xem chi tiết.": "Click a booking to see its details.",
   "Hôm nay": "Today",
@@ -116,7 +120,6 @@ export const app: Record<string, string> = {
   "Loại": "Kind",
   "Hồ sơ": "Record",
   "Trạng thái": "Status",
-  "Nộp lúc": "Submitted at",
   // Statistics
   "Chưa có hồ sơ nào.": "No records yet.",
   "Không đọc được số liệu": "Could not read the figures",
@@ -166,6 +169,7 @@ export const app: Record<string, string> = {
   // Record actions, people, history and files
   "Không xử lý được": "Could not process it",
   "Chỉ thực hiện khi {condition}": "Only possible when {condition}",
+  "không {condition}": "not {condition}",
   "Hồ sơ đã rút lại sẽ dừng xử lý và không nộp lại được.": "A withdrawn record stops being processed and cannot be submitted again.",
   "Ghi chú": "Note",
   "Lý do (không bắt buộc)": "Reason (optional)",

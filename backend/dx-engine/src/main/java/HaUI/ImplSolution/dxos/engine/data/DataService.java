@@ -18,6 +18,7 @@ import HaUI.ImplSolution.dxos.engine.event.ActionCheck;
 import HaUI.ImplSolution.dxos.engine.exception.ModelValidationException;
 import HaUI.ImplSolution.dxos.engine.files.AttachmentCleaner;
 import HaUI.ImplSolution.dxos.engine.process.BookingGuard;
+import HaUI.ImplSolution.dxos.engine.process.Deadlines;
 import HaUI.ImplSolution.dxos.engine.process.ProcessRules;
 import HaUI.ImplSolution.dxos.engine.process.ProcessService;
 import HaUI.ImplSolution.dxos.engine.registry.ModelClient;
@@ -102,6 +103,7 @@ public class DataService {
   private final ActionCheck checks;
   private final TransactionTemplate separate;
   private final RecordCodes codes;
+  private final Deadlines deadlines;
 
   public DataService(
       NamedParameterJdbcTemplate jdbc,
@@ -114,6 +116,7 @@ public class DataService {
       AttachmentCleaner attachments,
       ActionCheck checks,
       RecordCodes codes,
+      Deadlines deadlines,
       PlatformTransactionManager transactions) {
     this.jdbc = jdbc;
     this.user = user;
@@ -125,6 +128,7 @@ public class DataService {
     this.attachments = attachments;
     this.checks = checks;
     this.codes = codes;
+    this.deadlines = deadlines;
     this.separate = new TransactionTemplate(transactions);
     this.separate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
   }
@@ -390,8 +394,14 @@ public class DataService {
         });
     if (entity.process() != null && entity.process().deadline() != null) {
       names.add("handle_by");
-      markers.add("now() + make_interval(secs => :handle_secs)");
-      params.addValue("handle_secs", entity.process().deadline().toSeconds());
+      Timestamp due = deadlines.dueNow(model, entity.process());
+      if (due == null) {
+        markers.add("now() + make_interval(secs => :handle_secs)");
+        params.addValue("handle_secs", entity.process().deadline().toSeconds());
+      } else {
+        markers.add(":handle_by");
+        params.addValue("handle_by", due);
+      }
     }
     Map<String, Object> row;
     try {
@@ -581,8 +591,12 @@ public class DataService {
             .orElseThrow(
                 () -> new ResourceNotFoundException("Action " + actionName + " not found"));
     List<String> judged = new ArrayList<>(action.require());
-    if (action.when() != null && !judged.contains(action.when().field())) {
-      judged.add(action.when().field());
+    if (action.when() != null) {
+      for (String name : action.when().fields()) {
+        if (!judged.contains(name)) {
+          judged.add(name);
+        }
+      }
     }
     Map<String, Object> record = lock(model, entity, access(model, entity), id, judged);
     String me = user.currentUserId();
@@ -740,7 +754,8 @@ public class DataService {
   }
 
   // The records of an entity waiting for the caller: those its handler role can act on and nobody
-  // else holds, and the caller's own records waiting for them. Overdue first, then oldest first.
+  // else holds, and the caller's own records waiting for them. Overdue first, then the most
+  // recently changed.
   @Transactional(readOnly = true)
   public List<Map<String, Object>> waiting(Model model, Entity entity, int limit) {
     MapSqlParameterSource values = new MapSqlParameterSource("limit", limit);
@@ -756,7 +771,8 @@ public class DataService {
                 + table(model, entity)
                 + " WHERE "
                 + where
-                + " ORDER BY (handle_by IS NOT NULL AND handle_by < now()) DESC, created_at, id LIMIT :limit",
+                + " ORDER BY (handle_by IS NOT NULL AND handle_by < now()) DESC, updated_at DESC, id DESC"
+                + " LIMIT :limit",
             values)
         .stream()
         .map(DataService::present)
@@ -1400,7 +1416,7 @@ public class DataService {
       }
       Object value = record.get(field.name());
       boolean missing = value == null || value instanceof String text && text.isBlank();
-      if (missing && condition.test(record.get(condition.field()))) {
+      if (missing && condition.test(record)) {
         errors.put(field.name(), "is required when " + condition.text());
       }
     }

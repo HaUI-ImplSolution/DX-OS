@@ -6,6 +6,7 @@ import GuideBlocks from "./GuideBlocks";
 import { GUIDE, SCHEMA_HELP, type Section } from "./formGuide";
 import { FAMILY_LABEL } from "./labels";
 import { useFamilies } from "./useFamilies";
+import { conditionSource } from "../admin/condition";
 import { t, ta } from "../shell/t";
 
 const PART_TITLE: Record<Section, string> = {
@@ -29,10 +30,19 @@ const EXAMPLE = [
   `    resolve: {require: [resolution]}   # ${t("ghi đè hành động của khung")}`,
   `    reopen: null                       # ${t("bỏ hành động của khung")}`,
   `  deadline: 72h              # ${t("thời gian xử lý, quá hạn thì bị đánh dấu")}`,
+  `  calendar: office           # ${t("hạn chỉ đếm trong giờ làm của lịch này, khai ở calendars đầu tệp")}`,
   `  escalate:                  # ${t("quá hạn thì báo thêm vai khác, tối đa 5 cấp")}`,
   "    - {after: 24h, to: MANAGER}",
   `    - {after: 48h, to: [DIRECTOR], repeat: {every: 12h, times: 3}}   # ${t("nhắc lại 3 lần")}`,
   "  auto_close: {after: 7d, action: confirm}",
+].join("\n");
+
+const CALENDAR_EXAMPLE = [
+  `calendars:                   # ${t("khai ở đầu tệp, ngang với roles")}`,
+  "  office:",
+  `    days: [mon, tue, wed, thu, fri]                # ${t("các ngày làm")}`,
+  `    hours: ['08:00-12:00', '13:30-17:30']          # ${t("giờ làm, nhiều khoảng để có nghỉ trưa")}`,
+  `    holidays: [2026-12-25, 2027-01-01]             # ${t("ngày nghỉ, không tính giờ làm")}`,
 ].join("\n");
 
 const mono = { fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 12 };
@@ -78,7 +88,7 @@ export default function SyntaxGuide() {
                   <li key={action.name}>
                     <span style={mono}>{action.name}</span> ({ta(action.label)}): {t("{from} → {to}, do {who}", { from: action.from.join(", "), to: action.to, who: action.by === "OWNER" ? t("người nộp") : t("vai xử lý") })}
                     {action.needsNote ? t(", cần lý do") : ""}
-                    {action.when ? t(", khi {field} {op} {value}", { field: action.when.field, op: action.when.op, value: action.when.value }) : ""}
+                    {action.when ? t(", khi {condition}", { condition: conditionSource(action.when) }) : ""}
                   </li>
                 ))}
               </Box>
@@ -97,6 +107,9 @@ export default function SyntaxGuide() {
           </Typography>
           <Box component="pre" sx={{ ...mono, m: 0, p: 1.25, bgcolor: "action.hover", borderRadius: 1, overflowX: "auto" }}>
             {EXAMPLE}
+          </Box>
+          <Box component="pre" sx={{ ...mono, m: 0, mt: 1, p: 1.25, bgcolor: "action.hover", borderRadius: 1, overflowX: "auto" }}>
+            {CALENDAR_EXAMPLE}
           </Box>
           <Typography variant="caption" sx={{ display: "block", mt: 1.5, fontWeight: 700 }}>
             {t("CÁC KHÓA CỦA QUY TRÌNH")}

@@ -28,10 +28,12 @@ public class ModelController {
   private static final String YAML = "application/yaml";
 
   private final ApplyService service;
+  private final TemplateResolver templates;
   private final UserContext user;
 
-  public ModelController(ApplyService service, UserContext user) {
+  public ModelController(ApplyService service, TemplateResolver templates, UserContext user) {
     this.service = service;
+    this.templates = templates;
     this.user = user;
   }
 
@@ -78,6 +80,21 @@ public class ModelController {
     ModelUpgrader.Result result = ModelUpgrader.upgrade(content);
     ModelParser.parse(result.content());
     return ApiResponse.success(result);
+  }
+
+  @PostMapping(
+      value = "/merge",
+      consumes = {YAML, "text/plain"})
+  @Operation(
+      summary = "Show a model file that extends a template as the complete file",
+      description =
+          "A file with extends: <template id> is merged with that template of the library and the"
+              + " result is returned without storing it; the plan and apply work on this result."
+              + " template is null and the content unchanged when the file has no extends. 400 lists"
+              + " an unknown template or a problem of the file; problems found later by the plan"
+              + " carry the line numbers of the merged file.")
+  public ApiResponse<TemplateResolver.Resolved> merge(@RequestBody String content) {
+    return ApiResponse.success(templates.resolve(content));
   }
 
   @PostMapping(

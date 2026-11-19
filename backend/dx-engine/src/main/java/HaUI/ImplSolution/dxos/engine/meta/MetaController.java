@@ -103,16 +103,18 @@ public class MetaController {
         new ArrayList<>(
             registry.all().stream()
                 .map(
-                    model ->
-                        new ModelMeta(
-                            model.name(),
-                            model.units(),
-                            model.entities().values().stream()
-                                .filter(entity -> data.access(model, entity).read())
-                                .map(entity -> describe(model, entity))
-                                .toList(),
-                            false,
-                            registry.version(model.name())))
+                    model -> {
+                      long version = registry.version(model.name());
+                      return new ModelMeta(
+                          model.name(),
+                          model.units(),
+                          model.entities().values().stream()
+                              .filter(entity -> data.access(model, entity).read())
+                              .map(entity -> describe(model, entity, version))
+                              .toList(),
+                          false,
+                          version);
+                    })
                 .filter(model -> !model.entities().isEmpty())
                 .toList());
     registry.held().stream()
@@ -141,10 +143,10 @@ public class MetaController {
     Entity e =
         m.entity(entity)
             .orElseThrow(() -> new ResourceNotFoundException("Entity " + entity + " not found"));
-    return ApiResponse.success(describe(m, e));
+    return ApiResponse.success(describe(m, e, registry.version(model)));
   }
 
-  private EntityMeta describe(Model model, Entity entity) {
+  private EntityMeta describe(Model model, Entity entity, long modelVersion) {
     Access access = data.access(model, entity);
     List<FieldMeta> fields =
         entity.fields().values().stream()
@@ -192,7 +194,7 @@ public class MetaController {
         access.write(),
         data.canHandle(model, entity),
         data.canAssign(model, entity),
-        registry.version(model.name()),
+        modelVersion,
         handlerActions(model, entity),
         entity.ui(),
         entity.documents().stream()

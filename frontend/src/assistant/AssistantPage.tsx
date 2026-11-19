@@ -43,7 +43,7 @@ export default function AssistantPage() {
       <Typography variant="h6">{t("Lịch sử đề xuất")}</Typography>
       {items.map(item => <Stack key={item.id} spacing={0.5} sx={{ borderBottom: 1, borderColor: "divider", pb: 1 }}>
         <Typography>{item.snapshot.summary}</Typography>
-        <Typography variant="body2">{item.state === "succeeded" && item.snapshot.operation === "field" && typeof item.receipt?.version === "number" && item.receipt.version === item.snapshot.version ? t("Không có thay đổi") : item.expires <= Date.now() && item.state === "pending" ? t("Hết hạn") : states[item.state] ?? item.state}</Typography>
+        <Typography variant="body2">{item.state === "succeeded" && item.snapshot.operation === "field" && typeof item.receipt?.version === "number" && item.receipt.version === item.snapshot.version ? t("Không có thay đổi") : item.expires <= item.now && item.state === "pending" ? t("Hết hạn") : states[item.state] ?? item.state}</Typography>
         {item.state === "uncertain" && <Alert severity="warning">{t("Đối chiếu lịch sử hồ sơ trước khi thử một thao tác khác.")}</Alert>}
       </Stack>)}
       {!items.length && <Typography color="text.secondary">{t("Chưa có đề xuất để hiển thị.")}</Typography>}

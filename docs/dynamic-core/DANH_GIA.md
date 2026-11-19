@@ -71,7 +71,7 @@ Phần này do Ban giám khảo chấm ở buổi chung kết; bảng ghi điể
 | Tiêu chí | Điểm tựa | Điểm yếu |
 |---|---|---|
 | Tính nguyên gốc | Đổi mô hình an toàn trên hệ thống đang chạy: kế hoạch, mức rủi ro, dòng vi phạm, quay lui; quy tắc bất biến nằm trong engine; lịch sử nối chuỗi hash | Đề không hỏi trực tiếp, nên phải giải thích được giá trị trong vài phút; các đội cùng dùng Keycloak, APISIX, PostgreSQL, Flowable nên phần riêng chỉ là vòng đời mô hình; chưa nói chuyện với khách hàng nào (#231) |
-| Mức hoàn thiện | Mười mẫu mô hình trên ba họ quy trình; 20 kiểm tra của CI trên stack thật, kể cả trình duyệt; bộ kiểm chung cho mô hình mới | Chưa có phần AI và chữ I của H-P-D-I; pull request kế hoạch (#296) và pull request trợ lý nhiều người dùng (#199) còn mở, chưa gộp |
+| Mức hoàn thiện | Mười mẫu mô hình trên ba họ quy trình; 20 kiểm tra của CI trên stack thật, kể cả trình duyệt; bộ kiểm chung cho mô hình mới | Phần AI chỉ có một thành phần, trợ lý đề xuất giá trị trường (tùy chọn); pull request của trợ lý (#296) và pull request trợ lý nhiều người dùng (#199) còn mở, chưa gộp |
 | Thân thiện | Cài một lệnh, bảng điều khiển, thư viện mẫu, tài khoản và hồ sơ thử, mã hồ sơ đọc được, giao diện điện thoại, tiếng Việt và tiếng Anh | Giao diện sinh từ metadata dễ trông chung chung; chữ do mô hình định nghĩa không được dịch (`BACKLOG.md`, mục 4) |
 | Phát triển bền vững | Tài liệu kiến trúc, tệp mô hình, API và vận hành; mục ứng phó sự cố; lệnh `dxos`; bộ kiểm chung cho mô hình; SBOM | Chưa có ứng dụng mẫu của bên ngoài gọi lõi (`BACKLOG.md`, mục 3.2); đóng góp tập trung vào một người |
 | Trình diễn, thu hút cộng đồng | Kịch bản 15 phút ở `docs/DEMO.md`, bản chạy công khai, hai video và ảnh động kiến trúc | Chưa có phần trình chiếu; bản công khai chạy sau Cloudflare Tunnel, một dịch vụ đóng, nên cần phương án chạy tại chỗ nếu mạng ở buổi thi có sự cố |
@@ -173,7 +173,7 @@ Backend dùng SpotBugs và web dùng Biome (ESLint không chạy được với 
 
 Điểm yếu, theo mức nặng giảm dần:
 
-1. **Chưa có phần AI.** Chữ I của H-P-D-I chưa có và chưa hỏi Ban tổ chức; ảnh hưởng đến mức hoàn thiện và tính nguyên gốc ở buổi chung kết, không ảnh hưởng điểm kho mã.
+1. **Phần AI còn nhỏ.** Chữ I của H-P-D-I chỉ có một thành phần và chưa hỏi Ban tổ chức xem vậy có đủ; ảnh hưởng đến mức hoàn thiện và tính nguyên gốc ở buổi chung kết, không ảnh hưởng điểm kho mã.
 2. **Lịch sử issue mỏng và đóng góp tập trung vào một người.** Không mất điểm trực tiếp theo thể lệ, nhưng làm yếu bằng chứng về dự án có cộng đồng.
 3. **Chưa kiểm được:** việc dựng trên máy hoàn toàn mới không có bộ nhớ đệm của Docker, cài trên Windows, và 8 cảnh báo của OpenSSF Scorecard chưa duyệt.
 4. **Thiếu so với chuẩn repository:** `CODEOWNERS` chưa chia theo vùng; một người viết khoảng hai phần ba commit, nên việc chia người phụ trách là quyết định của nhóm.

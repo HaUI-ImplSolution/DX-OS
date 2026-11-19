@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # Optional business assistant, loaded only when deploy/.env sets
 # COMPOSE_FILE=docker-compose.yml:docker-compose.assistant.yml (see assistant/README.md).
+# Its settings are in deploy/assistant.env (copy assistant.env.example), never in deploy/.env.
 x-logging: &default-logging
   driver: json-file
   options:
@@ -15,12 +16,6 @@ x-hardened: &hardened
     - ALL
 
 services:
-  backend:
-    networks: [default, assistant-core]
-  keycloak:
-    networks: [default, assistant-core]
-  apisix:
-    networks: [default, assistant-ingress]
   apisix-config:
     environment:
       DXOS_ASSISTANT: "true"
@@ -49,7 +44,6 @@ services:
     logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-sso:${DXOS_IMAGE_TAG:-local}
     read_only: true
-    networks: [assistant-core]
     depends_on:
       assistant-init:
         condition: service_completed_successfully
@@ -71,10 +65,9 @@ services:
     user: "1000:1000"
     restart: unless-stopped
     read_only: true
-    mem_limit: ${ASSISTANT_CONTROL_MEMORY:-256m}
-    cpus: ${ASSISTANT_CONTROL_CPUS:-0.5}
+    mem_limit: 256m
+    cpus: 0.5
     pids_limit: 128
-    networks: [assistant-core, assistant-ingress]
     depends_on:
       backend:
         condition: service_healthy
@@ -82,6 +75,9 @@ services:
         condition: service_completed_successfully
       assistant-sso:
         condition: service_completed_successfully
+    env_file:
+      - path: ./assistant.env
+        required: false
     environment:
       ASSISTANT_HOST: 0.0.0.0
       ASSISTANT_PORT: 18790
@@ -95,15 +91,6 @@ services:
       ASSISTANT_OIDC_JWKS_URL: http://keycloak:8080/realms/dxos/protocol/openid-connect/certs
       ASSISTANT_OIDC_TOKEN_URL: http://keycloak:8080/realms/dxos/protocol/openid-connect/token
       ASSISTANT_OIDC_CLIENT_ID: dxos-assistant
-      ASSISTANT_INFERENCE_URL: ${ASSISTANT_INFERENCE_URL:-}
-      ASSISTANT_MODEL: ${ASSISTANT_MODEL:-}
-      ASSISTANT_MODEL_REVISION: ${ASSISTANT_MODEL_REVISION:-}
-      ASSISTANT_INFERENCE_KEY_FILE: ${ASSISTANT_INFERENCE_KEY_FILE:-}
-      ASSISTANT_PROMPT_FRAMING_FILE: ${ASSISTANT_PROMPT_FRAMING_FILE:-}
-      ASSISTANT_SOURCES_FILE: ${ASSISTANT_SOURCES_FILE:-}
-      ASSISTANT_INFERENCE_TIMEOUT_MS: ${ASSISTANT_INFERENCE_TIMEOUT_MS:-120000}
-      ASSISTANT_MAX_INPUT_BYTES: ${ASSISTANT_MAX_INPUT_BYTES:-6000}
-      ASSISTANT_MAX_OUTPUT_TOKENS: ${ASSISTANT_MAX_OUTPUT_TOKENS:-256}
     volumes:
       - ./data/assistant/control:/state
       - ./data/assistant/private:/run/secrets:ro
@@ -113,7 +100,3 @@ services:
       interval: 15s
       timeout: 5s
       retries: 4
-
-networks:
-  assistant-core: {}
-  assistant-ingress: {}

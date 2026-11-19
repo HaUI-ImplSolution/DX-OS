@@ -45,14 +45,6 @@ export RESTIC_PASSWORD="$BACKUP_PASSWORD"
 BACKUP_DIR="$(realpath -m "${BACKUP_DIR:-./backups}")"
 STAGE="$BACKUP_DIR/stage"
 compose() { docker compose --env-file "$ENV_FILE" "$@"; }
-# The optional assistant is paused while its state is copied and started again on any exit.
-ASSISTANT_PAUSED=false
-backup_cleanup() {
-  rm -rf "$STAGE"
-  if [[ "$ASSISTANT_PAUSED" == true ]]; then
-    compose start assistant-control >/dev/null || echo "WARNING: start the assistant again with docker compose up -d." >&2
-  fi
-}
 
 # restic <extra docker args> -- <restic args>
 restic() {
@@ -91,24 +83,14 @@ do_backup() {
   fi
   restic -- cat config >/dev/null 2>&1 || restic -- init
   rm -rf "$STAGE"; mkdir -p "$STAGE"; chmod 700 "$STAGE"
-  trap backup_cleanup EXIT
-  if [[ -d data/assistant && -n "$(compose ps -q --status running assistant-control 2>/dev/null)" ]]; then
-    compose stop -t 30 assistant-control >/dev/null
-    ASSISTANT_PAUSED=true
-  fi
+  trap 'rm -rf "$STAGE"' EXIT
   echo "==> Dumping Postgres"
   compose exec -T postgres pg_dumpall -U "$POSTGRES_USER" | gzip > "$STAGE/postgres.sql.gz"
   [[ -s "$STAGE/postgres.sql.gz" ]] || { echo "The database dump is empty." >&2; exit 1; }
-  local paths=(/stage) mounts=() excludes=()
-  # The state of the assistant is copied without its master key, which the operator keeps apart.
-  if [[ -d data/assistant ]]; then
-    mkdir -p "$STAGE/assistant"
-    mounts+=(-v "$(pwd)/data/assistant:/stage/assistant:ro")
-    excludes+=(--exclude /stage/assistant/private/master.key)
-  fi
+  local paths=(/stage)
   for dir in seaweedfs; do [[ -d "data/$dir" ]] && paths+=("/data/$dir"); done
   echo "==> Writing the snapshot (${paths[*]})"
-  restic -v "$STAGE:/stage:ro" -v "$(pwd)/data:/data:ro" "${mounts[@]}" -- backup --tag dxos "${excludes[@]}" "${paths[@]}"
+  restic -v "$STAGE:/stage:ro" -v "$(pwd)/data:/data:ro" -- backup --tag dxos "${paths[@]}"
   # A removed file stays in the store for DXOS_FILE_DELETE_DELAY, so a file named in the dump is
   # still there when the store is copied, as long as the dump and the copy fit in that time.
   local took=$(( $(date +%s) - started )) delay; delay="$(seconds "$FILE_DELETE_DELAY")"
@@ -126,8 +108,8 @@ do_backup() {
 
 # A backup nobody restored is a hope: load the dump into a throwaway Postgres and look inside.
 do_verify() {
-  local name="dxos-backup-verify-$$" store="dxos-backup-verify-store-$$" assistant="dxos-backup-verify-assistant-$$"
-  trap "docker rm -f $name $store >/dev/null 2>&1 || true; docker volume rm -f $store $assistant >/dev/null 2>&1 || true" EXIT
+  local name="dxos-backup-verify-$$" store="dxos-backup-verify-store-$$"
+  trap "docker rm -f $name $store >/dev/null 2>&1 || true; docker volume rm -f $store >/dev/null 2>&1 || true" EXIT
   docker run -d --name "$name" -e POSTGRES_PASSWORD=verify "$POSTGRES_IMAGE" >/dev/null
   until docker exec "$name" pg_isready -U postgres >/dev/null 2>&1; do sleep 1; done
   sleep 2
@@ -142,7 +124,6 @@ do_verify() {
   echo "Databases restored: $databases"
   echo "Tables in $POSTGRES_DB: $tables"
   [[ "$tables" -gt 0 ]] || { echo "Verify FAILED: the business database is empty." >&2; exit 1; }
-  verify_assistant
   if [[ "$(sql "SELECT to_regclass('engine.model_version') IS NOT NULL")" != t ]]; then
     echo "No model applied yet (engine.model_version is missing)."
     echo "Verify OK."
@@ -159,33 +140,6 @@ do_verify() {
   [[ -z "$missing" ]] || { echo "Verify FAILED: no tables for the models: $missing" >&2; exit 1; }
   verify_files
   echo "Verify OK."
-}
-
-# The state of the optional assistant is checked for SQLite integrity, which needs no master key.
-verify_assistant() {
-  local image listing
-  listing="$(restic -- ls latest /stage/assistant 2>/dev/null || true)"
-  grep -q '/stage/assistant/' <<<"$listing" || return 0
-  image="$(env_value DXOS_IMAGE_PREFIX)"; image="${image:-dxos}-assistant:$(env_value DXOS_IMAGE_TAG)"
-  [[ "$image" == *: ]] && image="${image}local"
-  if ! docker image inspect "$image" >/dev/null 2>&1; then
-    echo "Assistant: state is in the snapshot; its integrity was not checked because $image is not on this machine."
-    return 0
-  fi
-  docker volume create "$assistant" >/dev/null
-  restic -v "$assistant:/restore" -- restore latest --target /restore --include /stage/assistant >/dev/null
-  docker run --rm --network none --user 0 --entrypoint node -v "$assistant:/restore" "$image" -e '
-    const fs = require("node:fs");
-    const path = "/restore/stage/assistant/control/assistant.sqlite";
-    if (!fs.existsSync(path)) { console.log("Assistant: no account database yet."); process.exit(0); }
-    const { DatabaseSync } = require("node:sqlite");
-    const db = new DatabaseSync(path, { readOnly: true });
-    try {
-      const rows = db.prepare("PRAGMA integrity_check").all();
-      if (rows.length !== 1 || rows[0].integrity_check !== "ok") throw new Error("Assistant database integrity failed");
-      console.log("Assistant database integrity: OK; decryption needs the separately restored key.");
-    } finally { db.close(); }
-  '
 }
 
 # Every attachment row of the dump must have its object in the copy of the store: the copy is

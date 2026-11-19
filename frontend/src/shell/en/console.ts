@@ -2,6 +2,17 @@
 // SPDX-License-Identifier: Apache-2.0
 // The control panel: models, editor, plan, users, outbox and the guides.
 export const console: Record<string, string> = {
+  "Trợ lý nghiệp vụ": "Business assistant",
+  "Nhiệm vụ chỉ tạo đề xuất; quyền ghi vẫn do Core kiểm tra sau xác nhận.": "Tasks create suggestions; Core checks write access after confirmation.",
+  "Trường đầu vào": "Input fields",
+  "Trường đề xuất": "Output field",
+  "Hướng dẫn nhiệm vụ": "Task instructions",
+  "Mã nguồn tri thức có phiên bản": "Versioned source IDs",
+  "Nhập mã nguồn do người vận hành cung cấp, nhấn Enter để thêm.": "Enter a source ID supplied by the operator and press Enter to add it.",
+  "Độ dài đề xuất tối đa": "Maximum suggestion length",
+  "Xóa nhiệm vụ": "Delete task",
+  "Nhiệm vụ mới": "New task",
+  "Thêm nhiệm vụ": "Add task",
   "Đổi nhiệm vụ trợ lý nghiệp vụ": "Change business assistant tasks",
   "Người dùng với vai": "Users with the role",
   "Gửi tới hệ thống ngoài": "Sent to an outside system",

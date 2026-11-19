@@ -35,7 +35,7 @@ import LiveRefresh from "./LiveRefresh";
 import { uiIcon } from "./uiIcons";
 import { screens } from "./resources";
 import { resourceName, type EntityMeta, type ModelMeta } from "./types";
-import { assistantAvailable } from "../assistant/api";
+import { useAssistantEnabled } from "../assistant/api";
 import { t } from "../shell/t";
 
 // The control panel and its editor are loaded only when an administrator opens it.
@@ -166,23 +166,11 @@ const makeMenu = (models: ModelMeta[], assistantEnabled: boolean) =>
 export default function AdminApp() {
   const [models, setModels] = useState<ModelMeta[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [assistantEnabled, setAssistantEnabled] = useState(false);
 
   useEffect(() => {
     listModels().then(setModels, (e: unknown) => setError(e instanceof Error ? e.message : t("Không đọc được metadata")));
   }, []);
-
-  // The assistant is asked about only when a model declares ai tasks.
-  const hasAiTasks = useMemo(
-    () => !!models?.some((model) => model.entities.some((entity) => Object.keys(entity.aiTasks ?? {}).length > 0)),
-    [models],
-  );
-  useEffect(() => {
-    if (!hasAiTasks) return;
-    let active = true;
-    void assistantAvailable().then(enabled => { if (active) setAssistantEnabled(enabled); });
-    return () => { active = false; };
-  }, [hasAiTasks]);
+  const assistantEnabled = useAssistantEnabled(models);
 
   const byResource = useMemo(() => {
     const map: Record<string, EntityMeta> = {};

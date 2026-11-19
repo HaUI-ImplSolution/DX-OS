@@ -19,7 +19,7 @@ Mức hoàn thiện của từng tính năng và bài kiểm của nó ở [`web
 | Loại | Lệnh | Chạy ở CI |
 |---|---|---|
 | Định dạng, biên dịch, test của backend | `cd backend && ./mvnw verify` | Workflow `Backend` |
-| Trợ lý tùy chọn, không cần key | `cd assistant && npm ci && npm test` (Node 24.16) | `Check the optional assistant` của `Platform` |
+| Trợ lý tùy chọn, không cần key | `cd assistant && npm ci && npm test` (Node 24.16) | Workflow `Assistant` |
 | Kiểu của web | `cd frontend && npx tsc --noEmit` | Workflow `Frontend` |
 | Phân tích tĩnh của web | `cd frontend && npm run lint` | Workflow `Frontend` |
 | Giấy phép và header | `python3 .github/scripts/check_licenses.py`; `pipx run --spec reuse==6.3.0 reuse lint` | `Check licenses` của `Compliance` |
@@ -259,7 +259,7 @@ Kiểm bằng đúng các lệnh và thao tác trong tài liệu.
 48. Theo [`assistant/README.md`](../assistant/README.md), liên kết SSO, cấu hình inference/nguồn của bản cài và khai báo nhiệm vụ `ai.tasks`.
     Mở hồ sơ, tạo đề xuất, xem nguồn, sửa hoặc hủy, rồi xác nhận và đối chiếu phiên bản/lịch sử Core.
     Kiểm hai chủ không đọc/ghi chéo; giá trị trùng không tạo lịch sử sửa và model tắt không cản nghiệp vụ.
-    Kiểm nâng cấp/restore giữ SSO, key và lịch sử, không thực thi lại đề xuất cũ.
+    Kiểm nâng cấp giữ liên kết SSO và lịch sử, không thực thi lại đề xuất cũ; sau khôi phục từ sao lưu, người dùng liên kết lại tài khoản.
 
 ## 7. Hồi quy
 

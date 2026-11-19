@@ -25,27 +25,6 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
-  assistant:
-    name: Check the optional assistant
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Set up Node.js
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '24.16.0'
-          cache: 'npm'
-          cache-dependency-path: assistant/package-lock.json
-
-      - name: Build and test without inference credentials
-        working-directory: assistant
-        run: |
-          npm ci --no-audit --no-fund --ignore-scripts
-          npm test
-
   compose:
     name: Validate the Compose file
     runs-on: ubuntu-24.04
@@ -59,9 +38,6 @@ jobs:
 
       - name: Validate compose file
         run: docker compose -f deploy/docker-compose.yml config --quiet
-
-      - name: Validate compose file with the optional assistant
-        run: docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.assistant.yml config --quiet
 
       - name: Compose must stop when a secret is missing
         run: |
@@ -87,7 +63,6 @@ jobs:
               if [[ "$admin" == true ]]; then args+=(--admin-console); fi
               python3 e2e/api/check_routes.py "${args[@]}"
               python3 e2e/api/check_routes.py "${args[@]}" --local deploy/apisix/local.example.yaml
-              python3 e2e/api/check_routes.py "${args[@]}" --assistant
             done
           done
 

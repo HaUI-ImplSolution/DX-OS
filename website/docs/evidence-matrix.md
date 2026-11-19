@@ -55,7 +55,7 @@ Mỗi script in `N/M passed` và thoát với mã 1 khi có kiểm hỏng; số 
 | Đặt chỗ theo khung giờ có sức chứa | `check_booking.py` 47 | `python3 e2e/api/check_booking.py` | Hoàn thiện | Kéo thả trên lịch kiểm tay bằng Chrome |
 | Tự đóng hồ sơ đã xử lý của họ `work_item` | `check_process.py` | `python3 e2e/api/check_process.py` | Hoàn thiện | |
 | Hành động hoàn tất qua outbox, thử lại khi lỗi | `check_process.py`; `AdvisoryJobLockIntegrationTest` | `python3 e2e/api/check_process.py` | Hoàn thiện | Chỉ có `add_to_group` và `remove_from_group` |
-| Chống ghi đè khi sửa đồng thời (`version`, 409) | `check_process.py` | `python3 e2e/api/check_process.py` | Hoàn thiện | |
+| Chống ghi đè khi sửa, hành động và giao việc đồng thời (`version`, `modelVersion`, 409) | `check_process.py` | `python3 e2e/api/check_process.py` | Hoàn thiện | |
 | Mã lý do cho lỗi 403 và 409 | `check_case.py`, `check_process.py`, `check_booking.py` | `python3 e2e/api/check_case.py` | Dùng được | `STILL_REFERENCED` và một số mã của 403 chưa có kiểm riêng |
 | Lịch sử hồ sơ kèm giá trị cũ và mới của từng trường | `check_case.py` | `python3 e2e/api/check_case.py` | Hoàn thiện | |
 | Chuỗi hash của lịch sử, điểm neo, lệnh kiểm | `check_events.py` 24 | `python3 e2e/api/check_events.py` | Hoàn thiện | Phát hiện sửa chứ không ngăn sửa; người sửa được cả cơ sở dữ liệu lẫn kho thì chỉ bị lộ khi so với hash bên nhận giữ |
@@ -95,6 +95,7 @@ Mỗi script in `N/M passed` và thoát với mã 1 khi có kiểm hỏng; số 
 | Bảng theo trạng thái và xuất CSV | Kiểm tay theo `docs/TESTING.md` mục 6, «Bảng theo trạng thái» và «Xuất CSV»; `npx tsc --noEmit` | Mở danh sách của một thực thể có quy trình, bấm Bảng theo trạng thái và Xuất CSV | Dùng được | Không có kiểm tự động của giao diện; bảng chỉ đọc, tối đa 10 thẻ mỗi cột; xuất tối đa 10.000 dòng |
 | Khóa chống chạy lặp (`Idempotency-Key`) | Kiểm tay theo `docs/TESTING.md` mục 6, «Khóa chống chạy lặp» | Gửi hai lần cùng khóa | Dùng được | Không có kiểm tự động; chỉ cho tạo hồ sơ và hành động, khóa giữ 24 giờ |
 | Chỉ số mục tiêu: mã tự viết bằng 0 ở mức 1 và 2, dựng dưới 10 phút, đổi trường không mất dữ liệu | Đếm bằng script và đo tay, kết quả ở `docs/TARGETS.md` | `python3 tools/count_own_code.py <thư mục>`; `dxos start <tệp>` | Dùng được | Không chạy trong CI; mục "trong một buổi" mới có bản mô phỏng, chưa có người thật |
+| Trợ lý đề xuất giá trị một trường (tùy chọn) | Job `Check the optional assistant` của workflow `Assistant` chạy test của dịch vụ; bài kiểm trình duyệt `e2e/web/tests/assistant.spec.ts` cần inference và nguồn của người vận hành | `cd assistant && npm ci && npm test` | Dùng được | Bài kiểm trình duyệt chạy tay; chỉ đề xuất giá trị một trường, người dùng xác nhận trước khi lưu |
 
 ## 3. Giấy phép, chuỗi cung ứng, phát hành
 
@@ -115,8 +116,8 @@ Mỗi script in `N/M passed` và thoát với mã 1 khi có kiểm hỏng; số 
 
 | Nội dung | Mức | Ghi chú |
 |---|---|---|
-| Hỏi đáp sinh câu trả lời và tác tử AI có người duyệt | Chưa làm | Cần mô hình ngôn ngữ đạt tiêu chuẩn mở hoàn toàn, chưa chọn |
-| Ứng dụng Tầng 2 phủ chữ I của H-P-D-I | Chưa làm | |
+| Hỏi đáp sinh câu trả lời và tác tử AI nghe sự kiện | Chưa làm | Chỉ có trợ lý đề xuất giá trị một trường; xem [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md), mục 4 |
+| Xác nhận của Ban tổ chức về số thành phần của chữ I | Chưa làm | Câu hỏi #211 chưa gửi |
 | Lớp truy vấn riêng trên kho Parquet | Chưa làm | Xem [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md), mục 3 |
 | Bản sao số | Chưa làm | Giới hạn chấp nhận, xem [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md), mục 4 |
 | Nhiều bản backend sau gateway | Chưa làm | Chạy một bản; hai bản thì danh sách mô hình giữ lệch nhau sau một lần áp dụng |

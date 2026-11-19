@@ -387,10 +387,8 @@ Tin của dòng `escalated` có thêm `level` (mức, từ 1) và `round` (lần
 ## Nhiệm vụ trợ lý nghiệp vụ
 
 Mỗi thực thể có thể khai báo `ai.tasks`, là ánh xạ tên nhiệm vụ tới `label`, `input_fields`, `output_field`, `instruction`, `sources` và `max_length`.
-Các trường đầu vào lấy từ hồ sơ hiện tại, gồm trường đơn vị ở dạng chỉ đọc; đầu ra chỉ là một trường text hoặc choice đơn trị và không được dùng làm nguồn cấp membership.
-Trường choice/unit đơn trị khác đầu ra được dịch vụ trợ lý dùng để đối chiếu theo nguồn; giá trị hiện tại giữ ở server, không đưa cho model làm căn cứ suy ra chính giá trị đó.
-Nhiệm vụ cần suy luận từ giá trị hiện tại của những trường đối chiếu này chưa được hỗ trợ.
-`sources` là danh sách mã nguồn có phiên bản do dịch vụ trợ lý quản lý, không phải URL hoặc đường dẫn tệp.
-Khai báo nhiệm vụ không cấp thêm quyền; người xác nhận vẫn phải có quyền sửa hồ sơ và Core kiểm phiên bản trước khi ghi.
-Thêm, sửa hoặc bỏ nhiệm vụ hiện trong kế hoạch với loại `CHANGE_AI_TASKS`; áp dụng cấu hình mới làm đề xuất của phiên bản cũ mất hiệu lực.
-Không khai báo `ai` thì mô hình giữ hành vi hiện có.
+Trường đầu vào lấy từ hồ sơ, gồm trường đơn vị ở dạng chỉ đọc; đầu ra là một trường text hoặc choice đơn trị và không được dùng làm nguồn cấp membership.
+`sources` là danh sách mã nguồn tham khảo do dịch vụ trợ lý quản lý, không phải URL hoặc đường dẫn tệp.
+Khai báo nhiệm vụ không cấp thêm quyền; người xác nhận vẫn phải có quyền sửa hồ sơ.
+Thêm, sửa hoặc bỏ nhiệm vụ hiện trong kế hoạch với loại `CHANGE_AI_TASKS`.
+Dịch vụ trợ lý là thành phần tùy chọn, xem [`assistant/README.md`](../assistant/README.md).

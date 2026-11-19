@@ -21,14 +21,13 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - `dxos client test <tên>` đăng nhập bằng client đó, gọi API của mô hình của nó và nêu bước nào hỏng; mã bí mật lấy từ tệp, biến môi trường hoặc hỏi lúc chạy, không nằm trên dòng lệnh.
 - `dxos start` in bước tiếp theo và liên kết tới hướng dẫn bắt đầu nhanh.
 - `docs/QUICKSTART.md` đi từ máy sạch đến một quy trình chạy được, có đường không cần code và đường có code; `examples/order_approval` là ví dụ chạy được của đường có code.
-- Thêm trợ lý nghiệp vụ tùy chọn dùng inference self-host để đề xuất một giá trị trường từ hồ sơ và nguồn được cấu hình; người dùng sửa, hủy hoặc xác nhận, Core kiểm quyền và phiên bản trước khi ghi.
-- Model mặc định của trợ lý là Apertus-8B-Instruct-2509 self-host, bản local GGUF Q4.
-- Nguồn tham khảo của trợ lý hiển thị nhãn trường và tên đơn vị theo metadata của mô hình.
 
-### Triển khai
+### Trợ lý nghiệp vụ (tùy chọn)
 
-- Trợ lý nằm trong `deploy/docker-compose.assistant.yml`, chỉ nạp khi `COMPOSE_FILE` trong `deploy/.env` nêu tệp đó; chưa bật thì stack không có container, network hay route của trợ lý.
-  Sao lưu chụp state của trợ lý bằng container, không gồm master key.
+- Trợ lý đề xuất một giá trị trường từ hồ sơ và nguồn tham khảo; người dùng sửa, hủy hoặc xác nhận, Core kiểm quyền và phiên bản trước khi ghi.
+- Trợ lý dùng inference self-host, model mặc định là Apertus-8B-Instruct-2509 (GGUF Q4); nguồn tham khảo hiển thị nhãn trường và tên đơn vị theo metadata của mô hình.
+- Trợ lý nằm trong `deploy/docker-compose.assistant.yml`, chỉ nạp khi `COMPOSE_FILE` nêu tệp đó; bật hay tắt không tạo lại service nào của lõi.
+- Cấu hình ở `deploy/assistant.env`, kiểm tra ở workflow `Assistant`, và `assistant/README.md` có danh sách các chỗ cần xóa để gỡ trợ lý.
 
 ### Phát hành
 

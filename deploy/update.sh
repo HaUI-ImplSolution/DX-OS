@@ -47,7 +47,8 @@ else
   SERVICES=(backend monitor frontend portal keycloak)
 fi
 # The optional assistant is part of the project only when COMPOSE_FILE names its file.
-if docker compose config --services | grep -qx assistant-control; then SERVICES+=(assistant-control); fi
+PROJECT_SERVICES="$(docker compose config --services)"
+if grep -qx assistant-control <<<"$PROJECT_SERVICES"; then SERVICES+=(assistant-control); fi
 BEHIND_GATEWAY=("${SERVICES[@]}")
 declare -A BEFORE
 for service in "${BEHIND_GATEWAY[@]}"; do

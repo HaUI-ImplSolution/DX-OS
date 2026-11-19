@@ -16,7 +16,7 @@ Thứ tự dưới đây xếp theo số điểm đang để hở; chi tiết t�
 | 1 | Tài liệu và giao tiếp: lịch sử issue (mục 3) | Tài liệu và giao tiếp 10, phát triển bền vững 10 |
 | 2 | Bằng chứng lõi là PaaS: ứng dụng mẫu (mục 3) | Nguyên gốc 10, phát triển bền vững 10 |
 | 3 | Bài trình bày chung kết (mục 2) | Hoàn thiện 10, trình diễn 10 |
-| 4 | Phần AI và chữ I của ứng dụng Tầng 2 (mục 3) | Hoàn thiện 10, nguyên gốc 10 |
+| 4 | Phạm vi chữ I (#211) và hồ sơ giấy phép của model trợ lý (mục 3) | Hoàn thiện 10, nguyên gốc 10 |
 
 ## 2. Phải xử lý trước khi phát hành
 
@@ -43,8 +43,8 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 | Việc | Ghi chú |
 |---|---|
 | Ứng dụng mẫu gọi lõi từ bên ngoài | Chưa có ứng dụng có giao diện nào ngoài ứng dụng của đội gọi lõi qua API, nên câu "PaaS phục vụ các ứng dụng tầng trên" của đề chưa có bằng chứng chạy được; đã chốt làm một ứng dụng mẫu ở `examples/`, viết bằng khung khác react-admin, chỉ dùng OpenAPI theo mô hình và đăng nhập Keycloak |
-| Egress trợ lý | Chưa có allowlist kết nối cho toàn container; cần kiểm giới hạn mạng ngoài endpoint inference cố định |
-| Thu hồi và thay khóa/token trợ lý | Hoàn thiện quy trình thu hồi, thay mới khóa/token và xử lý snapshot cũ có chứa khóa |
+| Egress trợ lý | Trợ lý chạy trên network mặc định của stack và chưa có allowlist kết nối cho container; cần giới hạn mạng ra ngoài endpoint inference cố định |
+| Thu hồi và thay khóa/token trợ lý | Hoàn thiện quy trình thu hồi và thay mới khóa và token của trợ lý |
 | Lịch sử issue và cộng đồng | Ít issue so với pull request (63 issue, 220 pull request đã gộp), nhãn `good first issue` và `help wanted` đã có nhưng chưa issue nào dùng, Discussions chỉ có một chủ đề chào mừng, repository chưa có fork, phần lớn tài liệu chỉ có tiếng Việt |
 | Đóng góp tập trung | Một thành viên giữ khoảng hai phần ba commit; `CODEOWNERS` nêu ba thành viên cho mọi đường dẫn, chưa chia người phụ trách theo vùng; chia hay không là quyết định của nhóm |
 | Cảnh báo Scorecard và huy hiệu | Tab Security có 8 cảnh báo của Scorecard chưa duyệt (Maintained, CodeReview, Vulnerabilities, Fuzzing, SAST, TokenPermissions hai cảnh báo, BranchProtection); huy hiệu OpenSSF Best Practices mức passing còn ba tiêu chí khuyến nghị chưa đạt (`test_most`, `warnings_strict`, `dynamic_analysis`), và lời giải thích từng tiêu chí trỏ về tệp trên `main` nên chỉ khớp khi nhánh tích hợp vào `main` |
@@ -60,7 +60,7 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 | Việc | Ghi chú |
 |---|---|
 | Phạm vi AI | Chỉ có trợ lý đề xuất giá trị một trường có người duyệt; không có hỏi đáp RAG, tác tử theo sự kiện, embedding và reranker; đề không nêu số thành phần của nhóm I phải làm |
-| Chất lượng đề xuất trợ lý | Model có thể đoán khi thiếu dữ kiện, bỏ sót đối chiếu, từ chối nhầm và diễn đạt sai quan hệ số; chưa có kiểm ngữ nghĩa tự chặn các lỗi này nên người dùng đối chiếu nguồn rồi mới xác nhận; nhiệm vụ phụ thuộc giá trị hiện tại của chính trường đối chiếu chưa được hỗ trợ; vòng đời trợ lý (bật, cập nhật, sao lưu, khôi phục) chưa chạy trong CI |
+| Chất lượng đề xuất trợ lý | Model có thể đoán khi thiếu dữ kiện, bỏ sót đối chiếu, từ chối nhầm và diễn đạt sai quan hệ số; chưa có kiểm ngữ nghĩa tự chặn các lỗi này nên người dùng đối chiếu nguồn rồi mới xác nhận; nhiệm vụ phụ thuộc giá trị hiện tại của chính trường đối chiếu chưa được hỗ trợ; vòng đời trợ lý (bật, tắt, cập nhật) chưa chạy trong CI |
 | Quy mô vận hành trợ lý | Một provider và một slot suy luận, không chạy nhiều replica trên cùng SQLite; chưa có SLA hoặc số đo model cold/warm, RAM/VRAM/swap; cần đo trên host và model đã chọn trước khi cam kết tải |
 | Tìm người cho trường `user` | `GET /api/v1/people` cho mọi người đã đăng nhập tìm cả người ngoài phạm vi mô hình, khớp theo tên, tên đăng nhập hoặc email, và chỉ trả id với tên hiển thị; thu hẹp theo vai của mô hình thì phải đối chiếu vai của từng người |
 | Đổi mô hình khi còn hồ sơ mở | Hồ sơ chưa lưu phiên bản mô hình và hồ sơ đang chạy giữ bản BPMN cũ (Flowable không chuyển chúng sang bản mới); hạn xử lý, quyền tự quyết, hành động hoàn tất, đặt chỗ, trạng thái, hành động và điều kiện `when` vì thế chỉ đổi được khi thực thể không còn hồ sơ đang xử lý, phải hoàn tất hoặc rút hết hồ sơ trước; đổi vai xử lý thì có hiệu lực ngay vì quyền xét theo mô hình, hồ sơ đã giao cho người không còn giữ vai mới chỉ người điều phối giao lại được, và nhóm ứng viên ghi trong task Flowable đang chạy vẫn là vai cũ (không nơi nào đọc nó) |

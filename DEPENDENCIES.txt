@@ -255,25 +255,6 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 | llama.cpp b12387 [10]                | MIT                                  | Runtime inference self-host do       |
 |                                      |                                      | người vận hành cấp riêng             |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| OpenSSL 3.0.13 [11]                 | Apache-2.0                           | libssl/libcrypto của máy chạy,      |
-|                                      |                                      | phục vụ TLS cho runtime local        |
-+--------------------------------------+--------------------------------------+--------------------------------------+
-| Vulkan Loader 1.3.275 [11]           | Apache-2.0, MIT                      | Nạp backend Vulkan của runtime      |
-+--------------------------------------+--------------------------------------+--------------------------------------+
-| GCC runtime 14.2.0 [11]             | GPL-3.0-or-later WITH                 | libstdc++, libgcc, libgomp liên kết  |
-|                                      | GCC-exception-3.1                     | động trong runtime local             |
-+--------------------------------------+--------------------------------------+--------------------------------------+
-| GNU C Library 2.39 [11]             | LGPL-2.1-or-later; xem [11]           | libc, libm và bộ nạp của máy chạy    |
-+--------------------------------------+--------------------------------------+--------------------------------------+
-| cpp-httplib, nlohmann/json,         | MIT                                  | Mã vendor trong tag b12387; phạm vi |
-| stb_image, rotate-bits [12]         |                                      | binary theo ghi chú [12]             |
-+--------------------------------------+--------------------------------------+--------------------------------------+
-| miniaudio [12]                     | MIT-0                                | Vendor âm thanh của tag b12387       |
-+--------------------------------------+--------------------------------------+--------------------------------------+
-| sheredom/subprocess.h [12]          | Unlicense                            | Vendor tiến trình phụ của b12387     |
-+--------------------------------------+--------------------------------------+--------------------------------------+
-| xxHash [12]                        | BSD-2-Clause                         | Vendor hash của tag b12387           |
-+--------------------------------------+--------------------------------------+--------------------------------------+
 
 5. GHI CHÚ
 ==========
@@ -330,20 +311,7 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 [10] llama.cpp b12387: MIT, Copyright (c) 2023-2026 The ggml authors.
      Giấy phép đúng tag: https://github.com/ggml-org/llama.cpp/blob/b12387/LICENSE.
      Runtime local được người vận hành cấp, không nằm trong image trợ lý hoặc SBOM npm.
-     Giấy phép của thư viện hệ thống và mã vendor được ghi riêng ở [11], [12]; MIT của llama.cpp không thay các giấy phép đó.
-
-[11] Các phiên bản thư viện hệ thống trong bảng là bản đang liên kết với runtime local, không phải yêu cầu cố định cho mọi bản cài.
-     Giấy phép đối chiếu từ copyright của các gói libssl3t64, libvulkan1, libstdc++6, libgcc-s1, libgomp1 và libc6 trên máy chạy.
-     Vulkan Loader có mã cJSON theo MIT; GCC Runtime Library Exception 3.1 đi cùng các thư viện runtime GCC đã liệt kê.
-     LGPL-2.1-or-later là giấy phép chính của thư viện glibc; giữ các thông báo thành phần trong copyright của đúng gói, không gộp tiện ích GPL của gói nguồn vào giấy phép libc.
-     Các thư viện này do hệ điều hành cấp riêng; khi đóng gói lại runtime phải giữ license, thông báo bản quyền và thực hiện nghĩa vụ phân phối của đúng bản thư viện.
-     Driver GPU do máy chủ cấp riêng, không nằm trong gói DX-OS; giấy phép của Vulkan Loader không xác định giấy phép của driver NVIDIA hoặc driver khác.
-
-[12] Giấy phép đối chiếu trong vendor/ của đúng tag https://github.com/ggml-org/llama.cpp/tree/b12387/vendor.
-     cpp-httplib: MIT; nlohmann/json: MIT; rotate-bits: MIT; xxHash: BSD-2-Clause.
-     stb_image có lựa chọn MIT hoặc public domain, ghi nhận theo MIT; miniaudio có lựa chọn MIT-0 hoặc public domain, ghi nhận theo MIT-0; subprocess.h dùng Unlicense.
-     Đây là danh mục mã vendor của tag; thành phần thực sự nhúng trong binary và Web UI cần được đối chiếu theo cấu hình build trước khi phân phối, không suy từ liên kết động hoặc giấy phép ở thư mục gốc.
-     vendor/hash/sha256 khai báo public domain theo Igor Pavlov; còn cần đối chiếu phạm vi binary và hồ sơ pháp lý, không tự đổi thành một mã SPDX hoặc coi là đã audit.
+     Thư viện hệ thống và mã vendor của runtime giữ giấy phép riêng; người vận hành giữ thông báo đi kèm bản runtime mình dùng.
 
 6. TRANG CHỦ VÀ NGUỒN
 =====================
@@ -354,10 +322,6 @@ Gói Maven và npm: trang chủ và mã nguồn của từng gói nằm trong sb
 Thành phần       Trang chủ | Mã nguồn
 Apertus          https://huggingface.co/swiss-ai/Apertus-8B-Instruct-2509 | https://github.com/swiss-ai
 llama.cpp        https://github.com/ggml-org/llama.cpp | https://github.com/ggml-org/llama.cpp/tree/b12387
-OpenSSL          https://openssl-library.org/ | https://github.com/openssl/openssl
-Vulkan Loader    https://github.com/KhronosGroup/Vulkan-Loader | https://github.com/KhronosGroup/Vulkan-Loader
-GCC runtime      https://gcc.gnu.org/ | https://gcc.gnu.org/git/
-GNU C Library    https://sourceware.org/glibc/ | https://sourceware.org/git/glibc.git
 PostgreSQL       https://www.postgresql.org/ | https://github.com/postgres/postgres
 Keycloak         https://www.keycloak.org | https://github.com/keycloak/keycloak
 Apache APISIX    https://apisix.apache.org/ | https://github.com/apache/apisix

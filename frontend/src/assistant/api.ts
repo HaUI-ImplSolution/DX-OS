@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
+import { useEffect, useMemo, useState } from "react";
 import { API_BASE, ApiError } from "../shell/api";
+import type { ModelMeta } from "../admin/types";
 import { getToken } from "../shell/auth";
 import { errorMessageFor, registerErrorMessages, statusMessageFor } from "../shell/errorMessages";
 
@@ -45,6 +47,22 @@ async function loadAvailability(): Promise<boolean> {
   } catch { return false; }
 }
 
+// The assistant is asked about only when a model declares ai tasks.
+export function useAssistantEnabled(models: ModelMeta[] | null): boolean {
+  const [enabled, setEnabled] = useState(false);
+  const declared = useMemo(
+    () => !!models?.some(model => model.entities.some(entity => Object.keys(entity.aiTasks ?? {}).length > 0)),
+    [models],
+  );
+  useEffect(() => {
+    if (!declared) return;
+    let active = true;
+    void assistantAvailable().then(value => { if (active) setEnabled(value); });
+    return () => { active = false; };
+  }, [declared]);
+  return enabled;
+}
+
 export async function assistantRequest<T>(path: string, method = "GET", payload?: unknown, signal?: AbortSignal): Promise<T> {
   const token = await getToken();
   const response = await fetch(`${API_BASE}/assistant-api/v1${path}`, {
@@ -58,7 +76,8 @@ export async function assistantRequest<T>(path: string, method = "GET", payload?
   return body.data;
 }
 
-export type Proposal = { id: string; state: string; expires: number; receipt?: { version?: number } | null; snapshot: {
+// expires and now are both server clock readings, so a browser clock that is off does not matter.
+export type Proposal = { id: string; state: string; expires: number; now: number; receipt?: { version?: number } | null; snapshot: {
   version?: number;
   warnings?: { field: string; expected: string; actual: string | null }[];
   value?: string; previousValue?: unknown; field?: string;

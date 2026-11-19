@@ -151,7 +151,7 @@ export class Store {
     const row = this.db.prepare('SELECT snapshot,expires,state,receipt FROM proposals WHERE id=? AND owner=?')
       .get(id, ownerKey(owner)) as { snapshot: string; expires: number; state: string; receipt: string | null } | undefined;
     if (!row) throw new ApiError(404, 'ERR_NOT_FOUND', 'Proposal not found');
-    return { id, snapshot: this.unseal<Proposal>(owner, id, row.snapshot), expires: row.expires,
+    return { id, snapshot: this.unseal<Proposal>(owner, id, row.snapshot), expires: row.expires, now: Date.now(),
       state: row.state, receipt: row.receipt ? this.unseal<unknown>(owner, `${id}:receipt`, row.receipt) : null };
   }
 

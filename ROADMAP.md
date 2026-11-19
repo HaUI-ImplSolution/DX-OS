@@ -16,7 +16,7 @@ Mọi việc dưới đây giữ hướng đó: thêm nghiệp vụ là thêm t�
 
 ## Sau đó
 
-- **Trí tuệ nhân tạo:** hỏi đáp có trích nguồn và tác tử đề xuất có người duyệt, chỉ dùng mô hình mở hoàn toàn theo định nghĩa của OSI.
+- **Trí tuệ nhân tạo:** hỏi đáp có trích nguồn và tác tử nghe sự kiện, thêm vào trợ lý đề xuất giá trị một trường đã có, chỉ dùng mô hình mở hoàn toàn theo định nghĩa của OSI.
 - **Quy trình:** thêm họ mẫu khi có đủ ba miền chạy được bằng tham số.
 - **Tệp mô hình:** nâng tệp cũ khi định dạng đổi.
 

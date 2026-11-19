@@ -104,7 +104,6 @@ updates:
       - /frontend
       - /portal
       - /sso
-      - /assistant
     target-branch: Khuong/main
     schedule:
       interval: monthly
@@ -138,6 +137,24 @@ updates:
         update-types: ["version-update:semver-major"]
     groups:
       compose-images:
+        patterns: ["*"]
+
+  # The optional assistant: delete this section with assistant/.
+  - package-ecosystem: docker
+    directory: /assistant
+    target-branch: Khuong/main
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 1
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: "chore(deps)"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      assistant-base-image:
         patterns: ["*"]
 
   - package-ecosystem: npm

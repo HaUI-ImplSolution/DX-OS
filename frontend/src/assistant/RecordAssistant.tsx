@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Box, Button, Card, CircularProgress, MenuItem, Stack, TextField, Typography } from "@mui/material";
 import { EditButton, useRecordContext, useRefresh } from "react-admin";
 import { assistantRequest, type Proposal } from "./api";
@@ -31,12 +31,14 @@ export default function RecordAssistant({ model, entity, units }: { model: strin
   const [value, setValue] = useState(""); const [busy, setBusy] = useState(false);
   const [error, setError] = useState(""); const [message, setMessage] = useState("");
   useEffect(() => { setProposal(null); setError(""); }, [model, entity.name, record?.id, record?.version, entity.aiTasks]);
+  // The deadline is measured on this browser's clock from the time left on the server's clock.
+  const deadline = useMemo(() => proposal ? Date.now() + proposal.expires - proposal.now : 0, [proposal?.id]);
   useEffect(() => {
     if (!proposal || proposal.state !== "pending") return;
     const id = proposal.id;
-    const timer = window.setTimeout(() => setProposal(current => current?.id === id ? { ...current, state: "expired" } : current), Math.max(0, proposal.expires - Date.now()));
+    const timer = window.setTimeout(() => setProposal(current => current?.id === id ? { ...current, state: "expired" } : current), Math.max(0, deadline - Date.now()));
     return () => window.clearTimeout(timer);
-  }, [proposal?.id, proposal?.state, proposal?.expires]);
+  }, [proposal?.id, proposal?.state, deadline]);
   const current = entity.aiTasks?.[task];
   const field = entity.fields.find(f => f.name === current?.outputField);
   const run = async (work: () => Promise<void>) => {
@@ -49,7 +51,7 @@ export default function RecordAssistant({ model, entity, units }: { model: strin
   };
   if (!record || !entity.aiTasks || !Object.keys(entity.aiTasks).length) return null;
   const unchanged = !!proposal && value === proposal.snapshot.previousValue;
-  const pending = proposal?.state === "pending" && proposal.expires > Date.now();
+  const pending = proposal?.state === "pending" && deadline > Date.now();
   return <Card sx={{ p: 2 }}>
     <Typography variant="h6" gutterBottom>{t("Trợ lý nghiệp vụ")}</Typography>
     <Stack spacing={2}>

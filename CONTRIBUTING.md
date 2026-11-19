@@ -78,6 +78,8 @@ cd ../frontend && npm install && npm run dev
 - Dependabot chỉ mở pull request cho bản vá và bản phụ; bản chính, dòng hỗ trợ dài hạn khác và image gốc khác nâng bằng tay, sau khi kiểm giấy phép OSI, thời hạn hỗ trợ và tương thích (xem [`.github/dependabot.yml`](.github/dependabot.yml)).
 - Image (kể cả image chép vào bằng `COPY --from`), bản phát hành tải bằng `ADD`, mô hình và tệp trọng số, tài liệu, nén phải khai báo ở [`.github/component-catalog.json`](.github/component-catalog.json) với giấy phép được phép; `check_licenses.py` kiểm danh mục này.
   `check_upstream_licenses.py` đọc giấy phép của dự án gốc ở đúng phiên bản đang dùng của từng image và bản tải về, ở mỗi pull request và mỗi tuần: giấy phép khác bản đã khai, ngoài danh sách OSI, không xác định được hoặc không đọc được đều làm job đỏ, nên một pull request của Dependabot đổi tag image bị kiểm ở chính phiên bản nó đề xuất.
+  Câu trả lời của GitHub được giữ trong cache của CI nên mỗi lần chạy chỉ hỏi về phiên bản chưa gặp, và lượt chạy hằng tuần không dùng cache.
+  Hết hạn mức thì script chờ nếu hạn mức reset trong một phút, hoặc thử lại không token một lần, rồi báo giờ reset; mỗi lần bị từ chối được in ra log.
   Mục nào của danh mục không đọc được theo cách đó thì ghi cách xác minh ở mục ấy (`refs`, `text`) hoặc lý do ở `unverified`.
   `check_licenses.py sbom <tệp>` kiểm giấy phép của SBOM sinh lại từ pull request, nên bản mới của một thư viện Maven hay npm bị kiểm trước khi `sbom/` được sinh lại.
 - Không đưa mật khẩu, khóa hay dữ liệu thật vào kho mã; `deploy/.env` nằm ngoài Git.

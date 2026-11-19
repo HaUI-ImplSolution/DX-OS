@@ -290,6 +290,31 @@ def main():
     rewrite_chain(line, False)
     matched, changed, gone = witness.compare(kept, read_feed())
     rt.check("EV-23 and nothing differs once the line is put back", matched == len(kept) and not changed and not gone, f"{matched}/{len(kept)} {changed[:3]} {gone[:3]}")
+    # EV-24 to EV-27: the hash is versioned, and a v2 line keeps its name, note and detail out of it.
+    code, line_v2 = rt.psql("select id from engine.record_event where hash_version = 2 and actor <> 'system' order by id limit 1")
+    code, hash_before = rt.psql(f"select hash from engine.record_event where id = {line_v2}")
+    rt.check("EV-24 new lines use hash version 2", line_v2.isdigit(), line_v2)
+    anchor_status, _ = kc.api(admin, "POST", "/history/anchor")
+    rt.psql(f"update engine.record_event set actor_name = 'Removed User', note = 'removed note', detail = '{{\"removed\":true}}' where id = {line_v2}")
+    status, body = kc.api(admin, "GET", "/history/verify")
+    code, hash_after = rt.psql(f"select hash from engine.record_event where id = {line_v2}")
+    rt.check("EV-25 the name, note and detail of a v2 line can change without breaking the chain or its anchor",
+             anchor_status == 200 and status == 200 and body["data"]["intact"] is True and body["data"]["anchors"] > 0 and hash_before == hash_after,
+             str(body.get("data")))
+    rt.psql(f"update engine.record_event set actor = actor || 'x' where id = {line_v2}")
+    status, body = kc.api(admin, "GET", "/history/verify")
+    broken = (body.get("data") or {}).get("firstBreak") or {}
+    rt.check("EV-26 changing who did a v2 line breaks the chain at that line",
+             status == 200 and body["data"]["intact"] is False and str(broken.get("id")) == line_v2, str(body.get("data")))
+    rt.psql(f"update engine.record_event set actor = left(actor, length(actor) - 1) where id = {line_v2}")
+    code, legacy = rt.psql("insert into engine.record_event (model, entity, record_id, action, actor, actor_name, hash_version) "
+                           "values ('onestop', 'request', 0, 'legacy_check', 'legacy-user', 'Legacy User', 1) returning id")
+    legacy = legacy.splitlines()[0]  # psql prints the command tag after the returned row
+    rt.psql(f"update engine.record_event e set prev_hash = p.hash, hash = engine.record_event_hash(p.hash, e) "
+            f"from (select hash from engine.record_event where id < {legacy} order by id desc limit 1) p where e.id = {legacy}")
+    status, body = kc.api(admin, "GET", "/history/verify")
+    rt.check("EV-27 a v1 line written after v2 lines still verifies in the same chain",
+             status == 200 and body["data"]["intact"] is True, str(body.get("data")))
     server.shutdown()
 
     failed = [case for case, ok in rt.results if not ok]

@@ -98,7 +98,7 @@ python3 e2e/api/check_bootstrap.py
 | `check_conformance.py` | Rào chắn của lõi giữ với mọi mô hình đã áp dụng (hoặc các mô hình nêu tên): không ghi được `status`, không token thì 401, không đọc được dữ liệu mô hình khác |
 | `check_cli.py` | Lệnh `dxos`: `lint`, `conformance`, `plan`, `apply --accept`, `model upgrade`, `archive` (kể cả `--store`, `check`, `query`, `list`, `auto`), lịch sử ghi tài khoản của lệnh, bộ mô phỏng IT/OT gửi lại không thêm hồ sơ; cần Docker và tự áp dụng một mô hình riêng |
 | `check_browser.py` | Giao diện trình duyệt ngoài: `dxos client browser add`, `list`, `remove`, CORS, đăng nhập PKCE gọi được API, redirect không an toàn bị từ chối |
-| `check_events.py` | Webhook: thứ tự, chữ ký, thử lại, nội dung không lộ, nhắc hạn; chuỗi hash của lịch sử và bên nhận so hash |
+| `check_events.py` | Webhook: thứ tự, chữ ký, thử lại, nội dung không lộ, nhắc hạn; chuỗi hash nhiều phiên bản, trường riêng tư ngoài hash, điểm neo và bên nhận so hash |
 | `check_bootstrap.py` | Tệp mô hình lúc khởi động: `applied`, `unchanged`, `skipped`, `failed` |
 | `check_surface.py` | Không cần tài khoản, chạy ở cả hai chế độ: `/v3/api-docs` trả JSON, `/swagger-ui*` và `/admin*` trả 404 (`/admin` mở khi `KEYCLOAK_ADMIN_CONSOLE=true`), đăng nhập Keycloak phục vụ, chế độ `core` không phục vụ trang nào của Tầng 2 |
 
@@ -218,7 +218,7 @@ Kiểm bằng đúng các lệnh và thao tác trong tài liệu.
 
 ### Lệnh `dxos` ngoài stack kiểm
 
-39. **`dxos history verify`** sau khi sửa, xóa hoặc chèn một dòng `record_event` bằng SQL: chỉ ra dòng đầu tiên bị đổi; trả lại dòng thì chuỗi nguyên vẹn.
+39. **`dxos history verify`** với chuỗi gồm hash phiên bản 1 và 2: sửa phần bất biến, xóa hoặc chèn một dòng `record_event` bằng SQL thì chỉ ra dòng đầu tiên bị đổi; đổi tên người thực hiện, ghi chú hoặc chi tiết của dòng phiên bản 2 không làm đổi hash hay điểm neo, còn đổi mã người thực hiện thì chuỗi vỡ ở dòng đó; trả phần bất biến về giá trị cũ thì chuỗi nguyên vẹn.
 40. **`dxos reconcile`:** xóa container `backend` thì chạy lại; sau `dxos stop` thì không bật lại; mọi service có chính sách restart `unless-stopped`.
 41. **`dxos demo`** (stack có `dxos-cli`): tạo bốn tài khoản `judge_*` và 40 hồ sơ; `judge_student` thấy hồ sơ của mình, mỗi cán bộ chỉ thấy đơn vị mình, `judge_supervisor` thấy mọi hồ sơ và không có nút Tạo mới; chạy lại không nộp thêm hồ sơ và in mật khẩu mới; `dxos demo remove` gỡ bốn tài khoản.
 42. **`dxos client add`, `list`, `role`, `rotate`, `remove`:** secret chỉ in ở `add` và `rotate`; `role` đổi vai mà secret cũ vẫn lấy được token và token mới mang vai mới; `rotate` làm secret cũ bị từ chối; `remove` làm client không lấy được token.

@@ -192,7 +192,9 @@ Ví dụ đầy đủ ở [`asset_register.yaml`](../backend/dx-engine/src/main/
 | `unit` | Dòng của đơn vị mình |
 | `assigned` | Dòng được giao cho mình |
 
-Đổi `access` là thay đổi `SAFE`, và kế hoạch ghi mỗi vai có mức đổi thành một dòng `vai: cũ → mới`.
+Đổi `access` không chạm dữ liệu, và kế hoạch ghi mỗi vai có mức đổi thành một dòng `vai: cũ → mới`.
+Cấp thêm (`GRANT_ACCESS`) và mở rộng (`WIDEN_ACCESS`) ở mức `MIGRATION`, kèm một câu hỏi nêu vai và thực thể, vì người đang giữ vai có quyền mới ngay khi áp dụng; cần `--accept MIGRATION` hoặc xác nhận ở tab Kế hoạch.
+Ba loại còn lại ở mức `SAFE`.
 Dòng đó thuộc một trong năm loại: cấp thêm cho một vai chưa có (`GRANT_ACCESS`), thu hồi (`REVOKE_ACCESS`), mở rộng (`WIDEN_ACCESS`), thu hẹp (`NARROW_ACCESS`) và đổi (`CHANGE_ACCESS`).
 Mở rộng hay thu hẹp so theo hai điều: số dòng vai chạm tới (`own` và `assigned`, rồi `unit`, rồi `all` và `read`) và quyền ghi (`read` không ghi).
 Một lần đổi vừa tăng vừa giảm, như `own` sang `read`, hoặc không tăng không giảm, như `own` sang `assigned`, được ghi là đổi.

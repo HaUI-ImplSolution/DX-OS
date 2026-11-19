@@ -39,6 +39,14 @@ const REGRANT = {
   text: t("Người đang giữ vai được khai báo lại sẽ có lại quyền của vai đó."),
 };
 
+// A role that gets more access to an entity has it at once, for everyone who holds the role.
+const WIDEN = {
+  label: t("Cần xác nhận"),
+  color: "warning" as const,
+  text: t("Vai được mở rộng quyền; người đang giữ vai có quyền mới ngay khi áp dụng."),
+};
+const WIDENS = ["GRANT_ACCESS", "WIDEN_ACCESS"];
+
 // Tables that no longer match a file that did not change are put back in line with it.
 const REPAIR = {
   label: t("Cần xác nhận"),
@@ -46,11 +54,12 @@ const REPAIR = {
   text: t("Cấu trúc bảng đã lệch khỏi mô hình; áp dụng sẽ sửa lại cho khớp."),
 };
 
-const confirmLabel = (level: string, moves: boolean, regrants: boolean, repairs: boolean) => {
+const confirmLabel = (level: string, moves: boolean, regrants: boolean, widens: boolean, repairs: boolean) => {
   if (level === "LOSS") return t("Tôi hiểu dữ liệu sẽ mất và đã sao lưu");
   const parts = [
     ...(moves ? [t("chuyển dữ liệu")] : []),
     ...(regrants ? [t("trả lại quyền cho người đang giữ vai")] : []),
+    ...(widens ? [t("mở rộng quyền của vai")] : []),
     ...(repairs ? [t("sửa cấu trúc bảng cho khớp mô hình")] : []),
   ];
   return t("Tôi xác nhận {parts}", { parts: parts.length ? parts.join(t(" và ")) : t("chuyển dữ liệu") });
@@ -87,10 +96,19 @@ export default function PlanPanel({ plan, busy, applyLabel = t("Áp dụng"), on
   const [accepted, setAccepted] = useState(false);
   const confirmed = plan.changes.filter((change) => change.level === "MIGRATION");
   const regrants = confirmed.some((change) => change.kind === "ADD_ROLE");
+  const widens = confirmed.some((change) => WIDENS.includes(change.kind));
   const repairs = confirmed.some((change) => change.kind === "REPAIR_SCHEMA");
-  const moves = confirmed.some((change) => change.kind !== "ADD_ROLE" && change.kind !== "REPAIR_SCHEMA");
+  const moves = confirmed.some(
+    (change) => change.kind !== "ADD_ROLE" && change.kind !== "REPAIR_SCHEMA" && !WIDENS.includes(change.kind),
+  );
   const level =
-    plan.level === "MIGRATION" && !moves ? (regrants ? REGRANT : REPAIR) : (LEVELS[plan.level] ?? LEVELS.SAFE);
+    plan.level === "MIGRATION" && !moves
+      ? regrants
+        ? REGRANT
+        : widens
+          ? WIDEN
+          : REPAIR
+      : (LEVELS[plan.level] ?? LEVELS.SAFE);
   const unchanged = plan.action === "unchanged";
   const blocked = plan.action === "rejected";
   const needsConfirm = !unchanged && !blocked && plan.level !== "SAFE";
@@ -157,9 +175,11 @@ export default function PlanPanel({ plan, busy, applyLabel = t("Áp dụng"), on
               const changeLevel =
                 change.level === "MIGRATION" && change.kind === "ADD_ROLE"
                   ? REGRANT
-                  : change.level === "MIGRATION" && change.kind === "REPAIR_SCHEMA"
-                    ? REPAIR
-                    : (LEVELS[change.level] ?? LEVELS.SAFE);
+                  : change.level === "MIGRATION" && WIDENS.includes(change.kind)
+                    ? WIDEN
+                    : change.level === "MIGRATION" && change.kind === "REPAIR_SCHEMA"
+                      ? REPAIR
+                      : (LEVELS[change.level] ?? LEVELS.SAFE);
               return (
                 <TableRow key={`${change.kind}-${change.entity}-${change.field}-${index}`}>
                   <TableCell>
@@ -191,7 +211,7 @@ export default function PlanPanel({ plan, busy, applyLabel = t("Áp dụng"), on
         <FormControlLabel
           sx={{ mt: 1 }}
           control={<Checkbox checked={accepted} onChange={(event) => setAccepted(event.target.checked)} />}
-          label={confirmLabel(plan.level, moves, regrants, repairs)}
+          label={confirmLabel(plan.level, moves, regrants, widens, repairs)}
         />
       )}
       {!unchanged && !blocked && (

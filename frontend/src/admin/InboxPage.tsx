@@ -141,7 +141,7 @@ export default function InboxPage({ models }: { models: ModelMeta[] }) {
                     {entity ? <StatusChip entity={entity} status={item.status} overdue={item.overdue} /> : item.status}
                   </Box>
                   <Typography variant="caption" color="text.secondary">
-                    {timeAgo(item.createdAt)} · {formatDateTime(item.createdAt)}
+                    {timeAgo(item.updatedAt)} · {formatDateTime(item.updatedAt)}
                   </Typography>
                 </Box>
               );
@@ -155,7 +155,7 @@ export default function InboxPage({ models }: { models: ModelMeta[] }) {
                 <TableCell>{t("Loại")}</TableCell>
                 <TableCell>{t("Hồ sơ")}</TableCell>
                 <TableCell>{t("Trạng thái")}</TableCell>
-                <TableCell>{t("Nộp lúc")}</TableCell>
+                <TableCell>{t("Cập nhật lúc")}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -178,9 +178,9 @@ export default function InboxPage({ models }: { models: ModelMeta[] }) {
                       {entity ? <StatusChip entity={entity} status={item.status} overdue={item.overdue} /> : item.status}
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2">{timeAgo(item.createdAt)}</Typography>
+                      <Typography variant="body2">{timeAgo(item.updatedAt)}</Typography>
                       <Typography variant="caption" color="text.secondary">
-                        {formatDateTime(item.createdAt)}
+                        {formatDateTime(item.updatedAt)}
                       </Typography>
                     </TableCell>
                   </TableRow>

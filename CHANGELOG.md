@@ -11,6 +11,8 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 - `dxos start` tạo tài khoản `admin` và in mật khẩu tạm trên bản cài mới, vì tài khoản dịch vụ giữ vai ADMIN không được tính là đã có admin.
 - `dxos update` và `install.sh --upgrade` so sánh danh sách file runtime theo thứ tự `C`, nên cập nhật giữ đủ file ở mọi locale của máy.
+- `GET /api/v1/inbox` xếp hồ sơ quá hạn trước, rồi hồ sơ thay đổi gần nhất trước, và mỗi mục có thêm `updatedAt`; hồ sơ vừa tạo, nộp lại hoặc mở lại nằm ở đầu Hộp việc.
+- Danh sách của thực thể có quy trình mở theo thay đổi gần nhất trước và hiện cột Cập nhật lúc, trừ khi mô hình khai `ui.list`.
 
 ### Ứng dụng ngoài
 

@@ -210,8 +210,57 @@ jobs:
           ./backup.sh 2>&1 | tee warn.log
           grep -q "WARNING: the dump and the copy of the store took" warn.log
 
+  # The images of this commit are built once here and kept in the Actions cache under a key made from the files they are
+  # built from, so the jobs that need the stack load them instead of each building the same five images and downloading
+  # the same Maven packages at the same moment. A commit that changes none of those files builds nothing.
+  images:
+    name: Build the images
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    outputs:
+      key: ${{ steps.key.outputs.key }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Name the images by the files they are built from
+        id: key
+        run: echo "key=dxos-images-${{ hashFiles('backend/**', '!backend/**/src/test/**', '!backend/**/target/**', 'frontend/**', 'portal/**', 'sso/**', 'deploy/docker-compose.yml') }}" >> "$GITHUB_OUTPUT"
+
+      - name: Look for the images of these files in the cache
+        id: cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/dxos-images.tar
+          key: ${{ steps.key.outputs.key }}
+          lookup-only: true
+
+      - name: Create an env file for the build
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: deploy/make_env.sh deploy/.env
+
+      - name: Build the images of this commit
+        if: steps.cache.outputs.cache-hit != 'true'
+        working-directory: deploy
+        run: ../.github/scripts/retry_transient.sh docker compose --profile '*' build
+
+      - name: Save the images in one file
+        if: steps.cache.outputs.cache-hit != 'true'
+        working-directory: deploy
+        run: |
+          mapfile -t images < <(docker compose --profile '*' config --format json | jq -r '.services[] | select(.build) | .image')
+          docker save --output "$RUNNER_TEMP/dxos-images.tar" "${images[@]}"
+
+      - name: Keep the images for the jobs of this run and the next ones
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/dxos-images.tar
+          key: ${{ steps.key.outputs.key }}
+
   api-e2e:
     name: "API end-to-end (${{ matrix.group }})"
+    needs: images
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     strategy:
@@ -247,9 +296,24 @@ jobs:
         if: matrix.mode == 'core'
         run: sed -i 's/^DXOS_MODE=.*/DXOS_MODE=core/; s/^COMPOSE_PROFILES=.*/COMPOSE_PROFILES=av/' deploy/.env
 
-      - name: Build the images of this commit
+      - name: Restore the images of this commit
+        id: images
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/dxos-images.tar
+          key: ${{ needs.images.outputs.key }}
+
+      # A cache that was evicted between the jobs is the only case that builds here.
+      - name: Load the images of this commit
         working-directory: deploy
-        run: ../.github/scripts/retry_transient.sh docker compose build
+        env:
+          FOUND: ${{ steps.images.outputs.cache-hit }}
+        run: |
+          if [[ "$FOUND" == true ]]; then
+            docker load --input "$RUNNER_TEMP/dxos-images.tar"
+          else
+            ../.github/scripts/retry_transient.sh docker compose build
+          fi
 
       - name: Start an empty stack
         working-directory: deploy
@@ -305,6 +369,7 @@ jobs:
 
   gateway-surface:
     name: "Gateway surface (${{ matrix.mode }} mode)"
+    needs: images
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     strategy:
@@ -325,9 +390,24 @@ jobs:
         if: matrix.mode == 'core'
         run: sed -i 's/^DXOS_MODE=.*/DXOS_MODE=core/; s/^COMPOSE_PROFILES=.*/COMPOSE_PROFILES=/' deploy/.env
 
-      - name: Build the images of this commit
+      - name: Restore the images of this commit
+        id: images
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/dxos-images.tar
+          key: ${{ needs.images.outputs.key }}
+
+      # A cache that was evicted between the jobs is the only case that builds here.
+      - name: Load the images of this commit
         working-directory: deploy
-        run: ../.github/scripts/retry_transient.sh docker compose build
+        env:
+          FOUND: ${{ steps.images.outputs.cache-hit }}
+        run: |
+          if [[ "$FOUND" == true ]]; then
+            docker load --input "$RUNNER_TEMP/dxos-images.tar"
+          else
+            ../.github/scripts/retry_transient.sh docker compose build
+          fi
 
       - name: Start an empty stack
         working-directory: deploy
@@ -358,6 +438,7 @@ jobs:
 
   browser-e2e:
     name: Browser end-to-end
+    needs: images
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -381,9 +462,24 @@ jobs:
       - name: Open the Keycloak Admin Console for the script
         run: sed -i 's/^KEYCLOAK_ADMIN_CONSOLE=.*/KEYCLOAK_ADMIN_CONSOLE=true/' deploy/.env
 
-      - name: Build the images of this commit
+      - name: Restore the images of this commit
+        id: images
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/dxos-images.tar
+          key: ${{ needs.images.outputs.key }}
+
+      # A cache that was evicted between the jobs is the only case that builds here.
+      - name: Load the images of this commit
         working-directory: deploy
-        run: ../.github/scripts/retry_transient.sh docker compose build
+        env:
+          FOUND: ${{ steps.images.outputs.cache-hit }}
+        run: |
+          if [[ "$FOUND" == true ]]; then
+            docker load --input "$RUNNER_TEMP/dxos-images.tar"
+          else
+            ../.github/scripts/retry_transient.sh docker compose build
+          fi
 
       - name: Start an empty stack
         working-directory: deploy

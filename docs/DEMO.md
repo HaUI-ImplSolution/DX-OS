@@ -1,12 +1,12 @@
 # Kịch bản trình diễn 15 phút
 
-Kịch bản cho phần trình diễn chung kết của bản `2.0.1`.
+Kịch bản cho phần trình diễn chung kết của bản `2.0.2`.
 Mỗi bước nêu việc làm, tài khoản dùng, kết quả mong đợi và cách xử lý khi sự cố.
 Khung kiểm gốc là tám mục "Thế nào là đạt" ở [`docs/dynamic-core/README.md`](./dynamic-core/README.md#thế-nào-là-đạt), chạy tự động bằng `python3 e2e/api/check_demo.py`.
 
 ## Chuẩn bị trước ngày trình diễn
 
-1. Cài bản `2.0.1` trên máy chủ công khai bằng `dxos-install.sh`, rồi `dxos start` kèm tệp `onestop.yaml` ở [`backend/dx-engine/src/main/resources/templates/`](../backend/dx-engine/src/main/resources/templates/onestop.yaml).
+1. Cài bản `2.0.2` trên máy chủ công khai bằng `dxos-install.sh`, rồi `dxos start` kèm tệp `onestop.yaml` ở [`backend/dx-engine/src/main/resources/templates/`](../backend/dx-engine/src/main/resources/templates/onestop.yaml).
 2. `dxos doctor` phải không báo lỗi, kể cả dòng quét mã độc của tệp tải lên.
 3. `dxos demo` để có bốn tài khoản thử và khoảng 40 hồ sơ mẫu; mật khẩu in ra một lần, ghi lại ngay.
    Chạy lệnh này sớm: hạn xử lý của một cửa sinh viên là 72 giờ và không thể làm trễ qua API, nên hồ sơ quá hạn chỉ xuất hiện khi các hồ sơ đã nộp đủ ba ngày.

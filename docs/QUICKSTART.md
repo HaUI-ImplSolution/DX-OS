@@ -165,15 +165,21 @@ Muốn dùng giao diện: mở `http://<PUBLIC_HOST>:9080/console`, đăng nhậ
 
 Mỗi client là một tài khoản máy giữ đúng một vai.
 Ứng dụng có hai vai nên đăng ký hai client.
-Chạy trong thư mục của dự án ứng dụng, nơi có `docker-compose.yml` và `.env` của bạn:
+Chạy trong thư mục của dự án ứng dụng, nơi có `docker-compose.yml` và `.env` của bạn.
+`>> .env` ghi vào thư mục hiện tại của shell.
+Trong WSL2, dự án nằm trên ổ Windows có đường dẫn dạng `/mnt/c/...`, còn thư mục home của WSL là một nơi khác; chạy `pwd` và `ls .env` để chắc đang ở đúng thư mục trước khi ghi.
 
 ```bash
-echo "DXOS_BASE_URL=http://192.168.1.10:9080" >> .env
+export DXOS_HOST=192.168.1.10   # đổi thành PUBLIC_HOST của bạn
+echo "DXOS_BASE_URL=http://$DXOS_HOST:9080" >> .env
 dxos client add requester --model order_approval --role REQUESTER --env DXOS_REQUESTER >> .env
 dxos client add approver  --model order_approval --role APPROVER  --env DXOS_APPROVER  >> .env
 ```
 
-Dòng đầu là địa chỉ DX-OS, cùng giá trị `GATEWAY_PUBLIC_URL` trong `~/.dxos/deploy/.env`.
+`192.168.1.10` chỉ là ví dụ: đặt `DXOS_HOST` bằng đúng giá trị `PUBLIC_HOST` trong `~/.dxos/deploy/.env`.
+Dòng `DXOS_BASE_URL` là địa chỉ DX-OS, cùng giá trị `GATEWAY_PUBLIC_URL` trong tệp đó.
+`--model` là `name` của tệp mô hình đã áp dụng, ở đây `order_approval`, và `--role` là tên một vai khai trong tệp đó, ở đây `REQUESTER` và `APPROVER`.
+Đổi `name` hay tên vai trong mô hình thì đổi theo trong lệnh.
 Với `--env`, mỗi lệnh `dxos client add` chỉ in hai dòng `DXOS_REQUESTER_CLIENT_ID=...` và `DXOS_REQUESTER_CLIENT_SECRET=...`, nên `>>` ghi thẳng vào `.env`.
 `secret` chỉ hiện một lần và hệ thống không giữ lại, vì vậy ghi ngay như trên; mất thì chạy `dxos client rotate <tên> --env <TIỀN_TỐ>` để lấy secret mới.
 Tệp `.env` này chứa secret, đừng đưa nó vào git.
@@ -208,14 +214,14 @@ services:
 Tên biến do ứng dụng của bạn tự đặt; DX-OS không đọc chúng.
 Ứng dụng chỉ dùng một vai thì chỉ cần ba biến.
 
-Kiểm tra hai việc, mỗi việc một lệnh:
+Kiểm tra hai việc, mỗi việc một lệnh, với `DXOS_HOST` của bước 3 (đặt lại nếu bạn mở terminal mới):
 
 ```bash
 # container tới được DX-OS: phải in 200
-docker run --rm curlimages/curl -s -o /dev/null -w "%{http_code}\n" http://192.168.1.10:9080/realms/dxos/.well-known/openid-configuration
+docker run --rm curlimages/curl -s -o /dev/null -w "%{http_code}\n" http://$DXOS_HOST:9080/realms/dxos/.well-known/openid-configuration
 
 # client đăng nhập và gọi được API: phải in "works"
-dxos client test requester --url http://192.168.1.10:9080
+dxos client test requester --url http://$DXOS_HOST:9080
 ```
 
 `dxos client test` hỏi secret của client, rồi đi qua ba bước (tới được địa chỉ, đăng nhập, gọi API của mô hình) và báo bước nào hỏng.

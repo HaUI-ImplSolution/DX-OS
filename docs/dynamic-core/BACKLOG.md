@@ -37,18 +37,13 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 |---|---|---|
 | Phần AI | #210 | Chưa có mã: hỏi đáp sinh câu trả lời và tác tử đề xuất có người duyệt cần mô hình ngôn ngữ và embedding đạt định nghĩa Open Source AI của OSI (trọng số và dữ liệu huấn luyện đều mở), chưa chọn; khi làm sẽ là dịch vụ mới nối vào lõi; ứng viên LLM là Apertus 8B (Apache-2.0) và OLMo 2, cần thử tiếng Việt và tốc độ trên CPU; reranker và embedding phải thay bằng mô hình đạt chuẩn rồi đo lại chất lượng truy xuất; mô hình mở hoàn toàn có thể trả lời tiếng Việt kém và chậm hơn trên CPU nên cần đo trước khi trình diễn; không có LLM đạt thì Qwen chỉ là tùy chọn người dùng tự gắn, ghi rõ là mở trọng số; hỏi đáp quy chế cần một kho văn bản đạt cam kết nguồn mở (CC0, CC BY, ODbL hoặc không thuộc diện bảo hộ), vì kho văn bản của trường đã gỡ do thuộc bản quyền của trường |
 | Ứng dụng Tầng 2 | #211 | Chưa phủ I của H-P-D-I; hỏi BTC trên nhóm Telegram của họ xem ứng dụng minh họa có cần phủ cả bốn không gian H, P, D, I không, xem bảy cụm dịch vụ của Tầng 1 có đều bắt buộc không (phần giới thiệu Tầng 1 của đề gọi cả bảy cụm là cần cho ứng dụng quy mô doanh nghiệp, phần mục đích chỉ nêu bốn dịch vụ), và xem giao diện Keycloak Admin Console đi kèm có tính là giao diện của lõi không (cách đọc của đội là không, chưa có xác nhận) |
-| Khách hàng | #231 | Chưa nói chuyện với khách hàng nào; mục Khách hàng và giá trị của `README.md` là giả thuyết |
 
 ### 3.2. Chưa có issue
 
 | Việc | Ghi chú |
 |---|---|
 | Ứng dụng mẫu gọi lõi từ bên ngoài | Chưa có ứng dụng có giao diện nào ngoài ứng dụng của đội gọi lõi qua API, nên câu "PaaS phục vụ các ứng dụng tầng trên" của đề chưa có bằng chứng chạy được; đã chốt làm một ứng dụng mẫu ở `examples/`, viết bằng khung khác react-admin, chỉ dùng OpenAPI theo mô hình và đăng nhập Keycloak |
-| Lịch sử issue và cộng đồng | Ít issue so với pull request (63 issue, 220 pull request đã gộp), nhãn `good first issue` và `help wanted` đã có nhưng chưa issue nào dùng, Discussions chỉ có một chủ đề chào mừng, repository chưa có fork, phần lớn tài liệu chỉ có tiếng Việt |
-| Đóng góp tập trung | Một thành viên giữ khoảng hai phần ba commit; `CODEOWNERS` nêu ba thành viên cho mọi đường dẫn, chưa chia người phụ trách theo vùng; chia hay không là quyết định của nhóm |
-| Cảnh báo Scorecard và huy hiệu | Tab Security có 8 cảnh báo của Scorecard chưa duyệt (Maintained, CodeReview, Vulnerabilities, Fuzzing, SAST, TokenPermissions hai cảnh báo, BranchProtection); huy hiệu OpenSSF Best Practices mức passing còn ba tiêu chí khuyến nghị chưa đạt (`test_most`, `warnings_strict`, `dynamic_analysis`), và lời giải thích từng tiêu chí trỏ về tệp trên `main` nên chỉ khớp khi nhánh tích hợp vào `main` |
-| Bản phát hành chưa ký | Bản phát hành chỉ có SHA-256 và attestation của BuildKit, chưa có chữ ký; ưu tiên thấp |
-| Bản chạy công khai | Chưa được CI kiểm hằng ngày (`deploy/online-check.sh` chạy tay hoặc theo cron), và chưa có phương án chạy tại chỗ nếu mạng ở buổi thi có sự cố vì bản công khai chạy sau Cloudflare Tunnel |
+| Lỗ hổng trong phụ thuộc gián tiếp | Scorecard báo 5 lỗ hổng: `decode-uri-component` 0.2.2 (sửa ở 0.5.1), `react-router` 6.30.6 ở web và 5.3.4 ở trang docs (sửa ở 7.18.0), `uuid` 8.3.2 ở trang docs (sửa ở 11.1.1); đều đến từ thư viện cha (react-admin, Docusaurus), nên vá cần nâng bản chính của thư viện cha hoặc ép `overrides` |
 | Cài trên Windows | Chưa có người dùng Windows thử cài và làm theo `docs/QUICKSTART.md` trong WSL2 với Docker Desktop |
 
 ## 4. Giới hạn chấp nhận

@@ -167,6 +167,7 @@ export const app: Record<string, string> = {
   // Record actions, people, history and files
   "Không xử lý được": "Could not process it",
   "Chỉ thực hiện khi {condition}": "Only possible when {condition}",
+  "không {condition}": "not {condition}",
   "Hồ sơ đã rút lại sẽ dừng xử lý và không nộp lại được.": "A withdrawn record stops being processed and cannot be submitted again.",
   "Ghi chú": "Note",
   "Lý do (không bắt buộc)": "Reason (optional)",

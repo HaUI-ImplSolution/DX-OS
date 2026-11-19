@@ -14,6 +14,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - `GET /api/v1/inbox` xếp hồ sơ quá hạn trước, rồi hồ sơ thay đổi gần nhất trước, và mỗi mục có thêm `updatedAt`; hồ sơ vừa tạo, nộp lại hoặc mở lại nằm ở đầu Hộp việc.
 - Danh sách của thực thể có quy trình mở theo thay đổi gần nhất trước và hiện cột Cập nhật lúc, trừ khi mô hình khai `ui.list`.
 - Kế hoạch đổi mô hình xếp việc cấp thêm hoặc mở rộng quyền của một vai ở mức `MIGRATION` kèm câu hỏi, nên `dxos apply` đòi `--accept MIGRATION` và `dxos gitops` ở chế độ `auto` để nó chờ duyệt.
+- Điều kiện `when` của hành động và `required_when` của trường ghép được nhiều phép so sánh bằng `and`, `or`, `not` và ngoặc; điều kiện một phép viết như cũ.
 - Tệp của bản phát hành và image `dxos-*` được ký bằng Sigstore khi phát hành, kiểm bằng `gh attestation verify` (xem `docs/OPERATIONS.md`).
 
 ### Ứng dụng ngoài

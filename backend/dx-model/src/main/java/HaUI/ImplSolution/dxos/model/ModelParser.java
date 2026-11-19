@@ -18,7 +18,9 @@ import HaUI.ImplSolution.dxos.model.Model.Unit;
 import HaUI.ImplSolution.dxos.model.ModelException.Problem;
 import HaUI.ImplSolution.dxos.model.ProcessFamily.Action;
 import HaUI.ImplSolution.dxos.model.ProcessFamily.Actor;
+import HaUI.ImplSolution.dxos.model.ProcessFamily.Comparison;
 import HaUI.ImplSolution.dxos.model.ProcessFamily.Condition;
+import HaUI.ImplSolution.dxos.model.ProcessFamily.Group;
 import HaUI.ImplSolution.dxos.model.ProcessFamily.State;
 import java.io.StringReader;
 import java.time.DayOfWeek;
@@ -1133,7 +1135,7 @@ public final class ModelParser {
       return null;
     }
     Condition condition = readCondition(node, fields, "required_when");
-    if (condition != null && condition.field().equals(field.name())) {
+    if (condition != null && condition.fields().contains(field.name())) {
       problem(node, "required_when cannot compare the field with itself");
       return null;
     }
@@ -1886,26 +1888,82 @@ public final class ModelParser {
   private static final Pattern CONDITION =
       Pattern.compile("^\\s*([a-z][a-z0-9_]*)\\s*(==|!=|<=|>=|<|>)\\s*(.+?)\\s*$");
 
-  // One comparison of a field with a value, written as in "amount > 5000000".
+  // A condition that joins comparisons: and, or, not or a parenthesis outside quotes.
+  private static final Pattern JOINED = Pattern.compile("(^|[\\s(])(and|or|not)(?=[\\s(]|$)|[()]");
+
+  // A condition: one comparison of a field with a value, written as in "amount > 5000000", or
+  // comparisons joined by and, or and not with parentheses, as in
+  // "amount > 5000000 and (kind == book or kind == pen)". A value that has spaces, parentheses or
+  // is and, or or not goes in quotes when comparisons are joined.
   private Condition readCondition(Node node, Map<String, Field> fields, String key) {
-    String example = key + " is one comparison like amount > 5000000, with ==, !=, <, <=, > or >=";
+    String example =
+        key
+            + " is a comparison like amount > 5000000, with ==, !=, <, <=, > or >=,"
+            + " or comparisons joined by and, or, not and parentheses";
     if (!(node instanceof ScalarNode text)) {
       problem(node, example);
       return null;
     }
-    Matcher match = CONDITION.matcher(text.getValue());
+    String source = text.getValue();
+    if (!JOINED.matcher(source).find()) {
+      return readComparison(node, fields, key, source, example);
+    }
+    Condition parsed;
+    try {
+      parsed = new ConditionText(source).parse(Comparison::new);
+    } catch (ConditionText.Syntax syntax) {
+      // One comparison whose value has the word and or or in it, as in "kind == Rock and roll".
+      int mark = problems.size();
+      Condition single = readComparison(node, fields, key, source, example);
+      if (single != null) {
+        return single;
+      }
+      problems.subList(mark, problems.size()).clear();
+      problem(node, key + ": " + syntax.getMessage() + "; " + example);
+      return null;
+    }
+    boolean[] failed = {false};
+    Condition checked = checkComparisons(parsed, node, fields, key, failed);
+    return failed[0] ? null : checked;
+  }
+
+  // Each comparison of a condition checked against the type of its field.
+  private Condition checkComparisons(
+      Condition condition, Node node, Map<String, Field> fields, String key, boolean[] failed) {
+    if (condition instanceof Group group) {
+      return new Group(
+          group.op(),
+          group.conditions().stream()
+              .map(part -> checkComparisons(part, node, fields, key, failed))
+              .toList());
+    }
+    Comparison leaf = (Comparison) condition;
+    Comparison checked =
+        comparison(node, fields, key, leaf.field(), leaf.op(), String.valueOf(leaf.value()));
+    failed[0] |= checked == null;
+    return checked != null ? checked : leaf;
+  }
+
+  private Condition readComparison(
+      Node node, Map<String, Field> fields, String key, String source, String example) {
+    Matcher match = CONDITION.matcher(source);
     if (!match.matches()) {
       problem(node, example);
       return null;
     }
-    Field field = fields.get(match.group(1));
-    String op = match.group(2);
     String value = match.group(3);
     if (value.length() > 1
         && (value.startsWith("\"") && value.endsWith("\"")
             || value.startsWith("'") && value.endsWith("'"))) {
       value = value.substring(1, value.length() - 1);
     }
+    return comparison(node, fields, key, match.group(1), match.group(2), value);
+  }
+
+  // One comparison of a field of this entity with a value, checked against the type of the field.
+  private Comparison comparison(
+      Node node, Map<String, Field> fields, String key, String name, String op, String value) {
+    Field field = fields.get(name);
     if (field == null || !comparable(field)) {
       problem(
           node,
@@ -1958,7 +2016,7 @@ public final class ModelParser {
     }
     if (field.type() == FieldType.NUMBER) {
       try {
-        return new Condition(field.name(), op, new java.math.BigDecimal(value));
+        return new Comparison(field.name(), op, new java.math.BigDecimal(value));
       } catch (NumberFormatException notNumber) {
         problem(
             node,
@@ -1983,7 +2041,7 @@ public final class ModelParser {
               + String.join(", ", field.options()));
       return null;
     }
-    return new Condition(field.name(), op, value);
+    return new Comparison(field.name(), op, value);
   }
 
   // The fields a condition can compare: a number, a date, a text, a choice of one value or a

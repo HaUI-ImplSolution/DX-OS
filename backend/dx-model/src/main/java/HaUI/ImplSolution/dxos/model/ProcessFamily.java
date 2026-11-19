@@ -24,20 +24,38 @@ public record ProcessFamily(String name, String initial, List<State> states, Lis
   // A record in a terminal state can no longer change.
   public record State(String name, String label, boolean terminal) {}
 
-  // The comparison of one field with a value that decides whether an action can be taken. The
-  // operator is one of ==, !=, <, <=, > and >=, kept as written so that a client compares by the
-  // same words. The value is a number for a number field and text otherwise, a date as 2026-01-31.
-  // Equality works on any field the parser allows, ordering only on numbers and dates; a field
-  // without a value never meets a condition.
-  public record Condition(String field, String op, Object value) {
+  // What decides whether an action can be taken or a field is required: one comparison of a field
+  // with a value, or comparisons joined by and, or and not. The operator of a comparison is one of
+  // ==, !=, <, <=, > and >=, kept as written so that a client compares by the same words. The value
+  // is a number for a number field and text otherwise, a date as 2026-01-31. Equality works on any
+  // field the parser allows, ordering only on numbers and dates; a field without a value never
+  // meets a comparison, so not turns that into true.
+  public sealed interface Condition permits Comparison, Group {
 
-    public static final List<String> OPERATORS = List.of("==", "!=", "<=", ">=", "<", ">");
+    List<String> OPERATORS = List.of("==", "!=", "<=", ">=", "<", ">");
 
-    public static boolean ordering(String op) {
+    static boolean ordering(String op) {
       return !"==".equals(op) && !"!=".equals(op);
     }
 
-    // Whether the value a record holds in the field meets the condition.
+    // Whether the record, a map from field name to value, meets the condition.
+    boolean test(Map<String, Object> record);
+
+    // The names of the fields the condition reads.
+    Set<String> fields();
+
+    // The condition as it is written in a model file, with the value of a comparison in quotes
+    // when it is part of a larger condition and would not read back otherwise.
+    String text(boolean quoted);
+
+    default String text() {
+      return text(false);
+    }
+  }
+
+  public record Comparison(String field, String op, Object value) implements Condition {
+
+    // Whether the value a record holds in the field meets the comparison.
     public boolean test(Object actual) {
       if (actual == null) {
         return false;
@@ -49,7 +67,7 @@ public record ProcessFamily(String name, String initial, List<State> states, Lis
           return false;
         }
       }
-      if (ordering(op) && value instanceof String expected) {
+      if (Condition.ordering(op) && value instanceof String expected) {
         try {
           return compare(LocalDate.parse(actual.toString()).compareTo(LocalDate.parse(expected)));
         } catch (DateTimeParseException notDate) {
@@ -57,6 +75,16 @@ public record ProcessFamily(String name, String initial, List<State> states, Lis
         }
       }
       return compare(actual.toString().equals(value) ? 0 : 1);
+    }
+
+    @Override
+    public boolean test(Map<String, Object> record) {
+      return test(record.get(field));
+    }
+
+    @Override
+    public Set<String> fields() {
+      return Set.of(field);
     }
 
     private boolean compare(int order) {
@@ -71,12 +99,66 @@ public record ProcessFamily(String name, String initial, List<State> states, Lis
       };
     }
 
-    public String text() {
-      return field
-          + " "
-          + op
-          + " "
-          + (value instanceof BigDecimal number ? number.toPlainString() : value);
+    @Override
+    public String text(boolean quoted) {
+      String shown =
+          value instanceof BigDecimal number ? number.toPlainString() : String.valueOf(value);
+      if (quoted && !(value instanceof BigDecimal) && needsQuotes(shown)) {
+        shown = "\"" + shown + "\"";
+      }
+      return field + " " + op + " " + shown;
+    }
+
+    private static boolean needsQuotes(String shown) {
+      return shown.isEmpty()
+          || shown.matches(".*[\\s()\"'].*")
+          || "and".equals(shown)
+          || "or".equals(shown)
+          || "not".equals(shown);
+    }
+  }
+
+  // Conditions joined by "and" or "or", or one condition negated by "not".
+  public record Group(String op, List<Condition> conditions) implements Condition {
+
+    public static final List<String> OPERATORS = List.of("and", "or", "not");
+
+    @Override
+    public boolean test(Map<String, Object> record) {
+      return switch (op) {
+        case "and" -> conditions.stream().allMatch(condition -> condition.test(record));
+        case "or" -> conditions.stream().anyMatch(condition -> condition.test(record));
+        default -> !conditions.get(0).test(record);
+      };
+    }
+
+    @Override
+    public Set<String> fields() {
+      Set<String> names = new java.util.LinkedHashSet<>();
+      conditions.forEach(condition -> names.addAll(condition.fields()));
+      return names;
+    }
+
+    @Override
+    public String text(boolean quoted) {
+      if ("not".equals(op)) {
+        Condition inner = conditions.get(0);
+        return "not "
+            + (inner instanceof Group group && !"not".equals(group.op)
+                ? "(" + inner.text(true) + ")"
+                : inner.text(true));
+      }
+      return conditions.stream()
+          .map(
+              condition ->
+                  "and".equals(op) && isOr(condition)
+                      ? "(" + condition.text(true) + ")"
+                      : condition.text(true))
+          .collect(java.util.stream.Collectors.joining(" " + op + " "));
+    }
+
+    private static boolean isOr(Condition condition) {
+      return condition instanceof Group group && "or".equals(group.op);
     }
   }
 

@@ -249,8 +249,8 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 | GitHub Actions (actions/*, docker/*, | MIT, Apache-2.0, ISC, 0BSD,          | Chỉ trong CI, ghim theo SHA          |
 | github/*, ossf/*)                    | BlueOak-1.0.0                        |                                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| Apertus-8B-Instruct-2509 [9]         | Apache-2.0                           | LLM mặc định; người vận hành cấp     |
-|                                      |                                      | trọng số cho inference self-host     |
+| Apertus-8B-Instruct-2509 [9]         | Apache-2.0                           | LLM tham khảo; người vận hành tự     |
+|                                      |                                      | cấp trọng số cho inference self-host |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | llama.cpp b12387 [10]                | MIT                                  | Runtime inference self-host do       |
 |                                      |                                      | người vận hành cấp riêng             |
@@ -304,9 +304,10 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 
 [9] Apertus-8B-Instruct-2509: Apache-2.0, Copyright 2025 - The Swiss AI team.
     Giấy phép upstream: https://huggingface.co/swiss-ai/Apertus-8B-Instruct-2509/blob/main/LICENSE.txt.
-    Model mặc định được phục vụ qua endpoint self-host; repository không đóng gói trọng số.
-    File GGUF Q4 cần hồ sơ nguồn tải/chuyển đổi và thông báo đi kèm; metadata Apache-2.0 trong GGUF không thay hồ sơ này hoặc bằng chứng OSAID.
-    Model card còn khai báo Acceptable Use Policy trong metadata; cần đối chiếu phạm vi áp dụng khi hoàn thiện hồ sơ sử dụng/phân phối.
+    Model tham khảo phục vụ qua endpoint self-host; repository không đóng gói trọng số và không chọn model mặc định.
+    Khi tải từ Hugging Face, tác giả áp dụng Acceptable Use Policy (AUP 1.0) kèm nghĩa vụ bồi thường thiệt hại cho ETH Zurich và EPFL.
+    Model card tự mô tả "fully open" nhưng chưa nằm trong danh mục chứng nhận Open Source AI (OSAID 1.0) của OSI, dữ liệu huấn luyện là script tái dựng.
+    Người vận hành tự chọn model, tự tải trọng số và tự chịu trách nhiệm pháp lý với các điều khoản của upstream.
 
 [10] llama.cpp b12387: MIT, Copyright (c) 2023-2026 The ggml authors.
      Giấy phép đúng tag: https://github.com/ggml-org/llama.cpp/blob/b12387/LICENSE.
@@ -368,6 +369,13 @@ Mọi giấy phép của dự án và của thành phần dùng đều thuộc d
 Dữ liệu chỉ đọc lúc dựng trang tài liệu, không có trong trang đã dựng:
   - caniuse-lite: CC-BY-4.0.
   - mdn-data: CC0-1.0.
+
+Công cụ trong image nền Node.js của trợ lý, không dùng khi chạy:
+  - corepack: MIT.
+  - yarn: BSD-2-Clause.
+  - npm: Artistic-2.0.
+  - spdx-exceptions: CC-BY-3.0 (dữ liệu ngoại lệ SPDX đi kèm npm).
+  - spdx-license-ids: CC0-1.0 (dữ liệu mã SPDX đi kèm npm).
 
 Công cụ không phân phối:
   - reuse (pipx run, chỉ trong CI): mã theo Apache-2.0 và GPL-3.0-or-later; tài liệu của công cụ theo CC0-1.0 và CC-BY-SA-4.0, không dùng và không phân phối.

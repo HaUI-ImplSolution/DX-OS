@@ -27,7 +27,9 @@ Image có sau khi chạy workflow `Release Images` với `services=assistant`.
 
 ## Inference và nguồn tham khảo
 
-Model mặc định là Apertus-8B-Instruct-2509 (Apache-2.0), self-host, dùng trọng số GGUF lượng tử hóa Q4 qua llama.cpp (MIT).
+Trợ lý hỗ trợ mọi endpoint suy luận tương thích OpenAI Chat Completions hoặc llama.cpp `/completion`.
+DX-OS không áp đặt hay đóng gói model mặc định; người vận hành tự chọn model, cấp endpoint và tự chịu trách nhiệm với điều khoản upstream.
+Bản cài có thể tham khảo dùng Apertus-8B-Instruct-2509 (Apache-2.0 kèm AUP) hoặc OLMo (Apache-2.0, OSAID 1.0) qua llama.cpp (MIT).
 Giấy phép và ghi chú nằm ở [`DEPENDENCIES.txt`](../DEPENDENCIES.txt), mục [9] và [10].
 Repository không đóng gói trọng số và không tải trọng số trong request hay lúc Core khởi động.
 

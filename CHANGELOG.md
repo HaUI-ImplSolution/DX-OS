@@ -25,7 +25,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 ### Trợ lý nghiệp vụ (tùy chọn)
 
 - Trợ lý đề xuất một giá trị trường từ hồ sơ và nguồn tham khảo; người dùng sửa, hủy hoặc xác nhận, Core kiểm quyền và phiên bản trước khi ghi.
-- Trợ lý dùng inference self-host, model mặc định là Apertus-8B-Instruct-2509 (GGUF Q4); nguồn tham khảo hiển thị nhãn trường và tên đơn vị theo metadata của mô hình.
+- Trợ lý dùng inference self-host với endpoint tương thích OpenAI hoặc llama.cpp do người vận hành cấu hình; nguồn tham khảo hiển thị nhãn trường và tên đơn vị theo metadata của mô hình.
 - Trợ lý nằm trong `deploy/docker-compose.assistant.yml`, chỉ nạp khi `COMPOSE_FILE` nêu tệp đó; bật hay tắt không tạo lại service nào của lõi.
 - Cấu hình ở `deploy/assistant.env`, kiểm tra ở workflow `Assistant`, và `assistant/README.md` có danh sách các chỗ cần xóa để gỡ trợ lý.
 

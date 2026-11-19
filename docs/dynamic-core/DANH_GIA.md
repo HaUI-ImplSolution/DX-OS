@@ -18,7 +18,7 @@ Nguồn: [đề thi](https://vfossa.vn/tin-tuc/de-thi-phan-mem-nguon-mo-olp-2026
 | Dữ liệu có cấu trúc | PostgreSQL; lược đồ, ràng buộc và API có quyền theo dòng sinh từ mô hình | Đạt |
 | Dữ liệu phi cấu trúc | SeaweedFS, tệp đính kèm theo quyền của hồ sơ, ClamAV | Đạt; quét mã độc bật mặc định, tệp EICAR bị chặn trong CI |
 | Động cơ luồng công việc | Flowable nhúng, BPMN sinh từ mô hình, ba họ mẫu | Đạt |
-| Ít nhất một ứng dụng Tầng 2 trong H-P-D-I | Ứng dụng web dựng từ metadata và bảng điều khiển, chạm H, P và D | Đạt theo cách đọc của đội ("ít nhất một ứng dụng"); chữ I (đề mô tả là tìm kiếm toàn văn và theo ngữ nghĩa, quản trị tác tử AI, OCR và trợ lý hỏi đáp trên tri thức nội bộ, không nêu số thành phần phải làm) có một thành phần: trợ lý đề xuất giá trị trường từ hồ sơ và nguồn tham khảo, chạy self-host với Apertus-8B, tắt mặc định, người dùng xác nhận trước khi lưu; ứng dụng minh họa không cần có AI; `README.md` có mục đối chiếu với đề |
+| Ít nhất một ứng dụng Tầng 2 trong H-P-D-I | Ứng dụng web dựng từ metadata và bảng điều khiển, chạm H, P và D | Đạt theo cách đọc của đội ("ít nhất một ứng dụng"); chữ I (đề mô tả là tìm kiếm toàn văn và theo ngữ nghĩa, quản trị tác tử AI, OCR và trợ lý hỏi đáp trên tri thức nội bộ, không nêu số thành phần phải làm) có một thành phần: trợ lý đề xuất giá trị trường từ hồ sơ và nguồn tham khảo, chạy self-host qua endpoint suy luận chuẩn mở, tắt mặc định, người dùng xác nhận trước khi lưu; ứng dụng minh họa không cần có AI; `README.md` có mục đối chiếu với đề |
 | Giấy phép OSI, mã công khai, có bản phát hành trước khi nộp | Apache-2.0; tám bản `v1.0.0` đến `v2.0.1` | Đạt |
 
 Các giao diện đi kèm được tính như sau.

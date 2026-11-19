@@ -16,7 +16,6 @@ Thứ tự dưới đây xếp theo số điểm đang để hở; chi tiết t�
 | 1 | Tài liệu và giao tiếp: lịch sử issue (mục 3) | Tài liệu và giao tiếp 10, phát triển bền vững 10 |
 | 2 | Bằng chứng lõi là PaaS: ứng dụng mẫu (mục 3) | Nguyên gốc 10, phát triển bền vững 10 |
 | 3 | Bài trình bày chung kết (mục 2) | Hoàn thiện 10, trình diễn 10 |
-| 4 | Hồ sơ giấy phép của model trợ lý (mục 3) | Hoàn thiện 10, nguyên gốc 10 |
 
 ## 2. Phải xử lý trước khi phát hành
 
@@ -49,7 +48,6 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 | Cảnh báo Scorecard và huy hiệu | Tab Security có 8 cảnh báo của Scorecard chưa duyệt (Maintained, CodeReview, Vulnerabilities, Fuzzing, SAST, TokenPermissions hai cảnh báo, BranchProtection); huy hiệu OpenSSF Best Practices mức passing còn ba tiêu chí khuyến nghị chưa đạt (`test_most`, `warnings_strict`, `dynamic_analysis`), và lời giải thích từng tiêu chí trỏ về tệp trên `main` nên chỉ khớp khi nhánh tích hợp vào `main` |
 | Bản phát hành chưa ký | Bản phát hành chỉ có SHA-256 và attestation của BuildKit, chưa có chữ ký; ưu tiên thấp |
 | Bản chạy công khai | Chưa được CI kiểm hằng ngày (`deploy/online-check.sh` chạy tay hoặc theo cron), và chưa có phương án chạy tại chỗ nếu mạng ở buổi thi có sự cố vì bản công khai chạy sau Cloudflare Tunnel |
-| Hồ sơ giấy phép của model trợ lý | Chưa ghi nguồn của tệp GGUF Q4, phạm vi thành phần nhúng trong binary và Web UI của llama.cpp, điều khoản của model card và bằng chứng theo định nghĩa Open Source AI của OSI; cần trước khi phân phối model |
 | Cài trên Windows | Chưa có người dùng Windows thử cài và làm theo `docs/QUICKSTART.md` trong WSL2 với Docker Desktop |
 
 ## 4. Giới hạn chấp nhận

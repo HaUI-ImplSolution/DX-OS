@@ -15,12 +15,15 @@ COPY dx-monitor/pom.xml dx-monitor/pom.xml
 # Make sure to run with linux line endings
 RUN sed -i 's/\r$//' mvnw
 RUN chmod +x ./mvnw
+# Maven is fetched once here for both build stages. Maven Central sometimes refuses one host for a while,
+# so a second host is tried when the first fails.
+RUN ./mvnw -v || MVNW_REPOURL=https://repo1.maven.org/maven2 ./mvnw -v
 
 FROM base AS build-engine
 COPY dx-model/src/ dx-model/src/
 COPY dx-core/src/ dx-core/src/
 COPY dx-engine/src/ dx-engine/src/
-RUN --mount=type=cache,target=/root/.m2 ./mvnw clean package -DskipTests -pl dx-engine -am
+RUN --mount=type=cache,target=/root/.m2/repository ./mvnw clean package -DskipTests -pl dx-engine -am
 
 FROM base AS build-monitor
 COPY dx-monitor/src/ dx-monitor/src/

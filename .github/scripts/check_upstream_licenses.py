@@ -47,37 +47,123 @@ class Unreadable(Exception):
     """GitHub could not be reached or answered something unexpected."""
 
 
+# A rate limit that resets within this many seconds is waited for; a longer one ends the attempt.
+MAX_WAIT = 60
+ATTEMPTS = 5
+
+_cache: dict[str, object] | None = None
+
+
+def cache_file() -> Path | None:
+    value = os.environ.get("LICENSE_CACHE")
+    return Path(value) if value else None
+
+
+def cache_get(key: str):
+    """The answer kept for this request, or None; the file is named by LICENSE_CACHE and may not exist."""
+    global _cache
+    path = cache_file()
+    if path is None:
+        return None
+    if _cache is None:
+        try:
+            _cache = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            _cache = {}
+    return _cache.get(key)
+
+
+def cache_put(key: str, answer) -> None:
+    path = cache_file()
+    if path is None or answer is None:
+        return
+    cache_get(key)
+    _cache[key] = answer
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(_cache), encoding="utf-8")
+    except OSError:
+        pass
+
+
+def limited(error: urllib.error.HTTPError, detail: str) -> bool:
+    """Whether GitHub refused for lack of quota, not for lack of access."""
+    headers = error.headers or {}
+    return (
+        error.code == 429
+        or headers.get("Retry-After") is not None
+        or headers.get("X-RateLimit-Remaining") == "0"
+        or "rate limit" in detail.lower()
+    )
+
+
+def seconds_to_wait(error: urllib.error.HTTPError, attempt: int) -> int:
+    headers = error.headers or {}
+    try:
+        if headers.get("Retry-After") is not None:
+            return max(1, int(headers["Retry-After"]))
+        if headers.get("X-RateLimit-Reset") is not None:
+            return max(1, int(headers["X-RateLimit-Reset"]) - int(time.time()))
+    except ValueError:
+        pass
+    return 5 * (attempt + 1)
+
+
 def github(path: str, raw: bool = False):
     """The answer of the GitHub API, or None when the path does not exist; a failure raises Unreadable.
 
-    The data is public. A token only raises the rate limit, and an organization that restricts tokens (an IP
-    allow list, for one) answers 401 or 403 to it, so such an answer is asked again without the token.
+    The data is public. A token only raises the rate limit.
+    An organization that restricts tokens (an IP allow list, for one) answers 401 or 403 to it, so such an answer is
+    asked again without the token.
+    A rate limit is waited for when it resets within a minute; one that resets later is tried once more without the
+    token, which has a quota of its own, and then reported with the time it resets.
+    Every refusal is printed, so a failed run says why it failed.
+    An answer is kept in the file named by LICENSE_CACHE, so a version already checked costs no request.
     """
+    key = f"{path}#raw" if raw else path
+    kept = cache_get(key)
+    if kept is not None:
+        return kept
     headers = {"User-Agent": "dxos-license-check", "Accept": "application/vnd.github.raw" if raw else "application/vnd.github+json"}
     token = os.environ.get("GITHUB_TOKEN")
     last = path
-    for attempt in range(4):
+    for attempt in range(ATTEMPTS):
         request = urllib.request.Request(f"https://api.github.com/{path}", headers=dict(headers))
         if token:
             request.add_header("Authorization", f"Bearer {token}")
         try:
             with urllib.request.urlopen(request, timeout=30) as response:
                 body = response.read()
-                return body.decode("utf-8", "replace") if raw else json.loads(body)
+                answer = body.decode("utf-8", "replace") if raw else json.loads(body)
+                cache_put(key, answer)
+                return answer
         except urllib.error.HTTPError as error:
             if error.code == 404:
                 return None
             detail = error.read().decode("utf-8", "replace")[:160].replace("\n", " ")
             last = f"{path}: HTTP {error.code} {detail}"
+            who = "with the token" if token else "without a token"
+            if limited(error, detail):
+                wait = seconds_to_wait(error, attempt)
+                print(f"warn: {path} rate limited {who}, resets in {wait}s (attempt {attempt + 1} of {ATTEMPTS})", file=sys.stderr)
+                if wait <= MAX_WAIT:
+                    time.sleep(wait)
+                elif token:
+                    token = None
+                else:
+                    raise Unreadable(f"{last}; the limit resets in {wait // 60} minutes") from error
+                continue
+            print(f"warn: {path} HTTP {error.code} {who} (attempt {attempt + 1} of {ATTEMPTS})", file=sys.stderr)
             if error.code in (401, 403) and token:
                 token = None
                 continue
-            if error.code in (403, 429, 500, 502, 503):
+            if error.code in (403, 500, 502, 503, 504):
                 time.sleep(2 * (attempt + 1))
                 continue
             raise Unreadable(last) from error
         except (urllib.error.URLError, TimeoutError) as error:
             last = f"{path}: {error}"
+            print(f"warn: {path} {error} (attempt {attempt + 1} of {ATTEMPTS})", file=sys.stderr)
             time.sleep(2 * (attempt + 1))
     raise Unreadable(last)
 

@@ -243,7 +243,8 @@ Kiểm bằng đúng các lệnh và thao tác trong tài liệu.
     - `own` sang `all` ra `WIDEN_ACCESS` với `BORROWER: own → all`; `all` sang `read` ra `NARROW_ACCESS`.
     - Thêm một vai vào `access` ra `GRANT_ACCESS` (`AUDITOR: none → read`); bỏ một vai ra `REVOKE_ACCESS` (`BORROWER: own → none`).
     - `own` sang `assigned`, hoặc `read` sang `own`, ra `CHANGE_ACCESS`.
-    - Mọi dòng ở mức `SAFE`, `dxos apply` không cần `--accept`; chỉ đổi nhãn thì không có dòng quyền nào, và tệp giống mô hình đang chạy thì `dxos plan --check` thoát mã 0.
+    - `GRANT_ACCESS` và `WIDEN_ACCESS` ở mức `MIGRATION` kèm câu hỏi `role BORROWER gets wider access to ...`: `dxos apply` không có `--accept MIGRATION` thoát mã 1 và không đổi gì, tab Kế hoạch đòi tick "mở rộng quyền của vai", và `dxos gitops` ở chế độ `auto` để kế hoạch đó chờ duyệt.
+    - `NARROW_ACCESS`, `REVOKE_ACCESS` và `CHANGE_ACCESS` ở mức `SAFE`, `dxos apply` không cần `--accept`; chỉ đổi nhãn thì không có dòng quyền nào, và tệp giống mô hình đang chạy thì `dxos plan --check` thoát mã 0.
     - Tab Kế hoạch ghi nhãn đúng ở tiếng Việt và tiếng Anh, dòng `vai: cũ → mới` hiện dưới nhãn.
 49. **Lịch làm việc:** áp dụng một mô hình có `calendars` (ngày làm thứ Hai đến thứ Sáu, giờ `['08:00-12:00', '13:00-17:00']`) và hai thực thể có quy trình, một có `calendar: office` và `deadline: 4h`, một có `deadline: 1d` cùng lịch, một không có lịch:
     - Hồ sơ tạo 15:00 thứ Hai ở thực thể `4h` có `handle_by` 10:00 thứ Ba; thực thể `1d` có `handle_by` 15:00 thứ Ba; hồ sơ tạo chiều thứ Sáu hoặc ngày nghỉ tính từ lần mở cửa kế tiếp; thực thể không có lịch có `handle_by` đúng bằng lúc tạo cộng hạn.

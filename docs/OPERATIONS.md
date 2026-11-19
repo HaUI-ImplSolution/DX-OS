@@ -242,7 +242,7 @@ Nâng cấp không quay lui được cơ sở dữ liệu của Keycloak, nên c
 
 **Mô hình.**
 Mỗi tệp được lập kế hoạch rồi áp dụng bằng `dxos apply`.
-`auto` chỉ áp dụng kế hoạch mức `SAFE`; kế hoạch cao hơn nằm chờ như ở `approve`.
+`auto` chỉ áp dụng kế hoạch mức `SAFE`; kế hoạch cao hơn nằm chờ như ở `approve`, kể cả kế hoạch cấp thêm hoặc mở rộng quyền của một vai.
 `dxos gitops approve <commit> [--accept MỨC]` duyệt đến mức nêu (mặc định `SAFE`), và phải nêu mức của kế hoạch nếu cao hơn.
 Kế hoạch bị từ chối (`rejected`) không bao giờ được áp dụng, và một tệp lỗi không chặn các tệp khác.
 Muốn quay lại thì `git revert` ở kho rồi để lượt sau kéo về; kế hoạch mất dữ liệu vẫn phải được duyệt ở mức `LOSS`, và phiên bản mô hình cũ vẫn quay về được bằng API quay lui.

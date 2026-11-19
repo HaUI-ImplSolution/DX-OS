@@ -10,11 +10,8 @@
 # Three runs at most, waiting 30 and then 60 seconds.
 set -uo pipefail
 
-transient='HTTP/[0-9.]+ (429|500|502|503|504)|HTTP (429|500|502|503|504)|429 Too Many Requests|toomanyrequests|rate limit exceeded'
-transient+='|rpc error: code = (Unavailable|DeadlineExceeded)|error reading from server: EOF|unexpected EOF'
-transient+='|connection (reset|refused|timed out)|i/o timeout|TLS handshake timeout|Temporary failure in name resolution'
-transient+='|wget: server returned error: HTTP/[0-9.]+ 404'
-transient+='|Could not transfer artifact|Read timed out|Premature end of Content-Length|Service Unavailable|Bad Gateway'
+# One extended regular expression per line, shared with rerun_transient.sh.
+transient="$(paste -sd'|' "$(dirname "${BASH_SOURCE[0]}")/transient_errors.txt")"
 
 log="$(mktemp)"
 trap 'rm -f "$log"' EXIT

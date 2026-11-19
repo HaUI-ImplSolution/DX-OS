@@ -7,6 +7,10 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ## [Unreleased]
 
+### Giao diện
+
+- Nút Xuất CSV chờ rồi hỏi lại khi cổng API từ chối vì hết hạn mức (429), thay vì dừng hoặc bỏ tên người, và báo khi có tên người không tra được nên được ghi bằng mã.
+
 ### Phát hành
 
 - Workflow `Platform` dựng năm image một lần và giữ trong cache theo hash của mã nguồn, các job kiểm đầu-cuối nạp image từ đó thay vì tự dựng; thời gian chờ giữa các lần chạy lại có thêm phần ngẫu nhiên.

@@ -9,17 +9,17 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 // The versions of a model and record that a caller based a decision on.
 public record RecordPreconditions(Long version, Long modelVersion) {
 
-  public static RecordPreconditions from(Map<String, String> body) {
+  public static RecordPreconditions from(Map<String, ?> body) {
     return new RecordPreconditions(parse(body, "version", 0), parse(body, "modelVersion", 1));
   }
 
-  private static Long parse(Map<String, String> body, String field, long minimum) {
-    String raw = body == null ? null : body.get(field);
+  private static Long parse(Map<String, ?> body, String field, long minimum) {
+    Object raw = body == null ? null : body.get(field);
     if (raw == null) {
       return null;
     }
     try {
-      long value = Long.parseLong(raw);
+      long value = Long.parseLong(raw.toString());
       if (value < minimum) {
         throw new NumberFormatException();
       }

@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -221,7 +222,9 @@ public class MetaController {
                                     effect.group(),
                                     effect.groupField(),
                                     true))
-                        .toList()));
+                        .toList(),
+                (first, second) -> first,
+                LinkedHashMap::new));
   }
 
   // The actions the roles of the caller may take on a record, as the process rules decide them.

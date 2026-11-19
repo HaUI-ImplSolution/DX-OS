@@ -3,7 +3,7 @@
 // The control panel: models, editor, plan, users, outbox and the guides.
 export const console: Record<string, string> = {
   "Trợ lý nghiệp vụ": "Business assistant",
-  "Nhiệm vụ chỉ tạo đề xuất; quyền ghi vẫn do Core kiểm tra sau xác nhận.": "Tasks create suggestions; Core checks write access after confirmation.",
+  "Nhiệm vụ chỉ tạo đề xuất; quyền ghi vẫn do Core kiểm tra sau xác nhận. Chỉ có tác dụng khi bản cài bật trợ lý.": "Tasks create suggestions; Core checks write access after confirmation. They work only when the installation enables the assistant.",
   "Trường đầu vào": "Input fields",
   "Trường đề xuất": "Output field",
   "Hướng dẫn nhiệm vụ": "Task instructions",

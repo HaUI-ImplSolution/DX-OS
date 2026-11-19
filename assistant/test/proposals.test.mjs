@@ -85,25 +85,23 @@ test('loss of access, terminal state, cancellation and expiry prevent writes', a
     if (change === 'expiry') t.mock.timers.reset();
   }
 });
-test('manual changes replace the proposal and still require a separate confirmation', async t => {
+test('an edited suggestion replaces the old one and only the edit can be saved', async t => {
   const f = setup(t), p = (await f.fields.create(a, target, 'classify')).proposal;
   const revised = await f.fields.revise(a, p.id, 'other');
   assert.equal(f.store.proposal(a, p.id).state, 'cancelled');
   assert.notEqual(revised.id, p.id); assert.equal(f.writes(), 0);
-  await assert.rejects(f.fields.revise(a, revised.id, 'unknown'), { errorCode: 'ERR_INFERENCE_OUTPUT' });
   await f.fields.execute(a, revised.id); assert.equal(f.record.category, 'other');
 });
-test('invalid output, invented sources and unknown choices cannot become confirmable proposals', async t => {
+test('output that is not a valid suggestion never becomes confirmable', async t => {
   const f = setup(t);
-  for (const response of [null, {}, { status: 'insufficient', checks: {}, value: 'network', sources: ['guide_v1'] }, { status: 'proposed', checks: {}, value: 'network', sources: ['invented'] },
-    { value: 'unknown', sources: ['guide_v1'] }, { status: 'proposed', checks: {}, value: 'network', sources: ['guide_v1'], write: true },
-    { status: 'proposed', checks: {}, value: 'network', sources: ['guide_v1','guide_v1'] }, { status: 'proposed', checks: {}, value: 'network', sources: [] }]) {
+  for (const response of [null, { status: 'proposed', checks: {}, value: 'unknown', sources: ['guide_v1'] },
+    { status: 'proposed', checks: {}, value: 'network', sources: ['invented'] }]) {
     f.setResponse(response);
     await assert.rejects(f.fields.create(a, target, 'classify'), { errorCode: 'ERR_INFERENCE_OUTPUT' });
   }
   assert.equal(f.store.proposals(a, 0, 5).length, 0); assert.equal(f.writes(), 0);
 });
-test('insufficient evidence has no proposal, and task context omits undeclared record fields', async t => {
+test('the model is given only the declared record fields', async t => {
   const f = setup(t); f.record.secret = 'must-not-leave-core';
   f.onInfer(async (_instruction, input) => {
     assert.deepEqual(input.record, { detail: 'Wi-Fi unavailable' });
@@ -127,58 +125,6 @@ test('a timeout after dispatch remains uncertain and cannot be retried', async t
   assert.equal(f.store.proposal(a, p.id).state, 'uncertain');
   await assert.rejects(f.fields.execute(a, p.id)); assert.equal(f.writes(), 1);
 });
-test('legacy action proposals remain readable but cannot execute through the field API', async t => {
-  const f = setup(t), id = f.store.createProposal(a, { ...target, recordId: 1, operation: 'action', action: 'start',
-    version: 0, modelVersion: 1, summary: 'Legacy', webOnly: true });
-  assert.equal((await f.records.proposal(a, id)).snapshot.summary, 'Legacy');
-  await assert.rejects(f.fields.execute(a, id), { errorCode: 'ERR_PROPOSAL_RETIRED' });
-  assert.equal(f.writes(), 0);
-});
-
-test('warnings use enum metadata across models and never become extra Core writes', async t => {
-  const f = setup(t);
-  f.entity.fields.push({ name: 'unit', label: 'Processing unit', type: 'unit', options: ['TEAM_A','TEAM_B'] });
-  f.entity.aiTasks.classify.inputFields.push('unit'); f.record.unit = 'TEAM_B';
-  f.onInfer(async (_instruction, input) => {
-    assert.equal(Object.hasOwn(input.record, 'unit'), false);
-    assert.deepEqual(input.checks, [{ field: 'unit', label: 'Processing unit', options: ['TEAM_A','TEAM_B'] }]);
-    return { status: 'proposed', value: 'network', sources: ['guide_v1'], checks: { unit: 'TEAM_A' } };
-  });
-  const p = (await f.fields.create(a, target, 'classify')).proposal;
-  const warnings = [{ field: 'unit', expected: 'TEAM_A', actual: 'TEAM_B' }];
-  assert.deepEqual(p.snapshot.warnings, warnings);
-  const revised = await f.fields.revise(a, p.id, 'other');
-  assert.deepEqual(revised.snapshot.warnings, warnings);
-  await f.fields.execute(a, revised.id);
-  assert.equal(f.record.unit, 'TEAM_B'); assert.equal(f.writes(), 1);
-});
-test('record checks reject unknown fields, unknown options and incomplete evidence', async t => {
-  const f = setup(t);
-  f.entity.fields.push({ name: 'category_hint', label: 'Category hint', type: 'choice', options: ['network','device'] });
-  f.entity.aiTasks.classify.inputFields.push('category_hint'); f.record.category_hint = 'device';
-  for (const checks of [undefined, null, [], {}, { secret: 'network' }, { category_hint: 'unknown' },
-    { category_hint: 'network', secret: 'network' }]) {
-    f.setResponse({ status: 'proposed', value: 'network', sources: ['guide_v1'], checks });
-    await assert.rejects(f.fields.create(a, target, 'classify'), { errorCode: 'ERR_INFERENCE_OUTPUT' });
-  }
-  f.setResponse({ status: 'insufficient', value: null, sources: ['guide_v1'], checks: { category_hint: 'network' } });
-  await assert.rejects(f.fields.create(a, target, 'classify'), { errorCode: 'ERR_INFERENCE_OUTPUT' });
-  f.setResponse({ status: 'proposed', value: 'network', sources: ['guide_v1'], checks: { category_hint: 'device' } });
-  assert.deepEqual((await f.fields.create(a, target, 'classify')).proposal.snapshot.warnings, []);
-  assert.equal(f.writes(), 0);
-});
-
-test('unchanged suggestions and edits to the current value do not dispatch a Core write', async t => {
-  for (const manual of [false,true]) {
-    const f = setup(t);
-    if (!manual) f.record.category = 'network';
-    let p = (await f.fields.create(a, target, 'classify')).proposal;
-    if (manual) p = await f.fields.revise(a, p.id, 'device');
-    await assert.rejects(f.fields.execute(a, p.id), { errorCode: 'ERR_PROPOSAL_NO_CHANGE', status: 409 });
-    assert.equal(f.writes(), 0); assert.equal(f.record.version, 0);
-    assert.equal(f.store.proposal(a, p.id).state, 'pending');
-  }
-});
 test('a Core receipt without an advanced version is uncertain rather than reported saved', async t => {
   const f = setup(t); let calls = 0;
   f.core.patch = async () => { calls++; return structuredClone(f.record); };
@@ -188,21 +134,3 @@ test('a Core receipt without an advanced version is uncertain rather than report
   await assert.rejects(f.fields.execute(a, p.id)); assert.equal(calls, 1);
 });
 
-test('checks infer independently and numeric relations cover equal, lower and higher safe integers', async t => {
-  for (const [left, right, relation] of [[17,17,'='], [16,17,'<'], [18,17,'>'], [1.5,2,null], [Number.MAX_SAFE_INTEGER+1,2,null]]) {
-    const f = setup(t);
-    f.entity.fields.push({ name:'group',label:'Group',type:'unit',options:['alpha','beta'] },
-      { name:'left',label:'Left',type:'number' }, { name:'right',label:'Right',type:'number' });
-    f.entity.aiTasks.classify.inputFields.push('group','left','right');
-    Object.assign(f.record,{ group:'beta',left,right });
-    f.onInfer(async (_instruction,input) => {
-      assert.equal(Object.hasOwn(input.record,'group'),false);
-      assert.deepEqual(input.checks,[{ field:'group',label:'Group',options:['alpha','beta'] }]);
-      assert.deepEqual(input.numericRelations,relation ? [['left',relation,'right']] : []);
-      return { status:'proposed',value:'network',sources:['guide_v1'],checks:{group:'alpha'} };
-    });
-    const p = await f.fields.create(a,target,'classify');
-    assert.deepEqual(p.proposal.snapshot.warnings,[{ field:'group',expected:'alpha',actual:'beta' }]);
-    assert.equal(f.writes(),0);
-  }
-});

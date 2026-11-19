@@ -183,11 +183,10 @@ pending_services() {
   local pending=() id name status health exit_code service
   while read -r id; do
     [[ -n "$id" ]] || continue
+    read -r service name status health exit_code <<<"$(docker inspect -f \
+      '{{index .Config.Labels "com.docker.compose.service"}} {{.Name}} {{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{else}}-{{end}} {{.State.ExitCode}}' "$id")"
     # The optional assistant never holds the start of the platform.
-    service="$(docker inspect -f '{{index .Config.Labels "com.docker.compose.service"}}' "$id")"
     [[ "$service" == assistant-* ]] && continue
-    read -r name status health exit_code <<<"$(docker inspect -f \
-      '{{.Name}} {{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{else}}-{{end}} {{.State.ExitCode}}' "$id")"
     case "$status:$health:$exit_code" in
       running:healthy:*|running:-:*|exited:*:0) ;;
       *) pending+=("${name#/}($status/$health)") ;;

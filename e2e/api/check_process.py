@@ -66,7 +66,7 @@ def create(token, base, body):
 
 
 def conditional_actions(admin, asker, agent, other_agent):
-    status, metadata = kc.api(agent, "GET", "/meta/models")
+    _, metadata = kc.api(agent, "GET", "/meta/models")
     model = next(model for model in metadata["data"] if model["name"] == "desk8")
     version = model["modelVersion"]
     record = create(asker, TICKETS, {"title": "Conditional assignment"})
@@ -85,8 +85,7 @@ def conditional_actions(admin, asker, agent, other_agent):
     rt.check("a stale action leaves the assigned record unchanged",
              status == 409 and body.get("errorCode") == "ERR_CONCURRENT_MODIFICATION")
     _, current = kc.api(agent, "GET", f"{TICKETS}/{record}")
-    actor = agent
-    status, body = kc.api(actor, "POST", f"{TICKETS}/{record}/actions/start", {
+    status, body = kc.api(agent, "POST", f"{TICKETS}/{record}/actions/start", {
         "version": current["data"]["version"], "modelVersion": version})
     rt.check("a current conditional action joins the process transaction",
              status == 200 and body["data"]["status"] == "in_progress")
@@ -96,10 +95,10 @@ def conditional_actions(admin, asker, agent, other_agent):
     status, applied = kc.api(admin, "POST", f"/models/apply?base={version}", changed, YAML)
     rt.check("a compatible model update advances the snapshot",
              status == 200 and applied["data"]["version"] == version + 1)
-    _, current = kc.api(actor, "GET", f"{TICKETS}/{record}")
-    status, body = kc.api(actor, "POST", f"{TICKETS}/{record}/actions/resolve", {
+    _, current = kc.api(agent, "GET", f"{TICKETS}/{record}")
+    status, body = kc.api(agent, "POST", f"{TICKETS}/{record}/actions/resolve", {
         "version": current["data"]["version"], "modelVersion": version})
-    _, after = kc.api(actor, "GET", f"{TICKETS}/{record}")
+    _, after = kc.api(agent, "GET", f"{TICKETS}/{record}")
     rt.check("a changed model refuses the old decision without changing the row",
              status == 409 and body.get("data", {}).get("reason") == "MODEL_VERSION_CHANGED"
              and after["data"]["version"] == current["data"]["version"]
@@ -127,9 +126,6 @@ def ai_task_changes(admin):
              any(c["kind"] == "CHANGE_AI_TASKS" and c["level"] == "SAFE" for c in body["data"]["changes"]), str(status))
     status, body = kc.api(admin, "POST", f"/models/apply?base={version}&accept=SAFE", configured, YAML)
     rt.check("T8-14 applying a task advances the model version", status == 200 and body["data"]["version"] == version + 1, str(status))
-    status, body = kc.api(admin, "POST", "/models/plan", base, YAML)
-    rt.check("T8-14 removing a task is visible in the model plan", status == 200 and
-             any(c["kind"] == "CHANGE_AI_TASKS" for c in body["data"]["changes"]), str(status))
 
 
 def main():

@@ -25,7 +25,6 @@ const VI: Rule[] = [
   fixed("a task needs a label up to 200 and instruction up to 2000 characters", "Nhiệm vụ cần nhãn tối đa 200 và hướng dẫn tối đa 2000 ký tự"),
   fixed("max_length must be a whole number between 1 and 2000", "max_length phải là số nguyên từ 1 đến 2000"),
 
-  fixed("This action is not available to your roles", "Vai trò của bạn không được thực hiện hành động này"),
   fixed("The model changed; read it again", "Mô hình đã thay đổi; hãy tải lại trước khi thực hiện"),
   pattern("must be a whole number at least (.+)", "Phải là số nguyên không nhỏ hơn $1"),
   pattern("The record does not meet the condition of this action: (.+)", "Hồ sơ chưa đạt điều kiện của hành động này: $1"),

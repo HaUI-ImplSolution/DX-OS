@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Box, Button, Card, CircularProgress, MenuItem, Stack, TextField, Typography } from "@mui/material";
 import { EditButton, useRecordContext, useRefresh } from "react-admin";
-import { assistantRequest, type Proposal } from "./api";
+import { assistantRequest, useEntityAssistant, type Proposal } from "./api";
 import { resourceName, type EntityMeta } from "../admin/types";
 import { t } from "../shell/t";
 
@@ -24,6 +24,7 @@ function sourceText(text: string, entity: EntityMeta, units: Record<string, stri
 
 export default function RecordAssistant({ model, entity, units }: { model: string; entity: EntityMeta; units: Record<string, string> }) {
   const record = useRecordContext(); const refresh = useRefresh();
+  const available = useEntityAssistant(entity);
   const active = useRef<AbortController | null>(null);
   useEffect(() => () => active.current?.abort(), []);
   const [task, setTask] = useState(Object.keys(entity.aiTasks ?? {})[0] ?? "");
@@ -49,7 +50,7 @@ export default function RecordAssistant({ model, entity, units }: { model: strin
     }
     finally { setBusy(false); }
   };
-  if (!record || !entity.aiTasks || !Object.keys(entity.aiTasks).length) return null;
+  if (!available || !record || !entity.aiTasks || !Object.keys(entity.aiTasks).length) return null;
   const unchanged = !!proposal && value === proposal.snapshot.previousValue;
   const pending = proposal?.state === "pending" && deadline > Date.now();
   return <Card sx={{ p: 2 }}>

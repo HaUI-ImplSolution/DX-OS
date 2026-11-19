@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { useEffect, useMemo, useState } from "react";
 import { API_BASE, ApiError } from "../shell/api";
-import type { ModelMeta } from "../admin/types";
+import type { EntityMeta, ModelMeta } from "../admin/types";
 import { getToken } from "../shell/auth";
 import { errorMessageFor, registerErrorMessages, statusMessageFor } from "../shell/errorMessages";
 
@@ -47,13 +47,9 @@ async function loadAvailability(): Promise<boolean> {
   } catch { return false; }
 }
 
-// The assistant is asked about only when a model declares ai tasks.
-export function useAssistantEnabled(models: ModelMeta[] | null): boolean {
+// The assistant is asked about only when ai tasks are declared, and what it says is remembered for the page.
+function useAvailability(declared: boolean): boolean {
   const [enabled, setEnabled] = useState(false);
-  const declared = useMemo(
-    () => !!models?.some(model => model.entities.some(entity => Object.keys(entity.aiTasks ?? {}).length > 0)),
-    [models],
-  );
   useEffect(() => {
     if (!declared) return;
     let active = true;
@@ -61,6 +57,17 @@ export function useAssistantEnabled(models: ModelMeta[] | null): boolean {
     return () => { active = false; };
   }, [declared]);
   return enabled;
+}
+
+const declares = (entity: EntityMeta) => Object.keys(entity.aiTasks ?? {}).length > 0;
+
+export function useAssistantEnabled(models: ModelMeta[] | null): boolean {
+  const declared = useMemo(() => !!models?.some(model => model.entities.some(declares)), [models]);
+  return useAvailability(declared);
+}
+
+export function useEntityAssistant(entity: EntityMeta): boolean {
+  return useAvailability(declares(entity));
 }
 
 export async function assistantRequest<T>(path: string, method = "GET", payload?: unknown, signal?: AbortSignal): Promise<T> {

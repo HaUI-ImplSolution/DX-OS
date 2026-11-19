@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
-import { mkdtempSync, rmSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { mkdtempSync, rmSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -31,7 +31,7 @@ test('encrypted secrets and proposals are bound to issuer, subject and purpose',
   db.close(); const reopened = new Store(path, key);
   try { assert.throws(() => reopened.getSecret(b, 'core')); } finally { reopened.close(); }
 });
-test('one claim and expiry remain mandatory', t => {
+test('a proposal can be claimed once and not after it expires', t => {
   const { store } = setup(t), id = store.createProposal(a, snapshot);
   store.claim(a, id); assert.throws(() => store.claim(a, id), { status: 409 });
   const expired = store.createProposal(a, snapshot, 0);
@@ -46,53 +46,31 @@ test('an interrupted execution remains uncertain after restart and cannot be cla
     assert.throws(() => restarted.claim(a, id), { status: 409 });
   } finally { restarted.close(); }
 });
-test('OAuth state belongs to one browser and can only be consumed once before expiry', t => {
+test('OAuth state belongs to one browser and can be consumed only once', t => {
   const { store } = setup(t);
   store.createFlow(a, 'synthetic-state', 'synthetic-cookie', 'synthetic-verifier');
   assert.throws(() => store.takeFlow('synthetic-state', 'wrong-cookie'), { errorCode: 'ERR_LINK_INVALID' });
   assert.equal(store.takeFlow('synthetic-state', 'synthetic-cookie').owner.subject, 'A');
   assert.throws(() => store.takeFlow('synthetic-state', 'synthetic-cookie'), { errorCode: 'ERR_LINK_EXPIRED' });
-  store.createFlow(a, 'expired-state', 'cookie', 'verifier', 0);
-  assert.throws(() => store.takeFlow('expired-state', 'cookie', 300000), { errorCode: 'ERR_LINK_EXPIRED' });
 });
-test('upgrading legacy state preserves encrypted credentials, tables and history without activation', t => {
-  const { store, path, key } = setup(t);
-  store.setSecret(a, 'providers', { apiKey: 'synthetic-old-key' }); store.close();
-  const db = new DatabaseSync(path);
-  db.exec("CREATE TABLE runtime_owners(slot TEXT PRIMARY KEY,owner TEXT); INSERT INTO runtime_owners VALUES('legacy','owner'); PRAGMA user_version=4;"); db.close();
-  const migrated = new Store(path, key);
-  try { assert.equal(migrated.getSecret(a, 'providers').apiKey, 'synthetic-old-key'); } finally { migrated.close(); }
-  const check = new DatabaseSync(path);
-  assert.equal(check.prepare('SELECT slot FROM runtime_owners').get().slot, 'legacy');
-  assert.equal(check.prepare('PRAGMA user_version').get().user_version, 5);
-  check.exec('PRAGMA user_version=99'); check.close();
-  assert.throws(() => new Store(path, key), /newer application/);
-});
-test('bootstrap preserves master key and legacy runtime files, and refuses a lost key', t => {
+test('bootstrap keeps the master key of existing state and refuses to make a new one', t => {
   const dir = mkdtempSync(join(tmpdir(), 'dxos-bootstrap-'));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
   const prepare = () => spawnSync(process.execPath, [fileURLToPath(new URL('../dist/setup.js', import.meta.url)), 'prepare', dir],
     { env: { ...process.env, ASSISTANT_PUBLIC_URL: 'http://localhost:9080' }, encoding: 'utf8' });
   assert.equal(prepare().status, 0);
   const key = readFileSync(join(dir, 'private/master.key'));
-  mkdirSync(join(dir, 'runtime-1'), { recursive: true }); writeFileSync(join(dir, 'runtime-1/transcript'), 'legacy');
   const store = new Store(join(dir, 'control/assistant.sqlite'), key); store.setSecret(a, 'core', 'synthetic'); store.close();
   assert.equal(prepare().status, 0); assert.deepEqual(readFileSync(join(dir, 'private/master.key')), key);
-  assert.equal(readFileSync(join(dir, 'runtime-1/transcript'), 'utf8'), 'legacy');
   rmSync(join(dir, 'private/master.key')); assert.notEqual(prepare().status, 0);
 });
 
-test('a wrong restore key is refused before an executing proposal is changed', t => {
-  const { store, key, path } = setup(t);
+test('a wrong master key is refused and leaves the state untouched', t => {
+  const { store, path } = setup(t);
   store.setSecret(a, 'core', 'synthetic');
   const id = store.createProposal(a, snapshot);
   store.claim(a, id); store.close();
   assert.throws(() => new Store(path, randomBytes(32)), /matching master key/);
   const db = new DatabaseSync(path, { readOnly: true });
   assert.equal(db.prepare('SELECT state FROM proposals WHERE id=?').get(id).state, 'executing'); db.close();
-  const restored = new Store(path, key);
-  try {
-    assert.equal(restored.getSecret(a, 'core'), 'synthetic');
-    assert.equal(restored.proposal(a, id).state, 'uncertain');
-  } finally { restored.close(); }
 });

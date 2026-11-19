@@ -390,5 +390,6 @@ Mỗi thực thể có thể khai báo `ai.tasks`, là ánh xạ tên nhiệm v�
 Trường đầu vào lấy từ hồ sơ, gồm trường đơn vị ở dạng chỉ đọc; đầu ra là một trường text hoặc choice đơn trị và không được dùng làm nguồn cấp membership.
 `sources` là danh sách mã nguồn tham khảo do dịch vụ trợ lý quản lý, không phải URL hoặc đường dẫn tệp.
 Khai báo nhiệm vụ không cấp thêm quyền; người xác nhận vẫn phải có quyền sửa hồ sơ.
+`instruction` và `sources` nằm trong metadata của thực thể nên mọi người đọc được thực thể đều thấy; không đặt thông tin nhạy cảm vào đó.
 Thêm, sửa hoặc bỏ nhiệm vụ hiện trong kế hoạch với loại `CHANGE_AI_TASKS`.
 Dịch vụ trợ lý là thành phần tùy chọn, xem [`assistant/README.md`](../assistant/README.md).

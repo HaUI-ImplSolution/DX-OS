@@ -199,13 +199,7 @@ public class DataController {
       @PathVariable long id,
       @RequestBody Map<String, Object> body) {
     Model m = registry.require(model);
-    Map<String, String> expected = new LinkedHashMap<>();
-    for (String key : List.of("version", "modelVersion")) {
-      if (body.get(key) != null) {
-        expected.put(key, body.get(key).toString());
-      }
-    }
-    RecordPreconditions conditions = RecordPreconditions.from(expected);
+    RecordPreconditions conditions = RecordPreconditions.from(body);
     registry.checkVersion(model, conditions.modelVersion());
     Map<String, Object> fields = new LinkedHashMap<>(body);
     fields.remove("modelVersion");

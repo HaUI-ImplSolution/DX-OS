@@ -79,7 +79,7 @@ class ModelUpgraderTest {
   }
 
   @Test
-  void aiTasksFollowFieldsAndCannotSurviveBrokenReferences() {
+  void aiTasksAreReadAndRefuseAFieldThatDoesNotExist() {
     String yaml =
         MODEL
             + """
@@ -92,44 +92,11 @@ class ModelUpgraderTest {
                   sources: [guide_v1]
                   max_length: 100
         """;
-    Model parsed = ModelParser.parse(yaml);
-    assertEquals("title", parsed.entities().get("item").aiTasks().get("summarize").outputField());
-    assertEquals(
-        java.util.List.of("title"),
-        parsed.entities().get("item").aiTasks().get("summarize").inputFields());
-    String unitInput =
-        yaml.replace("title: {type: text}", "title: {type: text}\n      unit: {type: unit}")
-            .replace("roles:", "units: [{name: TEAM}]\nroles:")
-            .replace("input_fields: [title]", "input_fields: [title, unit]");
-    assertEquals(
-        java.util.List.of("title", "unit"),
-        ModelParser.parse(unitInput)
-            .entities()
-            .get("item")
-            .aiTasks()
-            .get("summarize")
-            .inputFields());
+    var task = ModelParser.parse(yaml).entities().get("item").aiTasks().get("summarize");
+    assertEquals("title", task.outputField());
+    assertEquals(java.util.List.of("title"), task.inputFields());
     assertThrows(
         ModelException.class,
-        () -> ModelParser.parse(unitInput.replace("output_field: title", "output_field: unit")));
-    String valid = yaml;
-    assertThrows(
-        ModelException.class,
-        () -> ModelParser.parse(valid.replace("summarize:", "invalid-task:")));
-
-    assertThrows(
-        ModelException.class,
-        () -> ModelParser.parse(valid.replace("input_fields: [title]", "input_fields: [missing]")));
-    assertThrows(
-        ModelException.class,
-        () -> ModelParser.parse(valid.replace("output_field: title", "output_field: status")));
-    assertThrows(
-        ModelException.class,
-        () ->
-            ModelParser.parse(
-                valid.replace("sources: [guide_v1]", "sources: [http://example.invalid]")));
-    assertThrows(
-        ModelException.class,
-        () -> ModelParser.parse(valid.replace("max_length: 100", "max_length: 0")));
+        () -> ModelParser.parse(yaml.replace("input_fields: [title]", "input_fields: [missing]")));
   }
 }

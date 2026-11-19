@@ -147,7 +147,8 @@ public class ModelOpenApi {
     String type = pascal(name);
     boolean process = entity.hasProcess();
     components.addSchemas(type, record(model, entity));
-    components.addSchemas(type + "Input", input(model, entity));
+    components.addSchemas(type + "Input", input(model, entity, false));
+    components.addSchemas(type + "Update", input(model, entity, true));
     components.addSchemas("Response" + type, envelope(ref(type)));
     components.addSchemas(
         "Page" + type,
@@ -230,7 +231,7 @@ public class ModelOpenApi {
                             + " Optional modelVersion rejects a changed model with 409 and data.reason"
                             + " MODEL_VERSION_CHANGED.")
                     .addParametersItem(idParameter())
-                    .requestBody(body(type + "Input"))
+                    .requestBody(body(type + "Update"))
                     .responses(
                         responses(
                             "Response" + type,
@@ -543,7 +544,9 @@ public class ModelOpenApi {
     return schema;
   }
 
-  private Schema<?> input(Model model, EntityMeta entity) {
+  // What a caller may send: the fields of the entity; a change names only the fields it sets, and
+  // may carry versions.
+  private Schema<?> input(Model model, EntityMeta entity, boolean change) {
     ObjectSchema schema = new ObjectSchema();
     List<String> required = new ArrayList<>();
     for (FieldMeta field : entity.fields()) {
@@ -551,11 +554,13 @@ public class ModelOpenApi {
         continue;
       }
       schema.addProperty(field.name(), labelled(fieldSchema(model, field), field.label()));
-      if (field.required()) {
+      if (field.required() && !change) {
         required.add(field.name());
       }
     }
-    versioned(schema);
+    if (change) {
+      versioned(schema);
+    }
     if (!required.isEmpty()) {
       schema.required(required);
     }

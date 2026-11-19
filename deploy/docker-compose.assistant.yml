@@ -68,6 +68,8 @@ services:
     mem_limit: 256m
     cpus: 0.5
     pids_limit: 128
+    # An inference service on this machine is reached as host.docker.internal.
+    extra_hosts: ["host.docker.internal:host-gateway"]
     depends_on:
       backend:
         condition: service_healthy

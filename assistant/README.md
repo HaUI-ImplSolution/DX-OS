@@ -1,119 +1,107 @@
-# Trợ lý nghiệp vụ động
+# Trợ lý nghiệp vụ (tùy chọn)
 
-Dịch vụ độc lập kết nối Dynamic Core qua API, dùng model self-host để đề xuất một giá trị trường từ hồ sơ và nguồn tri thức được cấu hình.
-Giao diện hiển thị tên trường cùng giá trị đề xuất, lưu ý riêng theo trường và nguồn tham khảo thu gọn.
-Người dùng xem căn cứ, sửa hoặc xác nhận trên giao diện hồ sơ; Core kiểm quyền, quy tắc và phiên bản trước khi ghi.
+Dịch vụ độc lập đề xuất một giá trị cho một trường của hồ sơ, dựa trên các trường đầu vào của hồ sơ và nguồn tham khảo.
+Người dùng xem căn cứ, sửa hoặc xác nhận trên giao diện hồ sơ.
+Core kiểm quyền, quy tắc và phiên bản trước khi ghi, nên model không có đường ghi trực tiếp.
 Inference do người vận hành cấu hình và chạy tại máy chủ của bản cài.
 
-## Cấu hình và sử dụng
+## Bật, cấu hình và tắt
 
-1. Trợ lý tắt mặc định: không container nào của trợ lý được tạo, Core và web không cần dịch vụ này.
-   Để bật, đặt `COMPOSE_FILE=docker-compose.yml:docker-compose.assistant.yml` trong `deploy/.env`, rồi chạy `dxos start` theo [README](../README.md#chạy-thử).
-   Bỏ dòng đó và chạy `docker compose up -d --remove-orphans` để tắt.
-   Mở **Trợ lý nghiệp vụ** và liên kết tài khoản DX-OS.
-   Khi đã bật, `dxos update` kéo cả image trợ lý; image có sau khi chạy workflow `Release Images` với `services=assistant`.
-2. Người vận hành chép [`deploy/assistant.env.example`](../deploy/assistant.env.example) thành `deploy/assistant.env` (ngoài Git) rồi đặt inference và catalog nguồn trong đó; `deploy/.env` không chứa biến nào của trợ lý.
-   Cần tối thiểu `ASSISTANT_INFERENCE_URL`, `ASSISTANT_MODEL`, `ASSISTANT_MODEL_REVISION` và `ASSISTANT_SOURCES_FILE` để tạo được đề xuất.
+Trợ lý tắt mặc định: chưa bật thì stack không có container hay route của trợ lý.
+
+1. Đặt `COMPOSE_FILE=docker-compose.yml:docker-compose.assistant.yml` trong `deploy/.env`, rồi chạy `dxos start`.
+2. Chép [`deploy/assistant.env.example`](../deploy/assistant.env.example) thành `deploy/assistant.env` (ngoài Git) và đặt inference, nguồn tham khảo trong đó.
+   Tối thiểu cần `ASSISTANT_INFERENCE_URL`, `ASSISTANT_MODEL`, `ASSISTANT_MODEL_REVISION` và `ASSISTANT_SOURCES_FILE`.
    Giới hạn RAM và CPU của container nằm trong `deploy/docker-compose.assistant.yml`.
-3. Người quản trị mô hình khai báo nhiệm vụ trong `ai.tasks` của thực thể bằng YAML hoặc tab trợ lý trong Console, rồi áp dụng mô hình.
-4. Người dùng mở hồ sơ đã lưu, chọn nhiệm vụ, tạo đề xuất và đọc nguồn trước khi xác nhận.
-5. Nếu sửa giá trị, chọn xem lại để tạo snapshot mới, sau đó xác nhận lưu trong một thao tác riêng.
+3. Khai báo `ai.tasks` cho thực thể trong tệp mô hình (hoặc tab trợ lý của bảng điều khiển) rồi áp dụng; cú pháp ở [MODEL](../docs/MODEL.md#nhiệm-vụ-trợ-lý-nghiệp-vụ).
+   Hai mẫu `onestop` và `support_desk` có sẵn nhiệm vụ.
+4. Người dùng mở **Trợ lý nghiệp vụ**, liên kết tài khoản DX-OS, rồi mở một hồ sơ đã lưu, chọn nhiệm vụ và tạo đề xuất.
+   Sửa giá trị thì đề xuất được tạo lại để xem lại, sau đó xác nhận lưu bằng một thao tác riêng.
+5. Tắt bằng cách bỏ dòng `COMPOSE_FILE` rồi chạy `docker compose up -d --remove-orphans`.
 
-Hai template `onestop` và `support_desk` minh họa cùng khả năng phân loại trên trường khác nhau.
-Catalog phải có các mã nguồn mà nhiệm vụ tham chiếu; thiếu nguồn thì nhiệm vụ báo chưa cấu hình, không tự lấy tài liệu từ Internet.
-Dữ liệu demo nằm ngoài Git theo quyết định chủ dự án; bản cài phải tự chuẩn bị nguồn hợp lệ trước khi dùng AI.
+Nếu mật khẩu quản trị Keycloak trong `deploy/.env` không còn đúng, `assistant-sso` chỉ ghi cảnh báo và trợ lý không liên kết được tài khoản.
+Xem `docker compose logs assistant-sso`, sửa `deploy/.env` rồi chạy lại `docker compose up -d`.
 
-`ai.tasks` khai báo nhãn, `input_fields`, `output_field`, `instruction`, `sources` và `max_length`; xem [MODEL](../docs/MODEL.md#nhiệm-vụ-trợ-lý-nghiệp-vụ).
-Đầu ra hiện là text hoặc choice đơn trị; trường dùng để cấp membership và các trường hệ thống không được chọn.
-Khai báo nhiệm vụ không cấp thêm quyền đọc/ghi hoặc thay cơ chế phân quyền của Core.
+Khi đã bật, `dxos update` kéo cả image trợ lý.
+Image có sau khi chạy workflow `Release Images` với `services=assistant`.
 
-## Inference và nguồn tri thức
+## Inference và nguồn tham khảo
 
-Model mặc định là **Apertus-8B-Instruct-2509**, self-host; bản local dùng trọng số GGUF lượng tử hóa Q4.
-Giấy phép upstream của model là Apache-2.0; mã llama.cpp `b12387` là MIT, các thư viện hệ thống và mã vendor giữ giấy phép riêng theo [`DEPENDENCIES.txt`](../DEPENDENCIES.txt), ghi chú [9]–[12].
-Người vận hành cấu hình endpoint phục vụ model này bằng các biến inference trong [`deploy/assistant.env.example`](../deploy/assistant.env.example); việc chọn model không tự tải hoặc đóng gói trọng số.
+Model mặc định là Apertus-8B-Instruct-2509 (Apache-2.0), self-host, dùng trọng số GGUF lượng tử hóa Q4 qua llama.cpp (MIT).
+Giấy phép và ghi chú nằm ở [`DEPENDENCIES.txt`](../DEPENDENCIES.txt), mục [9] và [10].
+Repository không đóng gói trọng số và không tải trọng số trong request hay lúc Core khởi động.
 
-Người dùng không nhập endpoint, API key hoặc model trên giao diện.
-Endpoint do người vận hành cố định trong bản cài; transport chặn redirect, giới hạn input/output, timeout và một lượt suy luận đồng thời.
-Timeout inference tối đa 180 giây, cổng vào chờ 240 giây để còn thời gian đọc Core và trả lỗi; giao diện chờ tối đa 270 giây cho một lượt tạo đề xuất.
-Model không nhận JWT/refresh token Core, quyền xác nhận, công cụ shell, filesystem hoặc quyền gọi HTTP tùy ý.
-Trường đơn vị có thể làm đầu vào chỉ đọc để phát hiện mâu thuẫn theo nguồn; vẫn không được chọn làm đầu ra.
-Một lượt chỉ gửi các trường được nhiệm vụ khai báo cùng các nguồn liên quan, không gửi lịch sử hội thoại hoặc toàn bộ metadata hệ thống.
+Endpoint do người vận hành cố định trong bản cài, người dùng không nhập endpoint, key hay model trên giao diện.
+Dịch vụ dùng endpoint chat có structured output, hoặc native completion với khung prompt lấy từ template của đúng model (`ASSISTANT_PROMPT_FRAMING_FILE`, tệp JSON gồm `bos`, `systemPrefix`, `systemSuffix`, `userPrefix`, `userSuffix`, `assistantPrefix` và `stop`).
+Một lượt suy luận chạy tại một thời điểm, chặn redirect, giới hạn input, output và timeout.
+Timeout tối đa 180 giây, cổng vào chờ 240 giây và giao diện chờ 270 giây cho một lượt tạo đề xuất.
+Đổi model, trọng số hoặc khung prompt thì cập nhật `ASSISTANT_MODEL_REVISION` và khởi động lại trợ lý, để các đề xuất cũ hết hiệu lực.
 
-Dùng endpoint chat có structured output nguyên bản, hoặc native completion với framing lấy từ template upstream của đúng model.
-`ASSISTANT_PROMPT_FRAMING_FILE` là tệp JSON của người vận hành, gồm `bos`, `systemPrefix`, `systemSuffix`, `userPrefix`, `userSuffix`, `assistantPrefix` và `stop`.
-Framing chỉ chứa chuỗi, không chạy mã hoặc tải template từ URL; không tự thay template model khi gặp lỗi.
-Đổi model, trọng số hoặc framing phải cập nhật `ASSISTANT_MODEL_REVISION`, xử lý xong lượt đang chạy rồi khởi động lại provider để vô hiệu đề xuất cũ.
-Không tải trọng số trong request hoặc lúc Core khởi động; tắt inference không ngăn Core hoặc form nghiệp vụ hoạt động.
+Model chỉ nhận các trường mà nhiệm vụ khai báo và các nguồn liên quan.
+Nó không nhận token của Core, không có công cụ shell, filesystem hay quyền gọi HTTP.
+Tắt inference không ảnh hưởng Core hay form nghiệp vụ.
 
-Catalog nguồn là một mảng JSON trong tệp ngoài Git do `ASSISTANT_SOURCES_FILE` chỉ đến.
-Mỗi mục có `id`, `title`, `revision`, `text` và `license`; mã nguồn bắt đầu bằng chữ thường, tối đa 40 ký tự gồm chữ thường, chữ số và gạch dưới, revision không rỗng và văn bản tối đa 12.000 ký tự.
-Catalog nhận dữ liệu CC0-1.0, CC-BY-4.0 hoặc ODbL-1.0 theo cam kết nguồn mở; người vận hành phải giữ provenance và thông báo bản quyền của nguồn.
-Nguồn được nạp bất biến khi provider khởi động; đổi nội dung phải có revision mới và khởi động lại provider.
-Không đặt URL hoặc secret vào YAML nhiệm vụ; file nguồn, framing và key có thể đặt trong `deploy/data/assistant/private`, tương ứng `/run/secrets` trong container.
-Key inference phải là tệp thông thường có mode 0600; nguồn và framing phải được người vận hành bảo vệ khỏi sửa trái phép.
+Danh mục nguồn là một mảng JSON ngoài Git, do `ASSISTANT_SOURCES_FILE` chỉ tới.
+Mỗi mục có `id`, `title`, `revision`, `text` (tối đa 12.000 ký tự) và `license` (CC0-1.0, CC-BY-4.0 hoặc ODbL-1.0).
+Nhiệm vụ tham chiếu nguồn theo `id`; thiếu nguồn thì nhiệm vụ báo chưa cấu hình, trợ lý không tự lấy tài liệu từ Internet.
+Nguồn được nạp một lần khi khởi động; đổi nội dung thì đổi `revision` và khởi động lại.
+Tệp nguồn, khung prompt và key đặt trong `deploy/data/assistant/private` (là `/run/secrets` trong container), key inference có mode 0600.
+Bản cài tự chuẩn bị nguồn có giấy phép hợp lệ vì dữ liệu demo nằm ngoài Git.
 
-Đầu ra model có cấu trúc gồm `status`, `value`, `sources` và `checks`.
-Giá trị hiện tại của các trường đối chiếu được giữ ở server để so sánh, không đưa vào dữ liệu model nhằm giảm sao chép lựa chọn sai.
-Các cặp số nguyên an toàn trong đầu vào có thêm kết quả so sánh; số thập phân hoặc ngoài miền số nguyên an toàn không được suy diễn bằng cơ chế này.
-`checks` ánh xạ mỗi trường đầu vào choice/unit đơn trị có tập lựa chọn, trừ trường đầu ra, tới giá trị theo nguồn hoặc null khi chưa đủ căn cứ.
-Server kiểm tập lựa chọn rồi so với hồ sơ để tạo `snapshot.warnings` dạng `{field, expected, actual}`; đây là lưu ý để người dùng kiểm tra, không phải lệnh ghi.
-Giá trị đề xuất và mã nguồn được kiểm ở server trước khi tạo proposal.
-Model trả thiếu căn cứ thì không tạo proposal; JSON hỏng, choice ngoài danh mục hoặc nguồn bịa đều bị từ chối.
-Căn cứ hiển thị lấy từ văn bản đã cung cấp, không dùng lời tự đánh giá độ tin cậy của model làm bằng chứng.
-Nguồn có thật không chứng minh đề xuất đúng: người dùng vẫn phải kiểm nội dung trước khi xác nhận.
-Self-host và trọng số Apache-2.0 chưa đủ chứng minh model đạt OSAID; model, dữ liệu và runtime phải được kiểm riêng trước phát hành.
+## Đề xuất và xác nhận
 
-## Danh tính, đề xuất và API
+Model trả `status`, `value`, `sources` và `checks`.
+Server chỉ tạo đề xuất khi `status` là `proposed`, giá trị đúng kiểu của trường, và mọi nguồn nằm trong danh mục của nhiệm vụ.
+Thiếu căn cứ thì không có đề xuất; JSON hỏng, lựa chọn ngoài danh sách hoặc nguồn bịa bị từ chối.
+`checks` là giá trị mà nguồn cho là đúng cho từng trường đối chiếu (choice hoặc unit đơn trị).
+Chỗ khác với hồ sơ hiện tại thành `warnings` (`{field, expected, actual}`) để người dùng kiểm tra, không bao giờ thành lệnh ghi.
+Căn cứ hiển thị là văn bản nguồn đã cung cấp, không phải lời tự đánh giá của model, và người dùng vẫn phải đối chiếu nội dung trước khi xác nhận.
 
-Danh tính lấy từ JWT đã kiểm issuer/audience; owner không nhận từ body, query hoặc model.
-Liên kết Core dùng PKCE, state một lần và refresh riêng, không lấy refresh token từ frontend.
-SQLite lưu snapshot/receipt và credential mã hóa AEAD theo chủ; master key được giữ riêng.
-Proposal giữ target/task, giá trị, căn cứ, thời hạn, phiên bản hồ sơ/mô hình và revision nguồn/model.
-Sửa nội dung tạo proposal thay thế và vô hiệu bản cũ nguyên tử; confirm không nhận patch mới từ browser.
+Đề xuất thuộc về một chủ, hết hạn sau 120 giây và được xóa sau 30 ngày.
+Nó ghi lại hồ sơ, nhiệm vụ, giá trị, nguồn, phiên bản hồ sơ và mô hình, và revision của nguồn và model.
+Sửa nội dung tạo đề xuất mới và vô hiệu đề xuất cũ.
+Khi xác nhận, trợ lý đọc lại hồ sơ và cấu hình, rồi chỉ gửi `PATCH` một trường kèm `version` và `modelVersion`.
+Hồ sơ, mô hình, nhiệm vụ hay nguồn đã đổi thì trả 409 `ERR_PROPOSAL_STALE`.
+Giá trị trùng hồ sơ trả 409 `ERR_PROPOSAL_NO_CHANGE` và không gọi Core.
+Timeout hoặc dừng tiến trình khi ghi giữ kết quả `uncertain` và không tự gửi lại; người dùng đối chiếu lịch sử hồ sơ.
+
+Trạng thái đi từ `pending` qua `executing` tới `succeeded`, `failed` hoặc `uncertain`.
+Danh tính lấy từ JWT đã kiểm issuer và audience, không nhận từ body hay model.
+Liên kết với Core dùng PKCE và state dùng một lần.
 
 | Endpoint dưới `/assistant-api/v1` | Chức năng |
 |---|---|
-| `GET /features` | Trạng thái bật dịch vụ, không gọi model |
-| `GET /openapi.json` | OpenAPI sinh từ schema route, cần đăng nhập |
-| `GET /me` | Trạng thái liên kết và cấu hình model, không gọi model |
-| `POST /me/core/link`, `GET /oauth/callback` | Liên kết Core bằng SSO/PKCE |
-| `POST /me/proposals` | Nhận model/entity/id/task, server tự đọc hồ sơ và tạo đề xuất |
-| `GET /me/proposals`, `GET /me/proposals/{id}` | Lịch sử/chi tiết của chủ còn quyền đọc hồ sơ |
-| `POST /me/proposals/{id}/revise` | Sửa đúng giá trị của trường đã cấu hình, tạo snapshot mới |
-| `POST /me/proposals/{id}/confirm`, `/cancel` | Xác nhận hoặc hủy ngoài LLM, kiểm Origin và danh tính |
+| `GET /features` | Trạng thái bật dịch vụ |
+| `GET /openapi.json` | OpenAPI, cần đăng nhập |
+| `GET /me` | Trạng thái liên kết và cấu hình model |
+| `POST /me/core/link`, `GET /oauth/callback` | Liên kết Core bằng SSO |
+| `POST /me/proposals` | Tạo đề xuất từ model, entity, id và nhiệm vụ |
+| `GET /me/proposals`, `GET /me/proposals/{id}` | Lịch sử và chi tiết của chủ còn quyền đọc hồ sơ |
+| `POST /me/proposals/{id}/revise` | Sửa giá trị, tạo đề xuất mới |
+| `POST /me/proposals/{id}/confirm`, `/cancel` | Xác nhận hoặc hủy, kiểm Origin và danh tính |
 
-Luồng trạng thái là `pending` → `executing` → `succeeded`, `failed` hoặc `uncertain`, với TTL 120 giây tính từ lúc lưu proposal.
-Đề xuất được xóa sau 30 ngày kể từ lúc tạo, trừ đề xuất đang thực hiện.
-Atomic claim chỉ cho một lần ghi; Core kiểm lại version/modelVersion và quyền trong giao dịch.
-Sau timeout hoặc dừng tiến trình khi ghi, kết quả chưa rõ giữ `uncertain`, không tự gửi lại.
-Xác nhận giá trị trùng hồ sơ trả 409 `ERR_PROPOSAL_NO_CHANGE`, không gọi PATCH và không tạo lịch sử sửa giả.
-Receipt thành công có `changed: true` khi Core trả phiên bản hồ sơ tăng; phiên bản không tăng giữ kết quả `uncertain`.
-Receipt chỉ nói đã lưu khi Core trả thành công; người dùng đối chiếu lịch sử hồ sơ nếu kết quả chưa rõ.
+## State và giới hạn
 
-## State, sao lưu và giới hạn
+State là một SQLite chứa token liên kết đã mã hóa theo chủ, đề xuất và phiên liên kết đang chờ.
+Master key ở `deploy/data/assistant/private/master.key` chỉ giải mã state trên máy này.
+`deploy/backup.sh` không sao lưu state của trợ lý; sau khi khôi phục Core, người dùng liên kết lại tài khoản.
+State có sẵn mà thiếu hoặc sai master key thì trợ lý không khởi động; xóa `deploy/data/assistant` rồi bật lại để tạo state mới.
 
-State của trợ lý gồm credential liên kết đã mã hóa, đề xuất sống 120 giây (lưu tối đa 30 ngày) và phiên liên kết đang chờ.
-`deploy/backup.sh` không sao lưu state này: lịch sử ghi nằm ở Core, nên sau khi khôi phục Core người dùng chỉ cần liên kết lại tài khoản.
-Master key ở `deploy/data/assistant/private/master.key` chỉ giải mã state trên máy này; không đưa nó vào kho sao lưu hay Git.
-Database có sẵn nhưng thiếu hoặc sai master key thì trợ lý không khởi động; xóa `deploy/data/assistant` rồi bật lại để tạo state mới, người dùng liên kết lại.
-Migration giữ lịch sử, liên kết SSO và owner; kết quả ghi chưa rõ không được thực thi lại.
-
-Một provider phục vụ nhiều chủ với state riêng và một inference slot dùng chung; không triển khai nhiều replica trên cùng SQLite.
-Hỏi đáp mở, embedding/reranker và tác tử tự tạo đề xuất theo sự kiện chưa thuộc bản này.
+Một trợ lý phục vụ nhiều người, mỗi người có state riêng và dùng chung một slot suy luận; không chạy nhiều bản trên cùng SQLite.
+Hỏi đáp mở, embedding, reranker và tác tử tự tạo đề xuất theo sự kiện chưa có.
+Model tự host và trọng số Apache-2.0 chưa chứng minh model đạt định nghĩa Open Source AI của OSI; việc này còn mở ở [BACKLOG](../docs/dynamic-core/BACKLOG.md).
 
 ## Kiểm tra
 
-Workflow `Assistant` (`.github/workflows/ci-assistant.yml`) chạy khi đổi `assistant/`, tệp compose, tệp SSO hoặc SBOM của trợ lý.
-Nó build và test dịch vụ không cần key, kiểm SBOM với tệp khóa, kiểm tệp compose có và không có `assistant.env`, và kiểm route cổng ở mọi chế độ.
-Các workflow khác không chạy hay phụ thuộc trợ lý.
-Image phát hành chỉ build khi workflow `Release Images` được gọi với `services=assistant` (hoặc kèm các image khác).
-Bài kiểm trên trình duyệt `e2e/web/tests/assistant.spec.ts` tự bỏ qua khi không đặt `E2E_ASSISTANT_RECORD_PATH`.
+Workflow `Assistant` (`.github/workflows/ci-assistant.yml`) chạy khi đổi `assistant/`, tệp compose, tệp SSO hay SBOM của trợ lý.
+Nó build và test dịch vụ không cần key, so SBOM với tệp khóa, kiểm tệp compose có và không có `assistant.env`, và kiểm route cổng ở mọi chế độ.
+Các workflow khác không chạy và không phụ thuộc trợ lý.
+Hai bài kiểm trình duyệt ở `e2e/web/tests/assistant.spec.ts` tự bỏ qua khi không đặt `E2E_ASSISTANT_RECORD_PATH` (hồ sơ mà đề xuất khác giá trị hiện tại) hoặc `E2E_ASSISTANT_UNCHANGED_RECORD_PATH` (hồ sơ mà đề xuất trùng giá trị hiện tại).
 
 ## Gỡ trợ lý
 
-Tắt tạm: bỏ dòng `COMPOSE_FILE` trong `deploy/.env` rồi `docker compose up -d --remove-orphans`; Core, sao lưu và cập nhật chạy như bình thường.
-Gỡ hẳn khỏi mã nguồn, theo ba nhóm.
+Tắt tạm thì làm như bước 5 ở trên; Core, sao lưu và cập nhật chạy như bình thường.
+Gỡ hẳn khỏi mã nguồn thì làm theo ba nhóm sau.
 
 **Xóa cả tệp hoặc thư mục**
 
@@ -127,14 +115,26 @@ Gỡ hẳn khỏi mã nguồn, theo ba nhóm.
 
 - `.github/dependabot.yml`: mục "The optional assistant".
 - `.github/workflows/release-images.yml`: biến `OPTIONAL` và chữ `assistant` ở phần mô tả.
-- `deploy/apisix/common.yaml`: khối giữa `# assistant:begin` và `# assistant:end`; `deploy/apisix/render.lua`: mục `assistant-api` trong `public` và mục `assistant` trong `excluded`.
-- `deploy/dxos`: đoạn bỏ qua `assistant-*` trong `pending_services`; `deploy/update.sh`: hai dòng thêm `assistant-control`.
-- `frontend/src/admin/AdminApp.tsx` (import, `useAssistantEnabled`, mục menu, route và `lazy`), `frontend/src/admin/resources.tsx` (`RecordAssistant`), `frontend/src/shell/en/index.ts` (`assistantEn`).
-- Giấy phép và tài liệu: `DEPENDENCIES.txt`, `NOTICE`, `.github/component-catalog.json` (mô tả của `node`), `sbom/README.md`, `website/docs/dependencies.md`, `ARCHITECTURE.md`, `CONTRIBUTING.md`, hai README, `website/docs/council-qa.md`, `docs/dynamic-core/BACKLOG.md`, `docs/dynamic-core/DANH_GIA.md`, `docs/SIZING.md`, `docs/TESTING.md`, `docs/OPERATIONS.md`, `CHANGELOG.md`.
-- Dữ liệu còn lại: `deploy/data/assistant`, client `dxos-assistant` trong Keycloak.
+- `deploy/apisix/common.yaml`: khối giữa `# assistant:begin` và `# assistant:end`.
+- `deploy/apisix/render.lua`: mục `assistant-api` trong `public` và mục `assistant` trong `excluded`.
+- `deploy/dxos`: đoạn bỏ qua `assistant-*` trong `pending_services`.
+- `deploy/update.sh`: các dòng thêm `assistant-control`.
+- `frontend/src/admin/AdminApp.tsx`: import, `useAssistantEnabled`, mục menu, route và `lazy`.
+- `frontend/src/admin/resources.tsx`: `RecordAssistant`.
+- `frontend/src/shell/en/index.ts`: `assistantEn`.
+- Giấy phép: `DEPENDENCIES.txt`, `NOTICE`, `.github/component-catalog.json` (mô tả của `node`), `sbom/README.md`, `website/docs/dependencies.md`.
+- Tài liệu: hai `README`, `ARCHITECTURE.md`, `CHANGELOG.md`, `ROADMAP.md`, `docs/OPERATIONS.md`, `docs/TESTING.md`, `docs/DEMO.md`, `docs/README.md`, `docs/DX_OS_TEXTBOOK.md`, `docs/dynamic-core/README.md`, `docs/dynamic-core/BACKLOG.md`, `docs/dynamic-core/DANH_GIA.md`, `website/docs/council-qa.md` và `website/docs/evidence-matrix.md`.
+- Dữ liệu còn lại: `deploy/data/assistant` và client `dxos-assistant` trong Keycloak.
 
-**Khai báo `ai:` trong mô hình (của lõi, có thể giữ)**
+**Khai báo `ai:` trong mô hình (thuộc lõi, có thể giữ)**
 
-Khối `ai.tasks` là một phần của định dạng mô hình; không có trợ lý thì nó vô hại và không làm gì.
-Muốn gỡ luôn thì xóa `Model.AiTask`, `ModelParser.readAiTasks` và lược đồ `ai` ở `dx-model`, `CHANGE_AI_TASKS` ở `ModelDiff`, `aiTasks` ở `MetaController`, khối `ai:` của hai template `onestop` và `support_desk`, tab trợ lý trong `ModelForm`, các mục `ai` trong `formGuide` và `backendMessages`, `AiTask` trong `frontend/src/admin/types.ts`, và các đoạn `ai_task_changes` ở `e2e/api/check_process.py`.
+Khối `ai.tasks` là một phần của định dạng mô hình; không có trợ lý thì nó không làm gì.
+Muốn gỡ luôn thì xóa:
+
+- `dx-model`: `Model.AiTask`, `ModelParser.readAiTasks`, lược đồ `ai` và phần `ai` trong `ModelUpgraderTest`.
+- `dx-engine`: `CHANGE_AI_TASKS` ở `ModelDiff`, `aiTasks` ở `MetaController`, khối `ai:` của hai mẫu `onestop` và `support_desk`.
+- `frontend`: tab trợ lý trong `ModelForm`, các mục `ai` trong `formGuide`, `labels` và `backendMessages`, `AiTask` trong `admin/types.ts`.
+- `e2e`: `ai_task_changes` ở `check_process.py` và dòng `input_fields` ở `check_demo.py`.
+- Docs: mục "Nhiệm vụ trợ lý nghiệp vụ" của `docs/MODEL.md`.
+
 Ghi có điều kiện bằng `version` và `modelVersion` là tính năng chung của API, không thuộc phần gỡ này.

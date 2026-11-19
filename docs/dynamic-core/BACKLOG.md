@@ -16,7 +16,7 @@ Thứ tự dưới đây xếp theo số điểm đang để hở; chi tiết t�
 | 1 | Tài liệu và giao tiếp: lịch sử issue (mục 3) | Tài liệu và giao tiếp 10, phát triển bền vững 10 |
 | 2 | Bằng chứng lõi là PaaS: ứng dụng mẫu (mục 3) | Nguyên gốc 10, phát triển bền vững 10 |
 | 3 | Bài trình bày chung kết (mục 2) | Hoàn thiện 10, trình diễn 10 |
-| 4 | Phạm vi chữ I (#211) và hồ sơ giấy phép của model trợ lý (mục 3) | Hoàn thiện 10, nguyên gốc 10 |
+| 4 | Hồ sơ giấy phép của model trợ lý (mục 3) | Hoàn thiện 10, nguyên gốc 10 |
 
 ## 2. Phải xử lý trước khi phát hành
 
@@ -35,7 +35,6 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 
 | Việc | Issue | Ghi chú |
 |---|---|---|
-| Ứng dụng Tầng 2 | #211 | Hỏi BTC trên nhóm Telegram của họ xem ứng dụng minh họa có cần phủ cả bốn không gian H, P, D, I không và nhóm I cần mấy thành phần thì đủ (đề không nêu số lượng; cách đọc của đội là một thành phần là đủ, hiện có trợ lý đề xuất giá trị trường), xem bảy cụm dịch vụ của Tầng 1 có đều bắt buộc không (phần giới thiệu Tầng 1 của đề gọi cả bảy cụm là cần cho ứng dụng quy mô doanh nghiệp, phần mục đích chỉ nêu bốn dịch vụ), và xem giao diện Keycloak Admin Console đi kèm có tính là giao diện của lõi không (cách đọc của đội là không, chưa có xác nhận) |
 | Khách hàng | #231 | Chưa nói chuyện với khách hàng nào; mục Khách hàng và giá trị của `README.md` là giả thuyết |
 
 ### 3.2. Chưa có issue
@@ -59,13 +58,13 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 
 | Việc | Ghi chú |
 |---|---|
-| Phạm vi AI | Chỉ có trợ lý đề xuất giá trị một trường có người duyệt; không có hỏi đáp RAG, tác tử theo sự kiện, embedding và reranker; đề không nêu số thành phần của nhóm I phải làm |
+| Phạm vi AI | Chỉ có trợ lý đề xuất giá trị một trường có người duyệt; không có hỏi đáp RAG, tác tử theo sự kiện, embedding và reranker; đề không nêu số thành phần của nhóm I phải làm, và ứng dụng minh họa không cần có AI |
 | Chất lượng đề xuất trợ lý | Model có thể đoán khi thiếu dữ kiện, bỏ sót đối chiếu, từ chối nhầm và diễn đạt sai quan hệ số; chưa có kiểm ngữ nghĩa tự chặn các lỗi này nên người dùng đối chiếu nguồn rồi mới xác nhận; nhiệm vụ phụ thuộc giá trị hiện tại của chính trường đối chiếu chưa được hỗ trợ; vòng đời trợ lý (bật, tắt, cập nhật) chưa chạy trong CI |
 | Quy mô vận hành trợ lý | Một provider và một slot suy luận, không chạy nhiều replica trên cùng SQLite; chưa có SLA hoặc số đo model cold/warm, RAM/VRAM/swap; cần đo trên host và model đã chọn trước khi cam kết tải |
 | Tìm người cho trường `user` | `GET /api/v1/people` cho mọi người đã đăng nhập tìm cả người ngoài phạm vi mô hình, khớp theo tên, tên đăng nhập hoặc email, và chỉ trả id với tên hiển thị; thu hẹp theo vai của mô hình thì phải đối chiếu vai của từng người |
 | Đổi mô hình khi còn hồ sơ mở | Hồ sơ chưa lưu phiên bản mô hình và hồ sơ đang chạy giữ bản BPMN cũ (Flowable không chuyển chúng sang bản mới); hạn xử lý, quyền tự quyết, hành động hoàn tất, đặt chỗ, trạng thái, hành động và điều kiện `when` vì thế chỉ đổi được khi thực thể không còn hồ sơ đang xử lý, phải hoàn tất hoặc rút hết hồ sơ trước; đổi vai xử lý thì có hiệu lực ngay vì quyền xét theo mô hình, hồ sơ đã giao cho người không còn giữ vai mới chỉ người điều phối giao lại được, và nhóm ứng viên ghi trong task Flowable đang chạy vẫn là vai cũ (không nơi nào đọc nó) |
 | Ngôn ngữ giao diện | Chữ do mô hình định nghĩa (tên thực thể, nhãn trường, nhãn trạng thái và hành động tự khai, nội dung tệp mẫu) không được dịch |
-| Cụm Tầng 1 ngoài bốn dịch vụ bắt buộc | Không có chữ ký số và PKI (lõi không giữ khóa; là thành phần người triển khai gắn ở biên, cùng loại với két bí mật), đa thuê giữa các tổ chức (cách ly hiện theo mô hình, mỗi mô hình một schema và một client; theo tổ chức là đổi cả realm Keycloak và quyền theo dòng), số liệu đóng băng theo kỳ (`dxos archive` chỉ ghi hồ sơ đã đóng ra Parquet kèm hash, không chụp dữ liệu đang mở theo kỳ), lớp ngữ nghĩa dựng sẵn (công cụ báo cáo tự dựng trên vai `report_ro`) và trục streaming riêng (bản cài là Compose một máy, kênh sự kiện và hàng đợi gửi đi đã đủ cho hộp việc và webhook); chỉ mở lại nếu Ban tổ chức xác nhận bắt buộc đủ bảy cụm (#211) |
+| Cụm Tầng 1 ngoài bốn dịch vụ bắt buộc | Không có chữ ký số và PKI (lõi không giữ khóa; là thành phần người triển khai gắn ở biên, cùng loại với két bí mật), đa thuê giữa các tổ chức (cách ly hiện theo mô hình, mỗi mô hình một schema và một client; theo tổ chức là đổi cả realm Keycloak và quyền theo dòng), số liệu đóng băng theo kỳ (`dxos archive` chỉ ghi hồ sơ đã đóng ra Parquet kèm hash, không chụp dữ liệu đang mở theo kỳ), lớp ngữ nghĩa dựng sẵn (công cụ báo cáo tự dựng trên vai `report_ro`) và trục streaming riêng (bản cài là Compose một máy, kênh sự kiện và hàng đợi gửi đi đã đủ cho hộp việc và webhook); chỉ mở lại nếu Ban tổ chức xác nhận bắt buộc đủ bảy cụm |
 | Bản sao số | Không có; số đo của thiết bị vào lõi thành hồ sơ sự cố qua API chung, lõi không giữ trạng thái thời gian thực của thiết bị |
 | Cắt bớt service bằng compose profile | Mô hình không dùng thành phần nào vẫn phải chạy thành phần đó |
 | Nhiều bản sao của backend | Chạy một bản; hai bản sau gateway thì danh sách mô hình và trạng thái giữ lệch nhau giữa các bản sau một lần áp dụng |

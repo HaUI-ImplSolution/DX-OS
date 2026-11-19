@@ -17,6 +17,7 @@ export type Proposal = {
   effects?: { operation: string; userSource: string; group: string; asynchronous: boolean }[];
 };
 
+const SCHEMA_VERSION = 5;
 const ownerKey = (owner: Owner) => JSON.stringify([owner.issuer, owner.subject]);
 
 export class Store {
@@ -35,13 +36,11 @@ export class Store {
     this.db = new DatabaseSync(path);
     this.db.exec(`PRAGMA foreign_keys=ON; PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;`);
     const version = Number((this.db.prepare('PRAGMA user_version').get() as { user_version: number }).user_version);
-    if (version > 5) { this.db.close(); throw new Error('The assistant database needs a newer application'); }
-    if (version > 0) {
+    if (version !== 0 && version !== SCHEMA_VERSION) { this.db.close(); throw new Error('Unsupported assistant database version'); }
+    if (version === SCHEMA_VERSION) {
+      // The first sealed row of each table proves that the master key matches the state.
       try {
-        for (const [table, name, value] of [
-          ['secrets', 'name', 'value'], ['proposals', 'id', 'snapshot'],
-          ...(version >= 2 ? [['oauth_flows', 'state', 'value']] : []),
-        ]) {
+        for (const [table, name, value] of [['secrets', 'name', 'value'], ['proposals', 'id', 'snapshot'], ['oauth_flows', 'state', 'value']]) {
           const row = this.db.prepare(`SELECT owner, ${name} AS name, ${value} AS value FROM ${table} LIMIT 1`).get() as { owner: string; name: string; value: string } | undefined;
           if (row) {
             const [issuer, subject] = JSON.parse(row.owner) as [string, string];
@@ -52,8 +51,7 @@ export class Store {
         this.db.close();
         throw new Error('Restore the matching master key and intact assistant state');
       }
-    }
-    if (version === 0) this.db.exec(`BEGIN IMMEDIATE;
+    } else this.db.exec(`BEGIN IMMEDIATE;
       CREATE TABLE secrets (owner TEXT NOT NULL, name TEXT NOT NULL, value TEXT NOT NULL,
         PRIMARY KEY(owner,name));
       CREATE TABLE proposals (id TEXT PRIMARY KEY, owner TEXT NOT NULL, snapshot TEXT NOT NULL,
@@ -61,12 +59,9 @@ export class Store {
         ('pending','executing','succeeded','failed','uncertain','cancelled','expired')),
         receipt TEXT, created INTEGER NOT NULL);
       CREATE INDEX proposals_owner ON proposals(owner,created);
-      PRAGMA user_version=1; COMMIT;`);
-    if (version < 2) this.db.exec(`BEGIN IMMEDIATE;
       CREATE TABLE oauth_flows (state TEXT PRIMARY KEY, owner TEXT NOT NULL,
         value TEXT NOT NULL, expires INTEGER NOT NULL);
-      PRAGMA user_version=2; COMMIT;`);
-    if (version < 5) this.db.exec('PRAGMA user_version=5;');
+      PRAGMA user_version=${SCHEMA_VERSION}; COMMIT;`);
     this.db.prepare("UPDATE proposals SET state='uncertain' WHERE state='executing'").run();
   }
 

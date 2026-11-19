@@ -229,7 +229,7 @@ function AiTaskFields({ value, fields, onChange }: { value: unknown; fields: Rec
   const tasks = rec(rec(value).tasks);
   const change = (name: string, patch: Rec) => onChange({ tasks: { ...tasks, [name]: { ...rec(tasks[name]), ...patch } } });
   return <Box sx={{ display: "grid", gap: 2 }}>
-    <Typography variant="body2">{t("Nhiệm vụ chỉ tạo đề xuất; quyền ghi vẫn do Core kiểm tra sau xác nhận.")}</Typography>
+    <Typography variant="body2">{t("Nhiệm vụ chỉ tạo đề xuất; quyền ghi vẫn do Core kiểm tra sau xác nhận. Chỉ có tác dụng khi bản cài bật trợ lý.")}</Typography>
     {Object.entries(tasks).map(([name, raw]) => {
       const task = rec(raw);
       return <Box key={name} sx={{ p: 2, border: 1, borderColor: "divider", display: "grid", gap: 2 }}>
@@ -244,7 +244,12 @@ function AiTaskFields({ value, fields, onChange }: { value: unknown; fields: Rec
         <TextField multiline minRows={2} label={t("Hướng dẫn nhiệm vụ")} value={text(task.instruction)} onChange={e => change(name, { instruction: e.target.value })} />
         <Autocomplete multiple freeSolo options={[]} value={texts(task.sources)} onChange={(_, sources) => change(name, { sources })}
           renderInput={params => <TextField {...params} label={t("Mã nguồn tri thức có phiên bản")} helperText={t("Nhập mã nguồn do người vận hành cung cấp, nhấn Enter để thêm.")} />} />
-        <TextField type="number" label={t("Độ dài đề xuất tối đa")} value={task.max_length ?? 500} onChange={e => change(name, { max_length: Number(e.target.value) })} />
+        <TextField type="number" label={t("Độ dài đề xuất tối đa")} placeholder="500" value={task.max_length ?? ""} slotProps={{ htmlInput: { min: 1, max: 2000 } }}
+          onChange={e => {
+            if (e.target.value !== "") return change(name, { max_length: Number(e.target.value) });
+            const { max_length: _unset, ...rest } = task;
+            onChange({ tasks: { ...tasks, [name]: rest } });
+          }} />
         <Button color="error" onClick={() => {
           const remaining = { ...tasks }; delete remaining[name]; onChange(Object.keys(remaining).length ? { tasks: remaining } : undefined);
         }}>{t("Xóa nhiệm vụ")}</Button>

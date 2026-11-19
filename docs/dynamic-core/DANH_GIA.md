@@ -18,7 +18,7 @@ Nguồn: [đề thi](https://vfossa.vn/tin-tuc/de-thi-phan-mem-nguon-mo-olp-2026
 | Dữ liệu có cấu trúc | PostgreSQL; lược đồ, ràng buộc và API có quyền theo dòng sinh từ mô hình | Đạt |
 | Dữ liệu phi cấu trúc | SeaweedFS, tệp đính kèm theo quyền của hồ sơ, ClamAV | Đạt; quét mã độc bật mặc định, tệp EICAR bị chặn trong CI |
 | Động cơ luồng công việc | Flowable nhúng, BPMN sinh từ mô hình, ba họ mẫu | Đạt |
-| Ít nhất một ứng dụng Tầng 2 trong H-P-D-I | Ứng dụng web dựng từ metadata và bảng điều khiển, chạm H, P và D | Đạt theo cách đọc của đội ("ít nhất một ứng dụng"); chữ I (đề mô tả là tìm kiếm toàn văn và theo ngữ nghĩa, quản trị tác tử AI, OCR và trợ lý hỏi đáp trên tri thức nội bộ, không nêu số thành phần phải làm) có một thành phần: trợ lý đề xuất giá trị trường từ hồ sơ và nguồn tham khảo, chạy self-host với Apertus-8B, tắt mặc định, người dùng xác nhận trước khi lưu; chưa hỏi Ban tổ chức xem có bắt buộc phủ cả bốn không gian (#211); `README.md` có mục đối chiếu với đề |
+| Ít nhất một ứng dụng Tầng 2 trong H-P-D-I | Ứng dụng web dựng từ metadata và bảng điều khiển, chạm H, P và D | Đạt theo cách đọc của đội ("ít nhất một ứng dụng"); chữ I (đề mô tả là tìm kiếm toàn văn và theo ngữ nghĩa, quản trị tác tử AI, OCR và trợ lý hỏi đáp trên tri thức nội bộ, không nêu số thành phần phải làm) có một thành phần: trợ lý đề xuất giá trị trường từ hồ sơ và nguồn tham khảo, chạy self-host với Apertus-8B, tắt mặc định, người dùng xác nhận trước khi lưu; ứng dụng minh họa không cần có AI; `README.md` có mục đối chiếu với đề |
 | Giấy phép OSI, mã công khai, có bản phát hành trước khi nộp | Apache-2.0; tám bản `v1.0.0` đến `v2.0.1` | Đạt |
 
 Các giao diện đi kèm được tính như sau.
@@ -38,7 +38,7 @@ Keycloak Admin Console là giao diện của dịch vụ nguồn mở đi kèm c
 ## 3. Bảy cụm dịch vụ của Tầng 1
 
 Phần mục đích yêu cầu của đề nêu bốn dịch vụ bắt buộc, còn phần giới thiệu Tầng 1 gọi cả bảy cụm là cần cho ứng dụng quy mô doanh nghiệp.
-Cách đọc của đội là bốn dịch vụ ở mục 1 là điều kiện bắt buộc, phần còn lại của bảy cụm là tầm nhìn, và phủ thêm là điểm cộng ở tính nguyên gốc và mức hoàn thiện; chưa có xác nhận của Ban tổ chức (#211).
+Cách đọc của đội là bốn dịch vụ ở mục 1 là điều kiện bắt buộc, phần còn lại của bảy cụm là tầm nhìn, và phủ thêm là điểm cộng ở tính nguyên gốc và mức hoàn thiện; chưa có xác nhận của Ban tổ chức.
 
 | Cụm | Có | Không có |
 |---|---|---|
@@ -173,7 +173,7 @@ Backend dùng SpotBugs và web dùng Biome (ESLint không chạy được với 
 
 Điểm yếu, theo mức nặng giảm dần:
 
-1. **Phần AI còn nhỏ.** Chữ I của H-P-D-I chỉ có một thành phần và chưa hỏi Ban tổ chức xem vậy có đủ; ảnh hưởng đến mức hoàn thiện và tính nguyên gốc ở buổi chung kết, không ảnh hưởng điểm kho mã.
+1. **Phần AI còn nhỏ.** Chữ I của H-P-D-I chỉ có một thành phần; ứng dụng minh họa không cần có AI, nên ảnh hưởng chính là đến mức hoàn thiện và tính nguyên gốc ở buổi chung kết, không ảnh hưởng điểm kho mã.
 2. **Lịch sử issue mỏng và đóng góp tập trung vào một người.** Không mất điểm trực tiếp theo thể lệ, nhưng làm yếu bằng chứng về dự án có cộng đồng.
 3. **Chưa kiểm được:** việc dựng trên máy hoàn toàn mới không có bộ nhớ đệm của Docker, cài trên Windows, và 8 cảnh báo của OpenSSF Scorecard chưa duyệt.
 4. **Thiếu so với chuẩn repository:** `CODEOWNERS` chưa chia theo vùng; một người viết khoảng hai phần ba commit, nên việc chia người phụ trách là quyết định của nhóm.

@@ -1,7 +1,2 @@
 node_modules
 dist
-runtime/node_modules
-test
-.env
-*.sqlite*
-*.key

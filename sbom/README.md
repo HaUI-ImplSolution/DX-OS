@@ -31,12 +31,9 @@ cd frontend && npx @cyclonedx/cyclonedx-npm --omit dev --output-format JSON --ou
 
 # Website
 cd website && npx @cyclonedx/cyclonedx-npm --omit dev --output-format JSON --output-file ../sbom/website.cdx.json
-```
 
-Với trợ lý tùy chọn, chạy riêng từ gốc repository:
-
-```bash
-(cd assistant && npx @cyclonedx/cyclonedx-npm@6.0.1 --omit dev --output-format JSON --output-file ../sbom/assistant.cdx.json)
+# Assistant (tùy chọn)
+cd assistant && npx @cyclonedx/cyclonedx-npm --omit dev --output-format JSON --output-file ../sbom/assistant.cdx.json
 ```
 
 Backend sinh lại bằng Maven vì `pom.xml` không ghi phiên bản của các gói do Spring Boot quản lý.
@@ -46,7 +43,7 @@ Backend sinh lại bằng Maven vì `pom.xml` không ghi phiên bản của các
 | Kiểm gì | Ở đâu | Khi nào |
 |---|---|---|
 | Mọi thành phần có giấy phép nằm trong danh sách OSI; ngoại lệ có lý do ở `.github/dependency-exceptions.json` | `.github/scripts/check_licenses.py`, job `Check licenses` của workflow `Compliance` | Mỗi pull request |
-| Giấy phép của gói trong SBOM sinh lại từ pull request, trước khi `sbom/` được sinh lại | `check_licenses.py sbom <tệp>`, job `Check SBOMs against lockfiles` của `Compliance` (frontend, website) và `Scan the backend SBOM` của `Dependencies` (backend) | Mỗi pull request |
+| Giấy phép của gói trong SBOM sinh lại từ pull request, trước khi `sbom/` được sinh lại | `check_licenses.py sbom <tệp>`, job `Check SBOMs against lockfiles` của `Compliance` (frontend, website), `Check the optional assistant` của `Assistant` (assistant) và `Scan the backend SBOM` của `Dependencies` (backend) | Mỗi pull request |
 | SBOM của `frontend` và `website` khớp tệp khóa | `.github/scripts/check_sbom_fresh.py`, job `Check SBOMs against lockfiles` của `Compliance` | Mỗi pull request |
 | SBOM của `assistant` khớp tệp khóa | `.github/scripts/check_sbom_fresh.py`, job `Check the optional assistant` của `Assistant` | Khi đổi `assistant/` |
 | SBOM của `backend` khớp các gói Maven đã giải | `check_sbom_fresh.py`, job `Scan the backend SBOM` của workflow `Dependencies`, sinh lại SBOM rồi so | Khi file khai báo đổi và mỗi tuần |

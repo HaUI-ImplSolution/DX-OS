@@ -256,7 +256,16 @@ def main():
     status, body = kc.api(admin, "GET", "/history/verify")
     rt.check("EV-20 the chain is intact again once the line is put back", status == 200 and body["data"]["intact"] is True, str(body.get("data")))
 
-    # EV-21 to EV-23: a receiver that kept the hashes sees a rewrite that recomputes the whole chain.
+    # A released v1 line can still be linked and verified after v2 becomes the default.
+    code, legacy = rt.psql("insert into engine.record_event (model, entity, record_id, action, actor, actor_name, hash_version) "
+                           "values ('onestop', 'request', 0, 'legacy_check', 'legacy-user', 'Legacy User', 1) returning id")
+    rt.psql(f"update engine.record_event e set prev_hash = p.hash, hash = engine.record_event_hash(p.hash, e) "
+             f"from (select hash from engine.record_event where id < {legacy} order by id desc limit 1) p where e.id = {legacy}")
+    status, body = kc.api(admin, "GET", "/history/verify")
+    rt.check("EV-21 a released v1 line still verifies in a chain that defaults to v2",
+             status == 200 and body["data"]["intact"] is True, str(body.get("data")))
+
+    # EV-22 to EV-24: a receiver that kept the hashes sees a rewrite that recomputes the whole chain.
     sys.path.insert(0, os.path.join(kc.REPO, "examples", "history-witness"))
     import witness
 
@@ -281,15 +290,40 @@ def main():
 
     kept = read_feed()
     matched, changed, gone = witness.compare(kept, read_feed())
-    rt.check("EV-21 the hashes a receiver kept match the system", matched == len(kept) and not changed and not gone, f"{matched}/{len(kept)} {changed[:3]} {gone[:3]}")
+    rt.check("EV-22 the hashes a receiver kept match the system", matched == len(kept) and not changed and not gone, f"{matched}/{len(kept)} {changed[:3]} {gone[:3]}")
     line = min(kept)
     rewrite_chain(line, True)
     status, body = kc.api(admin, "GET", "/history/verify")
     matched, changed, gone = witness.compare(kept, read_feed())
-    rt.check("EV-22 a rewrite that recomputes the chain is seen by the receiver", changed[:1] == [line] and not gone and matched == 0, f"changed {changed[:3]} gone {gone[:3]} matched {matched}; verify says {(body.get('data') or {}).get('intact')}")
+    rt.check("EV-23 a rewrite that recomputes the chain is seen by the receiver", changed[:1] == [line] and not gone and matched == 0, f"changed {changed[:3]} gone {gone[:3]} matched {matched}; verify says {(body.get('data') or {}).get('intact')}")
     rewrite_chain(line, False)
     matched, changed, gone = witness.compare(kept, read_feed())
-    rt.check("EV-23 and nothing differs once the line is put back", matched == len(kept) and not changed and not gone, f"{matched}/{len(kept)} {changed[:3]} {gone[:3]}")
+    rt.check("EV-24 and nothing differs once the line is put back", matched == len(kept) and not changed and not gone, f"{matched}/{len(kept)} {changed[:3]} {gone[:3]}")
+
+    code, private_line = rt.psql("select id from engine.record_event where hash_version = 2 and actor <> 'system' order by id limit 1")
+    code, before_hash = rt.psql(f"select hash from engine.record_event where id = {private_line}")
+    code, version_and_ref = rt.psql(f"select hash_version || ':' || length(actor_ref) || ':' || (actor_ref <> actor) from engine.record_event where id = {private_line}")
+    rt.check("EV-25 new lines use v2 with a pseudonymous actor commitment",
+             version_and_ref == "2:64:true", version_and_ref)
+    anchor_status, _ = kc.api(admin, "POST", "/history/anchor")
+    rt.psql(f"update engine.record_event set actor = 'removed-user', actor_name = 'Removed User', "
+             f"note = 'removed note', detail = '{{\"removed\":true}}' where id = {private_line}")
+    status, body = kc.api(admin, "GET", "/history/verify")
+    code, after_hash = rt.psql(f"select hash from engine.record_event where id = {private_line}")
+    rt.check("EV-26 direct identity and free text can change without breaking the v2 chain or its anchor",
+             anchor_status == 200 and status == 200 and body["data"]["intact"] is True
+             and body["data"]["anchors"] > 0 and before_hash == after_hash,
+             str(body.get("data")))
+    rt.psql(f"update engine.record_event set actor_ref = actor_ref || 'x' where id = {private_line}")
+    status, body = kc.api(admin, "GET", "/history/verify")
+    broken = (body.get("data") or {}).get("firstBreak") or {}
+    rt.check("EV-27 changing the immutable actor commitment breaks the v2 chain",
+             status == 200 and body["data"]["intact"] is False and str(broken.get("id")) == private_line,
+             str(body.get("data")))
+    rt.psql(f"update engine.record_event set actor_ref = left(actor_ref, length(actor_ref) - 1) where id = {private_line}")
+    status, body = kc.api(admin, "GET", "/history/verify")
+    rt.check("EV-28 restoring the actor commitment restores the chain and anchor",
+             status == 200 and body["data"]["intact"] is True, str(body.get("data")))
     server.shutdown()
 
     failed = [case for case, ok in rt.results if not ok]

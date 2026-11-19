@@ -32,6 +32,10 @@ cd ../frontend && npm install && npm run dev
    Sửa lỗi thì thêm kiểm bắt đúng lỗi đó khi làm được.
 3. Chạy các lệnh kiểm ở bảng dưới trước khi gửi.
 4. Gửi pull request vào `Khuong/main` và điền danh sách kiểm trong mẫu, kèm `Closes #<số issue>` khi pull request đủ đóng issue.
+   Một check đỏ vì lỗi mạng hoặc hạn mức của dịch vụ mà job tải về (Maven Central, GitHub API) thì CI tự chạy lại, không cần chạy tay.
+   Bước dựng image chạy lại ngay trong job tối đa ba lần, và workflow `Rerun` chạy lại các job lỗi của một run tối đa hai lần khi mọi job lỗi đều là lỗi loại đó; danh sách lỗi ở [`.github/scripts/transient_errors.txt`](.github/scripts/transient_errors.txt).
+   Lỗi biên dịch, test hỏng hay giấy phép sai không được chạy lại.
+   Workflow `Rerun` chỉ có hiệu lực khi nằm trên `main`, vì GitHub chỉ kích hoạt `workflow_run` từ nhánh mặc định.
    Pull request vào `main` phải có các check xanh theo ruleset ở [`.github/rulesets/README.md`](.github/rulesets/README.md).
 
 | Phần đổi | Lệnh kiểm |

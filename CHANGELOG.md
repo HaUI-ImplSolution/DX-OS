@@ -7,6 +7,10 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ## [Unreleased]
 
+### Phát hành
+
+- Workflow `Platform` dựng năm image một lần và giữ trong cache theo hash của mã nguồn, các job kiểm đầu-cuối nạp image từ đó thay vì tự dựng; thời gian chờ giữa các lần chạy lại có thêm phần ngẫu nhiên.
+
 ## [2.0.2] - 2026-11-19
 
 Sửa và bổ sung sau bản `2.0.1`: cài mới tạo được tài khoản `admin`, Hộp việc đưa hồ sơ mới lên đầu, kế hoạch mở rộng quyền chờ duyệt, điều kiện nối nhiều phép, hướng dẫn bắt đầu nhanh và chữ ký cho bản phát hành.

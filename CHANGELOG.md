@@ -7,6 +7,11 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ## [Unreleased]
 
+## [2.0.2] - 2026-11-19
+
+Sửa và bổ sung sau bản `2.0.1`: cài mới tạo được tài khoản `admin`, Hộp việc đưa hồ sơ mới lên đầu, kế hoạch mở rộng quyền chờ duyệt, điều kiện nối nhiều phép, hướng dẫn bắt đầu nhanh và chữ ký cho bản phát hành.
+Nâng cấp từ `2.0.1` giữ nguyên dữ liệu.
+
 ### Lõi chạy ngầm
 
 - `dxos start` tạo tài khoản `admin` và in mật khẩu tạm trên bản cài mới, vì tài khoản dịch vụ giữ vai ADMIN không được tính là đã có admin.
@@ -27,6 +32,8 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 ### Phát hành
 
 - Workflow `Release Images` và `Release Package` đặt quyền ghi ở job cần ghi, còn cấp workflow chỉ đọc.
+- CI tự chạy lại khi một job lỗi vì mạng hoặc hạn mức của dịch vụ tải về (Maven Central, GitHub API): bước dựng image chạy lại trong job, workflow `Rerun` chạy lại job lỗi, và kiểm giấy phép của phiên bản giữ câu trả lời của GitHub trong cache.
+- `backend/Dockerfile` tải Maven một lần cho cả hai image và thử `repo1.maven.org` khi host mặc định từ chối.
 
 ## [2.0.1] - 2026-11-17
 
@@ -386,7 +393,8 @@ Bản phát hành đầu tiên của DX-OS.
 - Backend, Keycloak và frontend không publish cổng, mọi truy cập đi qua gateway; `deploy/demo/seed_demo.py` tạo tài khoản và dữ liệu demo.
 - Tài liệu và nguồn mở: `LICENSE`, `LICENSES.md`, SBOM CycloneDX, `CONTRIBUTING.md`, mẫu issue và pull request.
 
-[Unreleased]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v2.0.1...main
+[Unreleased]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v2.0.2...main
+[2.0.2]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v1.1.1...v2.0.0
 [1.1.1]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v1.1.0...v1.1.1

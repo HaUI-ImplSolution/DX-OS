@@ -35,7 +35,7 @@ The person deploying it describes their business in one model file — what a re
 Changing the business means changing the file, not the code.
 
 The whole system is assembled from open-source software under OSI-approved licenses, installs on your own machine, and the data stays there.
-The current version is `2.0.1`; the changes of each version are in [`CHANGELOG.md`](./CHANGELOG.md).
+The current version is `2.0.2`; the changes of each version are in [`CHANGELOG.md`](./CHANGELOG.md).
 
 ## Architecture
 

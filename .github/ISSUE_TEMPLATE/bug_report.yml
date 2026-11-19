@@ -43,7 +43,7 @@ body:
     attributes:
       label: Phiên bản
       description: "Kết quả của lệnh: git describe --tags --always"
-      placeholder: v2.0.1
+      placeholder: v2.0.2
     validations:
       required: true
   - type: dropdown

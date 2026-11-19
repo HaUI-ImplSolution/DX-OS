@@ -35,7 +35,7 @@ Người triển khai mô tả nghiệp vụ của mình trong một tệp mô h
 Đổi nghiệp vụ là đổi tệp, không đổi mã.
 
 Toàn bộ hệ thống lắp từ phần mềm nguồn mở có giấy phép được OSI công nhận, tự cài trên máy của bạn, dữ liệu nằm hoàn toàn ở đó.
-Phiên bản hiện tại là `2.0.1`; thay đổi theo từng phiên bản ở [`CHANGELOG.md`](./CHANGELOG.md).
+Phiên bản hiện tại là `2.0.2`; thay đổi theo từng phiên bản ở [`CHANGELOG.md`](./CHANGELOG.md).
 
 ## Kiến trúc
 

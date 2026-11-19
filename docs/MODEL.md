@@ -171,6 +171,7 @@ ui:
 - `menu.group` gom các thực thể thành một nhóm trong menu và `menu.order` là thứ tự.
 - `list.columns` là các cột của danh sách: trường của thực thể, hoặc `created_at`, `updated_at`, và `status`, `assignee` khi thực thể có quy trình.
   `list.sort` là tên cột, thêm dấu `-` ở đầu để sắp giảm dần.
+  Không khai thì danh sách mở theo `-id`; thực thể có quy trình mở theo `-updated_at` và hiện cột `updated_at`.
 - `form.groups` chia form thành nhóm có nhãn; trường không nằm trong nhóm nào xếp vào nhóm cuối.
 - `hints` đặt dòng gợi ý dưới ô nhập của một trường.
 - `ui` chỉ chọn trong những gì giao diện đã có và không đổi quyền; sai tên trường, cột hay biểu tượng thì tệp bị từ chối kèm dòng và cột.

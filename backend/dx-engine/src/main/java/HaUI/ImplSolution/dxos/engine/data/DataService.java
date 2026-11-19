@@ -750,7 +750,8 @@ public class DataService {
   }
 
   // The records of an entity waiting for the caller: those its handler role can act on and nobody
-  // else holds, and the caller's own records waiting for them. Overdue first, then oldest first.
+  // else holds, and the caller's own records waiting for them. Overdue first, then the most
+  // recently changed.
   @Transactional(readOnly = true)
   public List<Map<String, Object>> waiting(Model model, Entity entity, int limit) {
     MapSqlParameterSource values = new MapSqlParameterSource("limit", limit);
@@ -766,7 +767,8 @@ public class DataService {
                 + table(model, entity)
                 + " WHERE "
                 + where
-                + " ORDER BY (handle_by IS NOT NULL AND handle_by < now()) DESC, created_at, id LIMIT :limit",
+                + " ORDER BY (handle_by IS NOT NULL AND handle_by < now()) DESC, updated_at DESC, id DESC"
+                + " LIMIT :limit",
             values)
         .stream()
         .map(DataService::present)

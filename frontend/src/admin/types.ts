@@ -139,6 +139,7 @@ export interface InboxItem {
   assignee: string | null;
   overdue: boolean;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface Page<T> {

@@ -591,8 +591,12 @@ public class DataService {
             .orElseThrow(
                 () -> new ResourceNotFoundException("Action " + actionName + " not found"));
     List<String> judged = new ArrayList<>(action.require());
-    if (action.when() != null && !judged.contains(action.when().field())) {
-      judged.add(action.when().field());
+    if (action.when() != null) {
+      for (String name : action.when().fields()) {
+        if (!judged.contains(name)) {
+          judged.add(name);
+        }
+      }
     }
     Map<String, Object> record = lock(model, entity, access(model, entity), id, judged);
     String me = user.currentUserId();
@@ -1412,7 +1416,7 @@ public class DataService {
       }
       Object value = record.get(field.name());
       boolean missing = value == null || value instanceof String text && text.isBlank();
-      if (missing && condition.test(record.get(condition.field()))) {
+      if (missing && condition.test(record)) {
         errors.put(field.name(), "is required when " + condition.text());
       }
     }

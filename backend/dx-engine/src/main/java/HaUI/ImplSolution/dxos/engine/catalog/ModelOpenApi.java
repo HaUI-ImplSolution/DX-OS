@@ -336,13 +336,7 @@ public class ModelOpenApi {
             .append('.');
       }
       if (action.when() != null) {
-        text.append(" Only when ")
-            .append(action.when().field())
-            .append(' ')
-            .append(action.when().op())
-            .append(' ')
-            .append(action.when().value())
-            .append('.');
+        text.append(" Only when ").append(action.when().text()).append('.');
       }
       if (action.check() != null) {
         text.append(

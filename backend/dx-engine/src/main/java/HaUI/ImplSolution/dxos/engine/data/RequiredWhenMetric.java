@@ -5,7 +5,9 @@ package HaUI.ImplSolution.dxos.engine.data;
 import static HaUI.ImplSolution.dxos.engine.apply.Sql.ident;
 
 import HaUI.ImplSolution.dxos.model.Model.Field;
+import HaUI.ImplSolution.dxos.model.ProcessFamily.Comparison;
 import HaUI.ImplSolution.dxos.model.ProcessFamily.Condition;
+import HaUI.ImplSolution.dxos.model.ProcessFamily.Group;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -69,9 +71,25 @@ final class RequiredWhenMetric implements QualityMetric {
     return Map.of("fields", out);
   }
 
-  // The condition as SQL, which a row without a value in the field never meets. A number compares
-  // as a number, an ordering on anything else as a date, and an equality as text.
+  // The condition as SQL, which a row without a value in a field never meets, so every comparison
+  // is true or false and and, or and not combine them as they do on a record. A number compares as
+  // a number, an ordering on anything else as a date, and an equality as text.
   private static String test(Condition condition, Sample sample, String param) {
+    return switch (condition) {
+      case Comparison comparison -> comparisonSql(comparison, sample, param);
+      case Group group -> {
+        List<String> parts = new ArrayList<>();
+        for (int i = 0; i < group.conditions().size(); i++) {
+          parts.add(test(group.conditions().get(i), sample, param + "_" + i));
+        }
+        yield "not".equals(group.op())
+            ? "(NOT " + parts.get(0) + ")"
+            : "(" + String.join("and".equals(group.op()) ? " AND " : " OR ", parts) + ")";
+      }
+    };
+  }
+
+  private static String comparisonSql(Comparison condition, Sample sample, String param) {
     String column = ident(condition.field());
     String op =
         switch (condition.op()) {
@@ -81,11 +99,11 @@ final class RequiredWhenMetric implements QualityMetric {
         };
     sample.values().addValue(param, condition.value());
     if (condition.value() instanceof BigDecimal) {
-      return column + " " + op + " :" + param;
+      return "COALESCE(" + column + " " + op + " :" + param + ", FALSE)";
     }
     if (Condition.ordering(condition.op())) {
-      return column + " " + op + " CAST(:" + param + " AS date)";
+      return "COALESCE(" + column + " " + op + " CAST(:" + param + " AS date), FALSE)";
     }
-    return "CAST(" + column + " AS text) " + op + " :" + param;
+    return "COALESCE(CAST(" + column + " AS text) " + op + " :" + param + ", FALSE)";
   }
 }

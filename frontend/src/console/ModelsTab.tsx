@@ -69,12 +69,12 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
     listApplied().then(
       (loaded) => {
         setModels(loaded);
-        loaded.filter((model) => model.version > 0).forEach((model) =>
-          getVersion(model.model, model.version).then(
+        loaded.filter((model) => model.version > 0).forEach((model) => {
+          void getVersion(model.model, model.version).then(
             (version) => setSummaries((current) => ({ ...current, [model.model]: summarize(version.content) })),
             () => undefined,
-          ),
-        );
+          );
+        });
       },
       (e: unknown) => setError(message(e)),
     );

@@ -20,6 +20,7 @@ Mức hoàn thiện của từng tính năng và bài kiểm của nó ở [`web
 |---|---|---|
 | Định dạng, biên dịch, test của backend | `cd backend && ./mvnw verify` | Workflow `Backend` |
 | Kiểu của web | `cd frontend && npx tsc --noEmit` | Workflow `Frontend` |
+| Phân tích tĩnh của web | `cd frontend && npm run lint` | Workflow `Frontend` |
 | Giấy phép và header | `python3 .github/scripts/check_licenses.py`; `pipx run --spec reuse==6.3.0 reuse lint` | `Check licenses` của `Compliance` |
 | Giấy phép của phiên bản đang dùng | `GITHUB_TOKEN=... python3 .github/scripts/check_upstream_licenses.py`; `python3 -m unittest discover -s .github/scripts` | `Check upstream licenses` và `Check licenses` của `Compliance` |
 | SBOM khớp tệp khóa | `python3 .github/scripts/check_sbom_fresh.py` | `Check SBOMs against lockfiles` của `Compliance` |
@@ -85,7 +86,7 @@ python3 e2e/api/check_bootstrap.py
 | `check_api.py` | Áp dụng mô hình mẫu vào hệ thống rỗng, lỗi tệp theo dòng và cột, quyền theo vai và theo dòng, chặn ghi `status`, chống SQL qua tên trường, 10.000 dòng có lọc và sắp xếp |
 | `check_recovery.py` | Lỗi sau bước quy trình thì hồ sơ và quy trình cùng quay về; áp dụng bị Keycloak làm gián đoạn rồi áp dụng lại |
 | `check_case.py` | Trạng thái và hành động, đơn vị, giao việc, hộp việc, lịch sử có giá trị cũ và mới, mã lý do của lỗi 403 và 409 |
-| `check_change.py` | Đổi mô hình khi đã có dữ liệu: mức rủi ro, đổi tên giữ dữ liệu, dòng vi phạm, quay về |
+| `check_change.py` | Đổi mô hình khi đã có dữ liệu: mức rủi ro, đổi tên giữ dữ liệu, dòng vi phạm, quay về; tệp mở rộng từ mẫu bằng `extends` |
 | `check_process.py` | Các họ mẫu, hạn và quá hạn, hành động hoàn tất qua outbox, tệp đính kèm, thống kê, chống ghi đè |
 | `check_codes.py` | Mã hồ sơ: mã đầu năm, đếm riêng theo thực thể, tạo đồng thời, từ chối ghi và sửa mã, tra theo mã, chuyển năm, đổi khuôn, hết số |
 | `check_booking.py` | Họ `reservation`, danh mục của bảng điều khiển, mọi mẫu áp dụng được |
@@ -150,6 +151,8 @@ Mỗi mục nêu điều phải thấy; lệnh và biến cấu hình chi tiết
     Hành động cần ghi chú bắt buộc nhập ghi chú; chọn hơn 50 hồ sơ thì nút mờ; vai không có quyền xử lý không có ô chọn.
 15. **Bảng theo trạng thái:** mỗi trạng thái là một cột có tổng số và tối đa 10 thẻ; thẻ mở đúng chi tiết, "Xem cả N hồ sơ" mở danh sách đã lọc; tải lại vẫn ở chế độ bảng; bộ lọc áp cho mọi cột; ở 360 px các cột cuộn bên trong, trang không tràn ngang.
 16. **Xuất CSV:** tệp `<thực thể>-<ngày>.csv` có BOM, một dòng tiêu đề và đúng số dòng của danh sách đã lọc; ô bắt đầu bằng `=` hoặc `@` được thêm dấu nháy; vai chỉ thấy hồ sơ của mình chỉ nhận các dòng đó.
+    Khi cổng API trả 429 giữa lúc xuất (ví dụ hạ `limit-count` của route `api` xuống vài lượt mỗi phút), nút hiện "Hệ thống đang giới hạn tốc độ, đang chờ để xuất tiếp", chờ tối đa khoảng một phút rồi hỏi lại và xuất đủ; còn bị từ chối thì báo lỗi.
+    Khi chỉ việc tra tên người bị từ chối, tệp vẫn được tạo, cột người ghi mã và thông báo cuối nêu "Một số tên người không tra được nên được ghi bằng mã."
 17. **Khối `ui:`:** menu hiện nhóm và biểu tượng khai báo; danh sách mở đúng cột và thứ tự khai báo, nút Cột vẫn hiện đủ cột; biểu mẫu chia nhóm theo `ui.form` với nhóm Khác ở cuối và hiện lời gợi ý; đổi `ui:` khi còn hồ sơ mở vẫn áp dụng được.
 18. **Kiểu và quy tắc trên biểu mẫu** (mẫu Sổ tài sản): `boolean`, `date` và nhiều lựa chọn có ô nhập riêng; mã sai mẫu báo "Không đúng định dạng"; giá trị ngoài khoảng bị từ chối; "Bắt buộc nhập khi" hiện đúng với `required_when`.
     Trường nhiều lựa chọn có `default` là danh sách thì hồ sơ tạo không gửi trường đó nhận danh sách ấy; ở chế độ Điền form, ô mặc định chọn từ `options` và YAML ghi danh sách.
@@ -238,6 +241,28 @@ Kiểm bằng đúng các lệnh và thao tác trong tài liệu.
     - Địa chỉ SSH với host lạ, khóa sai hoặc khóa có quyền rộng bị từ chối, mỗi lỗi ghi nguyên nhân riêng.
     - API tắt thì nguồn mô hình ghi `error` và thoát mã 1.
     - `dxos gitops install` tạo timer và `uninstall` gỡ; `history.log` ghi mỗi lần commit hoặc kết quả đổi.
+48. **Kế hoạch khi đổi quyền truy cập:** áp dụng một mẫu (ví dụ `equipment`), sửa `access` của một thực thể rồi chạy `dxos plan <tệp>` hoặc bấm Xem kế hoạch ở tab Soạn và áp dụng:
+    - `own` sang `all` ra `WIDEN_ACCESS` với `BORROWER: own → all`; `all` sang `read` ra `NARROW_ACCESS`.
+    - Thêm một vai vào `access` ra `GRANT_ACCESS` (`AUDITOR: none → read`); bỏ một vai ra `REVOKE_ACCESS` (`BORROWER: own → none`).
+    - `own` sang `assigned`, hoặc `read` sang `own`, ra `CHANGE_ACCESS`.
+    - `GRANT_ACCESS` và `WIDEN_ACCESS` ở mức `MIGRATION` kèm câu hỏi `role BORROWER gets wider access to ...`: `dxos apply` không có `--accept MIGRATION` thoát mã 1 và không đổi gì, tab Kế hoạch đòi tick "mở rộng quyền của vai", và `dxos gitops` ở chế độ `auto` để kế hoạch đó chờ duyệt.
+    - `NARROW_ACCESS`, `REVOKE_ACCESS` và `CHANGE_ACCESS` ở mức `SAFE`, `dxos apply` không cần `--accept`; chỉ đổi nhãn thì không có dòng quyền nào, và tệp giống mô hình đang chạy thì `dxos plan --check` thoát mã 0.
+    - Tab Kế hoạch ghi nhãn đúng ở tiếng Việt và tiếng Anh, dòng `vai: cũ → mới` hiện dưới nhãn.
+49. **Lịch làm việc:** áp dụng một mô hình có `calendars` (ngày làm thứ Hai đến thứ Sáu, giờ `['08:00-12:00', '13:00-17:00']`) và hai thực thể có quy trình, một có `calendar: office` và `deadline: 4h`, một có `deadline: 1d` cùng lịch, một không có lịch:
+    - Hồ sơ tạo 15:00 thứ Hai ở thực thể `4h` có `handle_by` 10:00 thứ Ba; thực thể `1d` có `handle_by` 15:00 thứ Ba; hồ sơ tạo chiều thứ Sáu hoặc ngày nghỉ tính từ lần mở cửa kế tiếp; thực thể không có lịch có `handle_by` đúng bằng lúc tạo cộng hạn.
+    - Hành động đưa hồ sơ vào trạng thái chờ xử lý (như `start`) đặt lại `handle_by` theo lịch.
+    - `dxos lint` và Xem kế hoạch báo lỗi theo dòng và cột cho lịch không khai, giờ chồng nhau, giờ kết thúc trước giờ bắt đầu, `days` rỗng, ngày nghỉ sai dạng hoặc trùng, và `calendar` không có `deadline`.
+    - Đổi giờ của lịch đang dùng, hoặc bỏ `calendar` khỏi quy trình, ra `CHANGE_CALENDAR` ở mức `SAFE` và bị từ chối khi thực thể còn hồ sơ đang xử lý; một lịch không quy trình nào dùng mà đổi vẫn ra một dòng `CHANGE_CALENDAR`.
+    - Một tệp `extends` khai lại `office` chỉ với `hours` giữ `days` của mẫu và thêm lịch mới theo tên.
+    - Form quy trình ở tab Soạn và áp dụng có ô Lịch làm việc với các lịch đã khai, báo đỏ khi tên lịch chưa khai, và đủ ở tiếng Việt và tiếng Anh.
+50. **Điều kiện nối nhiều phép:** áp dụng một mô hình có thực thể `loan` với `amount` (number), `kind` (choice `book`, `pen`, `Phần mềm`) và `note` (text), một hành động có `when: "amount > 100 and (kind == book or kind == pen)"` và `note` có `required_when: "amount > 100 and not kind == \"Phần mềm\""`:
+    - Hồ sơ `amount` 500, `kind` book: hành động làm được, và `note` để trống bị API từ chối với `is required when amount > 100 and not kind == "Phần mềm"`.
+    - Hồ sơ `amount` 500, `kind` Phần mềm: hành động bị 409 `CONDITION_NOT_MET`, và `note` để trống được chấp nhận.
+    - Hồ sơ `amount` 50, `kind` book: hành động bị 409.
+    - Điều kiện cũ một phép (`kind == Phần mềm`, không nháy) vẫn đọc được; `when: "amount > 1 and"` và ngoặc không đóng bị `dxos lint` từ chối kèm dòng, cột và chỗ sai; chín phép so sánh hoặc ngoặc lồng bốn cấp bị từ chối.
+    - Áp dụng `required_when` nối nhiều phép vào thực thể đã có hồ sơ vi phạm thì kế hoạch bị từ chối và nêu số dòng vi phạm, đếm đúng theo điều kiện nối.
+    - `GET /api/v1/meta/models/<tên>/entities/<thực thể>` và `x-dxos-required-when` của OpenAPI trả điều kiện nối dạng `{op: "and", conditions: [...]}`, điều kiện một phép vẫn `{field, op, value}`.
+    - Ở web: nút hành động của hồ sơ không đạt điều kiện bị mờ kèm gợi ý "Chỉ thực hiện khi ... và (... hoặc ...)", ô `note` báo đỏ đúng lúc, và tab Soạn hiện điều kiện nối ở bảng hành động.
 
 ## 7. Hồi quy
 

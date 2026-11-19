@@ -15,12 +15,13 @@ Không cần cài gì:
 4. **Mức hoàn thiện (30 giây):** [ma trận bằng chứng](https://haui-implsolution.github.io/DX-OS/docs/evidence-matrix) cho từng tính năng: cách kiểm, bước CI, lệnh chạy lại và giới hạn đã biết.
 5. **Kiểm tự động (30 giây):** tab [Actions](https://github.com/HaUI-ImplSolution/DX-OS/actions), workflow `Platform` và `Compliance`.
 
-Tự cài thì dùng hai lệnh ở [`README.md`](../README.md#cài-đặt), mục Cài đặt; hướng dẫn kiểm tay ở [`TESTING.md`](./TESTING.md).
+Tự cài và nối vào ứng dụng của bạn thì theo [`QUICKSTART.md`](./QUICKSTART.md); hướng dẫn kiểm tay ở [`TESTING.md`](./TESTING.md).
 
 ## Tài liệu trong thư mục này
 
 | Tệp | Nội dung |
 |---|---|
+| [`QUICKSTART.md`](./QUICKSTART.md) | Từ máy sạch đến một quy trình chạy được: không có code (giao diện web) hoặc có code (ứng dụng của bạn gọi API) |
 | [`MODEL.md`](./MODEL.md) | Cách viết tệp mô hình: trường, ràng buộc, quyền, quy trình, tài liệu in |
 | [`API.md`](./API.md) | Bảng đường dẫn của API chung; đặc tả đầy đủ là OpenAPI của backend đang chạy |
 | [`EXTENSIONS.md`](./EXTENSIONS.md) | Viết dịch vụ riêng, bên nhận webhook, giao diện ngoài và route riêng ở ngoài lõi |
@@ -30,6 +31,7 @@ Tự cài thì dùng hai lệnh ở [`README.md`](../README.md#cài-đặt), m�
 | [`TARGETS.md`](./TARGETS.md) | Kiểm chứng các chỉ số mục tiêu: mã tự viết, thời gian dựng, chi phí tự cài |
 | [`COMPATIBILITY.md`](./COMPATIBILITY.md) | Những gì giữ nguyên giữa các bản: API, số đo, tệp mô hình, webhook, cơ sở dữ liệu |
 | [`GLOSSARY.md`](./GLOSSARY.md) | Thuật ngữ dùng trong tài liệu và giao diện |
+| [`DX_OS_TEXTBOOK.md`](./DX_OS_TEXTBOOK.md) | Đối chiếu giáo trình DX-OS, H-P-D-I và dự án DX-Ticket với lõi hiện tại |
 | [`dynamic-core/`](./dynamic-core/README.md) | Hướng thiết kế của lõi, [đối chiếu với đề thi](./dynamic-core/DANH_GIA.md) và [việc còn lại](./dynamic-core/BACKLOG.md) |
 | [`diagrams/`](./diagrams) | Nguồn draw.io của sơ đồ kiến trúc |
 

@@ -37,12 +37,20 @@ export interface ProcessState {
   terminal: boolean;
 }
 
-// The comparison an action waits for: the record field, the operator and the value to compare with.
-export interface ProcessCondition {
+// What an action waits for or a field is required for: one comparison of a record field with a value,
+// or comparisons joined by and, or and not.
+export interface ProcessComparison {
   field: string;
   op: "==" | "!=" | "<" | "<=" | ">" | ">=";
   value: number | string;
 }
+
+export interface ProcessGroup {
+  op: "and" | "or" | "not";
+  conditions: ProcessCondition[];
+}
+
+export type ProcessCondition = ProcessComparison | ProcessGroup;
 
 export interface ProcessAction {
   name: string;
@@ -139,6 +147,7 @@ export interface InboxItem {
   assignee: string | null;
   overdue: boolean;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface Page<T> {

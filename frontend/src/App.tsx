@@ -89,6 +89,7 @@ export default function App() {
         message={authError}
         actions={
           <button
+            type="button"
             className="btn btn-primary"
             onClick={() => {
               setAuthError(null);

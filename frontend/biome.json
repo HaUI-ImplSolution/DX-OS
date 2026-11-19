@@ -1,0 +1,18 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "files": { "includes": ["src/**"] },
+  "formatter": { "enabled": false },
+  "assist": { "enabled": false },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "correctness": {
+        "useExhaustiveDependencies": "warn",
+        "noComponentHookFactories": "off"
+      },
+      "suspicious": { "noArrayIndexKey": "warn" },
+      "style": { "useTemplate": "off", "noNonNullAssertion": "off" }
+    }
+  }
+}

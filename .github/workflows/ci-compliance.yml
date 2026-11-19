@@ -128,8 +128,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      # What GitHub answered for a version is kept, so a run asks only about versions it has not seen and the quota
+      # of the token (1000 requests an hour for the whole repository) is not what decides the run.
+      # The weekly run starts without it, so a license that changes at a version is still noticed.
+      - name: Restore the answers of earlier runs
+        id: answers
+        if: github.event_name != 'schedule'
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/upstream-licenses.json
+          key: upstream-licenses-${{ hashFiles('.github/component-catalog.json', '**/Dockerfile', 'deploy/docker-compose.yml') }}
+          restore-keys: upstream-licenses-
+
       - name: The version of each image and download in use has the license the catalog declares
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          LICENSE_CACHE: ${{ runner.temp }}/upstream-licenses.json
         run: python3 .github/scripts/check_upstream_licenses.py
+
+      - name: Keep the answers for the next run
+        if: success() && github.event_name != 'schedule' && steps.answers.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/upstream-licenses.json
+          key: upstream-licenses-${{ hashFiles('.github/component-catalog.json', '**/Dockerfile', 'deploy/docker-compose.yml') }}
 

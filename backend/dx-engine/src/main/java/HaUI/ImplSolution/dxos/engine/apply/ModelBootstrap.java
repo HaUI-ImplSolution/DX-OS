@@ -10,7 +10,6 @@ import HaUI.ImplSolution.dxos.engine.apply.ModelDiff.Level;
 import HaUI.ImplSolution.dxos.engine.registry.ModelRegistry;
 import HaUI.ImplSolution.dxos.model.Model;
 import HaUI.ImplSolution.dxos.model.ModelException;
-import HaUI.ImplSolution.dxos.model.ModelParser;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -156,10 +155,13 @@ public class ModelBootstrap {
     }
   }
 
-  void consider(String file, String content, Set<String> seen) {
+  void consider(String file, String source, Set<String> seen) {
+    String content;
     Model model;
     try {
-      model = ModelParser.parse(content);
+      TemplateResolver.Parsed parsed = apply.parse(source);
+      content = parsed.content();
+      model = parsed.model();
     } catch (ModelException e) {
       log.error("Model bootstrap: failed {} fails the checks: {}", file, e.problems());
       return;

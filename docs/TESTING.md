@@ -218,7 +218,7 @@ Kiểm bằng đúng các lệnh và thao tác trong tài liệu.
 
 ### Lệnh `dxos` ngoài stack kiểm
 
-39. **`dxos history verify`** với chuỗi gồm hash phiên bản 1 và 2: sửa phần bất biến, xóa hoặc chèn một dòng `record_event` bằng SQL thì chỉ ra dòng đầu tiên bị đổi; đổi trường định danh trực tiếp hoặc nội dung tự do của dòng phiên bản 2 không làm đổi hash hay điểm neo; trả phần bất biến về giá trị cũ thì chuỗi nguyên vẹn.
+39. **`dxos history verify`** với chuỗi gồm hash phiên bản 1 và 2: sửa phần bất biến, xóa hoặc chèn một dòng `record_event` bằng SQL thì chỉ ra dòng đầu tiên bị đổi; đổi tên người thực hiện, ghi chú hoặc chi tiết của dòng phiên bản 2 không làm đổi hash hay điểm neo, còn đổi mã người thực hiện thì chuỗi vỡ ở dòng đó; trả phần bất biến về giá trị cũ thì chuỗi nguyên vẹn.
 40. **`dxos reconcile`:** xóa container `backend` thì chạy lại; sau `dxos stop` thì không bật lại; mọi service có chính sách restart `unless-stopped`.
 41. **`dxos demo`** (stack có `dxos-cli`): tạo bốn tài khoản `judge_*` và 40 hồ sơ; `judge_student` thấy hồ sơ của mình, mỗi cán bộ chỉ thấy đơn vị mình, `judge_supervisor` thấy mọi hồ sơ và không có nút Tạo mới; chạy lại không nộp thêm hồ sơ và in mật khẩu mới; `dxos demo remove` gỡ bốn tài khoản.
 42. **`dxos client add`, `list`, `role`, `rotate`, `remove`:** secret chỉ in ở `add` và `rotate`; `role` đổi vai mà secret cũ vẫn lấy được token và token mới mang vai mới; `rotate` làm secret cũ bị từ chối; `remove` làm client không lấy được token.

@@ -170,7 +170,7 @@ Trạng thái của hồ sơ chỉ đổi qua quy trình.
 
 ## 10. Toàn vẹn và phục hồi
 
-- **Lịch sử chống sửa:** các dòng `engine.record_event` nối thành một chuỗi hash; mỗi giờ backend ghi một điểm neo vào kho đối tượng, ngoài Postgres.
+- **Lịch sử chống sửa:** các dòng `engine.record_event` nối thành một chuỗi hash, trong đó dòng mới chỉ băm hành động, đối tượng, trạng thái, thời điểm và mã người thực hiện, còn tên, ghi chú và chi tiết nằm ngoài chuỗi; mỗi giờ backend ghi một điểm neo vào kho đối tượng, ngoài Postgres.
   `dxos history verify` hay `GET /api/v1/history/verify` (ADMIN) tính lại chuỗi và so với các điểm neo.
   Chuỗi phát hiện chứ không ngăn việc sửa; bên nhận webhook giữ `hash` của tin đã nhận thì có thêm một điểm neo ngoài máy chủ (`examples/history-witness`).
 - **Hồ dữ liệu:** `dxos archive` xuất hồ sơ đã tới trạng thái cuối và lịch sử của chúng ra Parquet kèm `manifest.json` ghi số dòng và sha256, vào một thư mục hoặc (`--store`) vào bucket riêng của SeaweedFS.
@@ -282,6 +282,7 @@ Lý do chọn từng công cụ ở [trang thành phần](https://haui-implsolut
 - **Phương án:** chặn mọi quyền sửa; nối các dòng thành một chuỗi hash; chuỗi hash cộng điểm neo lưu ở nơi khác.
 - **Quyết định:** các dòng `engine.record_event` nối thành chuỗi hash, và mỗi giờ lõi ghi một điểm neo vào kho đối tượng, ngoài PostgreSQL (mục 10).
 - **Hệ quả:** chuỗi phát hiện chứ không ngăn việc sửa; bên nhận webhook giữ `hash` của tin đã nhận thì có thêm một điểm neo ngoài máy chủ.
+- Dòng phiên bản 2 không cam kết tên, ghi chú và chi tiết, nên các trường đó sửa hoặc xóa được mà chuỗi vẫn nguyên và việc sửa chúng không bị phát hiện; dòng phiên bản 1 đã phát hành giữ cam kết đầy đủ.
 
 ### QĐ-8: Thành phần nguồn mở dùng nguyên bản, giấy phép OSI
 

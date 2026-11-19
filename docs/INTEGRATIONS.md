@@ -124,14 +124,15 @@ Mỗi thay đổi được ghi thành một dòng dù có đích hay không; có
 
 Mỗi dòng `engine.record_event` có `hash = sha256(prev_hash || nội dung chuẩn hóa của dòng)`; các dòng được nối thành một chuỗi duy nhất, ghi dưới một khóa advisory.
 Phiên bản hash 1 vẫn xác minh các dòng đã phát hành mà không tính lại hash hay làm mất hiệu lực điểm neo cũ.
-Sự kiện mới dùng phiên bản 2: phần bất biến chứa hành động, đối tượng, trạng thái, thời điểm và `actor_ref` giả danh; `actor`, `actor_name`, `note` và `detail` vẫn phục vụ hiển thị nhưng không nằm trong hash.
+Sự kiện mới dùng phiên bản 2: hash tính từ hành động, đối tượng, trạng thái, thời điểm và mã người thực hiện (`actor`); `actor_name`, `note` và `detail` vẫn phục vụ hiển thị nhưng không nằm trong hash.
 Mỗi giờ backend ghi một điểm neo (id, hash, thời điểm) vào đối tượng `history/anchors.jsonl` của kho đối tượng, nằm ngoài Postgres và có trong bản sao lưu của kho; `dxos history anchor` ghi một điểm neo ngay.
 Webhook sự kiện mang `hash` của từng dòng, nên bên nhận có thêm một điểm neo ngoài máy chủ.
 
 `dxos history verify` (hay `GET /api/v1/history/verify`, ADMIN) tính lại cả chuỗi và so với các điểm neo.
 Kết quả có `intact`, `head`, `firstBreak` (dòng đầu tiên bị sửa, bị chèn hoặc đứng sau một dòng bị xóa) và `mismatchedAnchors` (điểm neo mà dòng hay hash tương ứng không còn); lệnh thoát với mã 1 khi `intact` là `false`.
 Chuỗi phát hiện việc sửa phần bất biến, xóa hay chèn một dòng bằng SQL, và việc cắt bớt đuôi lịch sử sau một điểm neo.
-Các trường định danh trực tiếp và nội dung tự do của sự kiện phiên bản 2 nằm ngoài cam kết toàn vẹn để có thể được xử lý theo chính sách dữ liệu riêng.
+Tên người thực hiện và nội dung tự do của sự kiện phiên bản 2 nằm ngoài cam kết toàn vẹn: `dxos history verify` không phát hiện việc sửa chúng.
+Mã người thực hiện vẫn nằm trong hash.
 Người sửa lại cả chuỗi và cả đối tượng điểm neo trên máy chủ thì không phát hiện được, trừ khi so với hash mà bên nhận webhook đã giữ.
 [`examples/history-witness/witness.py`](../examples/history-witness/witness.py) làm việc so đó: `save` ghi cặp `eventId` và `hash` vào một tệp ở nơi người sửa máy chủ không với tới, `compare` báo dòng nào đã đổi hash hoặc không còn.
 

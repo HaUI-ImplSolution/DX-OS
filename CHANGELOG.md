@@ -21,6 +21,7 @@ Nâng cấp từ `2.0.1` giữ nguyên dữ liệu.
 - Kế hoạch đổi mô hình xếp việc cấp thêm hoặc mở rộng quyền của một vai ở mức `MIGRATION` kèm câu hỏi, nên `dxos apply` đòi `--accept MIGRATION` và `dxos gitops` ở chế độ `auto` để nó chờ duyệt.
 - Điều kiện `when` của hành động và `required_when` của trường ghép được nhiều phép so sánh bằng `and`, `or`, `not` và ngoặc; điều kiện một phép viết như cũ.
 - Tệp của bản phát hành và image `dxos-*` được ký bằng Sigstore khi phát hành, kiểm bằng `gh attestation verify` (xem `docs/OPERATIONS.md`).
+- Chuỗi hash của lịch sử giữ cách xác minh phiên bản 1 cho dữ liệu đã phát hành; sự kiện mới dùng phiên bản 2 và không đưa tên, ghi chú hoặc chi tiết tự do vào chuỗi.
 
 ### Giao diện
 
@@ -55,7 +56,6 @@ Bổ sung và sửa sau bản `2.0.0`, nâng cấp từ `2.0.0` giữ nguyên d�
 
 ### Lõi chạy ngầm
 
-- Chuỗi hash của lịch sử giữ cách xác minh phiên bản 1 cho dữ liệu đã phát hành; sự kiện mới dùng phiên bản 2 với tham chiếu người thực hiện giả danh và không đưa tên, ghi chú hoặc chi tiết tự do vào phần bất biến.
 - SpotBugs với find-sec-bugs chạy ở bước `verify` của backend và làm hỏng build khi có phát hiện mà `backend/spotbugs-exclude.xml` chưa giải thích; workflow `Backend` in số phát hiện của từng module.
 - Số đo vận hành theo định dạng Prometheus ở `GET /actuator/prometheus` của dịch vụ lõi: hồ sơ theo trạng thái và quá hạn của từng thực thể có quy trình, tuổi và số sự kiện chưa chuyển trong hàng đợi, số lần áp dụng mô hình thành công hoặc thất bại. Endpoint chỉ đọc được trong mạng Docker, đòi mật khẩu `METRICS_PASSWORD` (người dùng `metrics`), và nhãn chỉ gồm tên mô hình, thực thể, trạng thái và kết quả nên số chuỗi không tăng theo dữ liệu. Cách đọc, cấu hình scrape, truy vấn Grafana và quy tắc cảnh báo ở `docs/MONITORING.md`.
 - `dxos lint <tệp>...` kiểm tệp mô hình bằng bộ đọc của backend mà không cần hệ thống đang chạy, in `tệp:dòng:cột: nội dung` và thoát 0, 1 hoặc 2. Nó chạy `dxos-lint.jar` trong image backend, hoặc trên Java 21 qua `DXOS_LINT_JAR`; Release kèm `dxos-lint.jar`.

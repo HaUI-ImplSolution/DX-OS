@@ -102,7 +102,7 @@ public class LineageService {
     List<Edge> out = new ArrayList<>();
     for (Field other : entity.fields().values()) {
       var condition = other.requiredWhen();
-      if (condition != null && condition.field().equals(field.name())) {
+      if (condition != null && condition.fields().contains(field.name())) {
         out.add(new Edge("required_when", other.name(), describe(condition)));
       }
     }
@@ -120,7 +120,7 @@ public class LineageService {
         if (action.require() != null && action.require().contains(field.name())) {
           out.add(new Edge("require", action.name(), null));
         }
-        if (action.when() != null && action.when().field().equals(field.name())) {
+        if (action.when() != null && action.when().fields().contains(field.name())) {
           out.add(new Edge("when", action.name(), describe(action.when())));
         }
       }
@@ -153,6 +153,8 @@ public class LineageService {
   }
 
   private static String describe(ProcessFamily.Condition condition) {
-    return condition.op() + " " + condition.value();
+    return condition instanceof ProcessFamily.Comparison comparison
+        ? comparison.op() + " " + comparison.value()
+        : condition.text();
   }
 }

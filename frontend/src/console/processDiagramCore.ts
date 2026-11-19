@@ -3,6 +3,7 @@
 import { Graph, layout as layoutGraph } from "@dagrejs/dagre";
 import { formatDuration } from "../shell/format";
 import type { Completion, ProcessView } from "./api";
+import { conditionSource } from "../admin/condition";
 import { t, ta } from "../shell/t";
 
 const WITHDRAW = "withdraw";
@@ -129,7 +130,7 @@ export function buildProcessDiagram(
       id: `${action.name}-${from}`,
       source: from,
       target: action.to,
-      label: `${ta(action.label)} (${action.by === "OWNER" ? t("người nộp") : (action.roles.length ? action.roles : family.handlers).join(", ")})${action.when ? t(", khi {field} {op} {value}", { field: action.when.field, op: action.when.op, value: action.when.value }) : ""}`,
+      label: `${ta(action.label)} (${action.by === "OWNER" ? t("người nộp") : (action.roles.length ? action.roles : family.handlers).join(", ")})${action.when ? t(", khi {condition}", { condition: conditionSource(action.when) }) : ""}`,
     })),
   );
   // The system takes the action of auto_close for the owner of a record that waits that long.

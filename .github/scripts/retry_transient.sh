@@ -5,6 +5,7 @@
 #
 #   .github/scripts/retry_transient.sh docker compose build
 #
+# A 404 counts only when wget got it, which is the Maven wrapper download that Maven Central sometimes refuses wrongly.
 # A failure with no such error in its output is a failure of the code and ends at the first run.
 # Three runs at most, waiting 30 and then 60 seconds.
 set -uo pipefail
@@ -12,6 +13,7 @@ set -uo pipefail
 transient='HTTP/[0-9.]+ (429|500|502|503|504)|HTTP (429|500|502|503|504)|429 Too Many Requests|toomanyrequests|rate limit exceeded'
 transient+='|rpc error: code = (Unavailable|DeadlineExceeded)|error reading from server: EOF|unexpected EOF'
 transient+='|connection (reset|refused|timed out)|i/o timeout|TLS handshake timeout|Temporary failure in name resolution'
+transient+='|wget: server returned error: HTTP/[0-9.]+ 404'
 transient+='|Could not transfer artifact|Read timed out|Premature end of Content-Length|Service Unavailable|Bad Gateway'
 
 log="$(mktemp)"

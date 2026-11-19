@@ -249,7 +249,7 @@ jobs:
 
       - name: Build the images of this commit
         working-directory: deploy
-        run: docker compose build
+        run: ../.github/scripts/retry_transient.sh docker compose build
 
       - name: Start an empty stack
         working-directory: deploy
@@ -327,7 +327,7 @@ jobs:
 
       - name: Build the images of this commit
         working-directory: deploy
-        run: docker compose build
+        run: ../.github/scripts/retry_transient.sh docker compose build
 
       - name: Start an empty stack
         working-directory: deploy
@@ -383,7 +383,7 @@ jobs:
 
       - name: Build the images of this commit
         working-directory: deploy
-        run: docker compose build
+        run: ../.github/scripts/retry_transient.sh docker compose build
 
       - name: Start an empty stack
         working-directory: deploy

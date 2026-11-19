@@ -362,8 +362,9 @@ public final class ModelDiff {
     return lower ? order > 0 : order < 0;
   }
 
-  // One change per role whose level moved, named by what it does to the rows the role reaches. All
-  // are SAFE: the access is read from the model at run time and no data moves.
+  // One change per role whose level moved, named by what it does to the rows the role reaches. No
+  // data moves and the access is read from the model at run time, so a change is SAFE unless it
+  // gives a role more: that takes effect for everyone who holds the role, so it needs accept.
   private void compareAccess(Entity old, Entity entity) {
     Set<String> roles = new LinkedHashSet<>(old.access().keySet());
     roles.addAll(entity.access().keySet());
@@ -381,7 +382,19 @@ public final class ModelDiff {
               + (was == null ? "none" : was.key())
               + " → "
               + (now == null ? "none" : now.key());
-      changes.add(new Change(Level.SAFE, kind, entity.name(), null, detail));
+      boolean gives = "GRANT_ACCESS".equals(kind) || "WIDEN_ACCESS".equals(kind);
+      changes.add(
+          new Change(gives ? Level.MIGRATION : Level.SAFE, kind, entity.name(), null, detail));
+      if (gives) {
+        questions.add(
+            "role "
+                + role
+                + " gets wider access to "
+                + entity.name()
+                + " ("
+                + detail.substring(role.length() + 2)
+                + "); applying gives it at once to everyone who holds the role");
+      }
     }
   }
 

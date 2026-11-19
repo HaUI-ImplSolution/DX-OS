@@ -493,16 +493,19 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
 
   // The model file may choose the columns and the sort a list opens with; what a person picks later with
   // the Columns button is kept in the browser and wins over it.
+  // Without a choice, a record with a process opens by the latest change, so a record just resubmitted comes first.
   const listUi = entity.ui?.list;
   const shown = listUi?.columns ?? null;
   const known = [...entity.fields.filter((field) => field.type !== "file").map((field) => field.name), ...(entity.hasProcess ? ["status"] : [])];
   const omit = [
     ...known.filter((name) => shown !== null && !shown.includes(name)),
-    ...EXTRA_COLUMNS.filter((name) => !(shown ?? []).includes(name)),
+    ...EXTRA_COLUMNS.filter((name) => !(shown ?? (entity.hasProcess ? ["updated_at"] : [])).includes(name)),
   ];
   const defaultSort = listUi?.sort
     ? { field: listUi.sort.replace(/^-/, ""), order: listUi.sort.startsWith("-") ? ("DESC" as const) : ("ASC" as const) }
-    : { field: "id", order: "DESC" as const };
+    : entity.hasProcess
+      ? { field: "updated_at", order: "DESC" as const }
+      : { field: "id", order: "DESC" as const };
 
   // The records as a table, or, for an entity with a process, by state; the choice is kept in the browser.
   const ListBody = () => {

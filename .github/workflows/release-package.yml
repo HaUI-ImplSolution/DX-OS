@@ -4,7 +4,7 @@ name: Release Package
 run-name: Release package ${{ inputs.tag || github.ref_name }}
 
 # Attaches the release files to the GitHub Release of a vX.Y.Z tag: the source archive as .tar.gz,
-# its SHA-256 and the CycloneDX SBOMs. The Release is created from the CHANGELOG when it does not exist.
+# its SHA-256 and the CycloneDX SBOMs, all signed. The Release is created from the CHANGELOG when it does not exist.
 # Run it by hand to add the files to a Release that already exists.
 # The tag must be vMAJOR.MINOR.PATCH and sit on main, the archive is checked before it is published,
 # and a tag-triggered run never overwrites a file that is already on the Release.
@@ -36,6 +36,8 @@ jobs:
     timeout-minutes: 15
     permissions:
       contents: write
+      id-token: write
+      attestations: write
     env:
       TAG: ${{ inputs.tag || github.ref_name }}
       GH_TOKEN: ${{ github.token }}
@@ -91,6 +93,12 @@ jobs:
         run: |
           VERSION="${TAG#v}"
           .github/scripts/check_archive.sh "dist/dx-os-${VERSION}.tar.gz" "$VERSION"
+
+      # Signs every file with the identity of this workflow run (Sigstore, no key to keep); verify with gh attestation verify.
+      - name: Sign the release files
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: dist/*
 
       - name: Take the release notes from the CHANGELOG
         run: |

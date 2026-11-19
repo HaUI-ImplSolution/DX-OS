@@ -116,7 +116,20 @@ docker buildx imagetools inspect ghcr.io/haui-implsolution/dxos-backend:vX.Y.Z@$
 SBOM liệt kê các gói trong image; thông tin dựng ghi lần dựng của image đó, gồm commit (`vcs:revision`) và tag (`refs/tags/vX.Y.Z`) được dựng, nên commit này phải trùng commit của tag.
 Digest không đổi giữa các lần kiểm thì vẫn là cùng một image.
 
-Attestation này không chứng minh chữ ký hay danh tính người phát hành.
+Attestation của BuildKit không có chữ ký.
+Chữ ký của người phát hành là attestation do workflow `Release Images` ký bằng Sigstore, không có khóa nào phải giữ; kiểm bằng `gh` (cần đăng nhập `gh auth login`):
+
+```bash
+gh attestation verify oci://ghcr.io/haui-implsolution/dxos-backend:vX.Y.Z --repo HaUI-ImplSolution/DX-OS
+```
+
+Lệnh in lỗi và thoát với mã 1 khi image không do workflow của repo này dựng.
+
+Tệp trên GitHub Release (`.tar.gz`, `dxos-install.sh`, `dxos-lint.jar`, `.sha256`, SBOM) được workflow `Release Package` ký theo cách đó:
+
+```bash
+gh attestation verify dx-os-X.Y.Z.tar.gz --repo HaUI-ImplSolution/DX-OS
+```
 
 ### Tệp mô hình lúc khởi động
 
@@ -230,7 +243,7 @@ Nâng cấp không quay lui được cơ sở dữ liệu của Keycloak, nên c
 
 **Mô hình.**
 Mỗi tệp được lập kế hoạch rồi áp dụng bằng `dxos apply`.
-`auto` chỉ áp dụng kế hoạch mức `SAFE`; kế hoạch cao hơn nằm chờ như ở `approve`.
+`auto` chỉ áp dụng kế hoạch mức `SAFE`; kế hoạch cao hơn nằm chờ như ở `approve`, kể cả kế hoạch cấp thêm hoặc mở rộng quyền của một vai.
 `dxos gitops approve <commit> [--accept MỨC]` duyệt đến mức nêu (mặc định `SAFE`), và phải nêu mức của kế hoạch nếu cao hơn.
 Kế hoạch bị từ chối (`rejected`) không bao giờ được áp dụng, và một tệp lỗi không chặn các tệp khác.
 Muốn quay lại thì `git revert` ở kho rồi để lượt sau kéo về; kế hoạch mất dữ liệu vẫn phải được duyệt ở mức `LOSS`, và phiên bản mô hình cũ vẫn quay về được bằng API quay lui.

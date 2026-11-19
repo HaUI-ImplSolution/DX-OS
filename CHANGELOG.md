@@ -14,6 +14,11 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Ghi có điều kiện: `PATCH` một hồ sơ, hành động và giao việc nhận thêm `version` và `modelVersion`; hồ sơ hoặc mô hình đã đổi thì trả 409, `data.reason` là `MODEL_VERSION_CHANGED` khi mô hình đổi; `PATCH` kèm `version` cũ trả 409 kể cả khi giá trị không đổi.
 - `GET /api/v1/meta/models` trả `modelVersion` của từng mô hình và thực thể, `process.effects` (việc hoàn tất xếp vào hàng đợi, `asynchronous: true`) và `aiTasks`.
 - Thực thể khai báo được khối `ai.tasks` trong tệp mô hình: trường đầu vào, trường đề xuất, hướng dẫn và mã nguồn tham khảo; lõi chỉ kiểm khai báo, không gọi model.
+- `GET /api/v1/inbox` xếp hồ sơ quá hạn trước, rồi hồ sơ thay đổi gần nhất trước, và mỗi mục có thêm `updatedAt`; hồ sơ vừa tạo, nộp lại hoặc mở lại nằm ở đầu Hộp việc.
+- Danh sách của thực thể có quy trình mở theo thay đổi gần nhất trước và hiện cột Cập nhật lúc, trừ khi mô hình khai `ui.list`.
+- Kế hoạch đổi mô hình xếp việc cấp thêm hoặc mở rộng quyền của một vai ở mức `MIGRATION` kèm câu hỏi, nên `dxos apply` đòi `--accept MIGRATION` và `dxos gitops` ở chế độ `auto` để nó chờ duyệt.
+- Điều kiện `when` của hành động và `required_when` của trường ghép được nhiều phép so sánh bằng `and`, `or`, `not` và ngoặc; điều kiện một phép viết như cũ.
+- Tệp của bản phát hành và image `dxos-*` được ký bằng Sigstore khi phát hành, kiểm bằng `gh attestation verify` (xem `docs/OPERATIONS.md`).
 
 ### Ứng dụng ngoài
 

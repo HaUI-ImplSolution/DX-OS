@@ -1,0 +1,19 @@
+HTTP/[0-9.]+ (429|500|502|503|504)
+HTTP (429|500|502|503|504)
+429 Too Many Requests
+toomanyrequests
+rate limit exceeded
+rate limited (with|without)
+rpc error: code = (Unavailable|DeadlineExceeded)
+error reading from server: EOF
+unexpected EOF
+connection (reset|refused|timed out)
+i/o timeout
+TLS handshake timeout
+Temporary failure in name resolution
+wget: server returned error: HTTP/[0-9.]+ 404
+Could not transfer artifact
+Read timed out
+Premature end of Content-Length
+Service Unavailable
+Bad Gateway

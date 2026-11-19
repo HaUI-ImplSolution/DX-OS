@@ -144,11 +144,11 @@ fields:
 note: {type: text, required_when: "kind == Phần mềm"}
 ```
 
-- Điều kiện là một phép so sánh, viết như `when` của hành động: `==` và `!=` cho mọi kiểu, `<`, `<=`, `>`, `>=` chỉ cho số và ngày.
+- Điều kiện viết như `when` của hành động: một phép so sánh, hoặc nhiều phép nối bằng `and`, `or`, `not` và ngoặc; `==` và `!=` cho mọi kiểu, `<`, `<=`, `>`, `>=` chỉ cho số và ngày.
 - Trường được so sánh là `number`, `date`, `text`, `choice` một lựa chọn hoặc `boolean` (`foreign == true`) của cùng thực thể.
 - Giá trị của trường `date` viết như `YYYY-MM-DD`, ví dụ `due >= 2026-01-31`; ngày không có thật bị từ chối khi đọc mô hình.
 - API kiểm khi tạo và khi sửa, trên hồ sơ sau khi gộp giá trị mới; trường còn trống thì báo `is required when kind == Phần mềm`.
-- Không đi cùng `required`, không đặt trên trường `boolean` hay `file`, và không so sánh trường với chính nó.
+- Không đi cùng `required`, không đặt trên trường `boolean` hay `file`, và không so sánh trường với chính nó, kể cả trong một điều kiện nối nhiều phép.
 - Chỉ kiểm ở API, cơ sở dữ liệu không có ràng buộc này.
 
 ## Giao diện `ui`
@@ -171,6 +171,7 @@ ui:
 - `menu.group` gom các thực thể thành một nhóm trong menu và `menu.order` là thứ tự.
 - `list.columns` là các cột của danh sách: trường của thực thể, hoặc `created_at`, `updated_at`, và `status`, `assignee` khi thực thể có quy trình.
   `list.sort` là tên cột, thêm dấu `-` ở đầu để sắp giảm dần.
+  Không khai thì danh sách mở theo `-id`; thực thể có quy trình mở theo `-updated_at` và hiện cột `updated_at`.
 - `form.groups` chia form thành nhóm có nhãn; trường không nằm trong nhóm nào xếp vào nhóm cuối.
 - `hints` đặt dòng gợi ý dưới ô nhập của một trường.
 - `ui` chỉ chọn trong những gì giao diện đã có và không đổi quyền; sai tên trường, cột hay biểu tượng thì tệp bị từ chối kèm dòng và cột.
@@ -191,7 +192,9 @@ Ví dụ đầy đủ ở [`asset_register.yaml`](../backend/dx-engine/src/main/
 | `unit` | Dòng của đơn vị mình |
 | `assigned` | Dòng được giao cho mình |
 
-Đổi `access` là thay đổi `SAFE`, và kế hoạch ghi mỗi vai có mức đổi thành một dòng `vai: cũ → mới`.
+Đổi `access` không chạm dữ liệu, và kế hoạch ghi mỗi vai có mức đổi thành một dòng `vai: cũ → mới`.
+Cấp thêm (`GRANT_ACCESS`) và mở rộng (`WIDEN_ACCESS`) ở mức `MIGRATION`, kèm một câu hỏi nêu vai và thực thể, vì người đang giữ vai có quyền mới ngay khi áp dụng; cần `--accept MIGRATION` hoặc xác nhận ở tab Kế hoạch.
+Ba loại còn lại ở mức `SAFE`.
 Dòng đó thuộc một trong năm loại: cấp thêm cho một vai chưa có (`GRANT_ACCESS`), thu hồi (`REVOKE_ACCESS`), mở rộng (`WIDEN_ACCESS`), thu hẹp (`NARROW_ACCESS`) và đổi (`CHANGE_ACCESS`).
 Mở rộng hay thu hẹp so theo hai điều: số dòng vai chạm tới (`own` và `assigned`, rồi `unit`, rồi `all` và `read`) và quyền ghi (`read` không ghi).
 Một lần đổi vừa tăng vừa giảm, như `own` sang `read`, hoặc không tăng không giảm, như `own` sang `assigned`, được ghi là đổi.
@@ -223,12 +226,16 @@ Một lần đổi vừa tăng vừa giảm, như `own` sang `read`, hoặc khô
   Nút `label` để trống thì giao diện hiện mã hành động.
   `needs_note: true` bắt buộc có lý do.
   `require` liệt kê trường phải có giá trị trước khi hành động được thực hiện.
-  `when` là một phép so sánh một trường của hồ sơ với một giá trị, viết thành chuỗi `trường toán_tử giá trị`, ví dụ `when: "amount > 5000000"`.
-  Hành động chỉ thực hiện được khi phép so sánh đúng với hồ sơ ở lúc thực hiện.
+  `when` là một điều kiện trên các trường của hồ sơ: một phép so sánh một trường với một giá trị, viết thành chuỗi `trường toán_tử giá trị`, ví dụ `when: "amount > 5000000"`, hoặc nhiều phép nối bằng `and`, `or`, `not` và ngoặc.
+  Hành động chỉ thực hiện được khi điều kiện đúng với hồ sơ ở lúc thực hiện.
   Toán tử là `==`, `!=`, `<`, `<=`, `>` hoặc `>=`.
   Trường là trường `number`, `date`, `choice`, `text` hoặc `boolean` của thực thể; `<`, `<=`, `>` và `>=` chỉ dùng cho trường `number` và `date`.
   Giá trị của trường `number` là số, của trường `date` là ngày `YYYY-MM-DD`, của trường `choice` là một trong `options` của nó.
-  Trường chưa có giá trị thì không đạt điều kiện nào.
+  Trường chưa có giá trị thì không đạt phép so sánh nào, nên `not` của phép đó là đúng.
+  Nối nhiều phép: `when: "amount > 5000000 and (kind == book or kind == pen)"`.
+  `not` được tính trước `and`, `and` trước `or`, và ngoặc đổi thứ tự.
+  Khi nối nhiều phép, giá trị có khoảng trắng, ngoặc hoặc là `and`, `or`, `not` đặt trong nháy, ví dụ `kind == "Phần mềm"`; một phép đơn không cần nháy.
+  Một điều kiện có tối đa 8 phép so sánh và ngoặc lồng tối đa 3 cấp; cú pháp sai bị từ chối kèm dòng, cột và chỗ sai.
   `when` chỉ dùng cho hành động của người xử lý, nên không dùng được với `withdraw` và hành động của `auto_close`.
   Viết `when: null` để bỏ điều kiện của một hành động trong họ mẫu.
   Hành động không đạt điều kiện trả 409 `ERR_INVALID_STATE` với `data.reason` là `CONDITION_NOT_MET`.

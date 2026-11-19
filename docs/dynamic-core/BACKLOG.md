@@ -41,12 +41,12 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 | Việc | Ghi chú |
 |---|---|
 | Ứng dụng mẫu gọi lõi từ bên ngoài | Chưa có ứng dụng có giao diện nào ngoài ứng dụng của đội gọi lõi qua API, nên câu "PaaS phục vụ các ứng dụng tầng trên" của đề chưa có bằng chứng chạy được; đã chốt làm một ứng dụng mẫu ở `examples/`, viết bằng khung khác react-admin, chỉ dùng OpenAPI theo mô hình và đăng nhập Keycloak |
+| Lỗ hổng trong phụ thuộc gián tiếp | Scorecard báo 5 lỗ hổng: `decode-uri-component` 0.2.2 (sửa ở 0.5.1), `react-router` 6.30.6 ở web và 5.3.4 ở trang docs (sửa ở 7.18.0), `uuid` 8.3.2 ở trang docs (sửa ở 11.1.1); đều đến từ thư viện cha (react-admin, Docusaurus), nên vá cần nâng bản chính của thư viện cha hoặc ép `overrides` |
 | Egress trợ lý | Trợ lý chạy trên network mặc định của stack và chưa có allowlist kết nối cho container; cần giới hạn mạng ra ngoài endpoint inference cố định |
 | Thu hồi và thay khóa/token trợ lý | Hoàn thiện quy trình thu hồi và thay mới khóa và token của trợ lý |
 | Lịch sử issue và cộng đồng | Ít issue so với pull request (63 issue, 220 pull request đã gộp), nhãn `good first issue` và `help wanted` đã có nhưng chưa issue nào dùng, Discussions chỉ có một chủ đề chào mừng, repository chưa có fork, phần lớn tài liệu chỉ có tiếng Việt |
 | Đóng góp tập trung | Một thành viên giữ khoảng hai phần ba commit; `CODEOWNERS` nêu ba thành viên cho mọi đường dẫn, chưa chia người phụ trách theo vùng; chia hay không là quyết định của nhóm |
 | Cảnh báo Scorecard và huy hiệu | Tab Security có 8 cảnh báo của Scorecard chưa duyệt (Maintained, CodeReview, Vulnerabilities, Fuzzing, SAST, TokenPermissions hai cảnh báo, BranchProtection); huy hiệu OpenSSF Best Practices mức passing còn ba tiêu chí khuyến nghị chưa đạt (`test_most`, `warnings_strict`, `dynamic_analysis`), và lời giải thích từng tiêu chí trỏ về tệp trên `main` nên chỉ khớp khi nhánh tích hợp vào `main` |
-| Bản phát hành chưa ký | Bản phát hành chỉ có SHA-256 và attestation của BuildKit, chưa có chữ ký; ưu tiên thấp |
 | Bản chạy công khai | Chưa được CI kiểm hằng ngày (`deploy/online-check.sh` chạy tay hoặc theo cron), và chưa có phương án chạy tại chỗ nếu mạng ở buổi thi có sự cố vì bản công khai chạy sau Cloudflare Tunnel |
 | Cài trên Windows | Chưa có người dùng Windows thử cài và làm theo `docs/QUICKSTART.md` trong WSL2 với Docker Desktop |
 
@@ -66,7 +66,7 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 | Bản sao số | Không có; số đo của thiết bị vào lõi thành hồ sơ sự cố qua API chung, lõi không giữ trạng thái thời gian thực của thiết bị |
 | Cắt bớt service bằng compose profile | Mô hình không dùng thành phần nào vẫn phải chạy thành phần đó |
 | Nhiều bản sao của backend | Chạy một bản; hai bản sau gateway thì danh sách mô hình và trạng thái giữ lệch nhau giữa các bản sau một lần áp dụng |
-| Điều kiện `when` | Một phép so sánh trên một trường, không có và/hoặc hay biểu thức; chỉ cho hành động của người xử lý, không cho hành động của người nộp, `withdraw` hay `auto_close`; người nộp sửa được trường đó khi hồ sơ còn mở nên có thể đổi đường đi trước khi người duyệt bấm, dòng lịch sử `updated` giữ giá trị cũ và mới |
+| Điều kiện `when` | Chỉ cho hành động của người xử lý, không cho hành động của người nộp, `withdraw` hay `auto_close`; người nộp sửa được trường đó khi hồ sơ còn mở nên có thể đổi đường đi trước khi người duyệt bấm, dòng lịch sử `updated` giữ giá trị cũ và mới |
 | Đổi họ mẫu của một thực thể | Đổi khóa `family` sang họ khác bị từ chối, vì trạng thái của hồ sơ cũ không ánh xạ sang họ mới; muốn đổi hình dạng quy trình thì sửa `states` và `actions` của quy trình hiện có, hoặc thêm thực thể mới |
 | Đổi vai hoặc đơn vị của người đang đăng nhập | Vai và đơn vị đọc từ token đã ký nên thay đổi có hiệu lực sau tối đa khoảng 5 phút (token sống 300 giây), và người bị gỡ giữ quyền đến lúc đó |
 | Chuỗi hash của lịch sử | Phát hiện chứ không ngăn sửa; điểm neo nằm trong kho đối tượng của cùng máy chủ nên người sửa được cả cơ sở dữ liệu lẫn kho thì chỉ bị lộ khi so với `hash` mà bên nhận webhook đã giữ |
@@ -99,4 +99,3 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 | Cô lập tải theo mô hình | Các mô hình dùng chung một pool kết nối, và `UserRateLimitFilter` giới hạn theo người dùng và đường dẫn chứ không theo mô hình; chưa có số đo cho thấy mô hình này làm chậm mô hình kia (`docs/SIZING.md` không đo chéo mô hình) nên chưa thêm giới hạn đồng thời cho báo cáo hay xuất PDF |
 | Phục hồi PostgreSQL theo thời điểm | `deploy/backup.sh` dùng `pg_dumpall` cùng restic và giữ bản sao cơ sở dữ liệu khớp với tệp nhờ `DXOS_FILE_DELETE_DELAY`; lưu WAL (pgBackRest) phá bảo đảm đó và đổi image PostgreSQL dùng chung với Keycloak; `docs/TARGETS.md` và `docs/OPERATIONS.md` không có chỉ tiêu RPO nên chưa có lý do; mở lại khi người triển khai nêu RPO nhỏ hơn chu kỳ sao lưu |
 | Truy vết phân tán | `X-Request-Id` và số đo Prometheus đủ để tìm bước chậm của một yêu cầu; OpenTelemetry và Jaeger thêm tác nhân Java và một dịch vụ chẩn đoán; mở lại khi có ca chậm mà hai thứ trên không giải thích được |
-| Mức của kế hoạch mở rộng quyền | Kế hoạch ghi vai nào được cấp thêm hoặc mở rộng (`GRANT_ACCESS`, `WIDEN_ACCESS`) nhưng vẫn ở mức `SAFE`, nên `dxos gitops` ở chế độ `auto` và `ModelBootstrap` áp dụng nó mà không đòi `--accept`; nâng lên `MIGRATION` làm cả hai bỏ qua mọi kế hoạch có mở rộng quyền để chờ duyệt tay, kể cả mẫu mới ở lần khởi động đầu; người duyệt đã thấy vai và mức cũ mới trong kế hoạch, và chỉ nâng khi có yêu cầu thật |

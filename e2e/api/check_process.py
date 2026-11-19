@@ -215,9 +215,10 @@ def main():
     status, body = kc.api(asker, "DELETE", f"{LEAVES}/{leave}")
     rt.check("T8-04 a record with a process is kept, and says so", status == 409 and (body.get("data") or {}).get("reason") == "KEPT_BY_PROCESS", f"{status} {body}")
 
-    # T8-08: overdue records come first in the inbox, then those waiting longest.
+    # T8-08: overdue records come first in the inbox, then the most recently changed.
     older = create(asker, TICKETS, {"title": "Cũ hơn"})
     newer = create(asker, TICKETS, {"title": "Mới hơn"})
+    latest = create(asker, TICKETS, {"title": "Mới nhất"})
     rt.psql(f"update m_desk8.ticket set handle_by = now() - interval '1 minute' where id = {newer}")
     status, body = kc.api(agent, "GET", f"{TICKETS}/{newer}")
     rt.check("T8-08 a past deadline marks the record overdue", body["data"]["overdue"] is True, str(body["data"]))
@@ -225,7 +226,8 @@ def main():
     rt.check("T8-08 a future deadline does not", body["data"]["overdue"] is False, str(body["data"]))
     status, body = kc.api(agent2, "GET", "/inbox")
     order = [item["id"] for item in body["data"]["items"] if item["model"] == "desk8" and item["entity"] == "ticket"]
-    rt.check("T8-08 inbox puts overdue first", order[:2] == [newer, older] and body["data"]["items"][0]["overdue"] is True, str(order))
+    rt.check("T8-08 inbox puts overdue first, then the newest record before older ones",
+             order[:3] == [newer, latest, older] and body["data"]["items"][0]["overdue"] is True, str(order))
 
     # T8-09: the counts of an entity agree with its list and stay inside what the caller may read.
     def counts_match(token):

@@ -189,8 +189,9 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 | Maven Wrapper 3.3.4 [7] (mvnw,       | Apache-2.0                           | Chạy Maven ở phiên bản đã ghim;      |
 | mvnw.cmd, maven-wrapper.properties)  |                                      | chép nguyên từ Apache Maven          |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| Debian, Ubuntu (image nền)           | Giấy phép tự do của từng gói         | Nền của image APISIX (Debian) và     |
-|                                      |                                      | sso (Ubuntu), chạy nguyên bản        |
+| Debian, Ubuntu (image nền)           | Giấy phép tự do của từng gói         | Nền của image APISIX (Debian), trợ   |
+|                                      |                                      | lý (node:24-bookworm-slim, không có  |
+|                                      |                                      | npm, corepack, yarn) và sso (Ubuntu) |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | gitleaks v8.30.1                     | MIT                                  | Quét secret trong CI, chạy trong     |
 |                                      |                                      | container                            |
@@ -369,13 +370,6 @@ Mọi giấy phép của dự án và của thành phần dùng đều thuộc d
 Dữ liệu chỉ đọc lúc dựng trang tài liệu, không có trong trang đã dựng:
   - caniuse-lite: CC-BY-4.0.
   - mdn-data: CC0-1.0.
-
-Công cụ trong image nền Node.js của trợ lý, không dùng khi chạy:
-  - corepack: MIT.
-  - yarn: BSD-2-Clause.
-  - npm: Artistic-2.0.
-  - spdx-exceptions: CC-BY-3.0 (dữ liệu ngoại lệ SPDX đi kèm npm).
-  - spdx-license-ids: CC0-1.0 (dữ liệu mã SPDX đi kèm npm).
 
 Công cụ không phân phối:
   - reuse (pipx run, chỉ trong CI): mã theo Apache-2.0 và GPL-3.0-or-later; tài liệu của công cụ theo CC0-1.0 và CC-BY-SA-4.0, không dùng và không phân phối.

@@ -37,15 +37,12 @@ Sản phẩm này sử dụng phần mềm của bên thứ ba, giữ nguyên gi
 - llama.cpp b12387 (MIT; Copyright (c) 2023-2026 The ggml authors), runtime inference do người vận hành cấp riêng.
   Nguồn giấy phép và phạm vi kiểm model/runtime ở ghi chú [9] và [10] của DEPENDENCIES.txt.
 - caniuse-lite, dữ liệu của Can I Use (CC-BY-4.0), chỉ dùng lúc dựng trang tài liệu.
-- corepack (MIT) và yarn (BSD-2-Clause), có sẵn trong image nền của trợ lý, không dùng khi chạy.
-- npm (Artistic-2.0), có sẵn trong image nền của trợ lý, không dùng khi chạy.
-- spdx-exceptions (CC-BY-3.0) và spdx-license-ids (CC0-1.0), dữ liệu đi kèm npm trong image nền của trợ lý, không dùng khi chạy.
 - ClamAV (GPL-2.0), chạy nguyên bản thành dịch vụ riêng để quét mã độc; image của nó kèm libclamunrar theo giấy phép UnRAR, nạp lúc chạy và không do dự án này phân phối.
 
 Ảnh chụp màn hình, video và sơ đồ trong repository do nhóm tạo từ hệ thống đang chạy với dữ liệu giả, và được cấp phép Apache-2.0.
 Ảnh có thể hiện giao diện của phần mềm bên thứ ba, ví dụ trang đăng nhập của Keycloak (Apache-2.0); phần đó thuộc giấy phép và nhãn hiệu của chủ sở hữu, và chỉ dùng để minh họa.
 
-Mọi giấy phép của dự án và của thành phần dùng trong sản phẩm được OSI công nhận; ngoại lệ là vài gói dữ liệu chỉ đọc lúc dựng trang tài liệu (nêu ở mục 7 của DEPENDENCIES.txt), và image của trợ lý còn chứa npm cùng các gói dữ liệu của nó, không dùng khi chạy.
+Mọi giấy phép của dự án và của thành phần dùng trong sản phẩm được OSI công nhận; vài gói dữ liệu chỉ đọc lúc dựng trang tài liệu là ngoại lệ, nêu tên và lý do ở mục 7 của DEPENDENCIES.txt.
 
 Danh sách thành phần đầy đủ ở DEPENDENCIES.txt; SBOM CycloneDX ở thư mục sbom/.
 Bản build của ứng dụng web và của trang tài liệu đóng gói thư viện npm, nên mỗi bản build kèm tệp third-party-licenses.txt ở gốc, chép nguyên thông báo bản quyền của từng thư viện.

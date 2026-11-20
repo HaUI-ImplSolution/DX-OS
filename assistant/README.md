@@ -24,12 +24,13 @@ Xem `docker compose logs assistant-sso`, sửa `deploy/.env` rồi chạy lại 
 
 Khi đã bật, `dxos update` kéo cả image trợ lý.
 Image có sau khi chạy workflow `Release Images` với `services=assistant`.
+Image chỉ chứa Node.js và mã của trợ lý, không có npm, corepack và yarn.
 
 ## Inference và nguồn tham khảo
 
 Trợ lý hỗ trợ mọi endpoint suy luận tương thích OpenAI Chat Completions hoặc llama.cpp `/completion`.
 DX-OS không áp đặt hay đóng gói model mặc định; người vận hành tự chọn model, cấp endpoint và tự chịu trách nhiệm với điều khoản upstream.
-Bản cài có thể tham khảo dùng Apertus-8B-Instruct-2509 (Apache-2.0 kèm AUP) hoặc OLMo (Apache-2.0, OSAID 1.0) qua llama.cpp (MIT).
+Bản cài có thể tham khảo dùng Apertus-8B-Instruct-2509 (Apache-2.0 kèm AUP) hoặc OLMo (Apache-2.0) qua llama.cpp (MIT).
 Giấy phép và ghi chú nằm ở [`DEPENDENCIES.txt`](../DEPENDENCIES.txt), mục [9] và [10].
 Repository không đóng gói trọng số và không tải trọng số trong request hay lúc Core khởi động.
 

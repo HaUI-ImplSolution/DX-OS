@@ -7,6 +7,24 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ## [Unreleased]
 
+### Lõi chạy ngầm
+
+- Ghi có điều kiện: `PATCH` một hồ sơ, hành động và giao việc nhận thêm `version` và `modelVersion`; hồ sơ hoặc mô hình đã đổi thì trả 409, `data.reason` là `MODEL_VERSION_CHANGED` khi mô hình đổi; `PATCH` kèm `version` cũ trả 409 kể cả khi giá trị không đổi.
+- `GET /api/v1/meta/models` trả `modelVersion` của từng mô hình và thực thể, `process.effects` (việc hoàn tất xếp vào hàng đợi, `asynchronous: true`) và `aiTasks`.
+- Thực thể khai báo được khối `ai.tasks` trong tệp mô hình: trường đầu vào, trường đề xuất, hướng dẫn và mã nguồn tham khảo; lõi chỉ kiểm khai báo, không gọi model.
+
+### Trợ lý nghiệp vụ (tùy chọn)
+
+- Trợ lý đề xuất một giá trị trường từ hồ sơ và nguồn tham khảo; người dùng sửa, hủy hoặc xác nhận, Core kiểm quyền và phiên bản trước khi ghi.
+- Trợ lý dùng inference self-host với endpoint tương thích OpenAI hoặc llama.cpp do người vận hành cấu hình; nguồn tham khảo hiển thị nhãn trường và tên đơn vị theo metadata của mô hình.
+- Trợ lý nằm trong `deploy/docker-compose.assistant.yml`, chỉ nạp khi `COMPOSE_FILE` nêu tệp đó; bật hay tắt không tạo lại service nào của lõi.
+- Cấu hình ở `deploy/assistant.env`, kiểm tra ở workflow `Assistant`, và `assistant/README.md` có danh sách các chỗ cần xóa để gỡ trợ lý.
+- Image trợ lý chỉ chứa Node.js và mã của trợ lý, không có npm, corepack và yarn.
+
+### Phát hành
+
+- Image phát hành có nhãn `org.opencontainers.image.licenses=Apache-2.0`.
+
 ## [2.0.2] - 2026-11-19
 
 Sửa và bổ sung sau bản `2.0.1`: cài mới tạo được tài khoản `admin`, Hộp việc đưa hồ sơ mới lên đầu, kế hoạch mở rộng quyền chờ duyệt, điều kiện nối nhiều phép, hướng dẫn bắt đầu nhanh và chữ ký cho bản phát hành.
@@ -16,9 +34,6 @@ Nâng cấp từ `2.0.1` giữ nguyên dữ liệu.
 
 - `dxos start` tạo tài khoản `admin` và in mật khẩu tạm trên bản cài mới, vì tài khoản dịch vụ giữ vai ADMIN không được tính là đã có admin.
 - `dxos update` và `install.sh --upgrade` so sánh danh sách file runtime theo thứ tự `C`, nên cập nhật giữ đủ file ở mọi locale của máy.
-- Ghi có điều kiện: `PATCH` một hồ sơ, hành động và giao việc nhận thêm `version` và `modelVersion`; hồ sơ hoặc mô hình đã đổi thì trả 409, `data.reason` là `MODEL_VERSION_CHANGED` khi mô hình đổi; `PATCH` kèm `version` cũ trả 409 kể cả khi giá trị không đổi.
-- `GET /api/v1/meta/models` trả `modelVersion` của từng mô hình và thực thể, `process.effects` (việc hoàn tất xếp vào hàng đợi, `asynchronous: true`) và `aiTasks`.
-- Thực thể khai báo được khối `ai.tasks` trong tệp mô hình: trường đầu vào, trường đề xuất, hướng dẫn và mã nguồn tham khảo; lõi chỉ kiểm khai báo, không gọi model.
 - `GET /api/v1/inbox` xếp hồ sơ quá hạn trước, rồi hồ sơ thay đổi gần nhất trước, và mỗi mục có thêm `updatedAt`; hồ sơ vừa tạo, nộp lại hoặc mở lại nằm ở đầu Hộp việc.
 - Danh sách của thực thể có quy trình mở theo thay đổi gần nhất trước và hiện cột Cập nhật lúc, trừ khi mô hình khai `ui.list`.
 - Kế hoạch đổi mô hình xếp việc cấp thêm hoặc mở rộng quyền của một vai ở mức `MIGRATION` kèm câu hỏi, nên `dxos apply` đòi `--accept MIGRATION` và `dxos gitops` ở chế độ `auto` để nó chờ duyệt.
@@ -36,13 +51,6 @@ Nâng cấp từ `2.0.1` giữ nguyên dữ liệu.
 - `dxos client test <tên>` đăng nhập bằng client đó, gọi API của mô hình của nó và nêu bước nào hỏng; mã bí mật lấy từ tệp, biến môi trường hoặc hỏi lúc chạy, không nằm trên dòng lệnh.
 - `dxos start` in bước tiếp theo và liên kết tới hướng dẫn bắt đầu nhanh.
 - `docs/QUICKSTART.md` đi từ máy sạch đến một quy trình chạy được, có đường không cần code và đường có code; `examples/order_approval` là ví dụ chạy được của đường có code.
-
-### Trợ lý nghiệp vụ (tùy chọn)
-
-- Trợ lý đề xuất một giá trị trường từ hồ sơ và nguồn tham khảo; người dùng sửa, hủy hoặc xác nhận, Core kiểm quyền và phiên bản trước khi ghi.
-- Trợ lý dùng inference self-host với endpoint tương thích OpenAI hoặc llama.cpp do người vận hành cấu hình; nguồn tham khảo hiển thị nhãn trường và tên đơn vị theo metadata của mô hình.
-- Trợ lý nằm trong `deploy/docker-compose.assistant.yml`, chỉ nạp khi `COMPOSE_FILE` nêu tệp đó; bật hay tắt không tạo lại service nào của lõi.
-- Cấu hình ở `deploy/assistant.env`, kiểm tra ở workflow `Assistant`, và `assistant/README.md` có danh sách các chỗ cần xóa để gỡ trợ lý.
 
 ### Phát hành
 

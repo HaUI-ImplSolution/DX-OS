@@ -15,11 +15,14 @@ Backend cần tài khoản dịch vụ `dxos-backend-admin` có quyền client v
 
 ## Ứng dụng ngoài
 
-Một dịch vụ ngoài gọi API bằng token máy; đăng ký nó ở tab Ứng dụng ngoài của bảng điều khiển (`/console`, ADMIN) hoặc bằng `dxos client add <tên> --model <mô hình> --role <vai>`.
+Một dịch vụ ngoài gọi API bằng token máy; đăng ký nó ở tab Ứng dụng ngoài của bảng điều khiển (`/console`, ADMIN), bằng `dxos client add <tên> --model <mô hình> --role <vai>`, hoặc bằng `dxos connect` khi cần nối một ứng dụng với một hay nhiều vai.
 Mỗi ứng dụng là một client Keycloak `dxos-app-<tên>` dạng client credentials, giữ đúng một vai của một mô hình; vai `ADMIN` và các vai của nền tảng không cấp được.
 Mã bí mật hiện một lần khi đăng ký hoặc đổi, hệ thống không giữ lại và không ghi vào nhật ký hay lịch sử.
 Ứng dụng lấy token bằng `grant_type=client_credentials` ở `<địa chỉ>/realms/dxos/protocol/openid-connect/token`, rồi gọi API dữ liệu của mô hình đó; mô hình khác, API quản trị và API người dùng trả 403.
 `dxos client add` và `dxos client rotate` nhận thêm `--env <TIỀN_TỐ>` (ví dụ `--env DXOS_REQUESTER`): lệnh chỉ in hai dòng `<TIỀN_TỐ>_CLIENT_ID=...` và `<TIỀN_TỐ>_CLIENT_SECRET=...`, nối thẳng vào tệp `.env` của ứng dụng được bằng `>>`.
+`dxos connect <mô hình> --role R [--role R ...]` làm việc đó cho mọi vai trong một lệnh: đăng ký client `dxos-app-<mô hình>-<vai>`, ghi `DXOS_BASE_URL` và `DXOS_<VAI>_CLIENT_ID`, `DXOS_<VAI>_CLIENT_SECRET` vào `.env` ở thư mục hiện tại (quyền `600` khi tạo mới), đăng nhập thử bằng client đầu tiên và in hai dòng cần thêm vào `docker-compose.yml` của ứng dụng.
+Chạy lại thì client đã có secret trong tệp được giữ nguyên; client đã đăng ký mà tệp không có secret của nó cần `--rotate`.
+`--app` đổi tên dùng để đặt tên client, `--prefix` đổi tiền tố biến, `--env-file` đổi tệp ghi và `--base-url` đổi địa chỉ ghi vào `DXOS_BASE_URL` (mặc định `http://host.docker.internal:<cổng>`, dùng được từ container trên cùng máy khi service có `extra_hosts: ["host.docker.internal:host-gateway"]`).
 `dxos client test <tên>` đăng nhập bằng client đó rồi gọi API của mô hình của nó, và nói bước nào hỏng: không tới được địa chỉ, sai mã bí mật, hay mô hình chưa áp dụng.
 Mã bí mật lấy từ `--secret-file`, biến `DXOS_CLIENT_SECRET` hoặc hỏi lúc chạy, không bao giờ nằm trên dòng lệnh; `--url` đổi địa chỉ cổng vào cần thử.
 `dxos client list` liệt kê ứng dụng kèm mô hình và vai, `dxos client role <tên> --role <vai>` (hoặc nút đổi vai ở tab Ứng dụng ngoài) chuyển ứng dụng sang vai khác của cùng mô hình mà giữ nguyên tên và mã bí mật, `dxos client rotate <tên>` cấp mã mới và mã cũ hết hiệu lực ngay, `dxos client remove <tên>` xóa client; hồ sơ ứng dụng đã tạo vẫn còn.
@@ -83,7 +86,7 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 | `dxos archive <mô hình> [--before YYYY-MM-DD] [--out THƯ_MỤC \| --store]`, `dxos archive query <mô hình>/<lần chạy> ...`, `dxos archive check <thư mục> \| --store <mô hình>/<lần chạy>`, `dxos archive list` | Xuất hồ sơ đã xong ra Parquet, truy vấn chỉ đọc một lần chạy bằng DuckDB, kiểm một bản xuất, liệt kê các lần chạy trong kho (xem [`INTEGRATIONS.md`](./INTEGRATIONS.md#hồ-dữ-liệu)) |
 | `dxos archive auto`, `dxos archive schedule [install\|uninstall]` | Ghi vào kho hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS` ngày; `schedule install` chạy mỗi ngày bằng systemd user timer (xem dưới) |
 | `dxos demo [--password MẬT_KHẨU]`, `dxos demo remove` | Áp dụng mô hình Một cửa sinh viên nếu chưa chạy, tạo bốn tài khoản thử `judge_student`, `judge_officer`, `judge_officer2` và `judge_supervisor` với một mật khẩu (ngẫu nhiên nếu không nêu, in một lần; chạy lại thì đặt và in mật khẩu mới) và nộp khoảng 40 hồ sơ mẫu qua API chung, mỗi bước do đúng người làm; chạy lại không nộp thêm hồ sơ; `remove` chỉ gỡ bốn tài khoản, hồ sơ có quy trình không xóa được nên còn lại; cần client `dxos-cli` như `dxos plan`. Hạn xử lý 72 giờ của mô hình nên hồ sơ quá hạn chỉ có sau ba ngày kể từ lần nộp |
-| `dxos client add <tên> --model M --role R`, `dxos client list`, `dxos client role <tên> --role R`, `dxos client rotate <tên>`, `dxos client remove <tên>` | Đăng ký và quản lý ứng dụng ngoài gọi API bằng token máy (xem phần Ứng dụng ngoài ở trên) |
+| `dxos connect <mô hình> --role R [--role R ...]`, `dxos client add <tên> --model M --role R`, `dxos client list`, `dxos client role <tên> --role R`, `dxos client rotate <tên>`, `dxos client remove <tên>` | Đăng ký và quản lý ứng dụng ngoài gọi API bằng token máy (xem phần Ứng dụng ngoài ở trên) |
 | `dxos client browser add <tên> --redirect-uri URL [...]`, `dxos client browser list`, `dxos client browser remove <tên>` | Đăng ký và quản lý public OIDC client dùng PKCE cho giao diện trình duyệt ở origin khác |
 | `dxos uninstall [--purge]` | Xóa container và lệnh `dxos`; `--purge` xóa cả dữ liệu và thư mục cài, phải gõ xác nhận |
 
@@ -296,6 +299,7 @@ Tham số dùng cú pháp literal của DuckDB; giá trị chuỗi đặt trong 
 
 `dxos start --core` chỉ chạy Tầng 1: cổng vào APISIX, Keycloak, dịch vụ lõi, PostgreSQL và kho tệp SeaweedFS, thêm ClamAV khi bật quét mã độc.
 Ứng dụng web, portal và dịch vụ giám sát không chạy, và gateway không có route của chúng: `/`, `/portal/`, `/monitor/` và `/console` trả 404.
+Hồ sơ và thông điệp webhook không có trường `webUrl`.
 Gateway cũng không gửi nhật ký truy cập tới dịch vụ giám sát.
 API, đăng nhập, áp dụng tệp mô hình, `/v3/api-docs`, OpenAPI theo mô hình và lưu tệp dùng như ở chế độ đầy đủ.
 
@@ -331,7 +335,7 @@ Danh sách đầy đủ kèm chú thích từng dòng ở [`deploy/.env.example`
 
 | Biến | Mặc định | Đổi khi nào |
 |---|---|---|
-| `PUBLIC_HOST` | `localhost` | Người dùng hoặc ứng dụng ở máy khác (hoặc trong container) cần vào hệ thống: đặt IP hoặc tên miền của máy chủ; `GATEWAY_PUBLIC_URL` tự theo. Đặt trước lần `dxos start` đầu tiên |
+| `PUBLIC_HOST` | `localhost` | Người dùng hoặc ứng dụng ở máy khác cần vào hệ thống: đặt IP hoặc tên miền của máy chủ; `GATEWAY_PUBLIC_URL` tự theo. Đặt trước lần `dxos start` đầu tiên; container trên cùng máy gọi qua `host.docker.internal` nên không cần đổi |
 | `APISIX_HOST_PORT` | `9080` | Cổng 9080 của máy chủ đã bị chiếm |
 | `KEYCLOAK_HOSTNAME` | không đặt | Hệ thống đứng sau proxy HTTPS: đặt bằng `GATEWAY_PUBLIC_URL`, nếu không đăng nhập lỗi |
 | `STAFF_OTP_FLOW` | `DISABLED` | Máy chủ thật: đặt `CONDITIONAL` để vai `ADMIN` phải nhập mã một lần; phải đặt trước lần `dxos start` đầu tiên |

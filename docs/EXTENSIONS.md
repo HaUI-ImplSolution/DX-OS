@@ -235,6 +235,16 @@ Giữ cursor chỉ sau khi toàn bộ trang đã được lưu thành công.
 Đóng gói receiver tách khỏi DX-OS, giữ secret trong secret runtime và sao lưu kho khử trùng cùng cursor.
 Theo dõi `schemaVersion`, kiểm payload thử trước khi nâng và triển khai receiver chấp nhận cả phiên bản cũ lẫn mới trong khoảng chuyển tiếp khi hợp đồng thay đổi.
 
+## Liên kết sang giao diện web của DX-OS
+
+Ứng dụng ngoài đưa người duyệt sang giao diện web của DX-OS bằng một liên kết.
+Hộp việc là trang chủ của địa chỉ công khai (`GATEWAY_PUBLIC_URL`), ví dụ `http://localhost:9080/`.
+Một hồ sơ nằm ở `<địa chỉ công khai>/<mô hình>-<thực thể>/<id>/show`, ví dụ `http://localhost:9080/retail-return_request/12/show`.
+Người mở liên kết đăng nhập bằng tài khoản DX-OS và chỉ thấy hồ sơ khi vai của họ được đọc.
+
+API dữ liệu trả sẵn địa chỉ này ở trường `webUrl` của hồ sơ, và thông điệp webhook cùng feed `GET /api/v1/events` mang cùng trường, nên ứng dụng không tự ghép địa chỉ.
+`webUrl` do hệ thống tính, không phải trường của mô hình, và không có khi chạy `dxos start --core` vì chế độ này không có ứng dụng web.
+
 ## Giao diện ngoài
 
 Giao diện trình duyệt phải đăng nhập người dùng bằng Authorization Code và PKCE.

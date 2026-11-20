@@ -16,7 +16,7 @@ Một tiêu chí chỉ được ✅ khi mọi dòng của nó và mọi điều 
 
 | Tiêu chí PoF | Điểm | Tình trạng | Điều còn mở |
 | --- | --- | --- | --- |
-| 1. Kho mã nguồn và lịch sử phát triển | 5 | ⚠️ | Lịch sử issue mỏng so với số pull request |
+| 1. Kho mã nguồn và lịch sử phát triển | 5 | ✅ | |
 | 2. Giấy phép và tính tương thích | 10 | ✅ | |
 | 3. Release và quản lý phiên bản | 5 | ✅ | |
 | 4. Build và cài đặt từ mã nguồn | 10 | ⚠️ | Bài dựng từ bản clone chưa chạy lại trên máy sạch |
@@ -48,7 +48,7 @@ Không có lỗi loại trừ: repository công khai, có `LICENSE`, đã có re
 | ✅ | Lịch sử trải đều | Mười một tuần ISO liên tiếp từ W36 đến W46 đều có commit: 3, 80, 82, 53, 93, 97, 85, 84, 136, 119, 166 | |
 | ✅ | Nhiều người đóng góp | 3 sinh viên: `KhuongSpring` 718, `nddKhanh` 144, `tung51652-alt` 127 commit, cộng `dependabot` 7 | |
 | ✅ | Nhận diện tác giả | `.mailmap` gom các danh tính về một tên mỗi người | |
-| ⚠️ | Bug tracker có lịch sử | 55 issue (36 đã đóng) so với 201 pull request đã gộp; khoảng 20 issue đã xong nhưng còn mở vì pull request tính năng gộp vào `Khuong/main` chứ chưa vào `main`, GitHub chỉ tự đóng issue khi `Closes #n` nằm trên nhánh mặc định; một pull request DEV TO MAIN sắp tới sẽ đóng các issue đó | |
+| ✅ | Bug tracker có lịch sử | 70 issue (67 đã đóng) và 228 pull request đã gộp | |
 
 ```bash
 git log --pretty='%h %ad %an %s' --date=short | tail -20     # lịch sử có trải đều không
@@ -130,7 +130,7 @@ git ls-files | grep -E '(^|/)(vendor|third_party|node_modules)/|\.patch$' && ech
 
 | Trạng thái | Yêu cầu | Bằng chứng | Mức trừ nếu thiếu |
 |---|---|---|---|
-| ✅ | Có bug tracker | GitHub Issues đã bật; mẫu `bug_report.yml`, `feature_request.yml`; 55 issue | −5 |
+| ✅ | Có bug tracker | GitHub Issues đã bật; mẫu `bug_report.yml`, `feature_request.yml`; 70 issue | −5 |
 | ✅ | Có changelog | `CHANGELOG.md` theo Keep a Changelog, mục `[Unreleased]` và mục cho mọi bản đến `[2.0.2]` | −5 |
 | ✅ | Có README và hướng dẫn | `README.md`, `README_EN.md`; `ARCHITECTURE.md`; `docs/TESTING.md`; `docs/OPERATIONS.md`; API qua đặc tả OpenAPI và `check_docs.py` kiểm tài liệu khớp OpenAPI; job `Check required files and scripts` báo lỗi nếu thiếu một tài liệu bắt buộc hoặc `CHANGELOG.md` mất mục `[Unreleased]`; job `Build the docs site` dựng trang docs, trong đó có các tài liệu của `docs/` và `deploy/` chép lại mỗi lần dựng, và dừng khi có liên kết hỏng | −5 |
 | ✅ | Hướng dẫn đóng góp | `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, mẫu pull request | |

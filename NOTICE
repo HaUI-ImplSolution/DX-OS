@@ -36,6 +36,7 @@ Sản phẩm này sử dụng phần mềm của bên thứ ba, giữ nguyên gi
 - Apertus-8B-Instruct-2509 (Apache-2.0; Copyright 2025 - The Swiss AI team), model tham khảo do người vận hành tự cấp; điều khoản upstream ở DEPENDENCIES.txt mục [9].
 - llama.cpp b12387 (MIT; Copyright (c) 2023-2026 The ggml authors), runtime inference do người vận hành cấp riêng.
   Nguồn giấy phép và phạm vi kiểm model/runtime ở ghi chú [9] và [10] của DEPENDENCIES.txt.
+- OpenAPI Generator 7.27.0 (Apache-2.0), công cụ sinh client do người dùng tự chạy, không đóng gói trong sản phẩm; ghi chú [11] của DEPENDENCIES.txt.
 - caniuse-lite, dữ liệu của Can I Use (CC-BY-4.0), chỉ dùng lúc dựng trang tài liệu.
 - ClamAV (GPL-2.0), chạy nguyên bản thành dịch vụ riêng để quét mã độc; image của nó kèm libclamunrar theo giấy phép UnRAR, nạp lúc chạy và không do dự án này phân phối.
 

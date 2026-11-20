@@ -256,6 +256,9 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 | llama.cpp b12387 [10]                | MIT                                  | Runtime inference self-host do       |
 |                                      |                                      | người vận hành cấp riêng             |
 +--------------------------------------+--------------------------------------+--------------------------------------+
+| OpenAPI Generator 7.27.0 [11]        | Apache-2.0                           | Sinh client từ OpenAPI của mô hình;  |
+|                                      |                                      | người vận hành tự cấp                |
++--------------------------------------+--------------------------------------+--------------------------------------+
 
 5. GHI CHÚ
 ==========
@@ -315,6 +318,11 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
      Runtime local được người vận hành cấp, không nằm trong image trợ lý hoặc SBOM npm.
      Thư viện hệ thống và mã vendor của runtime giữ giấy phép riêng; người vận hành giữ thông báo đi kèm bản runtime mình dùng.
 
+[11] OpenAPI Generator 7.27.0: Apache-2.0.
+     Giấy phép đúng tag: https://github.com/OpenAPITools/openapi-generator/blob/v7.27.0/LICENSE.
+     Công cụ dòng lệnh do người vận hành hoặc nhà phát triển ứng dụng ngoài chạy, không nằm trong image hay SBOM của DX-OS.
+     Các thư viện nhúng trong JAR của nó theo Apache-2.0, MIT, BSD, EDL-1.0, EPL-2.0 hoặc LGPL; mã client sinh ra thuộc người dùng.
+
 6. TRANG CHỦ VÀ NGUỒN
 =====================
 
@@ -324,6 +332,7 @@ Gói Maven và npm: trang chủ và mã nguồn của từng gói nằm trong sb
 Thành phần       Trang chủ | Mã nguồn
 Apertus          https://huggingface.co/swiss-ai/Apertus-8B-Instruct-2509 | https://github.com/swiss-ai
 llama.cpp        https://github.com/ggml-org/llama.cpp | https://github.com/ggml-org/llama.cpp/tree/b12387
+OpenAPI Generator https://openapi-generator.tech | https://github.com/OpenAPITools/openapi-generator/tree/v7.27.0
 PostgreSQL       https://www.postgresql.org/ | https://github.com/postgres/postgres
 Keycloak         https://www.keycloak.org | https://github.com/keycloak/keycloak
 Apache APISIX    https://apisix.apache.org/ | https://github.com/apache/apisix

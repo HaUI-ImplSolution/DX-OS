@@ -44,6 +44,8 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - Java 21 và Spring Boot vì ranh giới giữa các module kiểm được lúc biên dịch.
 - Mã, tài liệu, ảnh, video và sơ đồ của đội theo Apache-2.0, hai tệp phông Noto Sans theo OFL-1.1; cả hai giấy phép đều được OSI công nhận và không xung đột.
   Mọi thành phần khác đều theo giấy phép OSI; không dùng BUSL, SSPL, RSAL, MSCL hay phần Enterprise.
+- Bảng tham chiếu của đề có năm thành phần không đạt OSI: Vault, n8n, Redpanda, MongoDB và immudb.
+  Đội không dùng thành phần nào trong số này; đó là quyết định thiết kế theo cam kết chỉ dùng phần mềm nguồn mở.
 - **Bằng chứng:** [Thành phần được chọn và không chọn](./dependencies.md); `DEPENDENCIES.txt`; `sbom/`; job `Check licenses` của workflow `Compliance`.
 
 ## 3. Đổi ứng dụng nghiệp vụ thì lõi có phải đổi không?

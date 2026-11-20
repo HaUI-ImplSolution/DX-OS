@@ -100,6 +100,19 @@ Invoke-RestMethod -Headers @{ Authorization = "Bearer $token" } `
 OpenAPI này được sinh từ phiên bản mô hình đang chạy và chỉ chứa các thực thể người gọi được đọc.
 Dùng nó để sinh client hoặc làm đầu vào cho kiểm thử hợp đồng; không sao chép một schema cũ vào mã rồi coi đó là nguồn thật.
 
+Client sinh bằng [OpenAPI Generator](https://openapi-generator.tech) (Apache-2.0), chạy trong Docker trên tệp `equipment.openapi.json` vừa lấy:
+
+```bash
+docker run --rm -u "$(id -u):$(id -g)" -v "$PWD:/local" \
+  openapitools/openapi-generator-cli:v7.27.0 generate \
+  -i /local/equipment.openapi.json -g typescript-fetch -o /local/client
+```
+
+`-g` chọn ngôn ngữ, ví dụ `typescript-fetch`, `python` hoặc `java`; `docker run ... openapi-generator-cli:v7.27.0 list` in đủ danh sách.
+Token lấy như trên và đặt vào header `Authorization` của client sinh ra.
+Sinh lại client sau mỗi lần mô hình đổi, và kiểm lại mã gọi nó.
+Công cụ này do ứng dụng ngoài tự chạy; DX-OS không đóng gói nó, giấy phép ở `DEPENDENCIES.txt`, ghi chú [11].
+
 ### 3. Gọi dữ liệu và quy trình
 
 API dữ liệu nằm dưới `/api/v1/data/{model}/{entity}`.

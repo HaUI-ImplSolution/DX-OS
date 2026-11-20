@@ -13,9 +13,8 @@ Thứ tự dưới đây xếp theo số điểm đang để hở; chi tiết t�
 
 | Thứ tự | Việc | Điểm liên quan |
 |---|---|---|
-| 1 | Tài liệu và giao tiếp: lịch sử issue (mục 3) | Tài liệu và giao tiếp 10, phát triển bền vững 10 |
-| 2 | Bằng chứng lõi là PaaS: ứng dụng mẫu (mục 3) | Nguyên gốc 10, phát triển bền vững 10 |
-| 3 | Bài trình bày chung kết (mục 2) | Hoàn thiện 10, trình diễn 10 |
+| 1 | Bằng chứng lõi là PaaS: ứng dụng mẫu (mục 3) | Nguyên gốc 10, phát triển bền vững 10 |
+| 2 | Bài trình bày chung kết (mục 2) | Hoàn thiện 10, trình diễn 10 |
 
 ## 2. Phải xử lý trước khi phát hành
 
@@ -35,16 +34,16 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 | Việc | Issue | Ghi chú |
 |---|---|---|
 | Khách hàng | #231 | Chưa nói chuyện với khách hàng nào; mục Khách hàng và giá trị của `README.md` là giả thuyết |
+| Ứng dụng mẫu gọi lõi từ bên ngoài | #343 | Chưa có ứng dụng có giao diện nào ngoài ứng dụng của đội gọi lõi qua API, nên câu "PaaS phục vụ các ứng dụng tầng trên" của đề chưa có bằng chứng chạy được; đã chốt làm một ứng dụng mẫu ở `examples/`, viết bằng khung khác react-admin, chỉ dùng OpenAPI theo mô hình và đăng nhập Keycloak |
 
 ### 3.2. Chưa có issue
 
 | Việc | Ghi chú |
 |---|---|
-| Ứng dụng mẫu gọi lõi từ bên ngoài | Chưa có ứng dụng có giao diện nào ngoài ứng dụng của đội gọi lõi qua API, nên câu "PaaS phục vụ các ứng dụng tầng trên" của đề chưa có bằng chứng chạy được; đã chốt làm một ứng dụng mẫu ở `examples/`, viết bằng khung khác react-admin, chỉ dùng OpenAPI theo mô hình và đăng nhập Keycloak |
 | Lỗ hổng trong phụ thuộc gián tiếp | Scorecard báo 5 lỗ hổng: `decode-uri-component` 0.2.2 (sửa ở 0.5.1), `react-router` 6.30.6 ở web và 5.3.4 ở trang docs (sửa ở 7.18.0), `uuid` 8.3.2 ở trang docs (sửa ở 11.1.1); đều đến từ thư viện cha (react-admin, Docusaurus), nên vá cần nâng bản chính của thư viện cha hoặc ép `overrides` |
 | Egress trợ lý | Trợ lý chạy trên network mặc định của stack và chưa có allowlist kết nối cho container; cần giới hạn mạng ra ngoài endpoint inference cố định |
 | Thu hồi và thay khóa/token trợ lý | Hoàn thiện quy trình thu hồi và thay mới khóa và token của trợ lý |
-| Lịch sử issue và cộng đồng | Ít issue so với pull request (63 issue, 220 pull request đã gộp), nhãn `good first issue` và `help wanted` đã có nhưng chưa issue nào dùng, Discussions chỉ có một chủ đề chào mừng, repository chưa có fork, phần lớn tài liệu chỉ có tiếng Việt |
+| Tài liệu tiếng Anh | Phần lớn tài liệu chỉ có tiếng Việt; `README_EN.md` đã có, các tài liệu còn lại chưa |
 | Đóng góp tập trung | Một thành viên giữ khoảng hai phần ba commit; `CODEOWNERS` nêu ba thành viên cho mọi đường dẫn, chưa chia người phụ trách theo vùng; chia hay không là quyết định của nhóm |
 | Cảnh báo Scorecard và huy hiệu | Tab Security có 8 cảnh báo của Scorecard chưa duyệt (Maintained, CodeReview, Vulnerabilities, Fuzzing, SAST, TokenPermissions hai cảnh báo, BranchProtection); huy hiệu OpenSSF Best Practices mức passing còn ba tiêu chí khuyến nghị chưa đạt (`test_most`, `warnings_strict`, `dynamic_analysis`), và lời giải thích từng tiêu chí trỏ về tệp trên `main` nên chỉ khớp khi nhánh tích hợp vào `main` |
 | Bản chạy công khai | Chưa được CI kiểm hằng ngày (`deploy/online-check.sh` chạy tay hoặc theo cron), và chưa có phương án chạy tại chỗ nếu mạng ở buổi thi có sự cố vì bản công khai chạy sau Cloudflare Tunnel |
@@ -76,7 +75,10 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 | Xuất CSV phía máy chủ | Nút Xuất CSV chạy ở trình duyệt, qua các lời gọi danh sách của chính màn hình, tối đa 10.000 hồ sơ và có thông báo khi bị cắt; không có endpoint xuất theo luồng, vì nhãn cột, trạng thái, ngày giờ, tên đơn vị và tên người được bản địa hóa trong trình duyệt và phải làm lại ở backend (tham số ngôn ngữ, tra tên người qua Keycloak, đường APISIX riêng cho luồng dài); mở lại khi có nhu cầu xuất trên 10.000 hồ sơ |
 | Nhập dữ liệu hàng loạt | Không có nhập CSV và gói mô hình kèm dữ liệu danh mục; dữ liệu vào qua API chung để đi qua quyền, ràng buộc và quy trình |
 | Tìm kiếm | Không tìm hồ sơ và nội dung tệp; chỉ mục và đoạn trích có thể lộ dữ liệu ngoài quyền, và tìm tiếng Việt cần đo riêng |
-| Đăng ký thông báo | Không đăng ký theo loại sự kiện và người nhận; thông báo chat qua webhook cùng các dòng `due_soon`, `overdue` và `escalated` là mức cung cấp |
+| Đăng ký thông báo | Không đăng ký theo loại sự kiện và người nhận, và không gửi đa kênh (email, SMS) tới từng người; thông báo chat qua webhook cùng các dòng `due_soon`, `overdue` và `escalated` là mức cung cấp |
+| Nạp dữ liệu theo lô | Không nhập CSV hay nạp hồ sơ theo lô; ứng dụng ngoài tạo hồ sơ qua API chung với đủ quyền, quy tắc và lịch sử, nên nạp lô là việc của script gọi API, và một đường ghi riêng trong lõi phải giữ lại cả ba |
+| Che dữ liệu cá nhân | Không che hay mã hóa theo trường; quyền đọc theo vai và theo dòng quyết định ai thấy hồ sơ, quyền theo trường đã chốt không làm, và che dữ liệu là thành phần người triển khai gắn ở biên |
+| Kịch bản serverless | Lõi không chạy mã tùy ý trong tiến trình; logic riêng của một tổ chức đi qua webhook và kiểm tra trước khi chuyển trạng thái |
 | Hành động hoàn tất gọi ra ngoài | Chỉ có `add_to_group` và `remove_from_group`; không có thao tác gọi tới một đích của webhook, vì webhook của mô hình đã gửi mọi dòng lịch sử kèm trạng thái cũ, trạng thái mới và hành động, nên bên nhận lọc theo trạng thái được |
 | Kiểm tương thích khi đổi mô hình | Chưa có nơi đăng ký mã mở rộng nên chưa có hợp đồng để đối chiếu |
 | Người thứ hai duyệt thay đổi mô hình | Không bắt buộc; là chính sách tùy bản triển khai |

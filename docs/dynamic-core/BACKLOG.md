@@ -35,8 +35,6 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 |---|---|---|
 | Khách hàng | #231 | Chưa nói chuyện với khách hàng nào; mục Khách hàng và giá trị của `README.md` là giả thuyết |
 | Ứng dụng mẫu gọi lõi từ bên ngoài | #343 | Chưa có ứng dụng ngoài đủ thật để chứng minh một ứng dụng có sẵn thêm quy trình bằng DX-OS, nên câu "PaaS phục vụ các ứng dụng tầng trên" của đề chưa có bằng chứng chạy được; đã chốt dựng một ứng dụng nhỏ ở `examples/` như của nhà phát triển ngoài, hai quy trình (dùng nguyên và mở rộng một mẫu); kế hoạch ở [`UNG_DUNG_MAU.md`](./UNG_DUNG_MAU.md) |
-| Liên kết sang giao diện web trong API và webhook | #345 | Ứng dụng ngoài chưa có địa chỉ ổn định để đưa người duyệt sang giao diện DX-OS; làm theo hai lớp: tài liệu hóa mẫu địa chỉ, rồi trả `webUrl` |
-| Giảm số bước tích hợp ứng dụng ngoài | #344 | Từ máy sạch đến cuộc gọi API đầu tiên còn khoảng bảy bước và hai tệp cấu hình sửa tay; cần chọn hướng giảm bước |
 
 ### 3.2. Chưa có issue
 

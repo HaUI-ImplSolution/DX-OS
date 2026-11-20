@@ -42,8 +42,8 @@ Mẫu `retail_return` đòi sản phẩm có sẵn trong DX-OS, nên script cài
 ## Kịch bản demo
 
 1. Cửa hàng chạy ứng dụng, bán hàng bình thường.
-2. Người vận hành cài DX-OS cạnh ứng dụng và chạy script cài đặt: áp dụng hai mô hình, đăng ký hai client, tạo tài khoản quản lý và kỹ thuật viên, nạp sản phẩm.
-3. Nhân viên mở một đơn bán, bấm Đổi trả; ứng dụng gửi hồ sơ, hiện trạng thái "Chờ duyệt" và liên kết sang DX-OS.
+2. Người vận hành cài DX-OS cạnh ứng dụng và chạy script cài đặt: áp dụng hai mô hình, nối ứng dụng bằng `dxos connect` (đăng ký hai client và ghi `.env`), tạo tài khoản quản lý và kỹ thuật viên, nạp sản phẩm.
+3. Nhân viên mở một đơn bán, bấm Đổi trả; ứng dụng gửi hồ sơ, hiện trạng thái "Chờ duyệt" và liên kết sang DX-OS lấy từ `webUrl` của hồ sơ.
 4. Quản lý mở liên kết, đăng nhập, thấy hồ sơ ở hộp việc và duyệt; webhook về, ứng dụng đổi trạng thái thành "Đã duyệt".
 5. Nhân viên lập yêu cầu bảo hành; kỹ thuật viên nhận ở hộp việc; hạn demo được đặt ngắn để quá hạn và ứng dụng hiện cảnh báo từ webhook.
 6. Người vận hành đổi mô hình bảo hành bằng `dxos plan`, xem mức rủi ro rồi `dxos apply`, và quay về bản trước.

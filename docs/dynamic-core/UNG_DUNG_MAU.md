@@ -1,7 +1,8 @@
 # Ứng dụng mẫu của bên ngoài
 
 Quyết định, tiêu chí và tiến độ của ứng dụng mẫu chứng minh việc một ứng dụng có sẵn thêm quy trình bằng DX-OS.
-Việc cụ thể theo issue [#343](https://github.com/HaUI-ImplSolution/DX-OS/issues/343); việc giảm số bước tích hợp theo [#344](https://github.com/HaUI-ImplSolution/DX-OS/issues/344); liên kết sang giao diện web theo [#345](https://github.com/HaUI-ImplSolution/DX-OS/issues/345).
+Việc cụ thể theo issue [#343](https://github.com/HaUI-ImplSolution/DX-OS/issues/343), kế hoạch chi tiết ở [`docs/appliance-store-plan/`](../appliance-store-plan/00_OVERVIEW.md); làm trong một PR.
+Lõi đã có `dxos connect` ([#344](https://github.com/HaUI-ImplSolution/DX-OS/issues/344)) và `webUrl` ([#345](https://github.com/HaUI-ImplSolution/DX-OS/issues/345)) cho ứng dụng này dùng.
 Việc tồn đọng chung nằm ở [`BACKLOG.md`](./BACKLOG.md).
 Xóa tệp này khi #343 xong.
 
@@ -23,11 +24,12 @@ Nó đáp ứng câu "PaaS phục vụ các ứng dụng tầng trên" của đ�
 | Quy trình mở rộng | Bảo hành: `extends: support_desk` (họ `work_item`), thêm trường số seri và ngày mua; vai `REQUESTER` do client của ứng dụng đảm nhận, vai `AGENT` là kỹ thuật viên, có hạn xử lý và webhook khi quá hạn |
 | Màn hình duyệt | Dùng giao diện web có sẵn của DX-OS (hộp việc), không tự dựng màn hình duyệt |
 | Tự dựng giao diện | README nói rõ ứng dụng cũng có thể tự dựng giao diện và gọi API của DX-OS |
-| Liên kết sang DX-OS | Ứng dụng có liên kết rõ ràng sang hộp việc và hồ sơ trên giao diện DX-OS; không bắt người dùng nhập địa chỉ; làm theo #345: tài liệu hóa mẫu địa chỉ trước, sau đó trả `webUrl` trong API và webhook |
+| Liên kết sang DX-OS | Ứng dụng có liên kết rõ ràng sang hộp việc và hồ sơ trên giao diện DX-OS; không bắt người dùng nhập địa chỉ; dùng `webUrl` trong hồ sơ của API và trong webhook |
 | Người yêu cầu | Không có tài khoản DX-OS; client máy của ứng dụng lập hồ sơ thay họ và ghi họ là ai vào một trường dữ liệu |
+| Nối ứng dụng với DX-OS | Người vận hành tự gõ `dxos apply` cho hai mô hình rồi `dxos connect` cho từng mô hình; lệnh ghi biến client vào `.env` của ứng dụng, compose của ứng dụng thêm `env_file` và `extra_hosts`; không cần đổi `PUBLIC_HOST` |
 | Người duyệt | Có tài khoản Keycloak riêng; một script tạo hộ các tài khoản nhân viên và gán vai qua API của DX-OS; README nêu rõ nhân viên có hai tài khoản và đăng nhập một lần là hướng thảo luận riêng |
 | Dữ liệu tham chiếu | `retail_return` đòi sản phẩm có sẵn trong DX-OS; script cài đặt nạp một lần một ít sản phẩm từ danh mục của ứng dụng, và README nêu đây là một bước tích hợp |
-| Webhook | README nêu ba việc: khai đích ở `deploy/webhooks/targets.yml`, ghi `webhook: <tên>` trong mô hình, và đường mạng tới ứng dụng; demo dùng địa chỉ máy chủ; phần này thuộc phạm vi cân nhắc của #344 |
+| Webhook | README nêu ba việc: khai đích ở `deploy/webhooks/targets.yml`, ghi `webhook: <tên>` trong mô hình, và đường mạng tới ứng dụng; demo dùng `host.docker.internal`; backend của DX-OS có `extra_hosts` để tới được ứng dụng cùng máy |
 | Nối hồ sơ | Ứng dụng lưu `dxos_id` trong bảng của nó và dùng mã hóa đơn làm khóa nối; cập nhật trạng thái khi webhook về |
 | Ngăn xếp | Ưu tiên thành phần đã có trong `DEPENDENCIES.txt`: Node.js 24, Fastify, SQLite tích hợp của Node, HTML đơn giản; sau đó mới đến tiêu chí nhanh, gọn, dễ dựng |
 | Giao diện | Trực quan, dễ dùng, dễ demo; ít chức năng, nói được giá trị của lõi |
@@ -55,12 +57,13 @@ Nó đáp ứng câu "PaaS phục vụ các ứng dụng tầng trên" của đ�
 | Chốt hướng và tiêu chí | Xong |
 | Chốt hướng danh tính: tạo hộ tài khoản nhân viên bằng script | Xong |
 | Chốt dữ liệu tham chiếu, webhook và cách nối hồ sơ | Xong |
-| Mở issue #345 về liên kết sang giao diện web | Xong |
+| Liên kết sang giao diện web: `webUrl` trong API và webhook (#345) | Xong |
 | Chốt lĩnh vực | Xong |
 | Xác nhận người thao tác trong lịch sử và cách script lấy quyền ADMIN | Xong, qua đọc mã |
 | Cập nhật issue #343 theo hướng mới | Xong |
-| Mở issue #344 về giảm số bước tích hợp | Xong |
+| Giảm số bước tích hợp: lệnh `dxos connect` (#344) | Xong |
 | Thêm công thức OpenAPI Generator vào `docs/EXTENSIONS.md` | Xong |
+| `extra_hosts` cho backend của DX-OS và tài liệu đường mạng webhook | Chưa làm |
 | Chạy thử đầu cuối script tạo tài khoản và kiểm lịch sử ghi client | Chưa làm |
 | Tệp mô hình bảo hành: kiểm bằng `dxos lint` và `dxos plan` xem khối `ai.tasks` của `support_desk` có bị thừa kế và có cần bỏ không | Chưa làm |
 | Phụ thuộc của ứng dụng: dự kiến chỉ Fastify, nếu thêm thì qua kiểm giấy phép OSI và ghi ở `DEPENDENCIES.txt` | Chưa làm |
@@ -70,4 +73,4 @@ Nó đáp ứng câu "PaaS phục vụ các ứng dụng tầng trên" của đ�
 | Tích hợp: gửi hồ sơ, nhận webhook, liên kết sang DX-OS | Chưa làm |
 | Kiểm chạy theo README trên máy sạch | Chưa làm |
 | Phần pitch (tầm nhìn, nỗi đau, thị trường, cạnh tranh) vào `docs/DEMO.md`, nhận định thị trường ghi là giả thuyết vì chưa có khách hàng thật (#231) | Chưa làm |
-| Xóa dòng ở `BACKLOG.md` mục 3.1 và tệp này | Chưa làm |
+| Xóa dòng #343 ở `BACKLOG.md` mục 3.1 và tệp này | Chưa làm |

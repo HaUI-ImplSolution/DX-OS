@@ -61,6 +61,11 @@
 #                              one role of one model; the secret is shown once, rotate gives a new one;
 #                              --env prints only PREFIX_CLIENT_ID and PREFIX_CLIENT_SECRET, ready to append to
 #                              the .env file of the application
+#   dxos connect <model> --role R [--role R ...] [--app NAME] [--prefix PREFIX] [--env-file FILE] [--base-url URL] [--rotate]
+#                              register a client for each role and write DXOS_BASE_URL and their
+#                              PREFIX_ROLE_CLIENT_ID and PREFIX_ROLE_CLIENT_SECRET to the .env file of the
+#                              application (default .env here); a client that is registered but has no secret in
+#                              the file needs --rotate; checks the first new client and says how to use the file
 #   dxos client test <name> [--url URL] [--secret-file FILE]
 #                              sign in as the application and call the API of its model, and say what is wrong
 #                              when it fails; the secret comes from FILE, DXOS_CLIENT_SECRET or a prompt
@@ -170,7 +175,7 @@ print_next_steps() {
   local guide="https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/QUICKSTART.md"
   echo
   if [[ "$(stack_mode)" == core ]]; then
-    echo "Next: dxos apply <model-file>, then dxos client add <name> --model M --role R for your application."
+    echo "Next: dxos apply <model-file>, then dxos connect <model> --role R for your application."
   else
     echo "Next: apply a model at $(public_url)/console or with dxos apply <model-file>."
   fi
@@ -998,7 +1003,7 @@ cmd_client_test() {
   echo "1. Reaching $url"
   if ! curl -sS -o /dev/null --max-time 10 "$url/realms/dxos/.well-known/openid-configuration" 2>"$work/err"; then
     echo "   FAIL: $(cat "$work/err")"
-    echo "   Check the address (PUBLIC_HOST in $DEPLOY_DIR/.env); from a container use the host name or IP of this machine, not localhost."
+    echo "   Check the address; from a container use host.docker.internal with extra_hosts host-gateway, or the host name or IP of this machine, not localhost."
     return 1
   fi
   echo "   ok"
@@ -1539,6 +1544,98 @@ cmd_uninstall() {
   fi
 }
 
+# Connects an application: registers one client for each role it uses and writes DXOS_BASE_URL and the
+# variables of the clients to its .env file. The secret the API shows once goes straight to the file.
+cmd_connect() {
+  local usage="usage: dxos connect <model> --role R [--role R ...] [--app NAME] [--prefix PREFIX] [--env-file FILE] [--base-url URL] [--rotate]"
+  local model="${1:-}" app="" prefix="DXOS" env_file="" base_url="" rotate=false roles=()
+  local role name var_prefix clients exists work port client_id secret test_name="" test_secret="" wrote=0
+  [[ "$model" =~ ^[a-z][a-z0-9_]*$ ]] || die "$usage"
+  shift
+  while (( $# )); do
+    case "$1" in
+      --role) roles+=("${2:?--role needs a role name}"); shift 2 ;;
+      --role=*) roles+=("${1#--role=}"); shift ;;
+      --app) app="${2:?--app needs a name}"; shift 2 ;;
+      --app=*) app="${1#--app=}"; shift ;;
+      --prefix) prefix="${2:?--prefix needs a prefix such as DXOS_RETAIL}"; shift 2 ;;
+      --prefix=*) prefix="${1#--prefix=}"; shift ;;
+      --env-file) env_file="$(from_caller "${2:?--env-file needs a file}")"; shift 2 ;;
+      --env-file=*) env_file="$(from_caller "${1#--env-file=}")"; shift ;;
+      --base-url) base_url="${2:?--base-url needs the address of the gateway}"; shift 2 ;;
+      --base-url=*) base_url="${1#--base-url=}"; shift ;;
+      --rotate) rotate=true; shift ;;
+      *) die "unknown option: $1 ($usage)" ;;
+    esac
+  done
+  (( ${#roles[@]} )) || die "at least one --role is required ($usage)"
+  check_env_prefix "$prefix"
+  app="${app:-$model}"
+  [[ -n "$env_file" ]] || env_file="$(from_caller .env)"
+  if [[ -z "$base_url" ]]; then
+    port="$(env_value APISIX_HOST_PORT)"
+    port="${port##*:}"
+    base_url="http://host.docker.internal:${port:-9080}"
+  fi
+  for role in "${roles[@]}"; do
+    [[ "$role" =~ ^[A-Z][A-Z0-9_]*$ ]] || die "not a role name: $role"
+    name="${app}-${role,,}"
+    [[ "$name" =~ ^[a-z][a-z0-9_-]{0,39}$ ]] || die "the client name $name is too long or has a character that is not allowed; give a shorter --app"
+  done
+
+  api GET /clients
+  [[ "$API_STATUS" == 200 ]] || { pretty "$API_BODY"; return 1; }
+  clients="$API_BODY"
+
+  [[ -e "$env_file" ]] || (umask 077; : >"$env_file")
+  [[ ! -s "$env_file" || -z "$(tail -c1 "$env_file")" ]] || echo >>"$env_file"
+  if ! grep -qE '^DXOS_BASE_URL=' "$env_file"; then
+    printf 'DXOS_BASE_URL=%s\n' "$base_url" >>"$env_file" || die "cannot write $env_file"
+  fi
+
+  for role in "${roles[@]}"; do
+    name="${app}-${role,,}"
+    var_prefix="${prefix}_${role}"
+    if grep -qE "^${var_prefix}_CLIENT_SECRET=." "$env_file"; then
+      echo "dxos-app-$name: $env_file already holds its secret, left as it is"
+      continue
+    fi
+    exists="$(tr '{' '\n' <<<"$clients" | grep "\"name\":\"$name\"" | head -n1 || true)"
+    if [[ -n "$exists" ]]; then
+      $rotate || die "dxos-app-$name is registered but $env_file has no secret for it; run again with --rotate to give it a new secret (the old one stops working)"
+      api POST "/clients/$name/secret"
+    else
+      work="$(mktemp)"
+      printf '{"name":"%s","model":"%s","role":"%s"}' "$name" "$model" "$role" >"$work"
+      api POST /clients "$work" application/json
+      rm -f "$work"
+    fi
+    [[ "$API_STATUS" == 200 ]] || { pretty "$API_BODY"; return 1; }
+    client_id="$(json_field clientId "$API_BODY")"
+    secret="$(json_field secret "$API_BODY")"
+    [[ -n "$client_id" && -n "$secret" ]] || die "the API answered without a secret"
+    printf '%s_CLIENT_ID=%s\n%s_CLIENT_SECRET=%s\n' "$var_prefix" "$client_id" "$var_prefix" "$secret" >>"$env_file" \
+      || die "cannot write $env_file; run dxos connect again with --rotate to give dxos-app-$name a new secret"
+    echo "dxos-app-$name: role $role of $model, written as ${var_prefix}_CLIENT_ID and ${var_prefix}_CLIENT_SECRET"
+    wrote=$((wrote + 1))
+    if [[ -z "$test_name" ]]; then test_name="$name"; test_secret="$secret"; fi
+  done
+
+  if [[ -n "$test_name" ]]; then
+    echo "Checking dxos-app-$test_name"
+    DXOS_CLIENT_SECRET="$test_secret" cmd_client_test "$test_name" || echo "dxos: the check failed; the variables are written, see the step above" >&2
+  fi
+  if (( wrote == 0 )); then echo "Nothing new to write."; return 0; fi
+  cat <<EOF
+
+Written to $env_file ($wrote new client(s)); keep this file out of git.
+Give the service of your application these two lines in its docker-compose.yml:
+    env_file: $(basename "$env_file")
+    extra_hosts: ["host.docker.internal:host-gateway"]
+The address in DXOS_BASE_URL is $(grep -E '^DXOS_BASE_URL=' "$env_file" | tail -n1 | cut -d= -f2-); use the address of this machine instead when the application runs elsewhere.
+EOF
+}
+
 main() {
   # Needs no stack, so it runs before the check for deploy/.env.
   if [[ "${1:-}" == lint ]]; then shift; cmd_lint "$@"; return; fi
@@ -1568,6 +1665,7 @@ main() {
     archive) cmd_archive "$@" ;;
     demo) "$DEPLOY_DIR/demo.sh" "$@" ;;
     client) cmd_client "$@" ;;
+    connect) cmd_connect "$@" ;;
     uninstall) cmd_uninstall "$@" ;;
     version) echo "DX-OS $(env_value DXOS_IMAGE_TAG) in $PREFIX" ;;
     help|-h|--help) usage_text ;;

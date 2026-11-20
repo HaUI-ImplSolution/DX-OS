@@ -264,6 +264,12 @@ Kiểm bằng đúng các lệnh và thao tác trong tài liệu.
     - Áp dụng `required_when` nối nhiều phép vào thực thể đã có hồ sơ vi phạm thì kế hoạch bị từ chối và nêu số dòng vi phạm, đếm đúng theo điều kiện nối.
     - `GET /api/v1/meta/models/<tên>/entities/<thực thể>` và `x-dxos-required-when` của OpenAPI trả điều kiện nối dạng `{op: "and", conditions: [...]}`, điều kiện một phép vẫn `{field, op, value}`.
     - Ở web: nút hành động của hồ sơ không đạt điều kiện bị mờ kèm gợi ý "Chỉ thực hiện khi ... và (... hoặc ...)", ô `note` báo đỏ đúng lúc, và tab Soạn hiện điều kiện nối ở bảng hành động.
+51. **`dxos connect`** (stack có `dxos-cli`, đã áp dụng `examples/order_approval/dxos.yaml`, `PUBLIC_HOST` còn `localhost`):
+    - Trong thư mục `examples/order_approval` không có `.env`: `dxos connect order_approval --role REQUESTER --role APPROVER` ghi `.env` quyền `600` có `DXOS_BASE_URL=http://host.docker.internal:<cổng>` và bốn biến client, không in secret, và `dxos client test` đạt.
+    - `docker compose run --rm app` in `filed order 1, status submitted` và `approved order 1, status approved`.
+    - Chạy lại không đổi tệp (`Nothing new to write`).
+    - Xóa dòng `DXOS_APPROVER_CLIENT_SECRET`: chạy lại bị từ chối và nói dùng `--rotate`; với `--rotate` thì có secret mới và `dxos client test` đạt.
+    - Vai không có trong mô hình bị API từ chối và không ghi secret nào; `--app` quá dài bị từ chối; `--prefix DXOS_RETAIL --app shop` ghi `DXOS_RETAIL_<VAI>_CLIENT_*` và tệp thiếu dòng cuối vẫn được nối đúng dòng.
 
 ### Trợ lý (tùy chọn)
 

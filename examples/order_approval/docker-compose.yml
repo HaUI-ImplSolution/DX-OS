@@ -1,16 +1,13 @@
 # SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
-# The application of this example; replace it with your own image and keep the environment block.
-# The values come from the .env file next to this one, see README.md.
+# The application of this example; replace it with your own image and keep env_file and extra_hosts.
+# The .env file next to this one is written by dxos connect, see README.md.
 services:
   app:
     image: python:3.12-slim
     command: python /app/app.py
     volumes:
       - ./app.py:/app/app.py:ro
-    environment:
-      DXOS_BASE_URL: ${DXOS_BASE_URL:?set DXOS_BASE_URL in .env}
-      DXOS_REQUESTER_CLIENT_ID: ${DXOS_REQUESTER_CLIENT_ID:?set it in .env}
-      DXOS_REQUESTER_CLIENT_SECRET: ${DXOS_REQUESTER_CLIENT_SECRET:?set it in .env}
-      DXOS_APPROVER_CLIENT_ID: ${DXOS_APPROVER_CLIENT_ID:?set it in .env}
-      DXOS_APPROVER_CLIENT_SECRET: ${DXOS_APPROVER_CLIENT_SECRET:?set it in .env}
+    env_file: .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

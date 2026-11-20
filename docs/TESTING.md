@@ -278,6 +278,7 @@ Kiểm bằng đúng các lệnh và thao tác trong tài liệu.
     - Chưa nối DX-OS: ứng dụng chạy, chi tiết đơn không có biểu mẫu Đổi trả và Bảo hành, `/claims` trả 404.
     - Sau khi áp dụng hai mô hình, đăng ký hai tài khoản máy, ghi `.env` và thêm `env_file`, `extra_hosts`: biểu mẫu hiện ra, phiếu đổi trả và bảo hành gửi được, quản lý duyệt thì mở lại trang ứng dụng thấy "Đã duyệt", phiếu bảo hành quá hạn 2 phút hiện "Quá hạn".
     - Sản phẩm chưa có ở DX-OS: ứng dụng báo "nhờ quản lý thêm vào mục Sản phẩm" và không tạo phiếu.
+    - `./reset.sh --keep-dxos` xóa container, ảnh, dữ liệu và `.env` của ứng dụng, đưa `docker-compose.yml` về như cũ và gỡ hai tài khoản máy; `./reset.sh` còn gỡ DX-OS cùng dữ liệu.
     - Ba phép thử của mục "Vì sao không tự viết vòng duyệt": 403 khi tài khoản máy gọi `approve`, `dxos history verify` báo dòng bị sửa rồi nguyên vẹn sau khi khôi phục, `LOSS` cần `--accept LOSS` và đổi hạn bị từ chối khi còn phiếu mở.
 
 ### Trợ lý (tùy chọn)

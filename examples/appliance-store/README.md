@@ -17,6 +17,7 @@ appliance-store/
   docker-compose.yml   ứng dụng và cơ sở dữ liệu SQLite của nó
   app/                 mã ứng dụng (Node.js 24, không có gói npm nào)
   catalog/             danh mục sản phẩm mẫu
+  reset.sh             xóa dữ liệu để chạy demo lại từ đầu
 ```
 
 ## Bước 1. Chạy ứng dụng của bạn
@@ -307,6 +308,22 @@ Cấu hình webhook nằm ở tệp trên máy chủ, không có trên giao di�
 - **Tự dựng giao diện duyệt trong ứng dụng:** gọi API theo OpenAPI của từng mô hình; có thể sinh client bằng OpenAPI Generator, xem [`docs/EXTENSIONS.md`](../../docs/EXTENSIONS.md).
 - **Báo tin vào chat (Mattermost, Slack):** thêm một nơi nhận có `format: chat` trong `targets.yml`, xem [`docs/INTEGRATIONS.md`](../../docs/INTEGRATIONS.md).
 - **Giao cho trợ lý AI:** mọi bước trên có lệnh `dxos` tương đương (`dxos plan`, `dxos apply`, `dxos connect`, `dxos client`), nên một trợ lý AI đọc [`docs/OPERATIONS.md`](../../docs/OPERATIONS.md) có thể tích hợp giúp bạn mà không cần Console.
+
+## Làm lại từ đầu
+
+Sau buổi demo, một lệnh xóa dữ liệu để chạy lại từ bước 1:
+
+```bash
+./reset.sh
+```
+
+Lệnh hỏi xác nhận (gõ `reset`), rồi:
+
+- Dừng ứng dụng, xóa container, ảnh, dữ liệu SQLite và `.env`, và bỏ hai dòng `env_file`, `extra_hosts` khỏi `docker-compose.yml`.
+- Gỡ DX-OS cùng mọi mô hình, tài khoản, phiếu và tệp của nó (`dxos uninstall --purge`); chạy lại ở bước 2 để cài lại.
+
+Muốn giữ DX-OS và chỉ xóa phía ứng dụng thì thêm `--keep-dxos`; hai tài khoản máy của ứng dụng bị gỡ, mô hình và người dùng ở DX-OS còn nguyên.
+`--yes` bỏ bước xác nhận.
 
 ## Giới hạn nói thẳng
 

@@ -7,10 +7,6 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ## [Unreleased]
 
-### Phát hành
-
-- Workflow `Platform` dựng năm image một lần và giữ trong cache theo hash của mã nguồn, các job kiểm đầu-cuối nạp image từ đó thay vì tự dựng; thời gian chờ giữa các lần chạy lại có thêm phần ngẫu nhiên.
-
 ## [2.0.2] - 2026-11-19
 
 Sửa và bổ sung sau bản `2.0.1`: cài mới tạo được tài khoản `admin`, Hộp việc đưa hồ sơ mới lên đầu, kế hoạch mở rộng quyền chờ duyệt, điều kiện nối nhiều phép, hướng dẫn bắt đầu nhanh và chữ ký cho bản phát hành.
@@ -28,6 +24,11 @@ Nâng cấp từ `2.0.1` giữ nguyên dữ liệu.
 - Kế hoạch đổi mô hình xếp việc cấp thêm hoặc mở rộng quyền của một vai ở mức `MIGRATION` kèm câu hỏi, nên `dxos apply` đòi `--accept MIGRATION` và `dxos gitops` ở chế độ `auto` để nó chờ duyệt.
 - Điều kiện `when` của hành động và `required_when` của trường ghép được nhiều phép so sánh bằng `and`, `or`, `not` và ngoặc; điều kiện một phép viết như cũ.
 - Tệp của bản phát hành và image `dxos-*` được ký bằng Sigstore khi phát hành, kiểm bằng `gh attestation verify` (xem `docs/OPERATIONS.md`).
+- Chuỗi hash của lịch sử giữ cách xác minh phiên bản 1 cho dữ liệu đã phát hành; sự kiện mới dùng phiên bản 2 và không đưa tên, ghi chú hoặc chi tiết tự do vào chuỗi.
+
+### Giao diện
+
+- Nút Xuất CSV chờ rồi hỏi lại khi cổng API từ chối vì hết hạn mức (429), thay vì dừng hoặc bỏ tên người, và báo khi có tên người không tra được nên được ghi bằng mã.
 
 ### Ứng dụng ngoài
 
@@ -48,6 +49,7 @@ Nâng cấp từ `2.0.1` giữ nguyên dữ liệu.
 - Workflow `Release Images` và `Release Package` đặt quyền ghi ở job cần ghi, còn cấp workflow chỉ đọc.
 - CI tự chạy lại khi một job lỗi vì mạng hoặc hạn mức của dịch vụ tải về (Maven Central, GitHub API): bước dựng image chạy lại trong job, workflow `Rerun` chạy lại job lỗi, và kiểm giấy phép của phiên bản giữ câu trả lời của GitHub trong cache.
 - `backend/Dockerfile` tải Maven một lần cho cả hai image và thử `repo1.maven.org` khi host mặc định từ chối.
+- Workflow `Platform` dựng năm image một lần và giữ trong cache theo hash của mã nguồn, các job kiểm đầu-cuối nạp image từ đó thay vì tự dựng; thời gian chờ giữa các lần chạy lại có thêm phần ngẫu nhiên.
 
 ## [2.0.1] - 2026-11-17
 

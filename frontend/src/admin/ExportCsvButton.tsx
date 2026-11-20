@@ -12,8 +12,25 @@ import { t } from "../shell/t";
 // A list is written out through the same calls the screen makes, so a person gets the rows they may see.
 const PAGE = 200;
 const MAX_ROWS = 10000;
+// A request the gateway refuses for lack of quota (429) is asked again after these waits, which end after the minute
+// its quota counts over; a request that is still refused ends the export.
+const WAITS = [3000, 10000, 20000, 30000];
 
 type Row = Record<string, unknown>;
+
+const refused = (error: unknown) => (error as { status?: number } | null)?.status === 429;
+
+async function untilAccepted<T>(call: () => Promise<T>, waiting: () => void): Promise<T> {
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      return await call();
+    } catch (error) {
+      if (!refused(error) || attempt >= WAITS.length) throw error;
+      waiting();
+      await new Promise((resolve) => setTimeout(resolve, WAITS[attempt]));
+    }
+  }
+}
 
 // Exports the rows of the list with its filters and sort, as a CSV file a spreadsheet can open.
 export default function ExportCsvButton({ entity, units }: { entity: EntityMeta; units: Record<string, string> }) {
@@ -25,18 +42,24 @@ export default function ExportCsvButton({ entity, units }: { entity: EntityMeta;
 
   const run = async () => {
     setBusy(true);
+    let told = false;
+    const waiting = () => {
+      if (told) return;
+      told = true;
+      notify(t("Hệ thống đang giới hạn tốc độ, đang chờ để xuất tiếp"), { type: "info" });
+    };
     try {
       const rows: Row[] = [];
       let total = 0;
       for (let page = 1; rows.length < MAX_ROWS; page += 1) {
-        const result = await dataProvider.getList(resource, { pagination: { page, perPage: PAGE }, sort, filter: filterValues });
+        const result = await untilAccepted(() => dataProvider.getList(resource, { pagination: { page, perPage: PAGE }, sort, filter: filterValues }), waiting);
         total = result.total ?? 0;
         rows.push(...(result.data as Row[]));
         if (result.data.length < PAGE || rows.length >= total) break;
       }
       const kept = rows.slice(0, MAX_ROWS);
       const fields = entity.fields.filter((field) => field.type !== "file");
-      const names = await personNames(kept, fields.filter((field) => field.type === "user").map((field) => field.name));
+      const { names, missing } = await personNames(kept, fields.filter((field) => field.type === "user").map((field) => field.name), waiting);
       const stateLabel = (status: unknown) => t(entity.process?.states.find((state) => state.name === status)?.label ?? String(status ?? ""));
       const header = [
         t("Mã"),
@@ -71,9 +94,9 @@ export default function ExportCsvButton({ entity, units }: { entity: EntityMeta;
         { text: row.updated_at ? formatDateTime(String(row.updated_at)) : "" },
       ]);
       download(`${entity.name}-${new Date().toISOString().slice(0, 10)}.csv`, toCsv([header, ...body]));
-      notify(total > kept.length ? t("Đã xuất {n} hồ sơ đầu tiên trong {total}", { n: kept.length, total }) : t("Đã xuất {n} hồ sơ", { n: kept.length }), {
-        type: total > kept.length ? "warning" : "success",
-      });
+      const cut = total > kept.length;
+      const done = cut ? t("Đã xuất {n} hồ sơ đầu tiên trong {total}", { n: kept.length, total }) : t("Đã xuất {n} hồ sơ", { n: kept.length });
+      notify(missing ? `${done}. ${t("Một số tên người không tra được nên được ghi bằng mã.")}` : done, { type: cut || missing ? "warning" : "success" });
     } catch (error) {
       notify(error instanceof Error ? error.message : t("Không xử lý được"), { type: "error" });
     } finally {
@@ -88,18 +111,21 @@ export default function ExportCsvButton({ entity, units }: { entity: EntityMeta;
   );
 }
 
-// The names of the people a user field holds, looked up fifty at a time.
-async function personNames(rows: Row[], userFields: string[]): Promise<Record<string, string>> {
+// The names of the people a user field holds, looked up fifty at a time. A lookup that still fails leaves those people
+// written as their ids, and the export says so.
+async function personNames(rows: Row[], userFields: string[], waiting: () => void): Promise<{ names: Record<string, string>; missing: boolean }> {
   const ids = [...new Set(rows.flatMap((row) => userFields.map((name) => row[name]).filter((id): id is string => typeof id === "string" && id !== "")))];
   const names: Record<string, string> = {};
+  let missing = false;
   for (let start = 0; start < ids.length; start += 50) {
+    const chunk = ids.slice(start, start + 50);
     try {
-      (await peopleByIds(ids.slice(start, start + 50))).forEach((person) => {
+      (await untilAccepted(() => peopleByIds(chunk), waiting)).forEach((person) => {
         names[person.id] = person.name;
       });
     } catch {
-      // A name that cannot be found is written as the id.
+      missing = true;
     }
   }
-  return names;
+  return { names, missing };
 }

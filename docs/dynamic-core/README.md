@@ -200,7 +200,7 @@ Hai họ sau là hướng mở rộng, chỉ làm khi ba họ trên đã hoàn c
 1. Cột trạng thái chỉ quy trình được ghi.
 2. Trạng thái cuối bị đóng băng, ghi ai quyết định và lúc nào.
 3. Mỗi lần chuyển trạng thái để lại một dòng lịch sử gồm người làm, lúc nào, hành động và trạng thái trước sau; từ chối và trả lại bắt buộc có lý do.
-   Các dòng lịch sử nối thành một chuỗi hash; `dxos history verify` chỉ ra dòng đầu tiên bị sửa, xóa hoặc chèn, và điểm neo của chuỗi nằm trong kho đối tượng.
+   Các dòng lịch sử nối thành một chuỗi hash; `dxos history verify` chỉ ra dòng đầu tiên bị sửa phần bất biến, xóa hoặc chèn, và điểm neo của chuỗi nằm trong kho đối tượng.
 4. Người làm hành động phải có vai và thấy được bản ghi.
 5. Người tạo không tự quyết định bản ghi của mình, trừ khi mô hình bật `allow_self_decision` một cách có chủ ý.
 6. Người nộp rút lại được khi chưa ở trạng thái cuối, và bản ghi được giữ lại.

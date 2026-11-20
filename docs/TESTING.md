@@ -99,7 +99,7 @@ python3 e2e/api/check_bootstrap.py
 | `check_conformance.py` | Rào chắn của lõi giữ với mọi mô hình đã áp dụng (hoặc các mô hình nêu tên): không ghi được `status`, không token thì 401, không đọc được dữ liệu mô hình khác |
 | `check_cli.py` | Lệnh `dxos`: `lint`, `conformance`, `plan`, `apply --accept`, `model upgrade`, `archive` (kể cả `--store`, `check`, `query`, `list`, `auto`), lịch sử ghi tài khoản của lệnh, bộ mô phỏng IT/OT gửi lại không thêm hồ sơ; cần Docker và tự áp dụng một mô hình riêng |
 | `check_browser.py` | Giao diện trình duyệt ngoài: `dxos client browser add`, `list`, `remove`, CORS, đăng nhập PKCE gọi được API, redirect không an toàn bị từ chối |
-| `check_events.py` | Webhook: thứ tự, chữ ký, thử lại, nội dung không lộ, nhắc hạn; chuỗi hash của lịch sử và bên nhận so hash |
+| `check_events.py` | Webhook: thứ tự, chữ ký, thử lại, nội dung không lộ, nhắc hạn; chuỗi hash nhiều phiên bản, trường riêng tư ngoài hash, điểm neo và bên nhận so hash |
 | `check_bootstrap.py` | Tệp mô hình lúc khởi động: `applied`, `unchanged`, `skipped`, `failed` |
 | `check_surface.py` | Không cần tài khoản, chạy ở cả hai chế độ: `/v3/api-docs` trả JSON, `/swagger-ui*` và `/admin*` trả 404 (`/admin` mở khi `KEYCLOAK_ADMIN_CONSOLE=true`), đăng nhập Keycloak phục vụ, chế độ `core` không phục vụ trang nào của Tầng 2 |
 
@@ -152,6 +152,8 @@ Mỗi mục nêu điều phải thấy; lệnh và biến cấu hình chi tiết
     Hành động cần ghi chú bắt buộc nhập ghi chú; chọn hơn 50 hồ sơ thì nút mờ; vai không có quyền xử lý không có ô chọn.
 15. **Bảng theo trạng thái:** mỗi trạng thái là một cột có tổng số và tối đa 10 thẻ; thẻ mở đúng chi tiết, "Xem cả N hồ sơ" mở danh sách đã lọc; tải lại vẫn ở chế độ bảng; bộ lọc áp cho mọi cột; ở 360 px các cột cuộn bên trong, trang không tràn ngang.
 16. **Xuất CSV:** tệp `<thực thể>-<ngày>.csv` có BOM, một dòng tiêu đề và đúng số dòng của danh sách đã lọc; ô bắt đầu bằng `=` hoặc `@` được thêm dấu nháy; vai chỉ thấy hồ sơ của mình chỉ nhận các dòng đó.
+    Khi cổng API trả 429 giữa lúc xuất (ví dụ hạ `limit-count` của route `api` xuống vài lượt mỗi phút), nút hiện "Hệ thống đang giới hạn tốc độ, đang chờ để xuất tiếp", chờ tối đa khoảng một phút rồi hỏi lại và xuất đủ; còn bị từ chối thì báo lỗi.
+    Khi chỉ việc tra tên người bị từ chối, tệp vẫn được tạo, cột người ghi mã và thông báo cuối nêu "Một số tên người không tra được nên được ghi bằng mã."
 17. **Khối `ui:`:** menu hiện nhóm và biểu tượng khai báo; danh sách mở đúng cột và thứ tự khai báo, nút Cột vẫn hiện đủ cột; biểu mẫu chia nhóm theo `ui.form` với nhóm Khác ở cuối và hiện lời gợi ý; đổi `ui:` khi còn hồ sơ mở vẫn áp dụng được.
 18. **Kiểu và quy tắc trên biểu mẫu** (mẫu Sổ tài sản): `boolean`, `date` và nhiều lựa chọn có ô nhập riêng; mã sai mẫu báo "Không đúng định dạng"; giá trị ngoài khoảng bị từ chối; "Bắt buộc nhập khi" hiện đúng với `required_when`.
     Trường nhiều lựa chọn có `default` là danh sách thì hồ sơ tạo không gửi trường đó nhận danh sách ấy; ở chế độ Điền form, ô mặc định chọn từ `options` và YAML ghi danh sách.
@@ -217,7 +219,7 @@ Kiểm bằng đúng các lệnh và thao tác trong tài liệu.
 
 ### Lệnh `dxos` ngoài stack kiểm
 
-39. **`dxos history verify`** sau khi sửa, xóa hoặc chèn một dòng `record_event` bằng SQL: chỉ ra dòng đầu tiên bị đổi; trả lại dòng thì chuỗi nguyên vẹn.
+39. **`dxos history verify`** với chuỗi gồm hash phiên bản 1 và 2: sửa phần bất biến, xóa hoặc chèn một dòng `record_event` bằng SQL thì chỉ ra dòng đầu tiên bị đổi; đổi tên người thực hiện, ghi chú hoặc chi tiết của dòng phiên bản 2 không làm đổi hash hay điểm neo, còn đổi mã người thực hiện thì chuỗi vỡ ở dòng đó; trả phần bất biến về giá trị cũ thì chuỗi nguyên vẹn.
 40. **`dxos reconcile`:** xóa container `backend` thì chạy lại; sau `dxos stop` thì không bật lại; mọi service có chính sách restart `unless-stopped`.
 41. **`dxos demo`** (stack có `dxos-cli`): tạo bốn tài khoản `judge_*` và 40 hồ sơ; `judge_student` thấy hồ sơ của mình, mỗi cán bộ chỉ thấy đơn vị mình, `judge_supervisor` thấy mọi hồ sơ và không có nút Tạo mới; chạy lại không nộp thêm hồ sơ và in mật khẩu mới; `dxos demo remove` gỡ bốn tài khoản.
 42. **`dxos client add`, `list`, `role`, `rotate`, `remove`:** secret chỉ in ở `add` và `rotate`; `role` đổi vai mà secret cũ vẫn lấy được token và token mới mang vai mới; `rotate` làm secret cũ bị từ chối; `remove` làm client không lấy được token.

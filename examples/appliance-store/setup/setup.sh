@@ -34,7 +34,7 @@ done
 command -v curl >/dev/null 2>&1 || die "curl is required"
 ENV_FILE="$DEPLOY_DIR/.env"
 [[ -f "$ENV_FILE" ]] || die "$ENV_FILE is missing; set --deploy-dir or DXOS_DEPLOY_DIR to the DX-OS installation"
-CATALOG="$HERE/../catalog/products.csv"
+CATALOG="$HERE/../catalog/products.tsv"
 [[ -f "$CATALOG" ]] || die "$CATALOG is missing"
 
 env_value() { grep -E "^$1=" "$ENV_FILE" | tail -n1 | cut -d= -f2- || true; }
@@ -139,7 +139,7 @@ HEADER="$WORK/client.header"
 # The code of a product is unique, so a product loaded before is found by its code and left alone.
 made=0
 kept=0
-while IFS=, read -r code name; do
+while IFS=$'\t' read -r code name; do
   [[ -n "$code" ]] || continue
   api GET "/api/v1/data/retail/product?filter.code=$code"
   [[ "$STATUS" == 200 ]] || die "looking for product $code: HTTP $STATUS $BODY"

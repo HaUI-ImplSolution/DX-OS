@@ -13,8 +13,7 @@ Thứ tự dưới đây xếp theo số điểm đang để hở; chi tiết t�
 
 | Thứ tự | Việc | Điểm liên quan |
 |---|---|---|
-| 1 | Bằng chứng lõi là PaaS: ứng dụng mẫu (mục 3) | Nguyên gốc 10, phát triển bền vững 10 |
-| 2 | Bài trình bày chung kết (mục 2) | Hoàn thiện 10, trình diễn 10 |
+| 1 | Bài trình bày chung kết (mục 2) | Hoàn thiện 10, trình diễn 10 |
 
 ## 2. Phải xử lý trước khi phát hành
 
@@ -34,7 +33,6 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 | Việc | Issue | Ghi chú |
 |---|---|---|
 | Khách hàng | #231 | Chưa nói chuyện với khách hàng nào; mục Khách hàng và giá trị của `README.md` là giả thuyết |
-| Ứng dụng mẫu gọi lõi từ bên ngoài | #343 | Chưa có ứng dụng ngoài đủ thật để chứng minh một ứng dụng có sẵn thêm quy trình bằng DX-OS, nên câu "PaaS phục vụ các ứng dụng tầng trên" của đề chưa có bằng chứng chạy được; đã chốt dựng một ứng dụng nhỏ ở `examples/` như của nhà phát triển ngoài, hai quy trình (dùng nguyên và mở rộng một mẫu); kế hoạch ở [`UNG_DUNG_MAU.md`](./UNG_DUNG_MAU.md) |
 
 ### 3.2. Chưa có issue
 

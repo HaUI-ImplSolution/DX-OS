@@ -270,6 +270,10 @@ Kiểm bằng đúng các lệnh và thao tác trong tài liệu.
     - Chạy lại không đổi tệp (`Nothing new to write`).
     - Xóa dòng `DXOS_APPROVER_CLIENT_SECRET`: chạy lại bị từ chối và nói dùng `--rotate`; với `--rotate` thì có secret mới và `dxos client test` đạt.
     - Vai không có trong mô hình bị API từ chối và không ghi secret nào; `--app` quá dài bị từ chối; `--prefix DXOS_RETAIL --app shop` ghi `DXOS_RETAIL_<VAI>_CLIENT_*` và tệp thiếu dòng cuối vẫn được nối đúng dòng.
+52. **Webhook tới ứng dụng cùng máy** (stack đầy đủ, một máy chủ nhận tạm nghe trên `0.0.0.0:<cổng>`, mô hình có `webhook: <tên>`):
+    - Trong `deploy/webhooks/targets.yml` khai `<tên>` với `url: http://host.docker.internal:<cổng>/hook` và `secret`.
+    - Một thay đổi hồ sơ làm máy chủ nhận được `POST` JSON kèm chữ ký.
+    - `docker compose exec backend grep host.docker.internal /etc/hosts` trả một dòng địa chỉ.
 
 ### Trợ lý (tùy chọn)
 

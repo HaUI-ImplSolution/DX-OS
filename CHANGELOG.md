@@ -14,6 +14,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Thực thể khai báo được khối `ai.tasks` trong tệp mô hình: trường đầu vào, trường đề xuất, hướng dẫn và mã nguồn tham khảo; lõi chỉ kiểm khai báo, không gọi model.
 - `dxos connect <mô hình> --role R [--role R ...]` đăng ký một client cho mỗi vai và ghi `DXOS_BASE_URL` cùng các biến của chúng vào `.env` của ứng dụng, đăng nhập thử rồi in hai dòng cần thêm vào `docker-compose.yml`; chạy lại thì giữ nguyên secret đã có, và client mất secret cần `--rotate`.
 - Ứng dụng chạy cùng máy với DX-OS không cần đổi `PUBLIC_HOST`: container gọi DX-OS qua `host.docker.internal` với `extra_hosts`; `docs/QUICKSTART.md` đường 2 và `examples/order_approval` theo cách này.
+- Backend có `extra_hosts: host.docker.internal:host-gateway`, nên webhook tới ứng dụng cùng máy dùng địa chỉ `http://host.docker.internal:<cổng>/...` trong `deploy/webhooks/targets.yml`.
 - Hồ sơ trong API dữ liệu và thông điệp webhook, cùng feed `GET /api/v1/events`, mang `webUrl`, trang của hồ sơ trên giao diện web; ứng dụng ngoài đưa người duyệt sang đó bằng liên kết này (xem `docs/EXTENSIONS.md`). Chế độ `dxos start --core` không có `webUrl`.
 
 ### Trợ lý nghiệp vụ (tùy chọn)

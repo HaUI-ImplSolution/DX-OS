@@ -56,8 +56,8 @@ Kết quả đầu ra: đổi trả đi hết vòng; webhook sai chữ ký bị 
 
 **Spec và tài liệu**
 
-- [ ] WP-03-DOC-01 Tài liệu đường mạng webhook về ứng dụng cùng máy: `docs/INTEGRATIONS.md`, `docs/OPERATIONS.md`, `docs/QUICKSTART.md`, CHANGELOG.
-- [ ] WP-03-DOC-02 Thêm mục kiểm tay vào `docs/TESTING.md`: webhook tới ứng dụng ở `host.docker.internal`.
+- [x] WP-03-DOC-01 Tài liệu đường mạng webhook về ứng dụng cùng máy: `docs/INTEGRATIONS.md`, `docs/OPERATIONS.md`, `docs/QUICKSTART.md`, CHANGELOG.
+- [x] WP-03-DOC-02 Thêm mục kiểm tay vào `docs/TESTING.md`: webhook tới ứng dụng ở `host.docker.internal`.
 
 **Backend**
 
@@ -68,7 +68,7 @@ Kết quả đầu ra: đổi trả đi hết vòng; webhook sai chữ ký bị 
 
 **Infra, deploy, CI**
 
-- [ ] WP-03-INFRA-01 `extra_hosts` cho backend ở `deploy/docker-compose.yml`, kiểm `docker compose config`.
+- [x] WP-03-INFRA-01 `extra_hosts` cho backend ở `deploy/docker-compose.yml`, kiểm `docker compose config`.
 - [ ] WP-03-INFRA-02 Hướng dẫn trong README: `targets.yml`, `webhook: <tên>`, đường mạng.
 
 **Test**

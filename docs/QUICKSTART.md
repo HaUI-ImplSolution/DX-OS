@@ -299,7 +299,7 @@ Dùng tài liệu này để sinh client thay vì viết tay.
 ### Bước 6. Biết khi hồ sơ đổi (không bắt buộc)
 
 - **Hỏi lại:** gọi `GET` hồ sơ hoặc danh sách, ví dụ `?filter.status=approved`. Cách đơn giản nhất.
-- **Webhook:** DX-OS gọi vào địa chỉ của ứng dụng mỗi khi hồ sơ đổi, kèm chữ ký để kiểm. Cách khai ở [`INTEGRATIONS.md`](./INTEGRATIONS.md#webhook-sự-kiện).
+- **Webhook:** DX-OS gọi vào địa chỉ của ứng dụng mỗi khi hồ sơ đổi, kèm chữ ký để kiểm. Cách khai ở [`INTEGRATIONS.md`](./INTEGRATIONS.md#webhook-sự-kiện); ứng dụng cùng máy dùng địa chỉ `http://host.docker.internal:<cổng>/...` trong `deploy/webhooks/targets.yml`.
 
 ---
 

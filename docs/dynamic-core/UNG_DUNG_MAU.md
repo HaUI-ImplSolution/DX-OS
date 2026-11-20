@@ -63,7 +63,7 @@ Nó đáp ứng câu "PaaS phục vụ các ứng dụng tầng trên" của đ�
 | Cập nhật issue #343 theo hướng mới | Xong |
 | Giảm số bước tích hợp: lệnh `dxos connect` (#344) | Xong |
 | Thêm công thức OpenAPI Generator vào `docs/EXTENSIONS.md` | Xong |
-| `extra_hosts` cho backend của DX-OS và tài liệu đường mạng webhook | Chưa làm |
+| `extra_hosts` cho backend của DX-OS và tài liệu đường mạng webhook | Xong |
 | Chạy thử đầu cuối script tạo tài khoản và kiểm lịch sử ghi client | Chưa làm |
 | Tệp mô hình bảo hành: kiểm bằng `dxos lint` và `dxos plan` xem khối `ai.tasks` của `support_desk` có bị thừa kế và có cần bỏ không | Chưa làm |
 | Phụ thuộc của ứng dụng: dự kiến chỉ Fastify, nếu thêm thì qua kiểm giấy phép OSI và ghi ở `DEPENDENCIES.txt` | Chưa làm |

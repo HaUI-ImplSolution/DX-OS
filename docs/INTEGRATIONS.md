@@ -18,6 +18,9 @@ targets:
     format: chat
 ```
 
+Ứng dụng chạy cùng máy với DX-OS nhận webhook ở `http://host.docker.internal:<cổng>/<đường dẫn>`: backend có `extra_hosts: host.docker.internal:host-gateway`, nên không cần đặt địa chỉ IP của máy.
+Ứng dụng không chạy trong Docker thì phải nghe trên địa chỉ mà cổng mạng của Docker tới được, không chỉ trên `127.0.0.1`.
+
 `format` là `json` (thông điệp nguyên văn, mặc định) hoặc `chat` (xem "Câu cho Mattermost và Slack" dưới đây); đích mặc định đặt dạng bằng `DXOS_WEBHOOK_FORMAT`.
 
 Mô hình không ghi `webhook` thì dùng `DXOS_WEBHOOK_URL` trong `.env`; để trống và không ghi đích thì mô hình không gửi gì.

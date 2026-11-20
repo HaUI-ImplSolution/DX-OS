@@ -1,8 +1,0 @@
-# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
-# SPDX-License-Identifier: Apache-2.0
-# Returns and exchanges: the template as it is. The store clerk files a request for the customer
-# through the CUSTOMER client; the manager (STORE_STAFF) decides in the inbox of DX-OS.
-# `webhook: store` names the target in deploy/webhooks/targets.yml that receives every change.
-extends: retail_return
-name: retail
-webhook: store

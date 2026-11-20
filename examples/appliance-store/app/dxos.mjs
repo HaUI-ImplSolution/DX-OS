@@ -9,20 +9,21 @@ const CLIENTS = {
   retail: { id: process.env.DXOS_CUSTOMER_CLIENT_ID, secret: process.env.DXOS_CUSTOMER_CLIENT_SECRET },
   warranty: { id: process.env.DXOS_REQUESTER_CLIENT_ID, secret: process.env.DXOS_REQUESTER_CLIENT_SECRET },
 };
+// The store runs without DX-OS; the claim forms appear once the variables written by dxos connect are there.
+export const connected = () => Boolean(BASE && CLIENTS.retail.id && CLIENTS.retail.secret && CLIENTS.warranty.id && CLIENTS.warranty.secret);
 const tokens = new Map();
-const productIds = new Map();
 
 async function token(model) {
   const cached = tokens.get(model);
   if (cached && cached.expires > Date.now() + 30000) return cached.value;
   const client = CLIENTS[model];
-  if (!BASE || !client?.id || !client?.secret) throw new Error('DX-OS is not connected: run dxos connect, see README.md');
+  if (!BASE || !client?.id || !client?.secret) throw new Error('ứng dụng chưa nối DX-OS, xem README.md');
   const response = await fetch(`${BASE}/realms/dxos/protocol/openid-connect/token`, {
     method: 'POST',
     body: new URLSearchParams({ grant_type: 'client_credentials', client_id: client.id, client_secret: client.secret }),
   });
   const body = await response.json().catch(() => ({}));
-  if (!response.ok || !body.access_token) throw new Error(`DX-OS refused the client ${client.id}`);
+  if (!response.ok || !body.access_token) throw new Error(`DX-OS từ chối tài khoản máy ${client.id}`);
   tokens.set(model, { value: body.access_token, expires: Date.now() + body.expires_in * 1000 });
   return body.access_token;
 }
@@ -34,20 +35,21 @@ async function call(model, method, path, payload) {
     body: payload ? JSON.stringify(payload) : undefined,
   });
   const body = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(`DX-OS answered ${response.status}: ${body.message || 'no message'}`);
+  if (!response.ok) throw new Error(`DX-OS trả lỗi ${response.status}: ${body.message || 'không có thông báo'}`);
   return body.data;
 }
 
+const productIds = new Map();
 async function productId(code) {
   if (!productIds.has(code)) {
     const found = await call('retail', 'GET', `product?filter.code=${encodeURIComponent(code)}`);
-    if (!found?.items?.length) throw new Error(`the product ${code} is not in DX-OS: run setup/setup.sh`);
+    if (!found?.items?.length) throw new Error(`sản phẩm ${code} chưa có ở DX-OS, nhờ quản lý thêm vào mục Sản phẩm`);
     productIds.set(code, found.items[0].id);
   }
   return productIds.get(code);
 }
 
-const record = (data) => ({ id: data.id, status: data.status, webUrl: data.webUrl || null });
+const record = (data) => ({ id: data.id, status: data.status, overdue: Boolean(data.overdue), webUrl: data.webUrl || null });
 
 // The customer has no account, so the clerk files for them and the name goes into the reason.
 export async function fileReturn(order, { kind, quantity, reason }) {
@@ -72,6 +74,11 @@ export async function fileWarranty(order, { serial, detail }) {
     customer: order.customer,
   });
   return record(data);
+}
+
+// The state of a record in DX-OS, read with the client of its model.
+export async function readRecord(model, entity, id) {
+  return record(await call(model, 'GET', `${entity}/${id}`));
 }
 
 // True when the signature header is the HMAC-SHA256 of the raw body with the shared secret.

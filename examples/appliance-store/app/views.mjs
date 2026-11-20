@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 // The pages of the store as plain HTML.
 
+let linked = false;
+export const showClaims = (value) => { linked = value; };
+
 export const esc = (value) =>
   String(value ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
@@ -30,7 +33,7 @@ const page = (title, body, user) => `<!doctype html>
   .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; } @media (max-width: 700px) { .cols { grid-template-columns: 1fr; } }
 </style></head><body>
 <header><span class="grow">Điện máy Minh Phát</span>${user
-    ? `<a href="/orders">Đơn bán</a><a href="/claims">Yêu cầu đang xử lý</a>
+    ? `<a href="/orders">Đơn bán</a>${linked ? '<a href="/claims">Yêu cầu đang xử lý</a>' : ''}
 <form method="post" action="/logout" style="margin:0"><button style="margin:0;background:#1f4f86">Đăng xuất (${esc(user)})</button></form>` : ''}</header>
 <main>${body}</main></body></html>`;
 
@@ -55,7 +58,7 @@ const claimRow = (c, withOrder) => `<tr>${withOrder ? `<td><a href="/orders/${c.
 export const orderPage = (user, order, claims, flash) => page(`Đơn ${order.receipt}`, `${notice(flash)}
 <h2>Đơn ${esc(order.receipt)}</h2>
 <div class="card"><b>${esc(order.customer)}</b> · ${esc(order.product_name)} × ${order.quantity} · mua ngày ${esc(order.sold_on)}</div>
-<div class="cols">
+${linked ? `<div class="cols">
 <div class="card"><h3>Đổi trả</h3><form method="post" action="/orders/${order.id}/return">
 <label for="k">Yêu cầu</label><select id="k" name="kind"><option>Đổi hàng</option><option>Trả hàng</option></select>
 <label for="q">Số lượng</label><input id="q" name="quantity" type="number" min="1" max="${order.quantity}" value="1" required>
@@ -64,9 +67,9 @@ export const orderPage = (user, order, claims, flash) => page(`Đơn ${order.rec
 <div class="card"><h3>Bảo hành</h3><form method="post" action="/orders/${order.id}/warranty">
 <label for="s">Số seri</label><input id="s" name="serial" required>
 <label for="d">Lỗi gặp phải</label><textarea id="d" name="detail" rows="3" required></textarea>
-<button>Gửi yêu cầu bảo hành</button></form></div></div>
-<h3>Yêu cầu của đơn này</h3>
-${claims.length ? `<table><tr><th>Loại</th><th>Trạng thái</th><th>Nội dung</th><th></th></tr>${claims.map((c) => claimRow(c, false)).join('')}</table>` : '<p>Chưa có yêu cầu nào.</p>'}`, user);
+<button>Gửi yêu cầu bảo hành</button></form></div></div>` : '<div class="card">Ứng dụng chưa có quy trình đổi trả và bảo hành.</div>'}
+${linked ? `<h3>Yêu cầu của đơn này</h3>
+${claims.length ? `<table><tr><th>Loại</th><th>Trạng thái</th><th>Nội dung</th><th></th></tr>${claims.map((c) => claimRow(c, false)).join('')}</table>` : '<p>Chưa có yêu cầu nào.</p>'}` : ''}`, user);
 
 export const claimsPage = (user, claims) => page('Yêu cầu đang xử lý', `<h2>Yêu cầu đang xử lý</h2>
 ${claims.length ? `<table><tr><th>Hóa đơn</th><th>Loại</th><th>Trạng thái</th><th>Nội dung</th><th></th></tr>${claims.map((c) => claimRow(c, true)).join('')}</table>` : '<p>Chưa có yêu cầu nào.</p>'}`, user);

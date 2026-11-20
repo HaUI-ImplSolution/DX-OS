@@ -4,16 +4,18 @@
 import { createServer } from 'node:http';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { ensureStaff, hashPassword, openDatabase } from './db.mjs';
-import { fileReturn, fileWarranty, signatureValid } from './dxos.mjs';
-import { claimsPage, errorPage, loginPage, orderPage, ordersPage } from './views.mjs';
+import { connected, fileReturn, fileWarranty, readRecord, signatureValid } from './dxos.mjs';
+import { claimsPage, errorPage, loginPage, orderPage, ordersPage, showClaims } from './views.mjs';
 
 const PORT = Number(process.env.APP_PORT || 3000);
 const db = openDatabase(process.env.APP_DB || './store.sqlite', process.env.APP_CATALOG || '../catalog/products.tsv');
 const first = ensureStaff(db, 'nhanvien', process.env.APP_STAFF_PASSWORD);
 if (first && !process.env.APP_STAFF_PASSWORD) console.log(`The clerk signs in as nhanvien with the password ${first}`);
 
+showClaims(connected());
 const SESSION_SECONDS = 8 * 3600;
-const FINAL = ['approved', 'rejected', 'resolved', 'closed'];
+const FINAL = ['approved', 'rejected', 'resolved', 'closed', 'withdrawn'];
+const ENTITY = { retail: 'return_request', warranty: 'ticket' };
 const ORDER_SQL = `SELECT o.*, p.name AS product_name FROM orders o JOIN products p ON p.code = o.product_code`;
 const CLAIM_SQL = `SELECT c.*, o.receipt FROM claims c JOIN orders o ON o.id = c.order_id`;
 
@@ -42,6 +44,17 @@ function sessionUser(req) {
   const row = token && db.prepare('SELECT username, created_at FROM sessions WHERE token = ?').get(token);
   return row && Date.now() / 1000 - row.created_at < SESSION_SECONDS ? row.username : null;
 }
+
+// Asks DX-OS for the state of the claims that are still open, so a page shows what DX-OS holds now;
+// a claim that DX-OS cannot be asked about keeps what the store saw last.
+async function refresh(claims) {
+  await Promise.allSettled(claims.filter((c) => !FINAL.includes(c.status)).map(async (c) => {
+    const now = await readRecord(c.model, ENTITY[c.model], c.dxos_id);
+    db.prepare('UPDATE claims SET status = ?, overdue = ?, web_url = COALESCE(web_url, ?) WHERE id = ?')
+      .run(now.status, now.overdue && !FINAL.includes(now.status) ? 1 : 0, now.webUrl, c.id);
+  }));
+}
+const claimsWhere = (where, ...args) => db.prepare(`${CLAIM_SQL} ${where}`).all(...args);
 
 async function login(req, res) {
   const form = new URLSearchParams((await readBody(req)).toString());
@@ -125,13 +138,17 @@ async function route(req, res) {
   }
   if (path === '/') return redirect(res, '/orders');
   if (path === '/orders') return send(res, 200, ordersPage(user, db.prepare(`${ORDER_SQL} ORDER BY o.sold_on DESC`).all()));
-  if (path === '/claims') return send(res, 200, claimsPage(user, db.prepare(`${CLAIM_SQL} ORDER BY c.id DESC`).all()));
+  if (path === '/claims' && connected()) {
+    await refresh(claimsWhere('ORDER BY c.id DESC'));
+    return send(res, 200, claimsPage(user, claimsWhere('ORDER BY c.id DESC')));
+  }
   const match = path.match(/^\/orders\/(\d+)(?:\/(return|warranty))?$/);
   const order = match && db.prepare(`${ORDER_SQL} WHERE o.id = ?`).get(Number(match[1]));
   if (order && !match[2] && req.method === 'GET') {
-    return send(res, 200, orderPage(user, order, db.prepare(`${CLAIM_SQL} WHERE c.order_id = ? ORDER BY c.id DESC`).all(order.id)));
+    if (connected()) await refresh(claimsWhere('WHERE c.order_id = ?', order.id));
+    return send(res, 200, orderPage(user, order, claimsWhere('WHERE c.order_id = ? ORDER BY c.id DESC', order.id)));
   }
-  if (order && match[2] && req.method === 'POST') {
+  if (order && match[2] && req.method === 'POST' && connected()) {
     return file(res, user, order, match[2], new URLSearchParams((await readBody(req)).toString()));
   }
   send(res, 404, errorPage(user, 'Không tìm thấy trang này.'));

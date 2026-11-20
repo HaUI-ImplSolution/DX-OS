@@ -1,7 +1,8 @@
 # SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
-# The store, apart from DX-OS. env_file and extra_hosts are the two lines that connect it to DX-OS;
-# .env is written by dxos connect and setup steps in README.md.
+# The store on its own. Connecting it to DX-OS adds two lines to the service, see README.md:
+#     env_file: .env
+#     extra_hosts: ["host.docker.internal:host-gateway"]
 services:
   app:
     build:
@@ -9,9 +10,6 @@ services:
       dockerfile: app/Dockerfile
     ports:
       - "${APP_HOST_PORT:-3000}:3000"
-    env_file: .env
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     volumes:
       - appliance-data:/data
     healthcheck:

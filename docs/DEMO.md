@@ -126,14 +126,14 @@ Kết bằng một câu: đổi nghiệp vụ là đổi tệp, không đổi m�
 ## 7. Ứng dụng của người ngoài (tùy chọn)
 
 Phần này chứng minh lõi là nền tảng cho ứng dụng tầng trên: một ứng dụng bán hàng không liên quan đến dự án thêm hai quy trình bằng hai tệp mô hình.
-Chuẩn bị và kịch bản ở [`examples/appliance-store`](../examples/appliance-store/README.md); làm trước theo README trên máy trình diễn.
+Các bước từ máy sạch ở [`examples/appliance-store`](../examples/appliance-store/README.md); làm trước theo README trên máy trình diễn.
 
 - **Cửa sổ ứng dụng (`nhanvien`):** mở một đơn bán, gửi yêu cầu đổi trả; trạng thái "Chờ duyệt" kèm liên kết "Mở trên DX-OS".
 - **Cửa sổ `manager` ở DX-OS:** mở liên kết, duyệt phiếu ở hộp việc; quay lại ứng dụng thấy "Đã duyệt" mà không bấm gì.
-- **Bảo hành:** gửi yêu cầu bảo hành, để quá hạn xử lý (2 phút) rồi thấy nhãn "Quá hạn" ở ứng dụng từ webhook.
-- **Điều cần nói:** ứng dụng không có mã quy trình, phân quyền hay lịch sử; phần tích hợp là mô hình, vài biến môi trường và khoảng 120 dòng mã.
+- **Bảo hành:** gửi yêu cầu bảo hành, để quá hạn xử lý (2 phút) rồi mở lại trang ở ứng dụng: nhãn "Quá hạn" hiện ra (khi bật webhook thì hiện không cần mở trang).
+- **Điều cần nói:** ứng dụng không có mã quy trình, phân quyền hay lịch sử; phần tích hợp là một mẫu dùng nguyên, một tệp mở rộng mẫu, vài biến môi trường và 109 dòng mã.
 
-Sự cố: nếu ứng dụng không nhận webhook, mở tab Hàng đợi sự kiện ở `/console` để xem thông điệp bị dừng, kiểm địa chỉ trong `deploy/webhooks/targets.yml`, rồi bấm Thử lại.
+Sự cố: nếu ứng dụng không cập nhật trạng thái, kiểm `DXOS_BASE_URL` và `extra_hosts`; khi bật webhook thì mở tab Hàng đợi sự kiện ở `/console` để xem thông điệp bị dừng, kiểm địa chỉ trong `deploy/webhooks/targets.yml`, rồi bấm Thử lại.
 
 ## Xử lý sự cố chung
 

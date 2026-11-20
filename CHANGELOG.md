@@ -12,6 +12,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Ghi có điều kiện: `PATCH` một hồ sơ, hành động và giao việc nhận thêm `version` và `modelVersion`; hồ sơ hoặc mô hình đã đổi thì trả 409, `data.reason` là `MODEL_VERSION_CHANGED` khi mô hình đổi; `PATCH` kèm `version` cũ trả 409 kể cả khi giá trị không đổi.
 - `GET /api/v1/meta/models` trả `modelVersion` của từng mô hình và thực thể, `process.effects` (việc hoàn tất xếp vào hàng đợi, `asynchronous: true`) và `aiTasks`.
 - Thực thể khai báo được khối `ai.tasks` trong tệp mô hình: trường đầu vào, trường đề xuất, hướng dẫn và mã nguồn tham khảo; lõi chỉ kiểm khai báo, không gọi model.
+- Hồ sơ trong API dữ liệu và thông điệp webhook, cùng feed `GET /api/v1/events`, mang `webUrl`, trang của hồ sơ trên giao diện web; ứng dụng ngoài đưa người duyệt sang đó bằng liên kết này (xem `docs/EXTENSIONS.md`). Chế độ `dxos start --core` không có `webUrl`.
 
 ### Trợ lý nghiệp vụ (tùy chọn)
 

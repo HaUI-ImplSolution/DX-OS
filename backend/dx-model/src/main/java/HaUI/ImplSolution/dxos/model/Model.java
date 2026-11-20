@@ -6,6 +6,8 @@ import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -46,10 +48,25 @@ public record Model(
       Process process,
       String ownerVia,
       Ui ui,
-      List<Document> documents) {
+      List<Document> documents,
+      Map<String, AiTask> aiTasks) {
 
     public Entity {
       documents = documents == null ? List.of() : List.copyOf(documents);
+      aiTasks =
+          aiTasks == null ? Map.of() : Collections.unmodifiableMap(new LinkedHashMap<>(aiTasks));
+    }
+
+    public Entity(
+        String name,
+        String label,
+        Map<String, Field> fields,
+        Map<String, Scope> access,
+        Process process,
+        String ownerVia,
+        Ui ui,
+        List<Document> documents) {
+      this(name, label, fields, access, process, ownerVia, ui, documents, Map.of());
     }
 
     // An entity without a ui block and without documents.
@@ -70,6 +87,19 @@ public record Model(
     // The field that names the unit a record belongs to.
     public Optional<Field> unitField() {
       return fields.values().stream().filter(f -> f.type() == FieldType.UNIT).findFirst();
+    }
+  }
+
+  public record AiTask(
+      String label,
+      List<String> inputFields,
+      String outputField,
+      String instruction,
+      List<String> sources,
+      int maxLength) {
+    public AiTask {
+      inputFields = List.copyOf(inputFields);
+      sources = List.copyOf(sources);
     }
   }
 

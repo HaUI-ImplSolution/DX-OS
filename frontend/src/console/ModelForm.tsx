@@ -223,10 +223,44 @@ interface Props {
 }
 
 type Part = "general" | "roles" | "units" | "entities";
-type EntityPart = "general" | "fields" | "access" | "process";
+type EntityPart = "general" | "fields" | "access" | "process" | "ai";
 
 // A form for the model file. It shows only the part being edited, offers the roles, fields and
 // entities already declared wherever one is named, and says what each part accepts.
+function AiTaskFields({ value, fields, onChange }: { value: unknown; fields: Rec; onChange: (value: unknown) => void }) {
+  const tasks = rec(rec(value).tasks);
+  const change = (name: string, patch: Rec) => onChange({ tasks: { ...tasks, [name]: { ...rec(tasks[name]), ...patch } } });
+  return <Box sx={{ display: "grid", gap: 2 }}>
+    <Typography variant="body2">{t("Nhiệm vụ chỉ tạo đề xuất; quyền ghi vẫn do Core kiểm tra sau xác nhận. Chỉ có tác dụng khi bản cài bật trợ lý.")}</Typography>
+    {Object.entries(tasks).map(([name, raw]) => {
+      const task = rec(raw);
+      return <Box key={name} sx={{ p: 2, border: 1, borderColor: "divider", display: "grid", gap: 2 }}>
+        <Typography variant="subtitle2">{name}</Typography>
+        <TextField size="small" label={t("Tên hiển thị")} value={text(task.label)} onChange={e => change(name, { label: e.target.value })} />
+        <Autocomplete multiple options={Object.keys(fields).filter(key => !["file","reference","user"].includes(text(rec(fields[key]).type)))}
+          value={texts(task.input_fields)} onChange={(_, input_fields) => change(name, { input_fields })}
+          renderInput={params => <TextField {...params} label={t("Trường đầu vào")} />} />
+        <TextField select label={t("Trường đề xuất")} value={text(task.output_field)} onChange={e => change(name, { output_field: e.target.value })}>
+          {Object.keys(fields).filter(key => ["text","choice"].includes(text(rec(fields[key]).type)) && !rec(fields[key]).multiple).map(key => <MenuItem key={key} value={key}>{text(rec(fields[key]).label) || key}</MenuItem>)}
+        </TextField>
+        <TextField multiline minRows={2} label={t("Hướng dẫn nhiệm vụ")} value={text(task.instruction)} onChange={e => change(name, { instruction: e.target.value })} />
+        <Autocomplete multiple freeSolo options={[]} value={texts(task.sources)} onChange={(_, sources) => change(name, { sources })}
+          renderInput={params => <TextField {...params} label={t("Mã nguồn tri thức có phiên bản")} helperText={t("Nhập mã nguồn do người vận hành cung cấp, nhấn Enter để thêm.")} />} />
+        <TextField type="number" label={t("Độ dài đề xuất tối đa")} placeholder="500" value={task.max_length ?? ""} slotProps={{ htmlInput: { min: 1, max: 2000 } }}
+          onChange={e => {
+            if (e.target.value !== "") return change(name, { max_length: Number(e.target.value) });
+            const { max_length: _unset, ...rest } = task;
+            onChange({ tasks: { ...tasks, [name]: rest } });
+          }} />
+        <Button color="error" onClick={() => {
+          const remaining = { ...tasks }; delete remaining[name]; onChange(Object.keys(remaining).length ? { tasks: remaining } : undefined);
+        }}>{t("Xóa nhiệm vụ")}</Button>
+      </Box>;
+    })}
+    <Button onClick={() => change(uniqueName("task", Object.keys(tasks)), { label: t("Nhiệm vụ mới"), input_fields: [], output_field: "", instruction: "", sources: [], max_length: 500 })}>{t("Thêm nhiệm vụ")}</Button>
+  </Box>;
+}
+
 export default function ModelForm({ schema, value, onChange }: Props) {
   const families = useFamilies();
   const [part, setPart] = useState<Part>("general");
@@ -394,6 +428,7 @@ export default function ModelForm({ schema, value, onChange }: Props) {
     if (entityPart === "general") return generalOfEntity();
     if (entityPart === "fields") return fieldsOfEntity();
     if (entityPart === "access") return accessOfEntity();
+    if (entityPart === "ai") return <AiTaskFields key={entityKey} value={entity.ai} fields={rec(entity.fields)} onChange={ai => setEntity(entityKey, { ai })} />;
     return processOfEntity();
   };
 
@@ -465,6 +500,15 @@ export default function ModelForm({ schema, value, onChange }: Props) {
         );
       }
       next.process = process;
+    }
+    const ai = rec(entity.ai);
+    const tasks = rec(ai.tasks);
+    if (Object.keys(tasks).length) {
+      next.ai = { ...ai, tasks: Object.fromEntries(Object.entries(tasks).map(([name, raw]) => {
+        const task = rec(raw);
+        return [name, { ...task, input_fields: texts(task.input_fields).map(field => field === from ? to : field),
+          output_field: task.output_field === from ? to : task.output_field }];
+      })) };
     }
     setEntity(entityKey, next);
     setAdvanced((open) => open.map((key) => (key === from ? to : key)));
@@ -1370,6 +1414,7 @@ export default function ModelForm({ schema, value, onChange }: Props) {
           <Tabs value={entityPart} onChange={(_, next) => setEntityPart(next)} sx={{ minHeight: 36, mb: 1, "& .MuiTab-root": { minHeight: 36, py: 0 } }}>
             <Tab value="general" label={t("Chung")} />
             <Tab value="fields" label={t("Trường ({n})", { n: fieldKeys.length })} />
+            <Tab value="ai" label={t("Trợ lý nghiệp vụ")} />
             <Tab value="access" label={t("Quyền ({n})", { n: Object.keys(access).length })} />
             <Tab value="process" label={hasProcess ? t("Quy trình") : t("Quy trình (không có)")} />
           </Tabs>

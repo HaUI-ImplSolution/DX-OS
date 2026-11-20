@@ -116,24 +116,27 @@ public class ModelOpenApi {
                             + " NO_ROLE_FOR_ENTITY, NOT_ASSIGNER, PARENT_OUT_OF_REACH, READ_ONLY,"
                             + " SLOT_TAKEN, STATUS_BY_PROCESS_ONLY, STILL_REFERENCED, UNIT_OUT_OF_REACH,"
                             + " WRONG_STATE, RECORD_CLOSED, OWNER_ONLY, HANDLER_ONLY, SELF_DECISION,"
-                            + " ASSIGNED_TO_OTHER, CONDITION_NOT_MET or IDEMPOTENCY_KEY_REUSED"))
+                            + " ASSIGNED_TO_OTHER, CONDITION_NOT_MET, MODEL_VERSION_CHANGED or IDEMPOTENCY_KEY_REUSED"))
             .addProperty("timestamp", new DateTimeSchema());
     components.addSchemas("ApiError", error);
     components.addSchemas(
         "ActionNote",
-        new ObjectSchema()
-            .addProperty(
-                "note",
-                new StringSchema()
-                    .description("Required by the actions that say so, and kept in the history")));
+        versioned(
+            new ObjectSchema()
+                .addProperty(
+                    "note",
+                    new StringSchema()
+                        .description(
+                            "Required by the actions that say so, and kept in the history"))));
     components.addSchemas(
         "AssignBody",
-        new ObjectSchema()
-            .addProperty(
-                "assignee",
-                new StringSchema()
-                    .nullable(true)
-                    .description("User id; null releases the record")));
+        versioned(
+            new ObjectSchema()
+                .addProperty(
+                    "assignee",
+                    new StringSchema()
+                        .nullable(true)
+                        .description("User id; null releases the record"))));
     components.addSchemas("ResponseVoid", envelope(new ObjectSchema().nullable(true)));
     components.addSchemas("ResponseObject", envelope(new ObjectSchema()));
     components.addSchemas("ResponseList", envelope(new ArraySchema().items(new ObjectSchema())));
@@ -144,7 +147,8 @@ public class ModelOpenApi {
     String type = pascal(name);
     boolean process = entity.hasProcess();
     components.addSchemas(type, record(model, entity));
-    components.addSchemas(type + "Input", input(model, entity));
+    components.addSchemas(type + "Input", input(model, entity, false));
+    components.addSchemas(type + "Update", input(model, entity, true));
     components.addSchemas("Response" + type, envelope(ref(type)));
     components.addSchemas(
         "Page" + type,
@@ -223,9 +227,11 @@ public class ModelOpenApi {
                         "Change the given fields of a record",
                         "PUT does the same. The body may carry version as read with the record; the change"
                             + " then applies only to that version, and 409 ERR_CONCURRENT_MODIFICATION"
-                            + " answers when the record changed in between.")
+                            + " answers when the record changed in between, including unchanged values."
+                            + " Optional modelVersion rejects a changed model with 409 and data.reason"
+                            + " MODEL_VERSION_CHANGED.")
                     .addParametersItem(idParameter())
-                    .requestBody(body(type + "Input"))
+                    .requestBody(body(type + "Update"))
                     .responses(
                         responses(
                             "Response" + type,
@@ -343,6 +349,9 @@ public class ModelOpenApi {
             " A service checks the action before the record moves and can refuse it (403,"
                 + " reason CHECK_DENIED) or be unavailable (503, reason CHECK_UNAVAILABLE).");
       }
+      text.append(
+          " Optional version and modelVersion reject changed snapshots with 409;"
+              + " a changed model has reason MODEL_VERSION_CHANGED.");
       Operation operation =
           operation(
                   "action" + type + pascal(action.name()),
@@ -374,12 +383,20 @@ public class ModelOpenApi {
                 operation(
                         "assign" + type,
                         "Assign a record to a user who can handle it",
-                        "null releases the record.")
+                        "null releases the record. Optional version and modelVersion reject changed snapshots"
+                            + " with 409; a changed model has reason MODEL_VERSION_CHANGED.")
                     .addParametersItem(idParameter())
                     .requestBody(body("AssignBody"))
                     .responses(
                         responses(
-                            "Response" + type, "200", "The record", "400", "401", "403", "404"))));
+                            "Response" + type,
+                            "200",
+                            "The record",
+                            "400",
+                            "401",
+                            "403",
+                            "404",
+                            "409"))));
     paths.addPathItem(
         one + "/handlers",
         new PathItem()
@@ -505,8 +522,25 @@ public class ModelOpenApi {
     return schema;
   }
 
-  // What a caller may send: the fields of the entity, and version when changing a record.
-  private Schema<?> input(Model model, EntityMeta entity) {
+  // Optional versions for operations based on record snapshots.
+  private Schema<?> versioned(Schema<?> schema) {
+    schema.addProperty(
+        "version",
+        new IntegerSchema()
+            .format("int64")
+            .description("When changing a record: the version read with it"));
+    schema.addProperty(
+        "modelVersion",
+        new IntegerSchema()
+            .format("int64")
+            .description(
+                "When changing a record: the applied model version read with its metadata"));
+    return schema;
+  }
+
+  // What a caller may send: the fields of the entity; a change names only the fields it sets, and
+  // may carry versions.
+  private Schema<?> input(Model model, EntityMeta entity, boolean change) {
     ObjectSchema schema = new ObjectSchema();
     List<String> required = new ArrayList<>();
     for (FieldMeta field : entity.fields()) {
@@ -514,15 +548,13 @@ public class ModelOpenApi {
         continue;
       }
       schema.addProperty(field.name(), labelled(fieldSchema(model, field), field.label()));
-      if (field.required()) {
+      if (field.required() && !change) {
         required.add(field.name());
       }
     }
-    schema.addProperty(
-        "version",
-        new IntegerSchema()
-            .format("int64")
-            .description("When changing a record: the version read with it"));
+    if (change) {
+      versioned(schema);
+    }
     if (!required.isEmpty()) {
       schema.required(required);
     }

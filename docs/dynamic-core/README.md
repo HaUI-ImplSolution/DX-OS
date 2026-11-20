@@ -462,6 +462,7 @@ Có hồ sơ mới thì AI đề xuất và dẫn nguồn, người xác nhận.
 
 AI là một provider nối vào lõi qua trục sự kiện và API, chạy bằng mô hình ngôn ngữ và embedding đạt định nghĩa Open Source AI của OSI.
 Tìm kiếm tri thức có nguồn, hỏi đáp sinh câu trả lời và tác tử đề xuất giá trị một trường đều cần người xác nhận; tác tử không tự hành động khi chưa có xác nhận.
+Bản hiện có là trợ lý tùy chọn đề xuất giá trị một trường theo yêu cầu của người dùng, ở [`assistant/README.md`](../../assistant/README.md); hỏi đáp có nguồn và tác tử nghe sự kiện chưa làm.
 
 ## Điểm mở rộng
 

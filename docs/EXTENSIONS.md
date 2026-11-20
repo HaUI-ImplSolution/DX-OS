@@ -129,7 +129,7 @@ Cách xử lý lỗi của một lời gọi:
 |---|---|---|
 | `401` | Cổng vào, khi token thiếu hoặc không hợp lệ; thân trả về là HTML, không phải JSON | Lấy token mới rồi gọi lại một lần |
 | `403` | Backend, `ERR_ACTION_NOT_ALLOWED` kèm `data.reason` (ví dụ `OWNER_ONLY`, `ASSIGNED_TO_OTHER`, `CHECK_DENIED`) | Không thử lại; đổi vai hoặc sửa yêu cầu |
-| `409` | Backend, `data.reason` là `WRONG_STATE`, `RECORD_CLOSED`, `IDEMPOTENCY_KEY_REUSED` hoặc `CONDITION_NOT_MET`; sửa hồ sơ trả `ERR_CONCURRENT_MODIFICATION` | Đọc lại hồ sơ rồi quyết định; `IDEMPOTENCY_KEY_REUSED` nghĩa là khóa đã dùng cho nội dung khác |
+| `409` | Backend, `data.reason` là `WRONG_STATE`, `RECORD_CLOSED`, `IDEMPOTENCY_KEY_REUSED`, `CONDITION_NOT_MET` hoặc `MODEL_VERSION_CHANGED`; sửa hồ sơ trả `ERR_CONCURRENT_MODIFICATION` | Đọc lại hồ sơ rồi quyết định; `IDEMPOTENCY_KEY_REUSED` nghĩa là khóa đã dùng cho nội dung khác; `MODEL_VERSION_CHANGED` nghĩa là mô hình đã đổi sau lần đọc metadata |
 | `429` | Cổng vào hoặc backend | Chờ rồi gọi lại; chỉ backend (`ERR_TOO_MANY_REQUESTS`) gửi `Retry-After`, cổng vào gửi `X-RateLimit-Reset` là số giây còn lại của cửa sổ |
 | `503` và timeout | Backend, hoặc mạng giữa hai bên | Thử lại có giới hạn số lần và giãn cách tăng dần, giữ nguyên `Idempotency-Key` |
 

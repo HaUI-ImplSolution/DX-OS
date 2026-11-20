@@ -36,7 +36,7 @@ Mỗi script in `N/M passed` và thoát với mã 1 khi có kiểm hỏng; số 
 | Cổng API | APISIX kiểm token, giới hạn tốc độ, định tuyến; route không kiểm token nằm trong danh sách công khai | `e2e/api/check_routes.py`; mọi script đi qua cổng 9080; `check_conformance.py` kiểm 401 khi thiếu token | `python3 e2e/api/check_routes.py` | Hoàn thiện | Giới hạn tốc độ chưa có kiểm riêng; lúc chạy `check_conformance.py` gặp 429 cho thấy giới hạn đang hoạt động |
 | Dữ liệu có cấu trúc | Schema, ràng buộc và chỉ mục sinh từ mô hình trên PostgreSQL; bắt buộc, duy nhất, lựa chọn kiểm cả ở API lẫn cơ sở dữ liệu | `check_api.py` 51, `check_change.py` 65 | `python3 e2e/api/check_api.py` | Hoàn thiện | Danh sách 10.000 dòng có lọc và sắp xếp đo ở phân vị 95 là 11 ms; chưa thử tải lớn hơn |
 | Dữ liệu phi cấu trúc | Tệp đính kèm lưu ở SeaweedFS, siêu dữ liệu ở PostgreSQL, quét ClamAV, quyền theo quyền của hồ sơ | `check_process.py` (tải lên, tải về, gỡ), `check_demo.py` tiêu chí 3 (tệp EICAR bị chặn), job `Back up and restore` của workflow `Platform` (sao lưu và khôi phục kèm tệp) | `python3 e2e/api/check_demo.py` | Dùng được | Quét mã độc bật mặc định; kiểm tệp EICAR chỉ chạy khi quét bật (`dxos av off` thì bỏ qua), và nhóm chế độ lõi của job `API end-to-end` trong workflow `Platform` đặt `DXOS_REQUIRE_SCAN=1` nên phần này nằm trong CI |
-| Động cơ luồng công việc | Flowable nhúng, ba họ mẫu `approval`, `work_item`, `reservation`; trạng thái chỉ đổi qua quy trình, cùng giao dịch với việc ghi hồ sơ | `check_process.py` 69, `check_case.py` 76, `check_booking.py` 47, `check_recovery.py` 19 | `python3 e2e/api/check_process.py` | Hoàn thiện | Họ phê duyệt có sẵn chỉ có một cấp; nhiều cấp tuần tự và điều kiện `when` khai báo được bằng `states` và `actions` của quy trình tự khai báo (kiểm tay trên stack tạm, chưa có kiểm tự động); không có trình thiết kế BPMN |
+| Động cơ luồng công việc | Flowable nhúng, ba họ mẫu `approval`, `work_item`, `reservation`; trạng thái chỉ đổi qua quy trình, cùng giao dịch với việc ghi hồ sơ | `check_process.py` 90, `check_case.py` 76, `check_booking.py` 47, `check_recovery.py` 19 | `python3 e2e/api/check_process.py` | Hoàn thiện | Họ phê duyệt có sẵn chỉ có một cấp; nhiều cấp tuần tự và điều kiện `when` khai báo được bằng `states` và `actions` của quy trình tự khai báo (kiểm tay trên stack tạm, chưa có kiểm tự động); không có trình thiết kế BPMN |
 | Lõi không có giao diện | `dx-engine` chỉ phục vụ API; giao diện và portal là Tầng 2 | Mọi script chỉ gọi API; `ArchitectureTest` kiểm phụ thuộc giữa các lớp của `dx-engine`; `docs/TESTING.md` mục 7 | | Dùng được | Chưa có test khẳng định rằng dịch vụ lõi không trả trang nào |
 
 ## 2. Năng lực của lõi
@@ -55,7 +55,7 @@ Mỗi script in `N/M passed` và thoát với mã 1 khi có kiểm hỏng; số 
 | Đặt chỗ theo khung giờ có sức chứa | `check_booking.py` 47 | `python3 e2e/api/check_booking.py` | Hoàn thiện | Kéo thả trên lịch kiểm tay bằng Chrome |
 | Tự đóng hồ sơ đã xử lý của họ `work_item` | `check_process.py` | `python3 e2e/api/check_process.py` | Hoàn thiện | |
 | Hành động hoàn tất qua outbox, thử lại khi lỗi | `check_process.py`; `AdvisoryJobLockIntegrationTest` | `python3 e2e/api/check_process.py` | Hoàn thiện | Chỉ có `add_to_group` và `remove_from_group` |
-| Chống ghi đè khi sửa đồng thời (`version`, 409) | `check_process.py` | `python3 e2e/api/check_process.py` | Hoàn thiện | |
+| Chống ghi đè khi sửa, hành động và giao việc đồng thời (`version`, `modelVersion`, 409) | `check_process.py` | `python3 e2e/api/check_process.py` | Hoàn thiện | |
 | Mã lý do cho lỗi 403 và 409 | `check_case.py`, `check_process.py`, `check_booking.py` | `python3 e2e/api/check_case.py` | Dùng được | `STILL_REFERENCED` và một số mã của 403 chưa có kiểm riêng |
 | Lịch sử hồ sơ kèm giá trị cũ và mới của từng trường | `check_case.py` | `python3 e2e/api/check_case.py` | Hoàn thiện | |
 | Chuỗi hash của lịch sử, điểm neo, lệnh kiểm | `check_events.py` 24 | `python3 e2e/api/check_events.py` | Hoàn thiện | Phát hiện sửa chứ không ngăn sửa; người sửa được cả cơ sở dữ liệu lẫn kho thì chỉ bị lộ khi so với hash bên nhận giữ |
@@ -95,6 +95,7 @@ Mỗi script in `N/M passed` và thoát với mã 1 khi có kiểm hỏng; số 
 | Bảng theo trạng thái và xuất CSV | Kiểm tay theo `docs/TESTING.md` mục 6, «Bảng theo trạng thái» và «Xuất CSV»; `npx tsc --noEmit` | Mở danh sách của một thực thể có quy trình, bấm Bảng theo trạng thái và Xuất CSV | Dùng được | Không có kiểm tự động của giao diện; bảng chỉ đọc, tối đa 10 thẻ mỗi cột; xuất tối đa 10.000 dòng |
 | Khóa chống chạy lặp (`Idempotency-Key`) | Kiểm tay theo `docs/TESTING.md` mục 6, «Khóa chống chạy lặp» | Gửi hai lần cùng khóa | Dùng được | Không có kiểm tự động; chỉ cho tạo hồ sơ và hành động, khóa giữ 24 giờ |
 | Chỉ số mục tiêu: mã tự viết bằng 0 ở mức 1 và 2, dựng dưới 10 phút, đổi trường không mất dữ liệu | Đếm bằng script và đo tay, kết quả ở `docs/TARGETS.md` | `python3 tools/count_own_code.py <thư mục>`; `dxos start <tệp>` | Dùng được | Không chạy trong CI; mục "trong một buổi" mới có bản mô phỏng, chưa có người thật |
+| Trợ lý đề xuất giá trị một trường (tùy chọn) | Job `Check the optional assistant` của workflow `Assistant` chạy test của dịch vụ; bài kiểm trình duyệt `e2e/web/tests/assistant.spec.ts` cần inference và nguồn của người vận hành | `cd assistant && npm ci && npm test` | Dùng được | Bài kiểm trình duyệt chạy tay; chỉ đề xuất giá trị một trường, người dùng xác nhận trước khi lưu |
 
 ## 3. Giấy phép, chuỗi cung ứng, phát hành
 
@@ -115,8 +116,7 @@ Mỗi script in `N/M passed` và thoát với mã 1 khi có kiểm hỏng; số 
 
 | Nội dung | Mức | Ghi chú |
 |---|---|---|
-| Hỏi đáp sinh câu trả lời và tác tử AI có người duyệt | Chưa làm | Cần mô hình ngôn ngữ đạt tiêu chuẩn mở hoàn toàn, chưa chọn |
-| Ứng dụng Tầng 2 phủ chữ I của H-P-D-I | Chưa làm | |
+| Hỏi đáp sinh câu trả lời và tác tử AI nghe sự kiện | Chưa làm | Chỉ có trợ lý đề xuất giá trị một trường; xem [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md), mục 4 |
 | Lớp truy vấn riêng trên kho Parquet | Chưa làm | Xem [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md), mục 3 |
 | Bản sao số | Chưa làm | Giới hạn chấp nhận, xem [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md), mục 4 |
 | Nhiều bản backend sau gateway | Chưa làm | Chạy một bản; hai bản thì danh sách mô hình giữ lệch nhau sau một lần áp dụng |

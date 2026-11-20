@@ -76,12 +76,11 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 
 ## 6. AI nằm ở đâu, dữ liệu và giới hạn là gì?
 
-- Phần AI chưa có.
-  Dịch vụ tìm kiếm tri thức từng có đã gỡ khỏi repository, vì chưa nối vào lõi và mô hình embedding của nó chưa kiểm được dữ liệu huấn luyện theo định nghĩa Open Source AI của OSI.
-- Hướng làm: hỏi đáp có trích nguồn và tác tử đề xuất giá trị cho một trường, luôn có người duyệt trước khi ghi, chạy tại chỗ để dữ liệu không ra ngoài máy.
-- Điều kiện: chỉ dùng mô hình có trọng số và dữ liệu huấn luyện đều mở; chưa chọn mô hình nào.
+- Trợ lý nghiệp vụ đã đề xuất giá trị một trường từ hồ sơ và nguồn cấu hình; người dùng sửa, hủy hoặc xác nhận trước khi ghi qua API Core.
+- Phần còn lại: hỏi đáp có trích nguồn và tác tử nghe sự kiện; giữ xác nhận trước khi ghi và suy luận tại chỗ.
+- Suy luận AI: hỗ trợ endpoint chuẩn mở tương thích OpenAI API hoặc llama.cpp chạy self-host; DX-OS không áp đặt hay đóng gói model mặc định để đảm bảo 100% chuẩn OSI; người vận hành tự cấp endpoint và model phù hợp.
 - Lõi đã có sẵn chỗ để nối: hàng đợi sự kiện, webhook có chữ ký và `GET /api/v1/events` cho tác tử đọc việc mới, còn ghi lại vẫn đi qua API chung nên quyền, quy tắc và quy trình vẫn áp dụng.
-- **Bằng chứng:** [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md), dòng "Phần AI"; `docs/dynamic-core/README.md`, mục "Cam kết nguồn mở".
+- **Bằng chứng:** [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md), dòng "Phạm vi AI"; `docs/dynamic-core/README.md`, mục "Cam kết nguồn mở".
 
 ## 7. Một thành phần ngừng thì hệ thống ra sao?
 
@@ -122,7 +121,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 
 ## 11. Còn gì chưa làm?
 
-- Chưa có phần AI: tìm kiếm tri thức có nguồn, hỏi đáp sinh câu trả lời và tác tử có người duyệt.
+- Phần AI mới có một thành phần, trợ lý đề xuất giá trị một trường; chưa có tìm kiếm tri thức có nguồn, hỏi đáp sinh câu trả lời và tác tử nghe sự kiện.
 - Duyệt nhiều cấp tuần tự và rẽ nhánh theo ngưỡng khai báo được bằng quy trình tự khai báo, mới kiểm tay trên stack tạm chứ chưa có kiểm tự động.
 - Hồ dữ liệu có phần lưu trữ hồ sơ đã đóng theo lịch và `dxos archive query` truy vấn từng lần chạy; hai nguyên lý kế tiếp của đề mới được đáp ứng một phần: dữ liệu vận hành mới vào qua bộ mô phỏng IT/OT và chưa có bản sao số; phả hệ mới dừng ở danh mục dữ liệu của mô hình, chưa đến từng trường.
 - Một bản backend; chưa chịu lỗi nhiều nút; chưa thử tải lớn.

@@ -79,6 +79,74 @@
         "properties": {
           "label": { "type": "string" },
           "owner_via": { "type": "string" },
+          "ai": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "tasks"
+            ],
+            "properties": {
+              "tasks": {
+                "type": "object",
+                "minProperties": 1,
+                "maxProperties": 8,
+                "propertyNames": {
+                  "pattern": "^[a-z][a-z0-9_]{0,39}$"
+                },
+                "additionalProperties": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "input_fields",
+                    "output_field",
+                    "instruction",
+                    "sources"
+                  ],
+                  "properties": {
+                    "label": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    },
+                    "input_fields": {
+                      "type": "array",
+                      "minItems": 1,
+                      "maxItems": 12,
+                      "uniqueItems": true,
+                      "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]{0,39}$"
+                      }
+                    },
+                    "output_field": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]{0,39}$"
+                    },
+                    "instruction": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 2000
+                    },
+                    "sources": {
+                      "type": "array",
+                      "minItems": 1,
+                      "maxItems": 12,
+                      "uniqueItems": true,
+                      "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]{0,39}$"
+                      }
+                    },
+                    "max_length": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 2000
+                    }
+                  }
+                }
+              }
+            }
+          },
           "documents": {
             "type": "object",
             "maxProperties": 10,

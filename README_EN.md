@@ -82,6 +82,7 @@ Ten templates are ready to pick in the control panel: student one-stop service, 
 | | **Try it at once:** one command creates a trial account for each role and sample records in several states, so a visitor who signs in finds a system with work in it. |
 | | **Simple to install and run:** one command installs and one starts; backups can be checked, services restart on their own, attachments are virus-scanned, and the operational numbers can be read by the monitoring tool you already have. |
 | | **Single sign-on:** through Keycloak, and administrators can be required to enter a one-time code as well. |
+| | **[Optional business assistant](./assistant/README.md):** AI running on your server suggests field values from records and configured sources, with user confirmation before saving. |
 
 Each feature and the test that proves it are matched in the [evidence matrix](https://haui-implsolution.github.io/DX-OS/docs/evidence-matrix) (Vietnamese).
 
@@ -231,7 +232,7 @@ DX-OS is, in Tier 1, a headless core, in Tier 2 a web interface and a control pa
 | H, shared digital environment | One sign-in; roles and units declared in the model; each person sees only their own work in the inbox, the board by state and the calendar | Done |
 | P, guard rails and automatic flows | A state changes only through the workflow; rejecting and returning need a reason; the creator cannot approve their own record; due and overdue dates and escalation to other roles; work after an approval runs through a queue and is retried | Done |
 | D, one source of truth | Data, history and queue live in one database; the history is chained so tampering shows; every change is reported outside by a signed webhook; statistics and a data catalog | Done |
-| I, artificial intelligence | None yet; only fully open models by the OSI definition will be used, and none that qualifies has been chosen | Not done |
+| I, artificial intelligence | An optional business assistant suggests a value for one field from the record and reference sources, and the user confirms before saving; it runs self-hosted with an operator-configured inference endpoint | Done, one component |
 
 How the interfaces that ship with the system are counted, and the detailed check of each point of the brief, are in [`DANH_GIA.md`](./docs/dynamic-core/DANH_GIA.md) and the remaining work in [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md), both in Vietnamese.
 

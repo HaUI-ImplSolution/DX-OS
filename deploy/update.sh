@@ -46,6 +46,9 @@ if [[ "$(grep -E '^DXOS_MODE=' .env | tail -n1 | cut -d= -f2-)" == core ]]; then
 else
   SERVICES=(backend monitor frontend portal keycloak)
 fi
+# The optional assistant is part of the project only when COMPOSE_FILE names its file.
+PROJECT_SERVICES="$(docker compose config --services)"
+if grep -qx assistant-control <<<"$PROJECT_SERVICES"; then SERVICES+=(assistant-control); fi
 BEHIND_GATEWAY=("${SERVICES[@]}")
 declare -A BEFORE
 for service in "${BEHIND_GATEWAY[@]}"; do

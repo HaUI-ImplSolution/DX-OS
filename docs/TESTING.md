@@ -11,7 +11,7 @@ Mức hoàn thiện của từng tính năng và bài kiểm của nó ở [`web
 |---|---|
 | Docker và Docker Compose v2 | Backend `verify` dùng Testcontainers nên cần Docker chạy |
 | JDK 21 | Dùng Maven wrapper trong repo; đặt `JAVA_HOME` về JDK 21 nếu máy mặc định bản khác |
-| Node 22 trở lên | Cho `frontend`, `website` và `e2e` |
+| Node 22 trở lên | Cho `frontend`, `website` và `e2e`; riêng trợ lý cần Node 24.16 |
 | Python 3 | Cho các script kiểm ở `e2e/api` |
 
 ## 2. Các loại kiểm
@@ -19,6 +19,7 @@ Mức hoàn thiện của từng tính năng và bài kiểm của nó ở [`web
 | Loại | Lệnh | Chạy ở CI |
 |---|---|---|
 | Định dạng, biên dịch, test của backend | `cd backend && ./mvnw verify` | Workflow `Backend` |
+| Trợ lý tùy chọn, không cần key | `cd assistant && npm ci && npm test` (Node 24.16) | Workflow `Assistant` |
 | Kiểu của web | `cd frontend && npx tsc --noEmit` | Workflow `Frontend` |
 | Phân tích tĩnh của web | `cd frontend && npm run lint` | Workflow `Frontend` |
 | Giấy phép và header | `python3 .github/scripts/check_licenses.py`; `pipx run --spec reuse==6.3.0 reuse lint` | `Check licenses` của `Compliance` |
@@ -263,6 +264,13 @@ Kiểm bằng đúng các lệnh và thao tác trong tài liệu.
     - Áp dụng `required_when` nối nhiều phép vào thực thể đã có hồ sơ vi phạm thì kế hoạch bị từ chối và nêu số dòng vi phạm, đếm đúng theo điều kiện nối.
     - `GET /api/v1/meta/models/<tên>/entities/<thực thể>` và `x-dxos-required-when` của OpenAPI trả điều kiện nối dạng `{op: "and", conditions: [...]}`, điều kiện một phép vẫn `{field, op, value}`.
     - Ở web: nút hành động của hồ sơ không đạt điều kiện bị mờ kèm gợi ý "Chỉ thực hiện khi ... và (... hoặc ...)", ô `note` báo đỏ đúng lúc, và tab Soạn hiện điều kiện nối ở bảng hành động.
+
+### Trợ lý (tùy chọn)
+
+48. Theo [`assistant/README.md`](../assistant/README.md), liên kết SSO, cấu hình inference/nguồn của bản cài và khai báo nhiệm vụ `ai.tasks`.
+    Mở hồ sơ, tạo đề xuất, xem nguồn, sửa hoặc hủy, rồi xác nhận và đối chiếu phiên bản/lịch sử Core.
+    Kiểm hai chủ không đọc/ghi chéo; giá trị trùng không tạo lịch sử sửa và model tắt không cản nghiệp vụ.
+    Kiểm nâng cấp giữ liên kết SSO và lịch sử, không thực thi lại đề xuất cũ; sau khôi phục từ sao lưu, người dùng liên kết lại tài khoản.
 
 ## 7. Hồi quy
 

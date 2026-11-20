@@ -138,3 +138,38 @@ updates:
     groups:
       compose-images:
         patterns: ["*"]
+
+  # The optional assistant (Node 24 image and npm packages): delete both entries below with assistant/.
+  - package-ecosystem: docker
+    directory: /assistant
+    target-branch: Khuong/main
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 1
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: "chore(deps)"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      assistant-base-image:
+        patterns: ["*"]
+
+  - package-ecosystem: npm
+    directory: /assistant
+    target-branch: Khuong/main
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 2
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: "chore(deps)"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      assistant:
+        update-types: [minor, patch]

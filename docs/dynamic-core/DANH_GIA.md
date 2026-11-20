@@ -18,7 +18,7 @@ Nguồn: [đề thi](https://vfossa.vn/tin-tuc/de-thi-phan-mem-nguon-mo-olp-2026
 | Dữ liệu có cấu trúc | PostgreSQL; lược đồ, ràng buộc và API có quyền theo dòng sinh từ mô hình | Đạt |
 | Dữ liệu phi cấu trúc | SeaweedFS, tệp đính kèm theo quyền của hồ sơ, ClamAV | Đạt; quét mã độc bật mặc định, tệp EICAR bị chặn trong CI |
 | Động cơ luồng công việc | Flowable nhúng, BPMN sinh từ mô hình, ba họ mẫu | Đạt |
-| Ít nhất một ứng dụng Tầng 2 trong H-P-D-I | Ứng dụng web dựng từ metadata và bảng điều khiển, chạm H, P và D | Đạt theo cách đọc của đội ("ít nhất một ứng dụng"); chữ I (đề mô tả là tìm kiếm toàn văn và theo ngữ nghĩa, quản trị tác tử AI, OCR và trợ lý hỏi đáp trên tri thức nội bộ) chưa có, và chưa hỏi Ban tổ chức xem có bắt buộc phủ cả bốn không gian (#211); `README.md` có mục đối chiếu với đề |
+| Ít nhất một ứng dụng Tầng 2 trong H-P-D-I | Ứng dụng web dựng từ metadata và bảng điều khiển, chạm H, P và D | Đạt theo cách đọc của đội ("ít nhất một ứng dụng"); chữ I (đề mô tả là tìm kiếm toàn văn và theo ngữ nghĩa, quản trị tác tử AI, OCR và trợ lý hỏi đáp trên tri thức nội bộ, không nêu số thành phần phải làm) có một thành phần: trợ lý đề xuất giá trị trường từ hồ sơ và nguồn tham khảo, chạy self-host qua endpoint suy luận chuẩn mở, tắt mặc định, người dùng xác nhận trước khi lưu; ứng dụng minh họa không cần có AI; `README.md` có mục đối chiếu với đề |
 | Giấy phép OSI, mã công khai, có bản phát hành trước khi nộp | Apache-2.0; chín bản `v1.0.0` đến `v2.0.2` | Đạt |
 
 Các giao diện đi kèm được tính như sau.
@@ -38,7 +38,7 @@ Keycloak Admin Console là giao diện của dịch vụ nguồn mở đi kèm c
 ## 3. Bảy cụm dịch vụ của Tầng 1
 
 Phần mục đích yêu cầu của đề nêu bốn dịch vụ bắt buộc, còn phần giới thiệu Tầng 1 gọi cả bảy cụm là cần cho ứng dụng quy mô doanh nghiệp.
-Cách đọc của đội là bốn dịch vụ ở mục 1 là điều kiện bắt buộc, phần còn lại của bảy cụm là tầm nhìn, và phủ thêm là điểm cộng ở tính nguyên gốc và mức hoàn thiện; chưa có xác nhận của Ban tổ chức (#211).
+Cách đọc của đội là bốn dịch vụ ở mục 1 là điều kiện bắt buộc, phần còn lại của bảy cụm là tầm nhìn, và phủ thêm là điểm cộng ở tính nguyên gốc và mức hoàn thiện; chưa có xác nhận của Ban tổ chức.
 
 | Cụm | Có | Không có |
 |---|---|---|
@@ -70,8 +70,8 @@ Phần này do Ban giám khảo chấm ở buổi chung kết; bảng ghi điể
 
 | Tiêu chí | Điểm tựa | Điểm yếu |
 |---|---|---|
-| Tính nguyên gốc | Đổi mô hình an toàn trên hệ thống đang chạy: kế hoạch, mức rủi ro, dòng vi phạm, quay lui; quy tắc bất biến nằm trong engine; lịch sử nối chuỗi hash | Đề không hỏi trực tiếp, nên phải giải thích được giá trị trong vài phút; các đội cùng dùng Keycloak, APISIX, PostgreSQL, Flowable nên phần riêng chỉ là vòng đời mô hình |
-| Mức hoàn thiện | Mười mẫu mô hình trên ba họ quy trình; 20 kiểm tra của CI trên stack thật, kể cả trình duyệt; bộ kiểm chung cho mô hình mới | Chưa có phần AI và chữ I của H-P-D-I; pull request kế hoạch (#296) và pull request trợ lý nhiều người dùng (#199) còn mở, chưa gộp |
+| Tính nguyên gốc | Đổi mô hình an toàn trên hệ thống đang chạy: kế hoạch, mức rủi ro, dòng vi phạm, quay lui; quy tắc bất biến nằm trong engine; lịch sử nối chuỗi hash | Đề không hỏi trực tiếp, nên phải giải thích được giá trị trong vài phút; các đội cùng dùng Keycloak, APISIX, PostgreSQL, Flowable nên phần riêng chỉ là vòng đời mô hình; chưa nói chuyện với khách hàng nào (#231) |
+| Mức hoàn thiện | Mười mẫu mô hình trên ba họ quy trình; 20 kiểm tra của CI trên stack thật, kể cả trình duyệt; bộ kiểm chung cho mô hình mới | Phần AI chỉ có một thành phần, trợ lý đề xuất giá trị trường (tùy chọn); pull request của trợ lý (#296) và pull request trợ lý nhiều người dùng (#199) còn mở, chưa gộp |
 | Thân thiện | Cài một lệnh, bảng điều khiển, thư viện mẫu, tài khoản và hồ sơ thử, mã hồ sơ đọc được, giao diện điện thoại, tiếng Việt và tiếng Anh | Giao diện sinh từ metadata dễ trông chung chung; chữ do mô hình định nghĩa không được dịch (`BACKLOG.md`, mục 4) |
 | Phát triển bền vững | Tài liệu kiến trúc, tệp mô hình, API và vận hành; mục ứng phó sự cố; lệnh `dxos`; bộ kiểm chung cho mô hình; SBOM | Chưa có ứng dụng mẫu của bên ngoài gọi lõi (`BACKLOG.md`, mục 3.2); đóng góp tập trung vào một người |
 | Trình diễn, thu hút cộng đồng | Kịch bản 15 phút ở `docs/DEMO.md`, hai video và ảnh động kiến trúc | Chưa có phần trình chiếu; buổi thi kéo DX-OS vào một web đã được deploy sẵn |
@@ -173,7 +173,9 @@ Backend dùng SpotBugs và web dùng Biome (ESLint không chạy được với 
 
 Điểm yếu, theo mức nặng giảm dần:
 
-1. **Chưa có phần AI.** Chữ I của H-P-D-I chưa có và chưa hỏi Ban tổ chức; ảnh hưởng đến mức hoàn thiện và tính nguyên gốc ở buổi chung kết, không ảnh hưởng điểm kho mã.
-2. **Chưa kiểm được:** việc dựng trên máy hoàn toàn mới không có bộ nhớ đệm của Docker và cài trên Windows.
+1. **Phần AI còn nhỏ.** Chữ I của H-P-D-I chỉ có một thành phần; ứng dụng minh họa không cần có AI, nên ảnh hưởng chính là đến mức hoàn thiện và tính nguyên gốc ở buổi chung kết, không ảnh hưởng điểm kho mã.
+2. **Lịch sử issue mỏng và đóng góp tập trung vào một người.** Không mất điểm trực tiếp theo thể lệ, nhưng làm yếu bằng chứng về dự án có cộng đồng.
+3. **Chưa kiểm được:** việc dựng trên máy hoàn toàn mới không có bộ nhớ đệm của Docker, cài trên Windows, và 8 cảnh báo của OpenSSF Scorecard chưa duyệt.
+4. **Thiếu so với chuẩn repository:** `CODEOWNERS` chưa chia theo vùng; một người viết khoảng hai phần ba commit, nên việc chia người phụ trách là quyết định của nhóm.
 
 Các việc còn lại và thứ tự làm nằm ở `BACKLOG.md`.

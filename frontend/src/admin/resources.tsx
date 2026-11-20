@@ -55,6 +55,7 @@ import DateTimeViInput from "./DateTimeViInput";
 import ExportCsvButton from "./ExportCsvButton";
 import KanbanBoard from "./KanbanBoard";
 import PrintButton from "./PrintButton";
+import RecordAssistant from "../assistant/RecordAssistant";
 import { conditionMet, conditionText } from "./condition";
 import { PersonField, PersonInput } from "./people";
 import { StatusChip } from "./StatusChip";
@@ -376,6 +377,7 @@ function ShowBody({ model, entity, catalog }: { model: string; entity: EntityMet
         </Box>
         <Box sx={{ display: "grid", gap: 2 }}>
           {entity.hasProcess && <AssignPanel model={model} entity={entity} />}
+          <RecordAssistant key={`${model}/${entity.name}/${record.id}`} model={model} entity={entity} units={catalog.units} />
           <FilesPanel model={model} entity={entity} />
         </Box>
       </Box>

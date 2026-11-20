@@ -42,4 +42,4 @@ Các tài liệu sản phẩm cũng đọc được trên [trang docs](https://h
 
 Việc chưa làm và giới hạn chấp nhận ở [`BACKLOG.md`](./dynamic-core/BACKLOG.md).
 Giới hạn của từng tính năng ở [ma trận bằng chứng](https://haui-implsolution.github.io/DX-OS/docs/evidence-matrix).
-Phần trí tuệ nhân tạo (chữ I của H-P-D-I) chưa làm, xem [`README.md`](../README.md#đối-chiếu-với-đề-thi), mục Đối chiếu với đề thi.
+Phần trí tuệ nhân tạo (chữ I của H-P-D-I) mới có trợ lý tùy chọn đề xuất giá trị một trường, xem [`assistant/README.md`](../assistant/README.md) và mục Đối chiếu với đề thi ở [`README.md`](../README.md#đối-chiếu-với-đề-thi).

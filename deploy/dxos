@@ -180,11 +180,13 @@ print_next_steps() {
 # A container is ready when it is healthy, running without a healthcheck, or a one-shot job
 # that exited with code 0.
 pending_services() {
-  local pending=() id name status health exit_code
+  local pending=() id name status health exit_code service
   while read -r id; do
     [[ -n "$id" ]] || continue
-    read -r name status health exit_code <<<"$(docker inspect -f \
-      '{{.Name}} {{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{else}}-{{end}} {{.State.ExitCode}}' "$id")"
+    read -r service name status health exit_code <<<"$(docker inspect -f \
+      '{{index .Config.Labels "com.docker.compose.service"}} {{.Name}} {{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{else}}-{{end}} {{.State.ExitCode}}' "$id")"
+    # The optional assistant never holds the start of the platform.
+    [[ "$service" == assistant-* ]] && continue
     case "$status:$health:$exit_code" in
       running:healthy:*|running:-:*|exited:*:0) ;;
       *) pending+=("${name#/}($status/$health)") ;;

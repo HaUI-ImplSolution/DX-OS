@@ -73,7 +73,13 @@ export interface ProcessInfo {
   actions: ProcessAction[];
 }
 
+export interface AiTask {
+  label: string; inputFields: string[]; outputField: string;
+  instruction: string; sources: string[]; maxLength: number;
+}
+
 export interface EntityMeta {
+  aiTasks?: Record<string, AiTask>;
   name: string;
   label: string;
   fields: FieldMeta[];

@@ -82,6 +82,7 @@ Mười mẫu có sẵn, chọn được ngay ở bảng điều khiển: một 
 | | **Dùng thử ngay:** một lệnh tạo tài khoản thử cho từng vai cùng hồ sơ mẫu ở nhiều trạng thái, để người xem đăng nhập là thấy hệ thống có việc đang chạy. |
 | | **Cài và vận hành đơn giản:** một lệnh cài, một lệnh chạy; có sao lưu kiểm được, tự khởi động lại dịch vụ, quét mã độc cho tệp đính kèm và số đo vận hành đọc được bằng công cụ giám sát có sẵn của bạn. |
 | | **Đăng nhập một lần:** qua Keycloak, có thể bắt quản trị viên nhập thêm mã một lần. |
+| | **[Trợ lý nghiệp vụ (tùy chọn)](./assistant/README.md):** AI chạy tại máy chủ của bản cài đề xuất nội dung từ hồ sơ và nguồn tham khảo, người dùng xác nhận trước khi lưu. |
 
 Bảng đối chiếu từng tính năng với bài kiểm của nó ở [ma trận bằng chứng](https://haui-implsolution.github.io/DX-OS/docs/evidence-matrix).
 
@@ -230,7 +231,7 @@ DX-OS ở Tầng 1 là lõi không giao diện, ở Tầng 2 là giao diện web
 | H, môi trường số chung | Một lần đăng nhập; vai và đơn vị khai trong mô hình; mỗi người chỉ thấy phần việc của mình trong hộp việc, bảng theo trạng thái và lịch | Có |
 | P, rào chắn và luồng tự động | Trạng thái chỉ đổi qua quy trình; từ chối và trả lại bắt buộc có lý do; người tạo không tự duyệt hồ sơ của mình; hạn xử lý, quá hạn và leo thang lên vai khác; việc sau khi duyệt chạy qua hàng đợi và được thử lại | Có |
 | D, một nguồn sự thật | Dữ liệu, lịch sử và hàng đợi cùng nằm ở một cơ sở dữ liệu; lịch sử nối thành chuỗi chống sửa; mọi thay đổi báo ra ngoài bằng webhook có chữ ký; thống kê và danh mục dữ liệu | Có |
-| I, trí tuệ nhân tạo | Chưa có; chỉ dùng mô hình mở hoàn toàn theo định nghĩa của OSI, chưa chọn được mô hình đạt | Chưa làm |
+| I, trí tuệ nhân tạo | Trợ lý nghiệp vụ tùy chọn đề xuất giá trị một trường từ hồ sơ và nguồn tham khảo, người dùng xác nhận trước khi lưu; chạy self-host với endpoint suy luận do người vận hành cấu hình | Có, một thành phần |
 
 Cách tính các giao diện đi kèm và đối chiếu chi tiết từng ý của đề ở [`DANH_GIA.md`](./docs/dynamic-core/DANH_GIA.md), việc còn lại ở [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md).
 

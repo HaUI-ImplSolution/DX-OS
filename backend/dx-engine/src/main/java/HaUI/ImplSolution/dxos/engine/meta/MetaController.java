@@ -18,7 +18,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -58,9 +61,11 @@ public class MetaController {
       boolean canWrite,
       boolean canHandle,
       boolean canAssign,
+      Long modelVersion,
       List<String> handlerActions,
       Model.Ui ui,
-      List<DocumentMeta> documents) {}
+      List<DocumentMeta> documents,
+      Map<String, Model.AiTask> aiTasks) {}
 
   // A print template as the screens need it: when is empty for a template of any state.
   public record DocumentMeta(String name, String label, List<String> when) {}
@@ -68,7 +73,11 @@ public class MetaController {
   // held is true for a model that is being applied or needs reconciliation; it has no entities
   // then.
   public record ModelMeta(
-      String name, List<Model.Unit> units, List<EntityMeta> entities, boolean held) {}
+      String name,
+      List<Model.Unit> units,
+      List<EntityMeta> entities,
+      boolean held,
+      Long modelVersion) {}
 
   private final ModelRegistry registry;
   private final DataService data;
@@ -86,21 +95,27 @@ public class MetaController {
       description =
           "An entity no role of the caller reaches is left out, and so is a model with no"
               + " entity left. A model that is held is listed with held = true and no entities, only"
-              + " when the caller reaches one of its entities.")
+              + " when the caller reaches one of its entities. modelVersion is the applied version"
+              + " for conditional actions and assignment; null while the model is held. Completion"
+              + " effects have asynchronous=true because they are queued in the outbox; this is not"
+              + " a delivery receipt.")
   public ApiResponse<List<ModelMeta>> models() {
     List<ModelMeta> models =
         new ArrayList<>(
             registry.all().stream()
                 .map(
-                    model ->
-                        new ModelMeta(
-                            model.name(),
-                            model.units(),
-                            model.entities().values().stream()
-                                .filter(entity -> data.access(model, entity).read())
-                                .map(entity -> describe(model, entity))
-                                .toList(),
-                            false))
+                    model -> {
+                      long version = registry.version(model.name());
+                      return new ModelMeta(
+                          model.name(),
+                          model.units(),
+                          model.entities().values().stream()
+                              .filter(entity -> data.access(model, entity).read())
+                              .map(entity -> describe(model, entity, version))
+                              .toList(),
+                          false,
+                          version);
+                    })
                 .filter(model -> !model.entities().isEmpty())
                 .toList());
     registry.held().stream()
@@ -108,7 +123,8 @@ public class MetaController {
             model ->
                 model.entities().values().stream()
                     .anyMatch(entity -> data.access(model, entity).read()))
-        .forEach(model -> models.add(new ModelMeta(model.name(), model.units(), List.of(), true)));
+        .forEach(
+            model -> models.add(new ModelMeta(model.name(), model.units(), List.of(), true, null)));
     return ApiResponse.success(models);
   }
 
@@ -116,7 +132,9 @@ public class MetaController {
   @Operation(
       summary = "Fields, process and permissions of one entity for the caller",
       description =
-          "handlerActions lists the process actions the roles of the caller may take,"
+          "modelVersion identifies the applied model. process.effects maps destination states to"
+              + " queued effects; asynchronous effects may still be pending after an action."
+              + " handlerActions lists the process actions the roles of the caller may take,"
               + " so a client shows only the buttons that can work. process.actions[].when, when not"
               + " null, is {field, op, value}: the action is taken only on a record whose field meets"
               + " the comparison (op is one of ==, !=, <, <=, >, >=; a field without a value never"
@@ -126,10 +144,10 @@ public class MetaController {
     Entity e =
         m.entity(entity)
             .orElseThrow(() -> new ResourceNotFoundException("Entity " + entity + " not found"));
-    return ApiResponse.success(describe(m, e));
+    return ApiResponse.success(describe(m, e, registry.version(model)));
   }
 
-  private EntityMeta describe(Model model, Entity entity) {
+  private EntityMeta describe(Model model, Entity entity, long modelVersion) {
     Access access = data.access(model, entity);
     List<FieldMeta> fields =
         entity.fields().values().stream()
@@ -163,7 +181,8 @@ public class MetaController {
                 ProcessInfo.EscalationInfo.of(entity.process().escalations()),
                 entity.process().booking(),
                 entity.process().definition().states(),
-                entity.process().definition().actions());
+                entity.process().definition().actions(),
+                effects(entity));
     String unitField = entity.unitField().map(Model.Field::name).orElse(null);
     return new EntityMeta(
         entity.name(),
@@ -176,11 +195,36 @@ public class MetaController {
         access.write(),
         data.canHandle(model, entity),
         data.canAssign(model, entity),
+        modelVersion,
         handlerActions(model, entity),
         entity.ui(),
         entity.documents().stream()
             .map(d -> new DocumentMeta(d.name(), d.label(), d.when()))
-            .toList());
+            .toList(),
+        entity.aiTasks());
+  }
+
+  private Map<String, List<ProcessInfo.Effect>> effects(Entity entity) {
+    if (entity.process().after() == null) {
+      return Map.of();
+    }
+    return entity.process().after().entrySet().stream()
+        .collect(
+            Collectors.toMap(
+                Map.Entry::getKey,
+                entry ->
+                    entry.getValue().stream()
+                        .map(
+                            effect ->
+                                new ProcessInfo.Effect(
+                                    effect.operation(),
+                                    effect.user(),
+                                    effect.group(),
+                                    effect.groupField(),
+                                    true))
+                        .toList(),
+                (first, second) -> first,
+                LinkedHashMap::new));
   }
 
   // The actions the roles of the caller may take on a record, as the process rules decide them.

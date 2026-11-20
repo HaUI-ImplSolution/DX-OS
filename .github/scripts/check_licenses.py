@@ -222,7 +222,7 @@ def image_name(reference: str) -> str:
 
 
 def referenced_references() -> dict[str, list[tuple[str, str]]]:
-    """Image name to the (file, reference) pairs that use it. Images built by this repository are skipped."""
+    """Image name to the (file, reference) pairs that use it. Images built by this repository and the empty scratch image are skipped."""
     found: dict[str, list[tuple[str, str]]] = {}
     for rel in tracked_files():
         path = ROOT / rel
@@ -232,7 +232,7 @@ def referenced_references() -> dict[str, list[tuple[str, str]]]:
         if name == "Dockerfile":
             stages = set(re.findall(r"^FROM\s+\S+\s+AS\s+(\S+)", path.read_text(encoding="utf-8"), re.MULTILINE | re.IGNORECASE))
             text = path.read_text(encoding="utf-8")
-            references = [r for r in FROM_LINE.findall(text) + COPY_FROM_LINE.findall(text) if r not in stages]
+            references = [r for r in FROM_LINE.findall(text) + COPY_FROM_LINE.findall(text) if r not in stages and r != "scratch"]
         elif rel.startswith(("deploy/docker-compose", ".github/workflows/")) and name.endswith((".yml", ".yaml")):
             text = path.read_text(encoding="utf-8")
             references = [r for r in IMAGE_LINE.findall(text) if "${" not in r] + docker_run_images(text)

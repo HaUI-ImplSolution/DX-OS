@@ -1,0 +1,104 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
+# SPDX-License-Identifier: Apache-2.0
+# Optional business assistant, loaded only when deploy/.env sets
+# COMPOSE_FILE=docker-compose.yml:docker-compose.assistant.yml (see assistant/README.md).
+# Its settings are in deploy/assistant.env (copy assistant.env.example), never in deploy/.env.
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "5"
+
+x-hardened: &hardened
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+
+services:
+  apisix-config:
+    environment:
+      DXOS_ASSISTANT: "true"
+
+  # Prepares the state directory and the keys of the assistant.
+  assistant-init:
+    <<: *hardened
+    logging: *default-logging
+    image: ${DXOS_IMAGE_PREFIX:-dxos}-assistant:${DXOS_IMAGE_TAG:-local}
+    build:
+      context: ../assistant
+    user: "0:0"
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER]
+    network_mode: none
+    read_only: true
+    command: [dist/setup.js, prepare, /bootstrap]
+    environment:
+      ASSISTANT_PUBLIC_URL: ${GATEWAY_PUBLIC_URL:?}
+    volumes:
+      - ./data/assistant:/bootstrap
+    tmpfs: ["/tmp:rw,nosuid,nodev,noexec,size=64m"]
+
+  # Registers the sign-in client of the assistant; a failure is only a warning, Core is not affected.
+  assistant-sso:
+    <<: *hardened
+    logging: *default-logging
+    image: ${DXOS_IMAGE_PREFIX:-dxos}-sso:${DXOS_IMAGE_TAG:-local}
+    read_only: true
+    depends_on:
+      assistant-init:
+        condition: service_completed_successfully
+      keycloak:
+        condition: service_healthy
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:?}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?}
+    volumes:
+      - ./assistant-sso.sh:/assistant-sso.sh:ro
+      - ./data/assistant/sso:/bootstrap:ro
+    entrypoint: [bash, -c, "bash /assistant-sso.sh || echo 'WARNING: the assistant sign-in client was not set up; Core is not affected.' >&2"]
+    tmpfs: ["/tmp:rw,nosuid,nodev,noexec,size=64m,mode=1777"]
+
+  assistant-control:
+    <<: *hardened
+    logging: *default-logging
+    image: ${DXOS_IMAGE_PREFIX:-dxos}-assistant:${DXOS_IMAGE_TAG:-local}
+    user: "1000:1000"
+    restart: unless-stopped
+    read_only: true
+    mem_limit: 256m
+    cpus: 0.5
+    pids_limit: 128
+    # An inference service on this machine is reached as host.docker.internal.
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    depends_on:
+      backend:
+        condition: service_healthy
+      assistant-init:
+        condition: service_completed_successfully
+      assistant-sso:
+        condition: service_completed_successfully
+    env_file:
+      - path: ./assistant.env
+        required: false
+    environment:
+      ASSISTANT_HOST: 0.0.0.0
+      ASSISTANT_PORT: 18790
+      ASSISTANT_STATE_DIR: /state
+      ASSISTANT_MASTER_KEY_FILE: /run/secrets/master.key
+      ASSISTANT_PUBLIC_URL: ${GATEWAY_PUBLIC_URL:?}
+      ASSISTANT_CORE_URL: http://backend:8081
+      ASSISTANT_OIDC_ISSUER: ${GATEWAY_PUBLIC_URL:?}/realms/dxos
+      ASSISTANT_OIDC_AUDIENCE: dxos-api
+      ASSISTANT_CORE_AUDIENCE: dxos-api
+      ASSISTANT_OIDC_JWKS_URL: http://keycloak:8080/realms/dxos/protocol/openid-connect/certs
+      ASSISTANT_OIDC_TOKEN_URL: http://keycloak:8080/realms/dxos/protocol/openid-connect/token
+      ASSISTANT_OIDC_CLIENT_ID: dxos-assistant
+    volumes:
+      - ./data/assistant/control:/state
+      - ./data/assistant/private:/run/secrets:ro
+    tmpfs: ["/tmp:rw,nosuid,nodev,noexec,size=64m"]
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:18790/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 4

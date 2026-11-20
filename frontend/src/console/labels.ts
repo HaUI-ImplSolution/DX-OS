@@ -26,6 +26,7 @@ export const CHANGE_KIND: Record<string, string> = {
   DROP_UNIQUE: t("Bỏ không trùng"),
   CHANGE_OPTIONS: t("Đổi danh sách lựa chọn"),
   CHANGE_LABEL: t("Đổi nhãn hiển thị"),
+  CHANGE_AI_TASKS: t("Đổi nhiệm vụ trợ lý nghiệp vụ"),
   CHANGE_DEFAULT: t("Đổi giá trị mặc định"),
   GRANT_ACCESS: t("Cấp quyền truy cập cho vai"),
   REVOKE_ACCESS: t("Thu hồi quyền truy cập của vai"),

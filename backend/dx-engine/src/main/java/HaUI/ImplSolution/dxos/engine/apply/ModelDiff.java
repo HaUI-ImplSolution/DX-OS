@@ -434,6 +434,9 @@ public final class ModelDiff {
     if (!old.documents().equals(entity.documents())) {
       changes.add(new Change(Level.SAFE, "CHANGE_DOCUMENTS", entity.name(), null, null));
     }
+    if (!old.aiTasks().equals(entity.aiTasks())) {
+      changes.add(new Change(Level.SAFE, "CHANGE_AI_TASKS", entity.name(), null, null));
+    }
     Process before = old.process();
     Process after = entity.process();
     if (before == null && after == null) {

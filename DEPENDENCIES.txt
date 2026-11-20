@@ -19,7 +19,7 @@ Danh sách giấy phép được OSI công nhận: https://opensource.org/licens
 | Phần                                        | Giấy phép             | Ghi chú                                      |
 +=============================================+=======================+==============================================+
 | backend, frontend, website, deploy, portal, | Apache-2.0 (LICENSE)  | SPDX header ở mọi file mã nguồn              |
-| sso, seaweedfs, e2e, examples               |                       |                                              |
+| sso, seaweedfs, e2e, examples, assistant    |                       |                                              |
 +---------------------------------------------+-----------------------+----------------------------------------------+
 | docs, tệp .md, ảnh, video, sơ đồ            | Apache-2.0 (LICENSE)  | Khai ở REUSE.toml vì tệp không có dòng SPDX  |
 +---------------------------------------------+-----------------------+----------------------------------------------+
@@ -131,7 +131,7 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 | dompurify (qua monaco-editor)                                | MPL-2.0 OR   | Làm sạch nội dung hiển thị           |
 |                                                              | Apache-2.0   | [3]                                  |
 +--------------------------------------------------------------+--------------+--------------------------------------+
-| TypeScript                                                   | Apache-2.0   | Web                                  |
+| TypeScript                                                   | Apache-2.0   | Chỉ khi build web và trợ lý           |
 +--------------------------------------------------------------+--------------+--------------------------------------+
 | css-mediaquery (qua react-admin)                             | BSD-3-Clause | Truy vấn media của MUI               |
 +--------------------------------------------------------------+--------------+--------------------------------------+
@@ -154,6 +154,13 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 | nginx 1.30                                                   | BSD-2-Clause | Image phục vụ web và portal          |
 +--------------------------------------------------------------+--------------+--------------------------------------+
 | Node.js 22 (node:22-alpine)                                  | MIT          | Chỉ khi build web                    |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| Fastify, @fastify/swagger, jose                              | MIT          | API, OpenAPI và xác thực JWT của     |
+|                                                              |              | dịch vụ trợ lý                       |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| Node.js 24.16.0                                              | MIT          | Chạy trợ lý và SQLite tích hợp       |
++--------------------------------------------------------------+--------------+--------------------------------------+
+| @types/node                                                  | MIT          | Chỉ khi build và test trợ lý         |
 +--------------------------------------------------------------+--------------+--------------------------------------+
 
 4. HẠ TẦNG VÀ CÔNG CỤ
@@ -182,8 +189,9 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 | Maven Wrapper 3.3.4 [7] (mvnw,       | Apache-2.0                           | Chạy Maven ở phiên bản đã ghim;      |
 | mvnw.cmd, maven-wrapper.properties)  |                                      | chép nguyên từ Apache Maven          |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| Debian, Ubuntu (image nền)           | Giấy phép tự do của từng gói         | Nền của image APISIX (Debian) và     |
-|                                      |                                      | sso (Ubuntu), chạy nguyên bản        |
+| Debian, Ubuntu (image nền)           | Giấy phép tự do của từng gói         | Nền của image APISIX (Debian), trợ   |
+|                                      |                                      | lý (node:24-bookworm-slim, không có  |
+|                                      |                                      | npm, corepack, yarn) và sso (Ubuntu) |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | gitleaks v8.30.1                     | MIT                                  | Quét secret trong CI, chạy trong     |
 |                                      |                                      | container                            |
@@ -242,6 +250,12 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 | GitHub Actions (actions/*, docker/*, | MIT, Apache-2.0, ISC, 0BSD,          | Chỉ trong CI, ghim theo SHA          |
 | github/*, ossf/*)                    | BlueOak-1.0.0                        |                                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
+| Apertus-8B-Instruct-2509 [9]         | Apache-2.0                           | LLM tham khảo; người vận hành tự     |
+|                                      |                                      | cấp trọng số cho inference self-host |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| llama.cpp b12387 [10]                | MIT                                  | Runtime inference self-host do       |
+|                                      |                                      | người vận hành cấp riêng             |
++--------------------------------------+--------------------------------------+--------------------------------------+
 
 5. GHI CHÚ
 ==========
@@ -289,6 +303,18 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
     Docker Desktop là sản phẩm riêng theo điều khoản thương mại của Docker, không thuộc OSI; DX-OS không cần nó, và trên Linux dùng Docker Engine.
     Các công cụ ở dòng này là phần mềm cài sẵn trên máy chạy, DX-OS không đóng gói hay phân phối lại chúng.
 
+[9] Apertus-8B-Instruct-2509: Apache-2.0, Copyright 2025 - The Swiss AI team.
+    Giấy phép upstream: https://huggingface.co/swiss-ai/Apertus-8B-Instruct-2509/blob/main/LICENSE.txt.
+    Model tham khảo phục vụ qua endpoint self-host; repository không đóng gói trọng số và không chọn model mặc định.
+    Khi tải từ Hugging Face, tác giả áp dụng Acceptable Use Policy (AUP 1.0) kèm nghĩa vụ bồi thường thiệt hại cho ETH Zurich và EPFL.
+    Model card tự mô tả "fully open" nhưng chưa nằm trong danh mục chứng nhận Open Source AI (OSAID 1.0) của OSI, dữ liệu huấn luyện là script tái dựng.
+    Người vận hành tự chọn model, tự tải trọng số và tự chịu trách nhiệm pháp lý với các điều khoản của upstream.
+
+[10] llama.cpp b12387: MIT, Copyright (c) 2023-2026 The ggml authors.
+     Giấy phép đúng tag: https://github.com/ggml-org/llama.cpp/blob/b12387/LICENSE.
+     Runtime local được người vận hành cấp, không nằm trong image trợ lý hoặc SBOM npm.
+     Thư viện hệ thống và mã vendor của runtime giữ giấy phép riêng; người vận hành giữ thông báo đi kèm bản runtime mình dùng.
+
 6. TRANG CHỦ VÀ NGUỒN
 =====================
 
@@ -296,6 +322,8 @@ Trang chủ và mã nguồn của các thành phần không nằm trong SBOM (im
 Gói Maven và npm: trang chủ và mã nguồn của từng gói nằm trong sbom/*.cdx.json (mục externalReferences).
 
 Thành phần       Trang chủ | Mã nguồn
+Apertus          https://huggingface.co/swiss-ai/Apertus-8B-Instruct-2509 | https://github.com/swiss-ai
+llama.cpp        https://github.com/ggml-org/llama.cpp | https://github.com/ggml-org/llama.cpp/tree/b12387
 PostgreSQL       https://www.postgresql.org/ | https://github.com/postgres/postgres
 Keycloak         https://www.keycloak.org | https://github.com/keycloak/keycloak
 Apache APISIX    https://apisix.apache.org/ | https://github.com/apache/apisix

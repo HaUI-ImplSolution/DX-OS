@@ -10,6 +10,7 @@ local validate = require("jsonschema").generate_validator
 local lfs = require("lfs")
 
 local public = {
+    ["assistant-api"] = "feature probe and SSO callback; assistant verifies JWT on account routes",
     ["api-system-status"] = "status before sign-in",
     ["api-preflight"] = "CORS preflight carries no token",
     ["api-docs"] = "OpenAPI and Swagger UI",
@@ -227,7 +228,7 @@ local function select_blocks(content)
     local console = os.getenv("KEYCLOAK_ADMIN_CONSOLE") or "false"
     if mode ~= "full" and mode ~= "core" then fail("DXOS_MODE must be full or core") end
     if console ~= "true" and console ~= "false" then fail("KEYCLOAK_ADMIN_CONSOLE must be true or false") end
-    local excluded = { ["app-tier"] = mode == "core",
+    local excluded = { ["app-tier"] = mode == "core", ["assistant"] = os.getenv("DXOS_ASSISTANT") ~= "true",
         ["admin-console-on"] = console ~= "true", ["admin-console-off"] = console == "true" }
     local lines, block = {}, nil
     for line in (content .. "\n"):gmatch("([^\n]*)\n") do

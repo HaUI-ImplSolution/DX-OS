@@ -474,7 +474,8 @@ public final class ModelParser {
     }
     Map<String, Node> keys =
         mapping(
-            map, Set.of("label", "fields", "access", "process", "owner_via", "ui", "documents"));
+            map,
+            Set.of("label", "fields", "access", "process", "owner_via", "ui", "documents", "ai"));
 
     Map<String, Field> fields = readFields(map, keys.get("fields"), entityNames);
     if (fields.values().stream().filter(field -> field.type() == FieldType.CODE).count() > 1) {
@@ -515,7 +516,98 @@ public final class ModelParser {
         process,
         ownerVia,
         ui,
-        documents);
+        documents,
+        readAiTasks(keys.get("ai"), fields, process));
+  }
+
+  private Map<String, Model.AiTask> readAiTasks(
+      Node node, Map<String, Field> fields, Process process) {
+    if (node == null) return Map.of();
+    if (!(node instanceof MappingNode ai)) {
+      problem(node, "ai must be a mapping with tasks");
+      return Map.of();
+    }
+    Node tasksNode = mapping(ai, Set.of("tasks")).get("tasks");
+    if (!(tasksNode instanceof MappingNode tasks)
+        || tasks.getValue().isEmpty()
+        || tasks.getValue().size() > 8) {
+      problem(node, "ai.tasks must contain between 1 and 8 tasks");
+      return Map.of();
+    }
+    Map<String, Model.AiTask> result = new LinkedHashMap<>();
+    for (NodeTuple tuple : tasks.getValue()) {
+      String name = readName(tuple.getKeyNode(), tuple.getKeyNode(), "task name");
+      if (name == null) continue;
+      if (!(tuple.getValueNode() instanceof MappingNode task)) {
+        problem(tuple.getValueNode(), "a task must be a mapping");
+        continue;
+      }
+      Map<String, Node> keys =
+          mapping(
+              task,
+              Set.of(
+                  "label", "input_fields", "output_field", "instruction", "sources", "max_length"));
+      List<String> input = aiNames(task, keys.get("input_fields"), "input_fields");
+      List<String> sources = aiNames(task, keys.get("sources"), "sources");
+      for (String field : input) {
+        Field f = fields.get(field);
+        if (f == null
+            || Set.of(FieldType.FILE, FieldType.USER, FieldType.REFERENCE).contains(f.type())) {
+          problem(task, "input_fields must name supported fields of this entity");
+        }
+      }
+      String output = keys.get("output_field") == null ? "" : scalar(keys.get("output_field"));
+      Field target = fields.get(output);
+      if (target == null
+          || target.multiple()
+          || (target.type() != FieldType.TEXT && target.type() != FieldType.CHOICE)) {
+        problem(task, "output_field must name a text or single choice field");
+      }
+      if (process != null
+          && process.after() != null
+          && process.after().values().stream()
+              .flatMap(List::stream)
+              .anyMatch(effect -> output.equals(effect.groupField()))) {
+        problem(task, "output_field must not supply a membership group");
+      }
+      String label = keys.get("label") == null ? name : scalar(keys.get("label"));
+      String instruction = keys.get("instruction") == null ? "" : scalar(keys.get("instruction"));
+      if (label.isBlank()
+          || label.length() > 200
+          || instruction.isBlank()
+          || instruction.length() > 2000) {
+        problem(task, "a task needs a label up to 200 and instruction up to 2000 characters");
+      }
+      int maxLength = 500;
+      try {
+        if (keys.get("max_length") != null)
+          maxLength = Integer.parseInt(scalar(keys.get("max_length")));
+        if (maxLength < 1 || maxLength > 2000) throw new NumberFormatException();
+      } catch (NumberFormatException error) {
+        problem(task, "max_length must be a whole number between 1 and 2000");
+      }
+      if (result.containsKey(name))
+        problem(tuple.getKeyNode(), "task " + name + " is declared twice");
+      result.put(name, new Model.AiTask(label, input, output, instruction, sources, maxLength));
+    }
+    return result;
+  }
+
+  private List<String> aiNames(Node parent, Node node, String name) {
+    if (!(node instanceof SequenceNode sequence)
+        || sequence.getValue().isEmpty()
+        || sequence.getValue().size() > 12) {
+      problem(parent, name + " must contain between 1 and 12 names");
+      return List.of();
+    }
+    List<String> names = new ArrayList<>();
+    for (Node item : sequence.getValue()) {
+      String value = scalar(item);
+      if (!NAME.matcher(value).matches() || names.contains(value))
+        problem(item, name + " requires unique valid names");
+      names.add(value);
+    }
+    return names;
   }
 
   // The print templates of an entity. A placeholder names a field of the entity or one of the

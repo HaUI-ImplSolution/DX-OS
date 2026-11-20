@@ -64,12 +64,13 @@ Nó đáp ứng câu "PaaS phục vụ các ứng dụng tầng trên" của đ�
 | Giảm số bước tích hợp: lệnh `dxos connect` (#344) | Xong |
 | Thêm công thức OpenAPI Generator vào `docs/EXTENSIONS.md` | Xong |
 | `extra_hosts` cho backend của DX-OS và tài liệu đường mạng webhook | Xong |
-| Chạy thử đầu cuối script tạo tài khoản và kiểm lịch sử ghi client | Chưa làm |
-| Tệp mô hình bảo hành: kiểm bằng `dxos lint` và `dxos plan` xem khối `ai.tasks` của `support_desk` có bị thừa kế và có cần bỏ không | Chưa làm |
+| Script `setup/setup.sh`: tạo tài khoản quản lý, kỹ thuật viên và nạp sản phẩm, chạy thử trên stack thử | Xong |
+| Kiểm lịch sử ghi tên client là người thao tác | Chưa làm |
+| Tệp mô hình bảo hành: `ai.tasks` của `support_desk` bị thừa kế, nên `models/warranty.yaml` đặt `ai: null` | Xong |
 | Phụ thuộc của ứng dụng: dự kiến chỉ Fastify, nếu thêm thì qua kiểm giấy phép OSI và ghi ở `DEPENDENCIES.txt` | Chưa làm |
 | README của ví dụ ở `examples/appliance-store/README.md`: mục tiêu, vai, kịch bản demo, tiêu chí, giới hạn, điều không làm | Xong |
 | Ứng dụng mẫu: chức năng thường ngày | Chưa làm |
-| Tệp mô hình cho hai quy trình | Chưa làm |
+| Tệp mô hình cho hai quy trình (`models/`), kiểm bằng `dxos lint`, `plan`, `apply`, `conformance` | Xong |
 | Tích hợp: gửi hồ sơ, nhận webhook, liên kết sang DX-OS | Chưa làm |
 | Kiểm chạy theo README trên máy sạch | Chưa làm |
 | Phần pitch (tầm nhìn, nỗi đau, thị trường, cạnh tranh) vào `docs/DEMO.md`, nhận định thị trường ghi là giả thuyết vì chưa có khách hàng thật (#231) | Chưa làm |

@@ -27,7 +27,7 @@ WP-03 cần cả hai; việc Q1 (`extra_hosts` của backend) làm trước WP-0
 
 - `models/retail_return.yaml` là bản sao nguyên của mẫu, hoặc `extends: retail_return` rỗng; chọn bản `extends` nếu `dxos plan` cho kết quả giống nhau.
 - `models/warranty.yaml`: thêm trường, đặt `deadline` ngắn cho demo; nếu `ai.tasks` bị thừa kế (Q3) thì tắt trong mô hình này.
-- `setup/` chỉ làm phần không có lệnh sẵn: tạo tài khoản quản lý và kỹ thuật viên ở Keycloak rồi gán vai qua API, nạp sản phẩm; không chạy `apply` và `connect` thay người vận hành.
+- `setup/` chỉ làm phần không có lệnh sẵn: tạo tài khoản quản lý và kỹ thuật viên ở Keycloak rồi gán vai qua API, nạp sản phẩm bằng một client `appliance-setup` (vai `STORE_STAFF`) tạo tạm và xóa khi xong, vì token ADMIN không có quyền ở API dữ liệu; không chạy `apply` và `connect` thay người vận hành.
 - `docker-compose.yml` của ứng dụng: `env_file: .env`, `extra_hosts`, cổng ứng dụng.
 - Lõi và mô hình: nghiệp vụ cửa hàng điện máy chỉ nằm trong hai tệp mô hình.
 

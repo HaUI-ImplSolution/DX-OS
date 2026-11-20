@@ -11,14 +11,14 @@ Kết quả đầu ra: `dxos lint`, `dxos plan`, `check_conformance.py` đạt c
 
 **Spec và tài liệu**
 
-- [ ] WP-01-DOC-01 Chốt Q3: chạy `dxos plan` với `warranty.yaml` xem `ai.tasks` có bị thừa kế không.
+- [x] WP-01-DOC-01 Chốt Q3: chạy `dxos plan` với `warranty.yaml` xem `ai.tasks` có bị thừa kế không.
 
 **Data, migration**
 
-- [ ] WP-01-DATA-01 `models/retail_return.yaml` (nguyên mẫu hoặc `extends` rỗng).
-- [ ] WP-01-DATA-02 `models/warranty.yaml` (`extends: support_desk`, số seri, ngày mua, mã hóa đơn, hạn ngắn, `webhook:`).
-- [ ] WP-01-DATA-03 `setup/`: tạo tài khoản quản lý và kỹ thuật viên, gán vai qua API.
-- [ ] WP-01-DATA-04 `setup/`: nạp sản phẩm từ danh mục của ứng dụng sang DX-OS.
+- [x] WP-01-DATA-01 `models/retail_return.yaml` (nguyên mẫu hoặc `extends` rỗng).
+- [x] WP-01-DATA-02 `models/warranty.yaml` (`extends: support_desk`, số seri, ngày mua, mã hóa đơn, hạn ngắn, `webhook:`).
+- [x] WP-01-DATA-03 `setup/`: tạo tài khoản quản lý và kỹ thuật viên, gán vai qua API.
+- [x] WP-01-DATA-04 `setup/`: nạp sản phẩm từ danh mục của ứng dụng sang DX-OS.
 
 **Infra, deploy, CI**
 
@@ -26,7 +26,7 @@ Kết quả đầu ra: `dxos lint`, `dxos plan`, `check_conformance.py` đạt c
 
 **Test** (chi tiết ở `03_TEST_PLAN.md`)
 
-- [ ] WP-01-TEST-01 Chạy T-01 đến T-04.
+- [x] WP-01-TEST-01 Chạy T-01 đến T-04.
 
 ## WP-02: Ứng dụng và giao diện
 

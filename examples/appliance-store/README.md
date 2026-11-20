@@ -5,7 +5,7 @@ Ví dụ này là một ứng dụng nhỏ của một cửa hàng điện máy,
 Khi cửa hàng cần quy trình đổi trả và bảo hành, họ cài DX-OS cạnh ứng dụng, thêm tệp mô hình và gọi API.
 DX-OS lo động cơ quy trình, phân quyền và lịch sử.
 
-Trạng thái: định hướng, chưa có mã.
+Trạng thái: đã có hai mô hình và các bước cài đặt ở mục "Cài DX-OS và nối quy trình"; mã ứng dụng chưa có.
 Kế hoạch và tiến độ ở [`docs/dynamic-core/UNG_DUNG_MAU.md`](../../docs/dynamic-core/UNG_DUNG_MAU.md); việc theo [#343](https://github.com/HaUI-ImplSolution/DX-OS/issues/343).
 
 ## Ai là ai
@@ -74,9 +74,62 @@ Node.js 24, Fastify và SQLite tích hợp của Node, giao diện HTML đơn gi
 appliance-store/
   docker-compose.yml   ứng dụng và cơ sở dữ liệu của nó
   app/                 mã ứng dụng và giao diện
-  models/              tệp mô hình của hai quy trình
-  setup/               script cài đặt: áp dụng mô hình, client, tài khoản, sản phẩm
+  models/              tệp mô hình của hai quy trình (retail.yaml, warranty.yaml)
+  catalog/             danh mục sản phẩm (products.csv), dùng cho ứng dụng và cho DX-OS
+  setup/               script tạo tài khoản quản lý, kỹ thuật viên và nạp sản phẩm
 ```
+
+## Cài DX-OS và nối quy trình
+
+Làm trên máy chạy ứng dụng (Linux hoặc WSL2, có Docker Compose v2), trong thư mục `examples/appliance-store`.
+Bước nào quan trọng thì người vận hành tự gõ; không script nào làm thay.
+
+1. Cài DX-OS theo [`docs/QUICKSTART.md`](../../docs/QUICKSTART.md) đường 2 bước 1 rồi chạy `dxos start` (bản đầy đủ, để có hộp việc).
+2. Khai đích webhook `store`, vì cả hai mô hình ghi `webhook: store`.
+   Bí mật dùng chung nằm ở `.env` của ứng dụng và ở `targets.yml` của DX-OS.
+   Địa chỉ dùng cổng 3000 của ứng dụng; nếu `~/.dxos/deploy/webhooks/targets.yml` đã có mục `targets:` thì thêm `store:` vào mục đó.
+
+   ```bash
+   SECRET=$(openssl rand -hex 24)
+   (umask 077; echo "DXOS_WEBHOOK_SECRET=$SECRET" >> .env)
+   cat >> ~/.dxos/deploy/webhooks/targets.yml <<EOF
+   targets:
+     store:
+       url: http://host.docker.internal:3000/hooks/dxos
+       secret: $SECRET
+   EOF
+   ```
+
+3. Xem kế hoạch rồi áp dụng hai mô hình.
+   Chưa khai đích ở bước 2 thì kế hoạch báo đích `store` chưa cấu hình và `dxos apply` từ chối.
+
+   ```bash
+   dxos plan models/retail.yaml && dxos apply models/retail.yaml
+   dxos plan models/warranty.yaml && dxos apply models/warranty.yaml
+   ```
+
+4. Nối ứng dụng: mỗi lệnh đăng ký một client, ghi biến vào `.env` và đăng nhập thử.
+
+   ```bash
+   dxos connect retail --role CUSTOMER
+   dxos connect warranty --role REQUESTER
+   ```
+
+5. Tạo tài khoản và nạp sản phẩm.
+   Script in mật khẩu tạm của quản lý và kỹ thuật viên một lần; mỗi người đổi mật khẩu ở lần đăng nhập đầu.
+   Chạy lại không tạo trùng.
+
+   ```bash
+   setup/setup.sh
+   ```
+
+   `setup.sh` đọc `~/.dxos/deploy/.env`; đặt `--deploy-dir` hoặc `DXOS_DEPLOY_DIR` khi DX-OS cài ở nơi khác.
+   Nó dùng client ADMIN `dxos-cli` của bản cài đó, và client này không bao giờ vào ứng dụng.
+   Để nạp sản phẩm nó tạo client `appliance-setup` rồi xóa ngay khi xong.
+
+Đổi mô hình bảo hành về sau cũng qua `dxos plan` rồi `dxos apply`: thêm trường là mức `SAFE`, bỏ trường là mức `LOSS` và cần `--accept LOSS`.
+Hạn xử lý của bảo hành trong `models/warranty.yaml` là 2 phút để demo thấy quá hạn; đặt `8h` hoặc `2d` cho việc thật.
+Webhook gửi mọi thay đổi của cả hai mô hình, kể cả sản phẩm, nên ứng dụng chỉ xử lý sự kiện của phiếu đổi trả và yêu cầu bảo hành.
 
 ## Không làm
 

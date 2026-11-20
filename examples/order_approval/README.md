@@ -6,19 +6,19 @@ Ví dụ nhỏ nhất cho đường "có code" của [hướng dẫn bắt đầ
 |---|---|
 | [`dxos.yaml`](./dxos.yaml) | Mô hình `order_approval`: vai `REQUESTER` và `APPROVER`, một thực thể `order_request` có quy trình duyệt |
 | [`app.py`](./app.py) | Ứng dụng: lấy token của hai vai, nộp đơn, duyệt đơn; chỉ cần Python chuẩn |
-| [`docker-compose.yml`](./docker-compose.yml) | Chạy `app.py` trong container và truyền năm biến cấu hình |
+| [`docker-compose.yml`](./docker-compose.yml) | Chạy `app.py` trong container, nạp biến từ `.env` (`env_file`) và cho container gọi `host.docker.internal` (`extra_hosts`) |
 
 ## Chạy thử
 
-Trên máy chạy DX-OS (đã `dxos start`, và `PUBLIC_HOST` là IP hoặc tên máy chủ chứ không phải `localhost`, xem [`docs/OPERATIONS.md`](../../docs/OPERATIONS.md#biến-cấu-hình-env)), trong thư mục này:
+Trên máy chạy DX-OS (đã `dxos start`), trong thư mục này:
 
 ```bash
 dxos apply dxos.yaml
-echo "DXOS_BASE_URL=http://<PUBLIC_HOST>:9080" > .env
-dxos client add requester --model order_approval --role REQUESTER --env DXOS_REQUESTER >> .env
-dxos client add approver  --model order_approval --role APPROVER  --env DXOS_APPROVER  >> .env
+dxos connect order_approval --role REQUESTER --role APPROVER
 docker compose run --rm app
 ```
+
+`dxos connect` đăng ký hai client và ghi `DXOS_BASE_URL` cùng các biến của chúng vào `.env`, xem [`docs/QUICKSTART.md`](../../docs/QUICKSTART.md#bước-3-nối-ứng-dụng-với-dx-os).
 
 Kết quả mong đợi:
 

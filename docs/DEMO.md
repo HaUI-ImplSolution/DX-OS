@@ -131,6 +131,7 @@ Các bước từ máy sạch ở [`examples/appliance-store`](../examples/appli
 - **Cửa sổ ứng dụng (`nhanvien`):** mở một đơn bán, gửi yêu cầu đổi trả; trạng thái "Chờ duyệt" kèm liên kết "Mở trên DX-OS".
 - **Cửa sổ `manager` ở DX-OS:** mở liên kết, duyệt phiếu ở hộp việc; quay lại ứng dụng thấy "Đã duyệt" mà không bấm gì.
 - **Bảo hành:** gửi yêu cầu bảo hành, để quá hạn xử lý (2 phút) rồi mở lại trang ở ứng dụng: nhãn "Quá hạn" hiện ra (khi bật webhook thì hiện không cần mở trang).
+- **Vì sao không tự viết (ba phép thử ở mục "Vì sao không tự viết vòng duyệt" của README, mỗi phép chừng một phút):** tài khoản máy của ứng dụng không tự duyệt được phiếu của mình (403), sửa một dòng lịch sử thì `dxos history verify` chỉ ra dòng đó, đổi quy trình có kế hoạch và mức rủi ro (`SAFE`, `LOSS`, từ chối khi còn phiếu mở). Chọn hai phép nếu thiếu thời gian.
 - **Điều cần nói:** ứng dụng không có mã quy trình, phân quyền hay lịch sử; phần tích hợp là một mẫu dùng nguyên, một tệp mở rộng mẫu, vài biến môi trường và 109 dòng mã.
 
 Sự cố: nếu ứng dụng không cập nhật trạng thái, kiểm `DXOS_BASE_URL` và `extra_hosts`; khi bật webhook thì mở tab Hàng đợi sự kiện ở `/console` để xem thông điệp bị dừng, kiểm địa chỉ trong `deploy/webhooks/targets.yml`, rồi bấm Thử lại.

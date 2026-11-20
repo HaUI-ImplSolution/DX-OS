@@ -274,6 +274,11 @@ Kiểm bằng đúng các lệnh và thao tác trong tài liệu.
     - Trong `deploy/webhooks/targets.yml` khai `<tên>` với `url: http://host.docker.internal:<cổng>/hook` và `secret`.
     - Một thay đổi hồ sơ làm máy chủ nhận được `POST` JSON kèm chữ ký.
     - `docker compose exec backend grep host.docker.internal /etc/hosts` trả một dòng địa chỉ.
+53. **Ví dụ `appliance-store`** (stack đầy đủ, làm theo `examples/appliance-store/README.md` trên một thư mục chỉ có ứng dụng):
+    - Chưa nối DX-OS: ứng dụng chạy, chi tiết đơn không có biểu mẫu Đổi trả và Bảo hành, `/claims` trả 404.
+    - Sau khi áp dụng hai mô hình, đăng ký hai tài khoản máy, ghi `.env` và thêm `env_file`, `extra_hosts`: biểu mẫu hiện ra, phiếu đổi trả và bảo hành gửi được, quản lý duyệt thì mở lại trang ứng dụng thấy "Đã duyệt", phiếu bảo hành quá hạn 2 phút hiện "Quá hạn".
+    - Sản phẩm chưa có ở DX-OS: ứng dụng báo "nhờ quản lý thêm vào mục Sản phẩm" và không tạo phiếu.
+    - Ba phép thử của mục "Vì sao không tự viết vòng duyệt": 403 khi tài khoản máy gọi `approve`, `dxos history verify` báo dòng bị sửa rồi nguyên vẹn sau khi khôi phục, `LOSS` cần `--accept LOSS` và đổi hạn bị từ chối khi còn phiếu mở.
 
 ### Trợ lý (tùy chọn)
 

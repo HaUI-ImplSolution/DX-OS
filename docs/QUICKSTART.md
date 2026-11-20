@@ -102,6 +102,7 @@ Muốn nhận thông báo khi hồ sơ đổi (vào chat hoặc hệ thống kh�
 Bạn đã có ứng dụng chạy bằng image riêng trong Docker Compose của bạn.
 Bạn cài DX-OS cạnh nó, rồi chỉ thêm vài biến vào ứng dụng để nó gọi DX-OS.
 Một ví dụ chạy được nằm ở [`examples/order_approval`](../examples/order_approval/README.md).
+Một ví dụ có ứng dụng bán hàng thật, làm gần như hoàn toàn trên Console, nằm ở [`examples/appliance-store`](../examples/appliance-store/README.md).
 
 ### Bước 1. Cài DX-OS cạnh ứng dụng
 

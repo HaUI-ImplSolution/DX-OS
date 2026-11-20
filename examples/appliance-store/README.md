@@ -204,6 +204,61 @@ Gửi đổi trả cho một sản phẩm chưa có ở DX-OS thì ứng dụng 
 
 Mọi bước ở DX-OS đều ghi vào lịch sử không sửa được.
 
+## Vì sao không tự viết vòng duyệt
+
+Một vòng duyệt đơn giản tự viết chỉ vài trăm dòng.
+Ba phép thử dưới đây cho thấy phần khó nằm ở chỗ khác, và không cần thêm mã nào vào ứng dụng.
+Làm sau phần "Dùng thử", khi đã có phiếu đổi trả số 1 và một phiếu bảo hành.
+
+### 1. Ứng dụng không tự duyệt được phiếu của chính nó
+
+Luật "chỉ quản lý được duyệt" nằm ở DX-OS, không nằm trong mã ứng dụng.
+Dù ứng dụng có lỗi hay bị chiếm quyền, tài khoản máy của nó vẫn chỉ làm được việc của vai `CUSTOMER`.
+Chạy trong thư mục `appliance-store`, bằng chính tài khoản máy trong `.env` của ứng dụng:
+
+```bash
+set -a; . ./.env; set +a
+TOKEN=$(curl -s -d grant_type=client_credentials -d client_id=$DXOS_CUSTOMER_CLIENT_ID \
+  -d client_secret=$DXOS_CUSTOMER_CLIENT_SECRET \
+  http://localhost:9080/realms/dxos/protocol/openid-connect/token | sed -n 's/.*"access_token":"\([^"]*\)".*/\1/p')
+curl -i -X POST -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' -d '{}' \
+  http://localhost:9080/api/v1/data/retail/return_request/1/actions/approve
+```
+
+Kết quả: `HTTP 403` kèm "Only STORE_STAFF can do this", và phiếu vẫn "Chờ duyệt".
+Cùng token đó gọi `/api/v1/data/warranty/ticket` (dữ liệu của mô hình khác) hoặc `/api/v1/users` cũng trả 403.
+
+### 2. Lịch sử bị sửa là lộ ra
+
+Mọi bước của phiếu nối thành một chuỗi hash.
+Người có quyền vào cơ sở dữ liệu sửa một dòng lịch sử thì `dxos history verify` chỉ ra dòng bị sửa.
+Chạy trong `~/.dxos/deploy` (tên người dùng và cơ sở dữ liệu `dxos` là mặc định):
+
+```bash
+cd ~/.dxos/deploy
+dxos history verify     # "intact": true
+ORIG=$(docker compose exec -T postgres psql -U dxos -d dxos -Atc "select actor from engine.record_event where id = (select min(id) from engine.record_event)")
+docker compose exec -T postgres psql -U dxos -d dxos -c "update engine.record_event set actor = 'someone-else' where id = (select min(id) from engine.record_event)"
+dxos history verify     # "intact": false, firstBreak nêu dòng và "its content was changed"
+docker compose exec -T postgres psql -U dxos -d dxos -c "update engine.record_event set actor = '$ORIG' where id = (select min(id) from engine.record_event)"
+dxos history verify     # "intact": true
+```
+
+Người sửa được cả cơ sở dữ liệu lẫn kho tệp vẫn có thể tính lại cả chuỗi; cách chặn việc đó bằng bên nhận giữ hash nằm ở [`examples/history-witness`](../history-witness/README.md).
+
+### 3. Đổi quy trình có kế hoạch và mức rủi ro
+
+Sửa quy trình khi hệ thống đang có phiếu là việc dễ làm hỏng dữ liệu.
+DX-OS không áp dụng thẳng mà cho xem kế hoạch với mức rủi ro trước; Console ở tab **Soạn và áp dụng** cho kết quả giống nhau.
+Lưu mô hình bảo hành thành `warranty.yaml` và thử ba thay đổi:
+
+- **Thêm một trường** (ví dụ dòng `branch: {type: text, label: Chi nhánh}` sau dòng `customer`): `dxos plan warranty.yaml` báo `SAFE`, `dxos apply warranty.yaml` áp dụng.
+- **Bỏ trường đó lại:** kế hoạch báo `LOSS` vì dữ liệu của trường sẽ mất. `dxos apply` từ chối với "This change is at level LOSS ... pass accept=LOSS", và chỉ làm khi bạn gõ rõ `dxos apply warranty.yaml --accept LOSS`.
+- **Đổi hạn xử lý** (ví dụ `deadline: 2m` thành `8h`) khi còn phiếu bảo hành chưa đóng: bị từ chối với "Cannot change CHANGE_DEADLINE for ticket while 1 records are still open", không áp dụng gì.
+
+Tự viết thì cả ba việc này (luật theo vai, lịch sử chống sửa, đổi quy trình an toàn) đều phải tự làm và tự giữ đúng qua từng lần sửa.
+Về công sức, ví dụ so sánh một luồng phiếu cơ bản nằm ở [`examples/effort-benchmark`](../effort-benchmark/README.md): 347 dòng Java viết tay so với một tệp YAML 28 dòng.
+
 ## Bạn đã thêm gì vào ứng dụng
 
 | Phần | Cỡ |

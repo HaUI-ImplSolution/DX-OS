@@ -6,6 +6,7 @@ import GuideBlocks from "./GuideBlocks";
 import { GUIDE, SCHEMA_HELP, type Section } from "./formGuide";
 import { FAMILY_LABEL } from "./labels";
 import { useFamilies } from "./useFamilies";
+import { conditionSource } from "../admin/condition";
 import { t, ta } from "../shell/t";
 
 const PART_TITLE: Record<Section, string> = {
@@ -87,7 +88,7 @@ export default function SyntaxGuide() {
                   <li key={action.name}>
                     <span style={mono}>{action.name}</span> ({ta(action.label)}): {t("{from} → {to}, do {who}", { from: action.from.join(", "), to: action.to, who: action.by === "OWNER" ? t("người nộp") : t("vai xử lý") })}
                     {action.needsNote ? t(", cần lý do") : ""}
-                    {action.when ? t(", khi {field} {op} {value}", { field: action.when.field, op: action.when.op, value: action.when.value }) : ""}
+                    {action.when ? t(", khi {condition}", { condition: conditionSource(action.when) }) : ""}
                   </li>
                 ))}
               </Box>

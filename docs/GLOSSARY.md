@@ -78,7 +78,7 @@ Mỗi từ được giải thích trong một hoặc hai dòng, kèm tài liệu
 
 | Thuật ngữ | Nghĩa | Xem thêm |
 |---|---|---|
-| Lịch sử chống sửa | Các dòng lịch sử của hồ sơ nối thành một chuỗi hash; sửa, xóa hay chèn một dòng thì `dxos history verify` chỉ ra dòng đầu tiên bị đổi | [`INTEGRATIONS.md`](INTEGRATIONS.md) |
+| Lịch sử chống sửa | Các dòng lịch sử của hồ sơ nối thành một chuỗi hash; sửa phần bất biến của một dòng, xóa hay chèn một dòng thì `dxos history verify` chỉ ra dòng đầu tiên bị đổi; tên, ghi chú và chi tiết của dòng mới nằm ngoài chuỗi | [`INTEGRATIONS.md`](INTEGRATIONS.md) |
 | Điểm neo | Mỗi giờ lõi ghi mốc của chuỗi hash vào kho đối tượng, ngoài PostgreSQL, để so lại khi kiểm | [`ARCHITECTURE.md`](../ARCHITECTURE.md#10-toàn-vẹn-và-phục-hồi) |
 | Outbox | Bảng trong PostgreSQL giữ các sự kiện chờ gửi, để gửi lại khi bên nhận lỗi | [`INTEGRATIONS.md`](INTEGRATIONS.md) |
 | Webhook | Thông báo mỗi thay đổi của hồ sơ tới một địa chỉ web hoặc kênh chat, có chữ ký để bên nhận kiểm tra | [`EXTENSIONS.md`](./EXTENSIONS.md#bên-nhận-webhook) |

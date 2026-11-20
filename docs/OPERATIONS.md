@@ -1,6 +1,6 @@
 # Vận hành
 
-Tài liệu cho người cài và chạy stack hằng ngày: cài đặt và lệnh `dxos`, quản trị người dùng, kiểm tra trước khi chạy, tài nguyên, giám sát từ ngoài, sao lưu và khôi phục, ứng phó sự cố, quét mã độc.
+Tài liệu cho người cài và chạy stack hằng ngày: cài đặt và lệnh `dxos`, quản trị người dùng, biến cấu hình `.env`, kiểm tra trước khi chạy, tài nguyên, giám sát từ ngoài, sao lưu và khôi phục, ứng phó sự cố, quét mã độc.
 Log, giới hạn tốc độ, sự kiện đăng nhập, audit, số đo cho Prometheus và màn hình giám sát ở [`MONITORING.md`](./MONITORING.md).
 Webhook sự kiện, API kéo sự kiện, lịch sử chống sửa và hồ dữ liệu ở [`INTEGRATIONS.md`](./INTEGRATIONS.md).
 Kết nối công cụ báo cáo bằng vai PostgreSQL chỉ đọc ở [`REPORTING.md`](./REPORTING.md).
@@ -19,6 +19,9 @@ Một dịch vụ ngoài gọi API bằng token máy; đăng ký nó ở tab Ứ
 Mỗi ứng dụng là một client Keycloak `dxos-app-<tên>` dạng client credentials, giữ đúng một vai của một mô hình; vai `ADMIN` và các vai của nền tảng không cấp được.
 Mã bí mật hiện một lần khi đăng ký hoặc đổi, hệ thống không giữ lại và không ghi vào nhật ký hay lịch sử.
 Ứng dụng lấy token bằng `grant_type=client_credentials` ở `<địa chỉ>/realms/dxos/protocol/openid-connect/token`, rồi gọi API dữ liệu của mô hình đó; mô hình khác, API quản trị và API người dùng trả 403.
+`dxos client add` và `dxos client rotate` nhận thêm `--env <TIỀN_TỐ>` (ví dụ `--env DXOS_REQUESTER`): lệnh chỉ in hai dòng `<TIỀN_TỐ>_CLIENT_ID=...` và `<TIỀN_TỐ>_CLIENT_SECRET=...`, nối thẳng vào tệp `.env` của ứng dụng được bằng `>>`.
+`dxos client test <tên>` đăng nhập bằng client đó rồi gọi API của mô hình của nó, và nói bước nào hỏng: không tới được địa chỉ, sai mã bí mật, hay mô hình chưa áp dụng.
+Mã bí mật lấy từ `--secret-file`, biến `DXOS_CLIENT_SECRET` hoặc hỏi lúc chạy, không bao giờ nằm trên dòng lệnh; `--url` đổi địa chỉ cổng vào cần thử.
 `dxos client list` liệt kê ứng dụng kèm mô hình và vai, `dxos client role <tên> --role <vai>` (hoặc nút đổi vai ở tab Ứng dụng ngoài) chuyển ứng dụng sang vai khác của cùng mô hình mà giữ nguyên tên và mã bí mật, `dxos client rotate <tên>` cấp mã mới và mã cũ hết hiệu lực ngay, `dxos client remove <tên>` xóa client; hồ sơ ứng dụng đã tạo vẫn còn.
 Token đã cấp trước khi đổi mã, đổi vai hoặc xóa ứng dụng vẫn dùng được đến khi hết hạn, tối đa khoảng 5 phút; token đổi vai vẫn mang vai cũ cho đến lúc đó.
 Đổi sang mô hình khác thì gỡ ứng dụng rồi đăng ký lại.
@@ -109,10 +112,23 @@ docker buildx imagetools inspect ghcr.io/haui-implsolution/dxos-backend:vX.Y.Z@$
 docker buildx imagetools inspect ghcr.io/haui-implsolution/dxos-backend:vX.Y.Z@$D --format '{{json .Provenance}}'
 ```
 
-SBOM liệt kê các gói trong image; thông tin dựng ghi lần dựng của image đó.
+SBOM liệt kê các gói trong image; thông tin dựng ghi lần dựng của image đó, gồm commit (`vcs:revision`) và tag (`refs/tags/vX.Y.Z`) được dựng, nên commit này phải trùng commit của tag.
 Digest không đổi giữa các lần kiểm thì vẫn là cùng một image.
 
-Attestation này không chứng minh chữ ký hay danh tính người phát hành.
+Attestation của BuildKit không có chữ ký.
+Chữ ký của người phát hành là attestation do workflow `Release Images` ký bằng Sigstore, không có khóa nào phải giữ; kiểm bằng `gh` (cần đăng nhập `gh auth login`):
+
+```bash
+gh attestation verify oci://ghcr.io/haui-implsolution/dxos-backend:vX.Y.Z --repo HaUI-ImplSolution/DX-OS
+```
+
+Lệnh in lỗi và thoát với mã 1 khi image không do workflow của repo này dựng.
+
+Tệp trên GitHub Release (`.tar.gz`, `dxos-install.sh`, `dxos-lint.jar`, `.sha256`, SBOM) được workflow `Release Package` ký theo cách đó:
+
+```bash
+gh attestation verify dx-os-X.Y.Z.tar.gz --repo HaUI-ImplSolution/DX-OS
+```
 
 ### Tệp mô hình lúc khởi động
 
@@ -226,7 +242,7 @@ Nâng cấp không quay lui được cơ sở dữ liệu của Keycloak, nên c
 
 **Mô hình.**
 Mỗi tệp được lập kế hoạch rồi áp dụng bằng `dxos apply`.
-`auto` chỉ áp dụng kế hoạch mức `SAFE`; kế hoạch cao hơn nằm chờ như ở `approve`.
+`auto` chỉ áp dụng kế hoạch mức `SAFE`; kế hoạch cao hơn nằm chờ như ở `approve`, kể cả kế hoạch cấp thêm hoặc mở rộng quyền của một vai.
 `dxos gitops approve <commit> [--accept MỨC]` duyệt đến mức nêu (mặc định `SAFE`), và phải nêu mức của kế hoạch nếu cao hơn.
 Kế hoạch bị từ chối (`rejected`) không bao giờ được áp dụng, và một tệp lỗi không chặn các tệp khác.
 Muốn quay lại thì `git revert` ở kho rồi để lượt sau kéo về; kế hoạch mất dữ liệu vẫn phải được duyệt ở mức `LOSS`, và phiên bản mô hình cũ vẫn quay về được bằng API quay lui.
@@ -302,6 +318,56 @@ Mở Admin Console khi cần vận hành:
 
 Đặt lại `false` rồi làm lại bước 2 để đóng.
 Các script kiểm ở `e2e/api` gọi Keycloak Admin API qua gateway nên cần cờ này bật (xem [`docs/TESTING.md`](TESTING.md)).
+
+## Biến cấu hình `.env`
+
+Cấu hình của DX-OS nằm ở `.env` trong thư mục `deploy`: `~/.dxos/deploy/.env` với bản cài bằng `dxos`, `deploy/.env` khi chạy từ mã nguồn.
+Bản cài tạo sẵn tệp này, điền ngẫu nhiên mọi mật khẩu và khóa, nên hệ thống chạy được mà không cần sửa gì.
+Sửa xong thì chạy `dxos start` để các dịch vụ nhận giá trị mới; `dxos doctor` kiểm lại tệp.
+Danh sách đầy đủ kèm chú thích từng dòng ở [`deploy/.env.example`](../deploy/.env.example).
+
+### Biến bạn có thể phải đổi
+
+| Biến | Mặc định | Đổi khi nào |
+|---|---|---|
+| `PUBLIC_HOST` | `localhost` | Người dùng hoặc ứng dụng ở máy khác (hoặc trong container) cần vào hệ thống: đặt IP hoặc tên miền của máy chủ; `GATEWAY_PUBLIC_URL` tự theo. Đặt trước lần `dxos start` đầu tiên |
+| `APISIX_HOST_PORT` | `9080` | Cổng 9080 của máy chủ đã bị chiếm |
+| `KEYCLOAK_HOSTNAME` | không đặt | Hệ thống đứng sau proxy HTTPS: đặt bằng `GATEWAY_PUBLIC_URL`, nếu không đăng nhập lỗi |
+| `STAFF_OTP_FLOW` | `DISABLED` | Máy chủ thật: đặt `CONDITIONAL` để vai `ADMIN` phải nhập mã một lần; phải đặt trước lần `dxos start` đầu tiên |
+| `CORS_ALLOWED_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173` | Giao diện trình duyệt ở tên miền khác gọi API; `dxos client browser add` tự thêm origin |
+| `DXOS_MODE` | `full` | `core` để chỉ chạy lõi, không có giao diện web; đổi bằng `dxos start --core` hoặc `--full`, không sửa tay |
+| `KEYCLOAK_ADMIN_CONSOLE` | `false` | `true` để mở trang quản trị Keycloak tại `/admin` |
+| `METRICS_PASSWORD` | ngẫu nhiên | Để trống thì endpoint số đo cho Prometheus đóng; xem [`MONITORING.md`](./MONITORING.md) |
+
+### Biến đã điền sẵn, không cần đổi
+
+Các biến này bắt buộc có giá trị, và bản cài đã điền.
+Mật khẩu và khóa là giá trị ngẫu nhiên; không đổi sau khi đã có dữ liệu, trừ khi bạn biết rõ việc đó ảnh hưởng gì.
+
+| Nhóm | Biến |
+|---|---|
+| Đăng nhập (Keycloak) | `KEYCLOAK_ADMIN_USERNAME`, `KEYCLOAK_ADMIN_PASSWORD`, `KEYCLOAK_ADMIN_CLIENT_ID`, `KEYCLOAK_ADMIN_CLIENT_SECRET`, `DXOS_CLI_SECRET`, `KEYCLOAK_DB_PASSWORD` |
+| Cơ sở dữ liệu | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `POSTGRES_DATA_DIR`, `POSTGRES_HOST_PORT`, `REPORT_DB_PASSWORD` |
+| Lưu tệp | `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_ENDPOINT`, `S3_BUCKET`, `STORAGE_SCAN_HOST` |
+| Giám sát | `MONITOR_DB_PASSWORD`, `KEYCLOAK_READONLY_DB_PASSWORD`, `MONITOR_INGEST_KEY`, `MONITOR_OIDC_CLIENT_SECRET` |
+| Sao lưu | `BACKUP_PASSWORD`: cất một bản ngoài máy chủ, mất là mất mọi bản sao lưu |
+| Image và chế độ chạy | `DXOS_IMAGE_PREFIX`, `DXOS_IMAGE_TAG`, `COMPOSE_PROJECT_NAME`, `COMPOSE_PROFILES`: do `dxos` đặt và cập nhật, không sửa tay |
+
+### Biến tùy chọn
+
+Trong `.env` các biến này nằm dưới dạng dòng chú thích (`# TÊN=giá trị`); bỏ dấu `#` để đặt, không đặt thì dùng giá trị mặc định ghi dưới đây.
+
+| Chức năng | Biến (mặc định) | Việc |
+|---|---|---|
+| Webhook | `DXOS_WEBHOOK_URL` (trống), `DXOS_WEBHOOK_SECRET` (trống), `DXOS_WEBHOOK_FORMAT` (`json`) | Đích mặc định nhận mọi thay đổi của hồ sơ; chi tiết ở [`INTEGRATIONS.md`](./INTEGRATIONS.md#webhook-sự-kiện) |
+| Hàng đợi và hạn xử lý | `DXOS_OUTBOX_MAX_ATTEMPTS` (`20`), `DXOS_OUTBOX_POLL_MS` (`2000`), `DXOS_OVERDUE_SWEEP_MS` (`60000`), `DXOS_DUE_SOON_BEFORE` (`24h`) | Số lần gửi thử, nhịp quét hàng đợi và hồ sơ quá hạn, báo sắp đến hạn |
+| Mô hình lúc khởi động | `DXOS_MODEL_FILE` (trống) | Do `dxos start <tệp>` đặt; xem [Tệp mô hình lúc khởi động](#tệp-mô-hình-lúc-khởi-động) |
+| Giới hạn gọi API | `RATE_LIMIT_ENABLED` (`true`) | `false` khi thử tải |
+| Tệp tải lên | `STORAGE_PRESIGN_TTL` (`15m`), `DXOS_FILE_DELETE_DELAY` (`24h`) | Hạn của link tải tệp và thời gian chờ trước khi xóa tệp đã gỡ |
+| Lưu trữ hồ sơ đã đóng | `S3_ARCHIVE_BUCKET` (`dxos-archive`), `ARCHIVE_AFTER_DAYS` (`365`), `ARCHIVE_QUERY_MEMORY_LIMIT` (`2GB`), `ARCHIVE_QUERY_THREADS` (`2`), `ARCHIVE_QUERY_TEMP_LIMIT` (`4GB`) | Xem [Lưu trữ hồ sơ đã đóng](#lưu-trữ-hồ-sơ-đã-đóng) |
+| Kéo từ git | `GITOPS_REPO`, `GITOPS_REF` (`main`), `GITOPS_PATH` (`models`), `GITOPS_MODE` (`report`), `GITOPS_INFRA_REPO`, `GITOPS_INFRA_REF` (`main`), `GITOPS_INFRA_MODE` (`report`), `GITOPS_SSH_KEY`, `GITOPS_KNOWN_HOSTS`, `GITOPS_REQUIRE_SIGNED` (`false`), `GITOPS_ALLOWED_SIGNERS` | Xem [Kéo từ git](#kéo-từ-git-gitops) |
+| Giám sát | `METRICS_REFRESH_MS` (`30000`), `ALERT_WEBHOOK_URL`, `ALERT_WEBHOOK_URL_ADMIN` | Nhịp cập nhật số đo và kênh nhận cảnh báo; xem [`MONITORING.md`](./MONITORING.md) |
+| Sao lưu | `BACKUP_DIR` (`./backups`), `BACKUP_REPOSITORY` (trống) | Nơi đặt kho sao lưu; xem [Sao lưu và khôi phục](#sao-lưu-và-khôi-phục) |
 
 ## Kiểm tra trước khi chạy
 

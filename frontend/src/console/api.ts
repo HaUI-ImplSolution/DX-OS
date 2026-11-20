@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { translateBackend } from "../shell/backendMessages";
 import { json, queryString, request } from "../shell/api";
+import type { ProcessCondition } from "../admin/types";
 
 export interface Change {
   level: string;
@@ -83,7 +84,7 @@ export interface FamilyAction {
   // The roles this action is limited to (empty: the handlers of the process) and the fields it requires.
   roles: string[];
   require: string[];
-  when?: { field: string; op: string; value: number | string } | null;
+  when?: ProcessCondition | null;
 }
 
 export interface FamilyParam {

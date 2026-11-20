@@ -17,6 +17,8 @@ Bài dự thi **OLP Phần mềm nguồn mở 2026**, khối thi DX-OS (VFOSSA),
 
 **Dùng thử:** <https://khuongdev.io.vn/> (tài khoản thử ở mục [Chạy thử](#chạy-thử)) · tự cài trên máy mình bằng hai lệnh ở mục [Cài đặt](#cài-đặt).
 
+**Cài và nối vào ứng dụng của bạn:** [Bắt đầu nhanh](./docs/QUICKSTART.md), từ máy sạch đến một quy trình chạy được, có đường không cần code và đường có code · [Hướng dẫn cho người triển khai](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-trien-khai).
+
 **Tài liệu:** <https://haui-implsolution.github.io/DX-OS/>, tìm tài liệu theo từng việc ở mục [Tài liệu](#tài-liệu).
 
 **Đọc nhanh:** [Giới thiệu](#giới-thiệu) · [Kiến trúc](#kiến-trúc) · [Tính năng](#tính-năng) · [Hình ảnh](#hình-ảnh) · [Công nghệ](#công-nghệ-và-giấy-phép) · [Cài đặt](#cài-đặt) · [Chạy thử](#chạy-thử) · [Vận hành](#vận-hành-và-xử-lý-sự-cố) · [Đề thi](#đối-chiếu-với-đề-thi) · [Tài liệu](#tài-liệu) · [Cấu trúc](#cấu-trúc-repository) · [Đóng góp](#đóng-góp) · [Giấy phép](#giấy-phép)
@@ -33,7 +35,7 @@ Người triển khai mô tả nghiệp vụ của mình trong một tệp mô h
 Đổi nghiệp vụ là đổi tệp, không đổi mã.
 
 Toàn bộ hệ thống lắp từ phần mềm nguồn mở có giấy phép được OSI công nhận, tự cài trên máy của bạn, dữ liệu nằm hoàn toàn ở đó.
-Phiên bản hiện tại là `2.0.1`; thay đổi theo từng phiên bản ở [`CHANGELOG.md`](./CHANGELOG.md).
+Phiên bản hiện tại là `2.0.2`; thay đổi theo từng phiên bản ở [`CHANGELOG.md`](./CHANGELOG.md).
 
 ## Kiến trúc
 
@@ -153,6 +155,7 @@ Bộ cài tải bản phát hành mới nhất, kiểm SHA-256 rồi cài vào `
 `dxos start` tải image ở lần đầu, chờ mọi dịch vụ sẵn sàng, tạo tài khoản `admin` với mật khẩu tạm in ra màn hình, rồi in các địa chỉ.
 Đăng nhập `http://localhost:9080/console` bằng `admin`, đổi mật khẩu, chọn một mẫu ở tab Thư viện mẫu, xem kế hoạch rồi áp dụng.
 Đã có tệp mô hình thì `dxos start <tệp>` đưa tệp vào luôn; có nhiều tệp thì liệt kê hết sau `dxos start`.
+Muốn nối DX-OS vào ứng dụng của mình, theo [hướng dẫn bắt đầu nhanh](./docs/QUICKSTART.md): hai đường, không có code và có code, đi từ máy sạch đến quy trình chạy được.
 Chỉ cần nền tảng API cho ứng dụng bên ngoài thì chạy `dxos start --core`: không có ứng dụng web, portal và giám sát, xem [Chế độ chỉ lõi](./docs/OPERATIONS.md#chế-độ-chỉ-lõi).
 
 ### Từ mã nguồn
@@ -238,6 +241,7 @@ Các tài liệu về viết tệp mô hình, API, vận hành, giám sát, tíc
 
 | Cần gì | Xem |
 |---|---|
+| Từ máy sạch đến một quy trình chạy được, hoặc nối vào ứng dụng của bạn | [`docs/QUICKSTART.md`](./docs/QUICKSTART.md) |
 | Xem nhanh trong 5 phút, tìm tài liệu theo thư mục | [`docs/README.md`](./docs/README.md) |
 | Ảnh màn hình và video | [trang hình ảnh](https://haui-implsolution.github.io/DX-OS/docs/hinh-anh) |
 | Dùng hệ thống theo vai | [người nộp](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-nop), [người xử lý](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-xu-ly), [người triển khai](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-trien-khai) |
@@ -271,7 +275,7 @@ Các tài liệu về viết tệp mô hình, API, vận hành, giám sát, tíc
 | `deploy` | Dùng chung | Compose, gateway APISIX, bộ cài và lệnh `dxos`, script vận hành |
 | `sso` | Lõi | Keycloak realm |
 | `portal` | Ứng dụng | Trang liên kết các địa chỉ và trạng thái dịch vụ |
-| `examples` | Ngoài lõi | Chương trình mẫu: bên nhận sự kiện giữ hash lịch sử ([`history-witness`](./examples/history-witness/README.md)), giả lập hệ thống IT/OT ([`itot-simulator`](./examples/itot-simulator/README.md)) |
+| `examples` | Ngoài lõi | Chương trình mẫu: bên nhận sự kiện giữ hash lịch sử ([`history-witness`](./examples/history-witness/README.md)), giả lập hệ thống IT/OT ([`itot-simulator`](./examples/itot-simulator/README.md)), ứng dụng duyệt đơn và tệp mô hình đi kèm ([`order_approval`](./examples/order_approval/README.md)) |
 | `tools` | Công cụ | Công cụ của người phát triển, như đếm mã tự viết |
 | `e2e` | Kiểm thử | Kiểm tự động trên stack đang chạy: API (`api/`), giao diện web bằng Playwright (`web/`) và tệp mô hình sai mẫu (`fixtures/`) |
 | `website` | Tài liệu | Trang tài liệu (Docusaurus), đăng lên GitHub Pages |

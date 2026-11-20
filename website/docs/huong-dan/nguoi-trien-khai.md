@@ -2,6 +2,7 @@
 
 Trang này dành cho người cài DX-OS lên máy chủ, chọn hoặc viết tệp mô hình nghiệp vụ, cấp tài khoản và vận hành.
 Từng lệnh và tùy chọn có ở [`docs/OPERATIONS.md`](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/OPERATIONS.md); trang này chỉ vạch đường đi.
+Muốn đi từ máy sạch đến một quy trình chạy được, hoặc nối DX-OS vào ứng dụng của bạn, theo [Bắt đầu nhanh](../tai-lieu/bat-dau-nhanh.md).
 
 ## Cài và chạy
 

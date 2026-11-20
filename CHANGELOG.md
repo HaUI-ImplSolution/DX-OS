@@ -7,6 +7,40 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ## [Unreleased]
 
+## [2.0.2] - 2026-11-19
+
+Sửa và bổ sung sau bản `2.0.1`: cài mới tạo được tài khoản `admin`, Hộp việc đưa hồ sơ mới lên đầu, kế hoạch mở rộng quyền chờ duyệt, điều kiện nối nhiều phép, hướng dẫn bắt đầu nhanh và chữ ký cho bản phát hành.
+Nâng cấp từ `2.0.1` giữ nguyên dữ liệu.
+
+### Lõi chạy ngầm
+
+- `dxos start` tạo tài khoản `admin` và in mật khẩu tạm trên bản cài mới, vì tài khoản dịch vụ giữ vai ADMIN không được tính là đã có admin.
+- `dxos update` và `install.sh --upgrade` so sánh danh sách file runtime theo thứ tự `C`, nên cập nhật giữ đủ file ở mọi locale của máy.
+- `GET /api/v1/inbox` xếp hồ sơ quá hạn trước, rồi hồ sơ thay đổi gần nhất trước, và mỗi mục có thêm `updatedAt`; hồ sơ vừa tạo, nộp lại hoặc mở lại nằm ở đầu Hộp việc.
+- Danh sách của thực thể có quy trình mở theo thay đổi gần nhất trước và hiện cột Cập nhật lúc, trừ khi mô hình khai `ui.list`.
+- Kế hoạch đổi mô hình xếp việc cấp thêm hoặc mở rộng quyền của một vai ở mức `MIGRATION` kèm câu hỏi, nên `dxos apply` đòi `--accept MIGRATION` và `dxos gitops` ở chế độ `auto` để nó chờ duyệt.
+- Điều kiện `when` của hành động và `required_when` của trường ghép được nhiều phép so sánh bằng `and`, `or`, `not` và ngoặc; điều kiện một phép viết như cũ.
+- Tệp của bản phát hành và image `dxos-*` được ký bằng Sigstore khi phát hành, kiểm bằng `gh attestation verify` (xem `docs/OPERATIONS.md`).
+- Chuỗi hash của lịch sử giữ cách xác minh phiên bản 1 cho dữ liệu đã phát hành; sự kiện mới dùng phiên bản 2 và không đưa tên, ghi chú hoặc chi tiết tự do vào chuỗi.
+
+### Giao diện
+
+- Nút Xuất CSV chờ rồi hỏi lại khi cổng API từ chối vì hết hạn mức (429), thay vì dừng hoặc bỏ tên người, và báo khi có tên người không tra được nên được ghi bằng mã.
+
+### Ứng dụng ngoài
+
+- `dxos client add` và `dxos client rotate` nhận `--env <TIỀN_TỐ>` và chỉ in hai dòng `<TIỀN_TỐ>_CLIENT_ID` và `<TIỀN_TỐ>_CLIENT_SECRET`, nối thẳng vào tệp `.env` của ứng dụng được.
+- `dxos client test <tên>` đăng nhập bằng client đó, gọi API của mô hình của nó và nêu bước nào hỏng; mã bí mật lấy từ tệp, biến môi trường hoặc hỏi lúc chạy, không nằm trên dòng lệnh.
+- `dxos start` in bước tiếp theo và liên kết tới hướng dẫn bắt đầu nhanh.
+- `docs/QUICKSTART.md` đi từ máy sạch đến một quy trình chạy được, có đường không cần code và đường có code; `examples/order_approval` là ví dụ chạy được của đường có code.
+
+### Phát hành
+
+- Workflow `Release Images` và `Release Package` đặt quyền ghi ở job cần ghi, còn cấp workflow chỉ đọc.
+- CI tự chạy lại khi một job lỗi vì mạng hoặc hạn mức của dịch vụ tải về (Maven Central, GitHub API): bước dựng image chạy lại trong job, workflow `Rerun` chạy lại job lỗi, và kiểm giấy phép của phiên bản giữ câu trả lời của GitHub trong cache.
+- `backend/Dockerfile` tải Maven một lần cho cả hai image và thử `repo1.maven.org` khi host mặc định từ chối.
+- Workflow `Platform` dựng năm image một lần và giữ trong cache theo hash của mã nguồn, các job kiểm đầu-cuối nạp image từ đó thay vì tự dựng; thời gian chờ giữa các lần chạy lại có thêm phần ngẫu nhiên.
+
 ## [2.0.1] - 2026-11-17
 
 Bổ sung và sửa sau bản `2.0.0`, nâng cấp từ `2.0.0` giữ nguyên dữ liệu, migration mới tự chạy khi backend khởi động.
@@ -365,7 +399,8 @@ Bản phát hành đầu tiên của DX-OS.
 - Backend, Keycloak và frontend không publish cổng, mọi truy cập đi qua gateway; `deploy/demo/seed_demo.py` tạo tài khoản và dữ liệu demo.
 - Tài liệu và nguồn mở: `LICENSE`, `LICENSES.md`, SBOM CycloneDX, `CONTRIBUTING.md`, mẫu issue và pull request.
 
-[Unreleased]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v2.0.1...main
+[Unreleased]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v2.0.2...main
+[2.0.2]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v1.1.1...v2.0.0
 [1.1.1]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v1.1.0...v1.1.1

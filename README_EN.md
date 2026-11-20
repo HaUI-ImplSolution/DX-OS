@@ -17,6 +17,8 @@ Entry of the **OLP Open Source Software 2026** contest, DX-OS track (VFOSSA), by
 
 **Try it:** <https://khuongdev.io.vn/> (trial accounts in [Try it](#try-it)) · or install it on your own machine with two commands in [Install](#install).
 
+**Install and connect your own application:** the [quick start](./docs/QUICKSTART.md) (Vietnamese) goes from a clean machine to a working process, with a path without code and a path with code · [guide for deployers](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-trien-khai) (Vietnamese).
+
 **Documentation:** <https://haui-implsolution.github.io/DX-OS/>, with the documents sorted by need in [Documentation](#documentation).
 
 **Quick links:** [Overview](#overview) · [Architecture](#architecture) · [Features](#features) · [Screenshots](#screenshots) · [Technology](#technology-and-licenses) · [Install](#install) · [Try it](#try-it) · [Operation](#operation-and-troubleshooting) · [Brief](#against-the-brief) · [Documentation](#documentation) · [Structure](#repository-structure) · [Contributing](#contributing) · [License](#license)
@@ -33,7 +35,7 @@ The person deploying it describes their business in one model file — what a re
 Changing the business means changing the file, not the code.
 
 The whole system is assembled from open-source software under OSI-approved licenses, installs on your own machine, and the data stays there.
-The current version is `2.0.1`; the changes of each version are in [`CHANGELOG.md`](./CHANGELOG.md).
+The current version is `2.0.2`; the changes of each version are in [`CHANGELOG.md`](./CHANGELOG.md).
 
 ## Architecture
 
@@ -154,6 +156,7 @@ The installer downloads the latest release, checks its SHA-256 and installs it i
 `dxos start` downloads the images the first time, waits until every service is ready, creates the account `admin` with a temporary password printed on screen, and prints the addresses.
 Sign in at `http://localhost:9080/console` as `admin`, change the password, pick a template on the Template library tab, preview the plan and apply it.
 If you already have a model file, `dxos start <file>` takes it in at once; list every file after `dxos start` when there are several.
+To connect DX-OS to your own application, follow the [quick start](./docs/QUICKSTART.md) (Vietnamese): two paths, without code and with code, from a clean machine to a working process.
 If you only need the API platform for outside applications, run `dxos start --core`: no web application, portal or monitoring, see [Core-only mode](./docs/OPERATIONS.md#chế-độ-chỉ-lõi) (Vietnamese).
 
 ### From source
@@ -240,6 +243,7 @@ The documents on writing a model file, the API, operation, monitoring, integrati
 
 | You need | See |
 |---|---|
+| From a clean machine to a working process, or connecting your own application | [`docs/QUICKSTART.md`](./docs/QUICKSTART.md) (Vietnamese) |
 | A 5-minute tour, and the documents by folder | [`docs/README.md`](./docs/README.md) (Vietnamese) |
 | Screenshots and videos | [the gallery page](https://haui-implsolution.github.io/DX-OS/docs/hinh-anh) (Vietnamese) |
 | Using the system by role | [submitters](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-nop), [handlers](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-xu-ly), [deployers](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-trien-khai) (Vietnamese) |
@@ -273,7 +277,7 @@ The documents on writing a model file, the API, operation, monitoring, integrati
 | `deploy` | Shared | Compose, the APISIX gateway, the installer and the `dxos` command, operation scripts |
 | `sso` | Core | The Keycloak realm |
 | `portal` | Apps | The page that links the addresses and the state of the services |
-| `examples` | Outside the core | Sample programs: a receiver that keeps history hashes ([`history-witness`](./examples/history-witness/README.md)), an IT/OT system simulator ([`itot-simulator`](./examples/itot-simulator/README.md)) |
+| `examples` | Outside the core | Sample programs: a receiver that keeps history hashes ([`history-witness`](./examples/history-witness/README.md)), an IT/OT system simulator ([`itot-simulator`](./examples/itot-simulator/README.md)), an order-approval application with its model file ([`order_approval`](./examples/order_approval/README.md)) |
 | `tools` | Tools | Developer tools, such as counting hand-written code |
 | `e2e` | Testing | Automatic checks on a running stack: the API (`api/`), the web interface with Playwright (`web/`) and invalid model files (`fixtures/`) |
 | `website` | Documentation | The docs site (Docusaurus), published on GitHub Pages |

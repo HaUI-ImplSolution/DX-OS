@@ -32,6 +32,11 @@ cd ../frontend && npm install && npm run dev
    Sửa lỗi thì thêm kiểm bắt đúng lỗi đó khi làm được.
 3. Chạy các lệnh kiểm ở bảng dưới trước khi gửi.
 4. Gửi pull request vào `Khuong/main` và điền danh sách kiểm trong mẫu, kèm `Closes #<số issue>` khi pull request đủ đóng issue.
+   Một check đỏ vì lỗi mạng hoặc hạn mức của dịch vụ mà job tải về (Maven Central, GitHub API) thì CI tự chạy lại, không cần chạy tay.
+   Bước dựng image chạy lại ngay trong job tối đa ba lần, và workflow `Rerun` chạy lại các job lỗi của một run tối đa hai lần khi mọi job lỗi đều là lỗi loại đó; danh sách lỗi ở [`.github/scripts/transient_errors.txt`](.github/scripts/transient_errors.txt).
+   Lỗi biên dịch, test hỏng hay giấy phép sai không được chạy lại.
+   Workflow `Platform` dựng năm image của repo một lần ở job `images` và giữ trong cache của Actions theo hash của các tệp tạo ra chúng, các job cần stack nạp image từ đó, nên một commit không đổi tệp nào trong số đó thì không dựng lại gì.
+   Workflow `Rerun` chỉ có hiệu lực khi nằm trên `main`, vì GitHub chỉ kích hoạt `workflow_run` từ nhánh mặc định.
    Pull request vào `main` phải có các check xanh theo ruleset ở [`.github/rulesets/README.md`](.github/rulesets/README.md).
 
 | Phần đổi | Lệnh kiểm |
@@ -78,6 +83,8 @@ cd ../frontend && npm install && npm run dev
 - Dependabot chỉ mở pull request cho bản vá và bản phụ; bản chính, dòng hỗ trợ dài hạn khác và image gốc khác nâng bằng tay, sau khi kiểm giấy phép OSI, thời hạn hỗ trợ và tương thích (xem [`.github/dependabot.yml`](.github/dependabot.yml)).
 - Image (kể cả image chép vào bằng `COPY --from`), bản phát hành tải bằng `ADD`, mô hình và tệp trọng số, tài liệu, nén phải khai báo ở [`.github/component-catalog.json`](.github/component-catalog.json) với giấy phép được phép; `check_licenses.py` kiểm danh mục này.
   `check_upstream_licenses.py` đọc giấy phép của dự án gốc ở đúng phiên bản đang dùng của từng image và bản tải về, ở mỗi pull request và mỗi tuần: giấy phép khác bản đã khai, ngoài danh sách OSI, không xác định được hoặc không đọc được đều làm job đỏ, nên một pull request của Dependabot đổi tag image bị kiểm ở chính phiên bản nó đề xuất.
+  Câu trả lời của GitHub được giữ trong cache của CI nên mỗi lần chạy chỉ hỏi về phiên bản chưa gặp, và lượt chạy hằng tuần không dùng cache.
+  Hết hạn mức thì script chờ nếu hạn mức reset trong một phút, hoặc thử lại không token một lần, rồi báo giờ reset; mỗi lần bị từ chối được in ra log.
   Mục nào của danh mục không đọc được theo cách đó thì ghi cách xác minh ở mục ấy (`refs`, `text`) hoặc lý do ở `unverified`.
   `check_licenses.py sbom <tệp>` kiểm giấy phép của SBOM sinh lại từ pull request, nên bản mới của một thư viện Maven hay npm bị kiểm trước khi `sbom/` được sinh lại.
 - Không đưa mật khẩu, khóa hay dữ liệu thật vào kho mã; `deploy/.env` nằm ngoài Git.

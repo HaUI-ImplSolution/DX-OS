@@ -126,7 +126,7 @@ def main():
     rt.check("EV-04 no content of the record or of a note is in the message", "secret" not in json.dumps([r["body"] for r in got]))
     # The core mode has no web app, so webUrl is absent there.
     rt.check("EV-28 webUrl, when present, opens the record on the web app",
-             bool(got) and all(r["body"].get("webUrl") is None or r["body"]["webUrl"].endswith(f"/onestop-request/{r['body']['recordId']}/show") for r in got))
+             bool(got) and all(r["body"].get("webUrl") is None or r["body"]["webUrl"].endswith(f"/onestop-{r['body']['entity']}/{r['body']['recordId']}/show") for r in got))
     rt.check("EV-05 the statuses of a step are before and after", got[5]["body"]["fromStatus"] == "submitted" and got[5]["body"]["toStatus"] == "approved" and got[5]["body"]["actor"] != "system")
     lines = count(f"select count(*) from engine.record_event where id >= {first_line}")
     queued_now = count("select count(*) from engine.outbox where topic = 'record.event'") - queued

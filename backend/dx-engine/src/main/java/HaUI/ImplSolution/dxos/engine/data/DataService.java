@@ -104,6 +104,7 @@ public class DataService {
   private final TransactionTemplate separate;
   private final RecordCodes codes;
   private final Deadlines deadlines;
+  private final WebLinks links;
 
   public DataService(
       NamedParameterJdbcTemplate jdbc,
@@ -117,6 +118,7 @@ public class DataService {
       ActionCheck checks,
       RecordCodes codes,
       Deadlines deadlines,
+      WebLinks links,
       PlatformTransactionManager transactions) {
     this.jdbc = jdbc;
     this.user = user;
@@ -129,6 +131,7 @@ public class DataService {
     this.checks = checks;
     this.codes = codes;
     this.deadlines = deadlines;
+    this.links = links;
     this.separate = new TransactionTemplate(transactions);
     this.separate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
   }
@@ -196,7 +199,7 @@ public class DataService {
                     + " LIMIT :limit OFFSET :offset",
                 values)
             .stream()
-            .map(DataService::present)
+            .map(row -> presentRecord(model, entity, row))
             .toList();
     long count = total == null ? 0 : total;
     return new PageResponse<>(rows, page, size, count, (int) ((count + size - 1) / size));
@@ -365,7 +368,7 @@ public class DataService {
     if (rows.isEmpty()) {
       throw notFound(entity, id);
     }
-    return present(rows.get(0));
+    return presentRecord(model, entity, rows.get(0));
   }
 
   @Transactional
@@ -428,7 +431,7 @@ public class DataService {
               new MapSqlParameterSource("id", id));
     }
     events.record(model, entity, id, "created", null, (String) row.get("status"), null, null);
-    return present(row);
+    return presentRecord(model, entity, row);
   }
 
   @Transactional
@@ -502,7 +505,7 @@ public class DataService {
         status,
         null,
         events.changesOf(historyValues(entity, changes), changed.before()));
-    return present(rows.get(0));
+    return presentRecord(model, entity, rows.get(0));
   }
 
   // The version the caller read the record at; an update with one only applies to that version.
@@ -712,7 +715,9 @@ public class DataService {
     process.assign(model, entity, id, status, assignee);
     events.record(model, entity, id, "assigned", status, status, null, holder);
     // Read without the scope: giving a record away can take it out of the caller's reach.
-    return present(
+    return presentRecord(
+        model,
+        entity,
         jdbc.queryForMap(
             "SELECT " + columns(entity) + " FROM " + table(model, entity) + " WHERE id = :id",
             new MapSqlParameterSource("id", id)));
@@ -1507,6 +1512,18 @@ public class DataService {
     } catch (NumberFormatException e) {
       throw new IllegalArgumentException("must be the id of a record");
     }
+  }
+
+  // A record as the API shows it: the row, and webUrl when there is a web app to open it.
+  private Map<String, Object> presentRecord(Model model, Entity entity, Map<String, Object> row) {
+    Map<String, Object> shown = present(row);
+    if (row.get("id") instanceof Number id) {
+      String url = links.record(model.name(), entity.name(), id.longValue());
+      if (url != null) {
+        shown.put("webUrl", url);
+      }
+    }
+    return shown;
   }
 
   // A row as the API shows it: timestamps as instants.

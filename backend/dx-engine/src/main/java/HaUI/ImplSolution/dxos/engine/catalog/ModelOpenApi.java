@@ -507,6 +507,12 @@ public class ModelOpenApi {
     schema.addProperty("created_at", new DateTimeSchema().readOnly(true));
     schema.addProperty("updated_at", new DateTimeSchema().readOnly(true));
     schema.addProperty("version", new IntegerSchema().format("int64").readOnly(true));
+    schema.addProperty(
+        "webUrl",
+        new StringSchema()
+            .nullable(true)
+            .readOnly(true)
+            .description("Page of the record on the web app; absent when there is no web app"));
     if (entity.hasProcess()) {
       List<String> states = entity.process().states().stream().map(state -> state.name()).toList();
       schema.addProperty("status", new StringSchema()._enum(states).readOnly(true));

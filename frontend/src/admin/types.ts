@@ -165,6 +165,7 @@ export interface Page<T> {
 }
 
 // react-admin resource names join the model and the entity with a hyphen, which names never contain.
+// A record opens at /<resourceName>/<id>/show; docs/EXTENSIONS.md names this address and the backend builds it for webUrl.
 export const resourceName = (model: string, entity: string) => `${model}-${entity}`;
 
 export function splitResource(resource: string): { model: string; entity: string } {

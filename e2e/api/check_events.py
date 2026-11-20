@@ -118,12 +118,15 @@ def main():
              [r["body"]["action"] for r in got] == ["created", "updated", "assigned", "return", "resubmit", "approve", "created", "deleted"],
              str([r["body"]["action"] for r in got]))
     rt.check("EV-02 each request is signed with the secret and carries its event id", bool(got) and all(r["signed"] and r["header"] == str(r["body"]["eventId"]) and r["type"] == "application/json" for r in got))
-    rt.check("EV-03 the message holds only ids, statuses, the actor, the time and the hash of the line", bool(got) and all(set(r["body"]) == KEYS and r["body"]["schemaVersion"] == 1 for r in got))
+    rt.check("EV-03 the message holds only ids, statuses, the actor, the time and the hash of the line", bool(got) and all(set(r["body"]) - {"webUrl"} == KEYS and r["body"]["schemaVersion"] == 1 for r in got))
     hashes = rt.psql("select string_agg(id || ':' || hash, ',' order by id) from engine.record_event where id in ("
                      + ",".join(str(r["body"]["eventId"]) for r in got) + ")")[1]
     rt.check("EV-03 and the hash is the one the history chain holds",
              hashes == ",".join(f"{r['body']['eventId']}:{r['body']['hash']}" for r in got), hashes[:120])
     rt.check("EV-04 no content of the record or of a note is in the message", "secret" not in json.dumps([r["body"] for r in got]))
+    # The core mode has no web app, so webUrl is absent there.
+    rt.check("EV-28 webUrl, when present, opens the record on the web app",
+             bool(got) and all(r["body"].get("webUrl") is None or r["body"]["webUrl"].endswith(f"/onestop-{r['body']['entity']}/{r['body']['recordId']}/show") for r in got))
     rt.check("EV-05 the statuses of a step are before and after", got[5]["body"]["fromStatus"] == "submitted" and got[5]["body"]["toStatus"] == "approved" and got[5]["body"]["actor"] != "system")
     lines = count(f"select count(*) from engine.record_event where id >= {first_line}")
     queued_now = count("select count(*) from engine.outbox where topic = 'record.event'") - queued

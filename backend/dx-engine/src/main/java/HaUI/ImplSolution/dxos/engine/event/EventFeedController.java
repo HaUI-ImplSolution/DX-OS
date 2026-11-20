@@ -3,6 +3,7 @@
 package HaUI.ImplSolution.dxos.engine.event;
 
 import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
+import HaUI.ImplSolution.dxos.engine.data.WebLinks;
 import HaUI.ImplSolution.dxos.engine.exception.ModelValidationException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,10 +36,12 @@ public class EventFeedController {
 
   private final JdbcTemplate jdbc;
   private final ObjectMapper json;
+  private final WebLinks links;
 
-  public EventFeedController(JdbcTemplate jdbc, ObjectMapper json) {
+  public EventFeedController(JdbcTemplate jdbc, ObjectMapper json, WebLinks links) {
     this.jdbc = jdbc;
     this.json = json;
+    this.links = links;
   }
 
   @GetMapping
@@ -83,7 +86,11 @@ public class EventFeedController {
               (String) row.get("actor_name"),
               instant(row.get("at")),
               (String) row.get("hash"),
-              (String) row.get("detail")));
+              (String) row.get("detail"),
+              links.record(
+                  (String) row.get("model"),
+                  (String) row.get("entity"),
+                  ((Number) row.get("record_id")).longValue())));
     }
     return ApiResponse.success(page(items, after, more));
   }

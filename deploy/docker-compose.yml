@@ -124,6 +124,9 @@ services:
       S3_SECRET_KEY: ${S3_SECRET_KEY:?}
       S3_BUCKET: ${S3_BUCKET:?}
       STORAGE_PUBLIC_URL: ${GATEWAY_PUBLIC_URL:?}
+      # Address of the web app that the webUrl of a record points to; core mode has no web app and no webUrl
+      ENGINE_WEB_URL: ${GATEWAY_PUBLIC_URL:?}
+      ENGINE_WEB_MODE: ${DXOS_MODE:-full}
       STORAGE_PRESIGN_TTL: ${STORAGE_PRESIGN_TTL:-15m}
       # Wait before the object of a removed file is deleted; a backup shorter than this has every file
       ENGINE_FILES_DELETE_DELAY: ${DXOS_FILE_DELETE_DELAY:-24h}

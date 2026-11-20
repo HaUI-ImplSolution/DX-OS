@@ -299,6 +299,7 @@ Tham số dùng cú pháp literal của DuckDB; giá trị chuỗi đặt trong 
 
 `dxos start --core` chỉ chạy Tầng 1: cổng vào APISIX, Keycloak, dịch vụ lõi, PostgreSQL và kho tệp SeaweedFS, thêm ClamAV khi bật quét mã độc.
 Ứng dụng web, portal và dịch vụ giám sát không chạy, và gateway không có route của chúng: `/`, `/portal/`, `/monitor/` và `/console` trả 404.
+Hồ sơ và thông điệp webhook không có trường `webUrl`.
 Gateway cũng không gửi nhật ký truy cập tới dịch vụ giám sát.
 API, đăng nhập, áp dụng tệp mô hình, `/v3/api-docs`, OpenAPI theo mô hình và lưu tệp dùng như ở chế độ đầy đủ.
 

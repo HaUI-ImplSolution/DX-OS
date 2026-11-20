@@ -278,7 +278,7 @@ The documents on writing a model file, the API, operation, monitoring, integrati
 | `deploy` | Shared | Compose, the APISIX gateway, the installer and the `dxos` command, operation scripts |
 | `sso` | Core | The Keycloak realm |
 | `portal` | Apps | The page that links the addresses and the state of the services |
-| `examples` | Outside the core | Sample programs: a receiver that keeps history hashes ([`history-witness`](./examples/history-witness/README.md)), an IT/OT system simulator ([`itot-simulator`](./examples/itot-simulator/README.md)), an order-approval application with its model file ([`order_approval`](./examples/order_approval/README.md)) |
+| `examples` | Outside the core | Sample programs: a receiver that keeps history hashes ([`history-witness`](./examples/history-witness/README.md)), an IT/OT system simulator ([`itot-simulator`](./examples/itot-simulator/README.md)), an order-approval application with its model file ([`order_approval`](./examples/order_approval/README.md)), an outside sales application that adds returns and warranty processes from the console ([`appliance-store`](./examples/appliance-store/README.md)), model files kept in a git repository ([`model-repo`](./examples/model-repo/README.md)), the effort compared with hand-written code ([`effort-benchmark`](./examples/effort-benchmark/README.md)) |
 | `tools` | Tools | Developer tools, such as counting hand-written code |
 | `e2e` | Testing | Automatic checks on a running stack: the API (`api/`), the web interface with Playwright (`web/`) and invalid model files (`fixtures/`) |
 | `website` | Documentation | The docs site (Docusaurus), published on GitHub Pages |

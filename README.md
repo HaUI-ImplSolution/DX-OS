@@ -276,7 +276,7 @@ Các tài liệu về viết tệp mô hình, API, vận hành, giám sát, tíc
 | `deploy` | Dùng chung | Compose, gateway APISIX, bộ cài và lệnh `dxos`, script vận hành |
 | `sso` | Lõi | Keycloak realm |
 | `portal` | Ứng dụng | Trang liên kết các địa chỉ và trạng thái dịch vụ |
-| `examples` | Ngoài lõi | Chương trình mẫu: bên nhận sự kiện giữ hash lịch sử ([`history-witness`](./examples/history-witness/README.md)), giả lập hệ thống IT/OT ([`itot-simulator`](./examples/itot-simulator/README.md)), ứng dụng duyệt đơn và tệp mô hình đi kèm ([`order_approval`](./examples/order_approval/README.md)) |
+| `examples` | Ngoài lõi | Chương trình mẫu: bên nhận sự kiện giữ hash lịch sử ([`history-witness`](./examples/history-witness/README.md)), giả lập hệ thống IT/OT ([`itot-simulator`](./examples/itot-simulator/README.md)), ứng dụng duyệt đơn và tệp mô hình đi kèm ([`order_approval`](./examples/order_approval/README.md)), ứng dụng bán hàng ngoài thêm quy trình đổi trả và bảo hành làm trên Console ([`appliance-store`](./examples/appliance-store/README.md)), kho tệp mô hình trong git ([`model-repo`](./examples/model-repo/README.md)), so sánh công sức với viết tay ([`effort-benchmark`](./examples/effort-benchmark/README.md)) |
 | `tools` | Công cụ | Công cụ của người phát triển, như đếm mã tự viết |
 | `e2e` | Kiểm thử | Kiểm tự động trên stack đang chạy: API (`api/`), giao diện web bằng Playwright (`web/`) và tệp mô hình sai mẫu (`fixtures/`) |
 | `website` | Tài liệu | Trang tài liệu (Docusaurus), đăng lên GitHub Pages |

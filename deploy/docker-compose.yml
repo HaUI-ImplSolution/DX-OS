@@ -98,6 +98,9 @@ services:
       - ./model:/models:ro
       # Webhook targets that models name in their file; targets.yml stays out of git
       - ./webhooks:/webhooks:ro
+    # A webhook target on the same machine is reached at host.docker.internal
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       <<: *postgres-env
       POSTGRES_HOST: postgres

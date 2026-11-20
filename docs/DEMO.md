@@ -41,6 +41,12 @@ Nói ba ý, không mở máy:
 - Mỗi lần có nghiệp vụ mới, người ta dựng lại đăng nhập, phân quyền, lưu tệp và luồng duyệt.
 - DX-OS làm phần dùng chung đó một lần, nghiệp vụ nằm trong một tệp mô hình.
 
+Nếu còn thời gian, thêm ba ý sau và nói rõ đây là giả thuyết, vì đội chưa nói chuyện với khách hàng nào ([#231](https://github.com/HaUI-ImplSolution/DX-OS/issues/231)):
+
+- **Nỗi đau:** đơn vị nhỏ cần quy trình duyệt có phân quyền và lịch sử, nhưng không đủ người để dựng và giữ một hệ thống riêng.
+- **Thị trường:** các đơn vị đã có phần mềm chạy sẵn và chỉ thiếu một quy trình; họ cần thêm quy trình vào đó, không cần thay phần mềm.
+- **Cạnh tranh:** bộ quản lý quy trình đóng gói và nền tảng low-code thường gắn với một nhà cung cấp hoặc tính phí theo người dùng; DX-OS là nguồn mở, tự chạy trên máy của đơn vị, và ứng dụng ngoài gọi nó như gọi Keycloak hay MinIO.
+
 ## 2. Kiến trúc (2 đến 4 phút)
 
 Mở [`ARCHITECTURE.md`](../ARCHITECTURE.md) hoặc sơ đồ ở README.
@@ -116,6 +122,19 @@ Nói thẳng phần chưa có, theo [Việc tồn đọng](./dynamic-core/BACKLO
 - Không có bản sao số: số đo của thiết bị vào lõi thành hồ sơ sự cố, lõi không giữ trạng thái thời gian thực của thiết bị.
 
 Kết bằng một câu: đổi nghiệp vụ là đổi tệp, không đổi mã.
+
+## 7. Ứng dụng của người ngoài (tùy chọn)
+
+Phần này chứng minh lõi là nền tảng cho ứng dụng tầng trên: một ứng dụng bán hàng không liên quan đến dự án thêm hai quy trình bằng hai tệp mô hình.
+Các bước từ máy sạch ở [`examples/appliance-store`](../examples/appliance-store/README.md); làm trước theo README trên máy trình diễn.
+
+- **Cửa sổ ứng dụng (`nhanvien`):** mở một đơn bán, gửi yêu cầu đổi trả; trạng thái "Chờ duyệt" kèm liên kết "Mở trên DX-OS".
+- **Cửa sổ `manager` ở DX-OS:** mở liên kết, duyệt phiếu ở hộp việc; quay lại ứng dụng thấy "Đã duyệt" mà không bấm gì.
+- **Bảo hành:** gửi yêu cầu bảo hành, để quá hạn xử lý (2 phút) rồi mở lại trang ở ứng dụng: nhãn "Quá hạn" hiện ra (khi bật webhook thì hiện không cần mở trang).
+- **Vì sao không tự viết (ba phép thử ở mục "Vì sao không tự viết vòng duyệt" của README, mỗi phép chừng một phút):** tài khoản máy của ứng dụng không tự duyệt được phiếu của mình (403), sửa một dòng lịch sử thì `dxos history verify` chỉ ra dòng đó, đổi quy trình có kế hoạch và mức rủi ro (`SAFE`, `LOSS`, từ chối khi còn phiếu mở). Chọn hai phép nếu thiếu thời gian.
+- **Điều cần nói:** ứng dụng không có mã quy trình, phân quyền hay lịch sử; phần tích hợp là một mẫu dùng nguyên, một tệp mở rộng mẫu, vài biến môi trường và 109 dòng mã.
+
+Sự cố: nếu ứng dụng không cập nhật trạng thái, kiểm `DXOS_BASE_URL` và `extra_hosts`; khi bật webhook thì mở tab Hàng đợi sự kiện ở `/console` để xem thông điệp bị dừng, kiểm địa chỉ trong `deploy/webhooks/targets.yml`, rồi bấm Thử lại.
 
 ## Xử lý sự cố chung
 

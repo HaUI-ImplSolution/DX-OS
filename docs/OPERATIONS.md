@@ -128,7 +128,7 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 
 | Lệnh | Việc |
 |---|---|
-| `dxos start [--core\|--full] [tệp...]` | Chạy `doctor.sh`, tải image còn thiếu, khởi động, chờ mọi dịch vụ sẵn sàng (`--core` chỉ chạy Tầng 1, xem [Chế độ chỉ lõi](#chế-độ-chỉ-lõi)); realm chưa có ai vai `ADMIN` thì tạo tài khoản `admin` với mật khẩu tạm in ra một lần; có tệp mô hình thì đưa các tệp vào và in kết quả của từng tệp (xem dưới); rồi in các địa chỉ |
+| `dxos start [--core\|--full] [tệp...]` | Chạy `doctor.sh`, tải image còn thiếu, khởi động (chạy lại được khi stack mới lên một phần, nó dựng nốt phần còn thiếu), chờ mọi dịch vụ sẵn sàng (`--core` chỉ chạy Tầng 1, xem [Chế độ chỉ lõi](#chế-độ-chỉ-lõi)); realm chưa có ai vai `ADMIN` thì tạo tài khoản `admin` với mật khẩu tạm in ra một lần; có tệp mô hình thì đưa các tệp vào và in kết quả của từng tệp (xem dưới); rồi in các địa chỉ |
 | `dxos stop` | Dừng các container, giữ dữ liệu |
 | `dxos status` | Trạng thái từng dịch vụ, các địa chỉ và trạng thái quét mã độc |
 | `dxos logs [dịch vụ]` | Theo dõi log |
@@ -443,7 +443,8 @@ Trong `.env` các biến này nằm dưới dạng dòng chú thích (`# TÊN=gi
 Nó kiểm Docker và Compose, RAM, ổ đĩa, `deploy/.env` (kể cả `DXOS_MODE` khớp với profile `app`) và các cổng.
 `.env` được so với các biến `${NAME:?}` mà Compose bắt buộc phải có: biến thiếu hoặc để trống bị báo `FAIL`.
 Biến có trong `.env` mà `.env.example` không liệt kê bị báo `WARN`.
-Các cổng đã bị chiếm chỉ được kiểm khi stack chưa chạy.
+Với mỗi cổng `APISIX_HOST_PORT` và `POSTGRES_HOST_PORT`, nó phân biệt cổng do container của chính stack giữ (ổn, kể cả khi stack mới lên một phần và `dxos start` sẽ dựng nốt) với cổng bị chương trình khác ngoài stack giữ (FAIL).
+Cổng bị chương trình ngoài giữ thì `dxos stop` không giải phóng được: đổi giá trị của khóa đó trong `deploy/.env` hoặc dừng chương trình đó.
 Quét mã độc được báo là bật hay tắt; `STORAGE_SCAN_HOST=clamav` mà `COMPOSE_PROFILES` không có `av` bị báo `FAIL`, vì ClamAV sẽ không chạy và mọi tệp tải lên bị từ chối.
 Thoát với mã 1 khi có `FAIL`, nên chạy trước `./update.sh` và `docker compose up -d` trên máy chủ.
 

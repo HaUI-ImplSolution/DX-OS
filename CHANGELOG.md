@@ -9,6 +9,8 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Lõi chạy ngầm
 
+- `dxos start` và `dxos doctor` phân biệt cổng do chính stack giữ với cổng do chương trình ngoài giữ.
+  Stack chạy dở (PostgreSQL chạy, APISIX chưa có) thì `dxos start` dựng nốt các dịch vụ còn thiếu; cổng do chương trình ngoài giữ vẫn báo `FAIL`, nêu rõ `dxos stop` không giải phóng được và nên đổi khóa nào trong `deploy/.env`.
 - Dự án gom mô hình và ứng dụng ngoài của một hệ thống tích hợp để lọc và xem phạm vi ảnh hưởng; dự án không cấp quyền, không cô lập dữ liệu và không đổi vai `dxos-m-<mô hình>`.
   Một mô hình và một ứng dụng ngoài mỗi bên thuộc tối đa một dự án, ứng dụng có dự án riêng của nó nên ứng dụng của dự án này gọi được mô hình của dự án khác, và bên chưa khai nằm ở nhóm chưa phân loại.
   Dự án nằm ngoài tệp mô hình, nên đổi dự án không tạo phiên bản mới.

@@ -135,16 +135,26 @@ else
   if docker compose config --quiet >/dev/null 2>&1; then ok "docker compose config is valid"; else fail "docker compose config fails: run it in deploy/ to see why"; fi
 
   echo "Ports"
-  if [[ -n "$(docker compose ps -q apisix 2>/dev/null)" ]]; then
-    ok "the stack is running, port checks skipped"
-  else
-    for key in APISIX_HOST_PORT POSTGRES_HOST_PORT; do
-      value="$(env_value "$key")"
-      [[ -n "$value" ]] || continue
-      port="$(port_of "$value")"
-      if (exec 3<>"/dev/tcp/127.0.0.1/$port") 2>/dev/null; then fail "$key: port $port is already in use"; else ok "$key: port $port is free"; fi
-    done
-  fi
+  # Each published port: the .env key, the service and the port inside its container. A port that
+  # this stack's own container holds is fine, also when the stack is only partly up; any other
+  # program on it is a conflict.
+  for entry in APISIX_HOST_PORT:apisix:9080 POSTGRES_HOST_PORT:postgres:5432; do
+    key="${entry%%:*}"
+    rest="${entry#*:}"
+    service="${rest%%:*}"
+    inside="${rest#*:}"
+    value="$(env_value "$key")"
+    [[ -n "$value" ]] || continue
+    port="$(port_of "$value")"
+    held="$(port_of "$(docker compose port "$service" "$inside" 2>/dev/null | head -n1)")"
+    if [[ "$held" == "$port" && "$port" != 0 ]]; then
+      ok "$key: port $port is held by this stack's $service"
+    elif (exec 3<>"/dev/tcp/127.0.0.1/$port") 2>/dev/null; then
+      fail "$key: port $port is in use by a program outside this stack; dxos stop does not free it, so change $key in deploy/.env or stop that program"
+    else
+      ok "$key: port $port is free"
+    fi
+  done
 fi
 
 echo

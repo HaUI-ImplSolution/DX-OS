@@ -143,6 +143,8 @@ Mỗi mục nêu điều phải thấy; lệnh và biến cấu hình chi tiết
 9. **Lịch sử và ghi đè:** chi tiết hồ sơ hiện `Nhãn: cũ → mới` của từng trường; sửa hồ sơ đã bị người khác đổi thì báo "Bản ghi vừa được người khác thay đổi".
 10. **Tài khoản của tôi:** mở Account Console của Keycloak ở tab mới, đã đăng nhập.
 11. **Lần chạy đầu trên máy sạch:** `admin` đăng nhập bằng mật khẩu tạm, bị buộc đổi mật khẩu, vào bảng điều khiển, áp dụng mẫu đầu tiên.
+    Stack chạy dở: chỉ chạy `docker compose up -d postgres` rồi `dxos start` thì `doctor` ghi cổng PostgreSQL do chính stack giữ, không `FAIL`, và lệnh dựng nốt các dịch vụ còn lại.
+    Một chương trình ngoài giữ cổng (ví dụ `nc -l 127.0.0.1 <cổng>` khi stack chưa chạy) thì `dxos start` dừng ở `FAIL` nêu chương trình ngoài giữ cổng và khóa trong `deploy/.env` cần đổi.
 12. **Hành động theo vai:** người chỉ giữ vai `AGENT` không thấy nút của hành động dành cho `LEAD`; hồ sơ đã giao thì chỉ người được giao thấy nút, "Bỏ giao" trả lại cho vai khác.
     Hành động có `require` khi trường còn trống báo "Bắt buộc nhập trước khi thực hiện" kèm tên trường và giữ nguyên trạng thái.
     Hồ sơ có quy trình không có nút Xóa; nút hành động không đặt nhãn hiện mã hành động.
@@ -321,4 +323,4 @@ grep -rIlw -i -E 'farm|lab|farmer|DXOS_APP|dx-host|app-farm|app-lab|dx-core-api'
 | Gateway trả 429 giữa chừng khi chạy nhiều script | Giới hạn tốc độ của gateway; chờ một phút hoặc chạy cách nhau |
 | Áp dụng mô hình trả 502 `ERR_ACCOUNT_SERVICE_DENIED` | Tài khoản dịch vụ `dxos-backend-admin` thiếu quyền hoặc scope `kc-admin-api`; xem [`sso/README.md`](../sso/README.md) |
 | Kết quả không khớp mã vừa sửa | Image `dxos-backend:local` cũ hơn mã; chạy `docker compose build` rồi tạo lại service |
-| Cổng 9080 hoặc 5432 bị chiếm | Đổi `APISIX_HOST_PORT`, `POSTGRES_HOST_PORT` trong `deploy/.env` |
+| Cổng 9080 hoặc 5432 bị chương trình ngoài stack chiếm (`dxos doctor` báo `FAIL`) | Đổi `APISIX_HOST_PORT`, `POSTGRES_HOST_PORT` trong `deploy/.env` hoặc dừng chương trình đó; cổng do container của stack giữ thì không phải lỗi |

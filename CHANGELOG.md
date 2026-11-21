@@ -9,6 +9,16 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Lõi chạy ngầm
 
+- Dự án gom mô hình và ứng dụng ngoài của một hệ thống tích hợp để lọc và xem phạm vi ảnh hưởng; dự án không cấp quyền, không cô lập dữ liệu và không đổi vai `dxos-m-<mô hình>`.
+  Một mô hình và một ứng dụng ngoài mỗi bên thuộc tối đa một dự án, ứng dụng có dự án riêng của nó nên ứng dụng của dự án này gọi được mô hình của dự án khác, và bên chưa khai nằm ở nhóm chưa phân loại.
+  Dự án nằm ngoài tệp mô hình, nên đổi dự án không tạo phiên bản mới.
+- `GET`, `POST /api/v1/projects`, `PUT`, `DELETE /api/v1/projects/{name}` quản lý dự án (ADMIN); xóa dự án còn mô hình hoặc ứng dụng trả 409.
+  `PUT /api/v1/models/{model}/project` và `PUT /api/v1/clients/{name}/project` đưa một mô hình hoặc ứng dụng vào dự án, `null` đưa ra khỏi dự án; `POST /api/v1/clients` nhận `project` tùy chọn.
+  `GET /api/v1/models`, `GET /api/v1/clients` và danh mục dữ liệu trả `project`, `null` khi chưa phân loại.
+  Nhật ký quản trị ghi `PROJECT_CREATED`, `PROJECT_UPDATED`, `PROJECT_DELETED`, `MODEL_PROJECT_CHANGED` và `CLIENT_PROJECT_CHANGED`.
+- Bảng điều khiển có tab Dự án, bộ lọc dự án ở tab Mô hình đang chạy và Ứng dụng ngoài, ô chọn dự án ngay trên từng mô hình và ứng dụng, nhãn "Dùng chéo dự án", và dự án ở Danh mục dữ liệu.
+- `dxos project list|add|remove`, `dxos model project <mô hình> <dự án|->`, `dxos client project <tên> <dự án|->`, và `--project` cho `dxos client add` và `dxos connect`.
+  Client trình duyệt (`dxos client browser`) chưa có dự án; `docs/OPERATIONS.md` nêu khi nào nhiều dự án dùng chung một bản cài và khi nào tách bản cài hoặc realm Keycloak.
 - Ghi có điều kiện: `PATCH` một hồ sơ, hành động và giao việc nhận thêm `version` và `modelVersion`; hồ sơ hoặc mô hình đã đổi thì trả 409, `data.reason` là `MODEL_VERSION_CHANGED` khi mô hình đổi; `PATCH` kèm `version` cũ trả 409 kể cả khi giá trị không đổi.
 - `GET /api/v1/meta/models` trả `modelVersion` của từng mô hình và thực thể, `process.effects` (việc hoàn tất xếp vào hàng đợi, `asynchronous: true`) và `aiTasks`.
 - Thực thể khai báo được khối `ai.tasks` trong tệp mô hình: trường đầu vào, trường đề xuất, hướng dẫn và mã nguồn tham khảo; lõi chỉ kiểm khai báo, không gọi model.

@@ -97,7 +97,7 @@ python3 e2e/api/check_bootstrap.py
 | `check_users.py` | Quản trị người dùng: gán và gỡ vai và đơn vị, tạo, khóa, đặt lại mật khẩu, audit |
 | `check_docs.py` | Mọi endpoint các tài liệu nêu có trong OpenAPI của backend đang chạy, đúng phương thức |
 | `check_conformance.py` | Rào chắn của lõi giữ với mọi mô hình đã áp dụng (hoặc các mô hình nêu tên): không ghi được `status`, không token thì 401, không đọc được dữ liệu mô hình khác |
-| `check_cli.py` | Lệnh `dxos`: `lint`, `conformance`, `plan`, `apply --accept`, `model upgrade`, `archive` (kể cả `--store`, `check`, `query`, `list`, `auto`), lịch sử ghi tài khoản của lệnh, bộ mô phỏng IT/OT gửi lại không thêm hồ sơ; cần Docker và tự áp dụng một mô hình riêng |
+| `check_cli.py` | Lệnh `dxos`: `lint`, `conformance`, `plan`, `apply --accept`, `model upgrade`, `archive` (kể cả `--store`, `check`, `query`, `list`, `auto`), `project` và `--project` của `client add`, lịch sử ghi tài khoản của lệnh, bộ mô phỏng IT/OT gửi lại không thêm hồ sơ; cần Docker và tự áp dụng một mô hình riêng |
 | `check_browser.py` | Giao diện trình duyệt ngoài: `dxos client browser add`, `list`, `remove`, CORS, đăng nhập PKCE gọi được API, redirect không an toàn bị từ chối |
 | `check_events.py` | Webhook: thứ tự, chữ ký, thử lại, nội dung không lộ, nhắc hạn; chuỗi hash nhiều phiên bản, trường riêng tư ngoài hash, điểm neo và bên nhận so hash |
 | `check_bootstrap.py` | Tệp mô hình lúc khởi động: `applied`, `unchanged`, `skipped`, `failed` |
@@ -181,6 +181,7 @@ Mỗi mục nêu điều phải thấy; lệnh và biến cấu hình chi tiết
 26. **Người dùng:** tìm, gán và gỡ vai và đơn vị, tạo (mật khẩu tạm phải đổi ở lần đăng nhập đầu), khóa, mở, đặt lại mật khẩu; hộp thoại hiện lịch sử thay đổi và không có mật khẩu nào.
 27. **Ứng dụng ngoài:** đăng ký một ứng dụng với một vai của một mô hình, mã bí mật hiện một lần kèm nút sao chép; token lấy bằng mã đó đọc được mô hình đã gán, gọi bảng điều khiển hay quản trị người dùng thì 403.
     Đổi mã thì mã cũ bị từ chối; "Đổi vai" giữ mã cũ lấy được token, token mới mang vai mới và token cũ giữ vai cũ đến khi hết hạn; xóa thì không lấy được token và hồ sơ đã tạo vẫn còn.
+    Tab **Dự án**: tạo hai dự án, đưa một mô hình vào dự án A và đăng ký một ứng dụng vào dự án B gọi mô hình đó thì dòng ứng dụng có nhãn "Dùng chéo dự án"; bộ lọc dự án ở tab **Mô hình đang chạy** và **Ứng dụng ngoài** chỉ hiện đúng nhóm, "Chưa phân loại" vẫn hiện những mô hình và ứng dụng chưa gán; xóa dự án còn mô hình hay ứng dụng thì bị từ chối.
 28. **OpenAPI của mô hình:** nhập được vào công cụ API hoặc trình sinh thư viện không lỗi; đổi một trường rồi áp dụng và quay về thì tài liệu đổi theo; người không có vai của mô hình nhận 404.
 29. **Danh mục dữ liệu** (ADMIN, mô hình có quy trình và tham chiếu): trang liệt kê vai và ứng dụng ngoài đi vào, nơi dữ liệu đi ra, liên kết giữa thực thể; mỗi thực thể có số bản ghi, quyền theo vai và danh sách trường.
     Đăng ký thêm một ứng dụng ngoài rồi tải lại thì nó hiện ở "Dữ liệu đi vào từ".
@@ -223,6 +224,7 @@ Kiểm bằng đúng các lệnh và thao tác trong tài liệu.
 40. **`dxos reconcile`:** xóa container `backend` thì chạy lại; sau `dxos stop` thì không bật lại; mọi service có chính sách restart `unless-stopped`.
 41. **`dxos demo`** (stack có `dxos-cli`): tạo bốn tài khoản `judge_*` và 40 hồ sơ; `judge_student` thấy hồ sơ của mình, mỗi cán bộ chỉ thấy đơn vị mình, `judge_supervisor` thấy mọi hồ sơ và không có nút Tạo mới; chạy lại không nộp thêm hồ sơ và in mật khẩu mới; `dxos demo remove` gỡ bốn tài khoản.
 42. **`dxos client add`, `list`, `role`, `rotate`, `remove`:** secret chỉ in ở `add` và `rotate`; `role` đổi vai mà secret cũ vẫn lấy được token và token mới mang vai mới; `rotate` làm secret cũ bị từ chối; `remove` làm client không lấy được token.
+    `dxos project add`, `list`, `remove`, `dxos model project`, `dxos client project` và `--project` của `client add` gán và gỡ dự án; dự án còn thành viên hoặc không có thì lệnh trả lỗi.
 43. **`dxos client browser add`:** tạo public client chỉ dùng Authorization Code với PKCE S256, có mapper audience và nhóm, lưu origin chính xác vào `CORS_ALLOWED_ORIGINS`; preflight từ origin đó được nhận, đăng nhập PKCE gọi được API; HTTP ngoài loopback và wildcard bị từ chối trước khi tạo client.
 44. **Lưu trữ theo lịch:** `dxos archive schedule install` rồi `systemctl --user start dxos-archive.service`: `deploy/archive.log` ghi lượt chạy, `dxos archive list` thấy lần chạy mới khi có hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS`, chạy lần nữa không ghi lại các hồ sơ đó.
     `dxos archive check --store` khớp manifest; khóa S3 sai thì `list` và `auto` thoát mã 1 và không in khóa; `schedule uninstall` gỡ hai tệp đơn vị.

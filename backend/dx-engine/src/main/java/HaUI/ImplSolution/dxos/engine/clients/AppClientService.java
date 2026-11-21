@@ -10,6 +10,7 @@ import HaUI.ImplSolution.dxos.core.identity.KeycloakAdminClient;
 import HaUI.ImplSolution.dxos.core.identity.KeycloakAdminClient.AppClient;
 import HaUI.ImplSolution.dxos.engine.event.AdminEventPublisher;
 import HaUI.ImplSolution.dxos.engine.exception.ModelValidationException;
+import HaUI.ImplSolution.dxos.engine.projects.ProjectLinks;
 import HaUI.ImplSolution.dxos.engine.registry.ModelClient;
 import HaUI.ImplSolution.dxos.engine.registry.ModelRegistry;
 import HaUI.ImplSolution.dxos.model.Model;
@@ -27,12 +28,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class AppClientService {
 
-  public record AppView(String name, String clientId, String model, String role, boolean enabled) {}
+  // project is null while the application belongs to no project.
+  public record AppView(
+      String name, String clientId, String model, String role, boolean enabled, String project) {}
 
-  public record NewApp(String name, String model, String role) {}
+  public record NewApp(String name, String model, String role, String project) {}
 
   public record CreatedApp(
-      String name, String clientId, String model, String role, String secret) {}
+      String name, String clientId, String model, String role, String project, String secret) {}
 
   public record RenewedApp(String name, String clientId, String secret) {}
 
@@ -43,6 +46,7 @@ public class AppClientService {
 
   private final KeycloakAdminClient keycloak;
   private final ModelRegistry registry;
+  private final ProjectLinks projects;
   private final UserContext user;
   private final AuditRecorder audit;
   private final AdminEventPublisher events;
@@ -50,18 +54,29 @@ public class AppClientService {
   public AppClientService(
       KeycloakAdminClient keycloak,
       ModelRegistry registry,
+      ProjectLinks projects,
       UserContext user,
       AuditRecorder audit,
       AdminEventPublisher events) {
     this.keycloak = keycloak;
     this.registry = registry;
+    this.projects = projects;
     this.user = user;
     this.audit = audit;
     this.events = events;
   }
 
   public List<AppView> list() {
-    return keycloak.appClients().stream().map(AppClientService::view).toList();
+    Map<String, String> projectOf = projects.ofClients();
+    return keycloak.appClients().stream().map(app -> view(app, projectOf)).toList();
+  }
+
+  public AppView get(String name) {
+    AppClient app =
+        keycloak
+            .findAppClient(clientId(name))
+            .orElseThrow(() -> new ResourceNotFoundException("Application " + name + " not found"));
+    return view(app, projects.ofClients());
   }
 
   public CreatedApp create(NewApp request) {
@@ -88,12 +103,25 @@ public class AppClientService {
       throw new ResourceNotFoundException(
           "Model " + request.model() + " has no role " + request.role());
     }
+    String project =
+        request.project() == null || request.project().isBlank() ? null : request.project();
+    if (project != null && !projects.exists(project)) {
+      throw new ResourceNotFoundException("Project " + project + " not found");
+    }
     String clientId = KeycloakAdminClient.APP_CLIENT_PREFIX + request.name();
     String secret =
         keycloak.createAppClient(
             clientId, request.model(), ModelClient.of(request.model()), request.role());
-    audited("CLIENT_CREATED", clientId, Map.of("model", request.model(), "role", request.role()));
-    return new CreatedApp(request.name(), clientId, request.model(), request.role(), secret);
+    Map<String, Object> facts = new LinkedHashMap<>();
+    facts.put("model", request.model());
+    facts.put("role", request.role());
+    if (project != null) {
+      projects.setClient(clientId, project);
+      facts.put("project", project);
+    }
+    audited("CLIENT_CREATED", clientId, facts);
+    return new CreatedApp(
+        request.name(), clientId, request.model(), request.role(), project, secret);
   }
 
   public RenewedApp renewSecret(String name) {
@@ -129,7 +157,7 @@ public class AppClientService {
           clientId,
           Map.of("model", app.model(), "from", app.role(), "to", changed.role()));
     }
-    return view(changed);
+    return view(changed, projects.ofClients());
   }
 
   public void remove(String name) {
@@ -139,6 +167,7 @@ public class AppClientService {
             .findAppClient(clientId)
             .orElseThrow(() -> new ResourceNotFoundException("Application " + name + " not found"));
     keycloak.deleteAppClient(clientId);
+    projects.dropClient(clientId);
     audited("CLIENT_DELETED", clientId, Map.of("model", app.model(), "role", app.role()));
   }
 
@@ -149,13 +178,14 @@ public class AppClientService {
     return KeycloakAdminClient.APP_CLIENT_PREFIX + name;
   }
 
-  private static AppView view(AppClient app) {
+  private static AppView view(AppClient app, Map<String, String> projectOf) {
     return new AppView(
         app.clientId().substring(KeycloakAdminClient.APP_CLIENT_PREFIX.length()),
         app.clientId(),
         app.model(),
         app.role(),
-        app.enabled());
+        app.enabled(),
+        projectOf.get(app.clientId()));
   }
 
   // Writes what the administrator changed; the facts name the application, never its secret.

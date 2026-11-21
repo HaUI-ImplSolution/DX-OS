@@ -40,6 +40,7 @@ Keycloak giữ tài khoản, mật khẩu và vai; realm `dxos` được nhập 
 - APISIX kiểm token ở biên; backend kiểm lại chữ ký, thời hạn và audience `dxos-api`.
 - Vai và đơn vị đọc từ token đã ký, nên đổi vai hay đơn vị có hiệu lực sau tối đa khoảng 5 phút (token sống 300 giây).
 - Admin API của Keycloak 26.8 chỉ nhận token có audience của chính nó, nên `dxos-backend-admin` mang scope `kc-admin-api`; xem [`sso/README.md`](./sso/README.md).
+- Dự án (`engine.project`, `engine.model_project`, `engine.client_project`) gom mô hình và ứng dụng ngoài để quản trị; token và quyền không biết đến dự án, nên dự án không phải ranh giới cô lập.
 
 ## 4. Áp dụng một mô hình
 

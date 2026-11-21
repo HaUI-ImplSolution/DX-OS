@@ -251,6 +251,7 @@ Một lần đổi vừa tăng vừa giảm, như `own` sang `read`, hoặc khô
 - Mỗi trạng thái không phải cuối phải có hành động đi ra, và ít nhất một hành động đi ra không có `when`, để hồ sơ luôn có lối đi; mọi trạng thái phải tới được từ `initial`, trạng thái cuối không có hành động đi ra, và phải có ít nhất một trạng thái cuối.
 - `auto_close` là thời gian chờ người nộp trước khi hệ thống thay họ làm một hành động.
   Họ `work_item` nhận dạng ngắn `auto_close: 7d` (hành động `confirm`); các trường hợp khác viết `auto_close: {after: 7d, action: <hành động của người nộp>}`.
+  Hành động của `auto_close` không được đặt `needs_note: true`, vì hệ thống không viết ghi chú; tệp vi phạm bị từ chối khi kiểm, còn phiên bản đã lưu vi phạm chạy với `auto_close` bị bỏ và có cảnh báo (xem [`OPERATIONS.md`](OPERATIONS.md#mô-hình-đã-lưu-không-còn-qua-bộ-kiểm)).
 - Quy trình khác khung gốc chạy trên BPMN riêng, sinh từ các trạng thái và hành động khai báo khi áp dụng mô hình.
 - Đổi trạng thái đầu, thêm hoặc bỏ trạng thái, hay đổi `from`, `to`, `by`, `when` của một hành động khi còn hồ sơ chưa ở trạng thái cuối thì kế hoạch bị từ chối.
 - Đổi nhãn, `role`, `require`, các trạng thái của `withdraw` hay danh sách `handler` thì an toàn và có hiệu lực ngay, kể cả với hồ sơ đang mở.

@@ -57,6 +57,9 @@ public class OperationalMetrics {
     Gauge.builder("dxos.models", this, m -> m.snapshot.models())
         .description("Models the system runs")
         .register(meters);
+    Gauge.builder("dxos.models.left_out", registry, r -> r.leftOut().size())
+        .description("Stored models left out because they fail the checks")
+        .register(meters);
     Gauge.builder("dxos.outbox.pending", this, m -> m.snapshot.pending())
         .description("Outgoing events not yet delivered")
         .register(meters);

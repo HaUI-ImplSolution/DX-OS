@@ -34,6 +34,8 @@
 #                              --write replaces the file atomically after printing the diff
 #   dxos model merge <model-file>
 #                              print the complete model of a file that extends a template, as plan and apply use it
+#   dxos model project <model> <project|->
+#                              put an applied model in a project, - takes it out
 #   dxos history verify|anchor check that the history of records was not changed, or anchor it now
 #   dxos gitops sync [models|infra] | status [models|infra] | approve [infra] <commit> [--accept LEVEL] | install | uninstall
 #                              keep the models equal to the model files of a git repository, and this install
@@ -55,14 +57,19 @@
 #   dxos demo [--password PASSWORD] | dxos demo remove
 #                              create the accounts judge_student, judge_officer, judge_officer2 and
 #                              judge_supervisor and file sample requests; remove deletes the accounts
-#   dxos client add <name> --model M --role R [--env PREFIX] | list | role <name> --role R
-#                              | rotate <name> [--env PREFIX] | remove <name>
+#   dxos client add <name> --model M --role R [--project P] [--env PREFIX] | list | role <name> --role R
+#                              | rotate <name> [--env PREFIX] | remove <name> | project <name> <project|->
 #                              register an outside application that calls the API with its own secret and
 #                              one role of one model; the secret is shown once, rotate gives a new one;
 #                              --env prints only PREFIX_CLIENT_ID and PREFIX_CLIENT_SECRET, ready to append to
-#                              the .env file of the application
-#   dxos connect <model> --role R [--role R ...] [--app NAME] [--prefix PREFIX] [--env-file FILE] [--base-url URL] [--rotate]
-#                              register a client for each role and write DXOS_BASE_URL and their
+#                              the .env file of the application; project puts the application in a project,
+#                              - takes it out
+#   dxos project list | add <name> [--label TEXT] [--description TEXT] | remove <name>
+#                              a project groups the models and outside applications of one integration, to
+#                              browse and to judge impact; it grants no access and isolates nothing;
+#                              list shows what each project holds, remove refuses while it holds any
+#   dxos connect <model> --role R [--role R ...] [--app NAME] [--project P] [--prefix PREFIX] [--env-file FILE] [--base-url URL] [--rotate]
+#                              register a client for each role (in the project P when given) and write DXOS_BASE_URL and their
 #                              PREFIX_ROLE_CLIENT_ID and PREFIX_ROLE_CLIENT_SECRET to the .env file of the
 #                              application (default .env here); a client that is registered but has no secret in
 #                              the file needs --rotate; checks the first new client and says how to use the file
@@ -635,11 +642,77 @@ cmd_model_merge() {
   fi
 }
 
+# A text as the inside of a JSON string.
+json_text() { printf '%s' "$1" | tr '\n\t' '  ' | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g'; }
+
+# Puts what a path names in a project, or takes it out when the project is "-".
+set_project() {
+  local work value
+  if [[ "$2" == - ]]; then
+    value=null
+  else
+    [[ "$2" =~ ^[a-z][a-z0-9_-]{0,39}$ ]] || die "not a project name: $2 (lower case letters, digits, - and _; - takes it out of its project)"
+    value="\"$2\""
+  fi
+  work="$(mktemp)"
+  printf '{"project":%s}' "$value" >"$work"
+  api PUT "$1" "$work" application/json
+  rm -f "$work"
+  if [[ "$API_STATUS" != 200 ]]; then pretty "$API_BODY"; return 1; fi
+}
+
+project_text() {
+  if [[ "$1" == - ]]; then echo "$2 is in no project now."; else echo "$2 is in the project $1 now."; fi
+}
+
+cmd_project() {
+  local action="${1:-}" name label="" description="" work
+  case "$action" in
+    list)
+      (( $# == 1 )) || die "usage: dxos project list"
+      api GET /projects
+      pretty "$API_BODY"
+      [[ "$API_STATUS" == 200 ]] || return 1 ;;
+    add)
+      shift
+      name="${1:-}"
+      [[ "$name" =~ ^[a-z][a-z0-9_-]{0,39}$ ]] || die "usage: dxos project add <name> [--label TEXT] [--description TEXT] (name: lower case letters, digits, - and _)"
+      shift
+      while (( $# )); do
+        case "$1" in
+          --label) label="${2:?--label needs a text}"; shift 2 ;;
+          --label=*) label="${1#--label=}"; shift ;;
+          --description) description="${2:?--description needs a text}"; shift 2 ;;
+          --description=*) description="${1#--description=}"; shift ;;
+          *) die "unknown option: $1" ;;
+        esac
+      done
+      work="$(mktemp)"
+      printf '{"name":"%s","label":"%s","description":"%s"}' "$name" "$(json_text "${label:-$name}")" "$(json_text "$description")" >"$work"
+      api POST /projects "$work" application/json
+      rm -f "$work"
+      if [[ "$API_STATUS" != 200 ]]; then pretty "$API_BODY"; return 1; fi
+      echo "Created the project $name." ;;
+    remove)
+      (( $# == 2 )) || die "usage: dxos project remove <name>"
+      [[ "$2" =~ ^[a-z][a-z0-9_-]{0,39}$ ]] || die "not a project name: $2"
+      api DELETE "/projects/$2"
+      if [[ "$API_STATUS" != 200 ]]; then pretty "$API_BODY"; return 1; fi
+      echo "Removed the project $2." ;;
+    *) die "usage: dxos project list | add <name> [--label TEXT] [--description TEXT] | remove <name>" ;;
+  esac
+}
+
 cmd_model() {
   case "${1:-}" in
     upgrade) shift; cmd_model_upgrade "$@" ;;
     merge) shift; cmd_model_merge "$@" ;;
-    *) die "usage: dxos model upgrade [--write] <model-file> | dxos model merge <model-file>" ;;
+    project)
+      (( $# == 3 )) || die "usage: dxos model project <model> <project|->"
+      [[ "$2" =~ ^[a-z][a-z0-9_]*$ ]] || die "not a model name: $2"
+      set_project "/models/$2/project" "$3"
+      project_text "$3" "the model $2" ;;
+    *) die "usage: dxos model upgrade [--write] <model-file> | dxos model merge <model-file> | dxos model project <model> <project|->" ;;
   esac
 }
 
@@ -849,7 +922,7 @@ EOF
 # Registers, lists, renews and removes the outside applications of the API; the work is the
 # API's, this only calls it.
 cmd_client() {
-  local action="${1:-}" name model="" role="" body work env_prefix=""
+  local action="${1:-}" name model="" role="" body work env_prefix="" project=""
   case "$action" in
     browser)
       shift
@@ -862,12 +935,14 @@ cmd_client() {
     add)
       shift
       name="${1:-}"
-      [[ "$name" =~ ^[a-z][a-z0-9_-]{0,39}$ ]] || die "usage: dxos client add <name> --model M --role R [--env PREFIX] (name: lower case letters, digits, - and _)"
+      [[ "$name" =~ ^[a-z][a-z0-9_-]{0,39}$ ]] || die "usage: dxos client add <name> --model M --role R [--project P] [--env PREFIX] (name: lower case letters, digits, - and _)"
       shift
       while (( $# )); do
         case "$1" in
           --model) model="${2:?--model needs a model name}"; shift 2 ;;
           --model=*) model="${1#--model=}"; shift ;;
+          --project) project="${2:?--project needs a project name}"; shift 2 ;;
+          --project=*) project="${1#--project=}"; shift ;;
           --role) role="${2:?--role needs a role name}"; shift 2 ;;
           --role=*) role="${1#--role=}"; shift ;;
           --env) env_prefix="${2:?--env needs a prefix such as DXOS_REQUESTER}"; shift 2 ;;
@@ -878,8 +953,9 @@ cmd_client() {
       check_env_prefix "$env_prefix"
       [[ "$model" =~ ^[a-z][a-z0-9_]*$ ]] || die "--model needs the name of an applied model"
       [[ "$role" =~ ^[A-Z][A-Z0-9_]*$ ]] || die "--role needs a role of that model"
+      [[ -z "$project" || "$project" =~ ^[a-z][a-z0-9_-]{0,39}$ ]] || die "not a project name: $project"
       work="$(mktemp)"
-      printf '{"name":"%s","model":"%s","role":"%s"}' "$name" "$model" "$role" >"$work"
+      printf '{"name":"%s","model":"%s","role":"%s"%s}' "$name" "$model" "$role" "${project:+,\"project\":\"$project\"}" >"$work"
       api POST /clients "$work" application/json
       rm -f "$work"
       if [[ "$API_STATUS" != 200 ]]; then pretty "$API_BODY"; return 1; fi
@@ -922,13 +998,18 @@ cmd_client() {
       rm -f "$work"
       if [[ "$API_STATUS" != 200 ]]; then pretty "$API_BODY"; return 1; fi
       echo "dxos-app-$name now holds the role $role; its secret is unchanged and a token it got before lasts until it expires." ;;
+    project)
+      (( $# == 3 )) || die "usage: dxos client project <name> <project|->"
+      [[ "$2" =~ ^[a-z][a-z0-9_-]{0,39}$ ]] || die "not an application name: $2"
+      set_project "/clients/$2/project" "$3"
+      project_text "$3" "dxos-app-$2" ;;
     remove)
       (( $# == 2 )) || die "usage: dxos client remove <name>"
       [[ "$2" =~ ^[a-z][a-z0-9_-]{0,39}$ ]] || die "not an application name: $2"
       api DELETE "/clients/$2"
       if [[ "$API_STATUS" != 200 ]]; then pretty "$API_BODY"; return 1; fi
       echo "Removed dxos-app-$2." ;;
-    *) die "usage: dxos client add <name> --model M --role R [--env PREFIX] | list | role <name> --role R | rotate <name> [--env PREFIX] | remove <name> | test <name> | browser add|list|remove" ;;
+    *) die "usage: dxos client add <name> --model M --role R [--project P] [--env PREFIX] | list | role <name> --role R | rotate <name> [--env PREFIX] | remove <name> | project <name> <project|-> | test <name> | browser add|list|remove" ;;
   esac
 }
 
@@ -1547,8 +1628,8 @@ cmd_uninstall() {
 # Connects an application: registers one client for each role it uses and writes DXOS_BASE_URL and the
 # variables of the clients to its .env file. The secret the API shows once goes straight to the file.
 cmd_connect() {
-  local usage="usage: dxos connect <model> --role R [--role R ...] [--app NAME] [--prefix PREFIX] [--env-file FILE] [--base-url URL] [--rotate]"
-  local model="${1:-}" app="" prefix="DXOS" env_file="" base_url="" rotate=false roles=()
+  local usage="usage: dxos connect <model> --role R [--role R ...] [--app NAME] [--project P] [--prefix PREFIX] [--env-file FILE] [--base-url URL] [--rotate]"
+  local model="${1:-}" app="" prefix="DXOS" env_file="" base_url="" rotate=false roles=() project=""
   local role name var_prefix clients exists work port client_id secret test_name="" test_secret="" wrote=0
   [[ "$model" =~ ^[a-z][a-z0-9_]*$ ]] || die "$usage"
   shift
@@ -1558,6 +1639,8 @@ cmd_connect() {
       --role=*) roles+=("${1#--role=}"); shift ;;
       --app) app="${2:?--app needs a name}"; shift 2 ;;
       --app=*) app="${1#--app=}"; shift ;;
+      --project) project="${2:?--project needs a project name}"; shift 2 ;;
+      --project=*) project="${1#--project=}"; shift ;;
       --prefix) prefix="${2:?--prefix needs a prefix such as DXOS_RETAIL}"; shift 2 ;;
       --prefix=*) prefix="${1#--prefix=}"; shift ;;
       --env-file) env_file="$(from_caller "${2:?--env-file needs a file}")"; shift 2 ;;
@@ -1570,6 +1653,7 @@ cmd_connect() {
   done
   (( ${#roles[@]} )) || die "at least one --role is required ($usage)"
   check_env_prefix "$prefix"
+  [[ -z "$project" || "$project" =~ ^[a-z][a-z0-9_-]{0,39}$ ]] || die "not a project name: $project"
   app="${app:-$model}"
   [[ -n "$env_file" ]] || env_file="$(from_caller .env)"
   if [[ -z "$base_url" ]]; then
@@ -1606,7 +1690,7 @@ cmd_connect() {
       api POST "/clients/$name/secret"
     else
       work="$(mktemp)"
-      printf '{"name":"%s","model":"%s","role":"%s"}' "$name" "$model" "$role" >"$work"
+      printf '{"name":"%s","model":"%s","role":"%s"%s}' "$name" "$model" "$role" "${project:+,\"project\":\"$project\"}" >"$work"
       api POST /clients "$work" application/json
       rm -f "$work"
     fi
@@ -1665,6 +1749,7 @@ main() {
     archive) cmd_archive "$@" ;;
     demo) "$DEPLOY_DIR/demo.sh" "$@" ;;
     client) cmd_client "$@" ;;
+    project) cmd_project "$@" ;;
     connect) cmd_connect "$@" ;;
     uninstall) cmd_uninstall "$@" ;;
     version) echo "DX-OS $(env_value DXOS_IMAGE_TAG) in $PREFIX" ;;

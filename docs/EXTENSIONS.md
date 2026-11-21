@@ -51,6 +51,7 @@ Mỗi client giữ đúng một vai của một mô hình.
 API của mô hình khác, API quản trị và API người dùng trả `403`.
 Đổi sang vai khác của cùng mô hình bằng `dxos client role <tên> --role <vai>` hoặc nút **Đổi vai** ở tab **Ứng dụng ngoài**; client id và secret giữ nguyên, còn token đã cấp giữ vai cũ đến khi hết hạn.
 Đổi sang mô hình khác thì xóa client rồi đăng ký lại; hồ sơ client đã tạo vẫn còn.
+Một bản cài dùng chung cho nhiều hệ thống tích hợp thì gom client và mô hình của từng hệ thống thành một dự án, bằng `--project` khi đăng ký hoặc ở tab **Dự án**; xem [phần Dự án của `OPERATIONS.md`](OPERATIONS.md#dự-án).
 
 ### 2. Lấy token và OpenAPI của mô hình
 

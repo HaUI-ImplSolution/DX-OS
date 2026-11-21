@@ -53,6 +53,37 @@ Không nhận wildcard, user info, fragment, host hoặc cổng sai; `CORS_ALLOW
 `dxos client browser remove partner-ui` xóa client nhưng giữ origin trong allowlist vì giao diện khác có thể dùng chung; xóa origin không còn dùng khỏi `CORS_ALLOWED_ORIGINS` rồi tạo lại backend.
 Hướng dẫn cấu hình ứng dụng từ đầu đến cuối ở [`docs/EXTENSIONS.md`](EXTENSIONS.md#giao-diện-ngoài).
 
+## Dự án
+
+Một dự án gom các mô hình và các ứng dụng ngoài mà một nơi tích hợp dùng, để lọc danh sách và xem một thay đổi chạm tới ai.
+Nó chỉ là tên gọi để quản trị: dự án không cấp quyền, không cô lập dữ liệu, và vai vẫn là `dxos-m-<mô hình>`, `ADMIN` vẫn là một và áp cho cả hệ thống.
+Dự án nằm ngoài tệp mô hình, nên đổi dự án không tạo phiên bản mới và không cần áp dụng lại.
+Hệ thống không đoán dự án từ tên mô hình, tên ứng dụng hay người áp dụng; chỉ có liên kết được khai rõ.
+
+Một mô hình thuộc tối đa một dự án, một ứng dụng ngoài cũng vậy; mô hình và ứng dụng chưa khai nằm ở nhóm chưa phân loại và chạy như trước.
+Ứng dụng có dự án riêng của nó, không theo dự án của mô hình nó gọi, nên ứng dụng của dự án B gọi mô hình của dự án A là cách dùng chung một mô hình.
+Client trình duyệt (`dxos client browser`) chưa có dự án.
+
+Quản lý dự án ở tab Dự án của bảng điều khiển (`/console`, ADMIN); hai tab Mô hình đang chạy và Ứng dụng ngoài lọc theo dự án và cho đổi dự án ngay trên từng dòng, và Danh mục dữ liệu ghi dự án của mô hình.
+Hoặc bằng lệnh:
+
+```bash
+dxos project add <tên> [--label NHÃN] [--description MÔ_TẢ]   # tên: chữ thường, số, - và _
+dxos project list                                              # mỗi dự án kèm mô hình và ứng dụng của nó
+dxos project remove <tên>
+dxos model project <mô hình> <dự án>                           # dấu - đưa ra khỏi dự án
+dxos client project <tên ứng dụng> <dự án>
+dxos client add <tên> --model M --role R --project P           # đăng ký và gán trong một bước
+dxos connect <mô hình> --role R --project P                    # gán cho client mới do lệnh tạo
+```
+
+Xóa dự án còn mô hình hoặc ứng dụng bị từ chối (409); đưa chúng ra khỏi dự án hoặc sang dự án khác trước.
+Xóa một ứng dụng thì liên kết của nó biến mất theo.
+Nhật ký quản trị ghi `PROJECT_CREATED`, `PROJECT_UPDATED`, `PROJECT_DELETED`, `MODEL_PROJECT_CHANGED` và `CLIENT_PROJECT_CHANGED`.
+
+Nhiều dự án dùng chung một bản cài khi cùng một nhóm quản trị chịu trách nhiệm cho tất cả và chỉ cần lọc cho gọn.
+Tách bản cài, hoặc ít nhất tách realm Keycloak, khi các dự án cần người quản trị riêng, danh sách người dùng riêng, hoặc ranh giới an toàn mà dự án này không được nhìn thấy dự án kia; dự án không làm được việc đó.
+
 ## Cài đặt và lệnh `dxos`
 
 ```bash
@@ -86,7 +117,8 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 | `dxos archive <mô hình> [--before YYYY-MM-DD] [--out THƯ_MỤC \| --store]`, `dxos archive query <mô hình>/<lần chạy> ...`, `dxos archive check <thư mục> \| --store <mô hình>/<lần chạy>`, `dxos archive list` | Xuất hồ sơ đã xong ra Parquet, truy vấn chỉ đọc một lần chạy bằng DuckDB, kiểm một bản xuất, liệt kê các lần chạy trong kho (xem [`INTEGRATIONS.md`](./INTEGRATIONS.md#hồ-dữ-liệu)) |
 | `dxos archive auto`, `dxos archive schedule [install\|uninstall]` | Ghi vào kho hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS` ngày; `schedule install` chạy mỗi ngày bằng systemd user timer (xem dưới) |
 | `dxos demo [--password MẬT_KHẨU]`, `dxos demo remove` | Áp dụng mô hình Một cửa sinh viên nếu chưa chạy, tạo bốn tài khoản thử `judge_student`, `judge_officer`, `judge_officer2` và `judge_supervisor` với một mật khẩu (ngẫu nhiên nếu không nêu, in một lần; chạy lại thì đặt và in mật khẩu mới) và nộp khoảng 40 hồ sơ mẫu qua API chung, mỗi bước do đúng người làm; chạy lại không nộp thêm hồ sơ; `remove` chỉ gỡ bốn tài khoản, hồ sơ có quy trình không xóa được nên còn lại; cần client `dxos-cli` như `dxos plan`. Hạn xử lý 72 giờ của mô hình nên hồ sơ quá hạn chỉ có sau ba ngày kể từ lần nộp |
-| `dxos connect <mô hình> --role R [--role R ...]`, `dxos client add <tên> --model M --role R`, `dxos client list`, `dxos client role <tên> --role R`, `dxos client rotate <tên>`, `dxos client remove <tên>` | Đăng ký và quản lý ứng dụng ngoài gọi API bằng token máy (xem phần Ứng dụng ngoài ở trên) |
+| `dxos connect <mô hình> --role R [--role R ...] [--project P]`, `dxos client add <tên> --model M --role R [--project P]`, `dxos client list`, `dxos client role <tên> --role R`, `dxos client rotate <tên>`, `dxos client remove <tên>` | Đăng ký và quản lý ứng dụng ngoài gọi API bằng token máy (xem phần Ứng dụng ngoài ở trên) |
+| `dxos project list`, `dxos project add <tên> [--label NHÃN] [--description MÔ_TẢ]`, `dxos project remove <tên>`, `dxos model project <mô hình> <dự án\|->`, `dxos client project <tên> <dự án\|->` | Gom mô hình và ứng dụng ngoài theo dự án để lọc và xem phạm vi ảnh hưởng (xem phần Dự án ở trên) |
 | `dxos client browser add <tên> --redirect-uri URL [...]`, `dxos client browser list`, `dxos client browser remove <tên>` | Đăng ký và quản lý public OIDC client dùng PKCE cho giao diện trình duyệt ở origin khác |
 | `dxos uninstall [--purge]` | Xóa container và lệnh `dxos`; `--purge` xóa cả dữ liệu và thư mục cài, phải gõ xác nhận |
 

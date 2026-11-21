@@ -4,6 +4,7 @@ package HaUI.ImplSolution.dxos.engine.catalog;
 
 import HaUI.ImplSolution.dxos.engine.apply.Sql;
 import HaUI.ImplSolution.dxos.engine.clients.AppClientService;
+import HaUI.ImplSolution.dxos.engine.projects.ProjectLinks;
 import HaUI.ImplSolution.dxos.model.FieldType;
 import HaUI.ImplSolution.dxos.model.Model;
 import HaUI.ImplSolution.dxos.model.Model.Entity;
@@ -44,11 +45,19 @@ public class DataCatalogService {
   // via is the field that holds the reference, or the owner_via of the entity.
   public record Link(String from, String via, String to, String kind) {}
 
-  // kind is role, app, webhook, completion, feed or archive.
-  public record Point(String kind, String name, String detail) {}
+  // kind is role, app, webhook, completion, feed or archive; project is the project of an app, null
+  // for an app without one and for every other kind.
+  public record Point(String kind, String name, String detail, String project) {
 
+    public Point(String kind, String name, String detail) {
+      this(kind, name, detail, null);
+    }
+  }
+
+  // project is the project of the model, null while it is unclassified.
   public record Catalog(
       String model,
+      String project,
       List<Point> origins,
       List<Point> destinations,
       List<EntityInfo> entities,
@@ -56,10 +65,12 @@ public class DataCatalogService {
 
   private final JdbcTemplate jdbc;
   private final AppClientService apps;
+  private final ProjectLinks projects;
 
-  public DataCatalogService(JdbcTemplate jdbc, AppClientService apps) {
+  public DataCatalogService(JdbcTemplate jdbc, AppClientService apps, ProjectLinks projects) {
     this.jdbc = jdbc;
     this.apps = apps;
+    this.projects = projects;
   }
 
   public Catalog of(Model model) {
@@ -79,7 +90,13 @@ public class DataCatalogService {
                 field -> links.add(new Link(entity.name(), field.name(), field.to(), "owner")));
       }
     }
-    return new Catalog(model.name(), origins(model), destinations(model), entities, links);
+    return new Catalog(
+        model.name(),
+        projects.ofModels().get(model.name()),
+        origins(model),
+        destinations(model),
+        entities,
+        links);
   }
 
   private EntityInfo describe(Model model, Entity entity) {
@@ -128,7 +145,7 @@ public class DataCatalogService {
     model.roles().forEach(role -> origins.add(new Point("role", role.name(), role.description())));
     apps.list().stream()
         .filter(app -> model.name().equals(app.model()))
-        .forEach(app -> origins.add(new Point("app", app.clientId(), app.role())));
+        .forEach(app -> origins.add(new Point("app", app.clientId(), app.role(), app.project())));
     return origins;
   }
 

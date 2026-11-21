@@ -18,7 +18,7 @@ Mỗi từ được giải thích trong một hoặc hai dòng, kèm tài liệu
 | `dx-model` | Module đọc và kiểm tra tệp mô hình, báo lỗi theo dòng và cột; không phụ thuộc Spring | [`ARCHITECTURE.md`](../ARCHITECTURE.md#2-module-backend) |
 | `dx-core` | Thư viện dùng chung của backend: bảo mật, audit, lưu trữ, quét tệp, client Keycloak | [`ARCHITECTURE.md`](../ARCHITECTURE.md#2-module-backend) |
 | `dx-monitor` | Dịch vụ giám sát chạy riêng, không phụ thuộc các module còn lại | [`docs/MONITORING.md`](MONITORING.md) |
-| Bảng điều khiển | Trang `/console` của người triển khai (ADMIN): thư viện mẫu, soạn mô hình, xem kế hoạch, áp dụng, người dùng, ứng dụng ngoài, danh mục dữ liệu | [`TESTING.md`](./TESTING.md) |
+| Bảng điều khiển | Trang `/console` của người triển khai (ADMIN): thư viện mẫu, soạn mô hình, xem kế hoạch, áp dụng, người dùng, ứng dụng ngoài, danh mục dữ liệu, dự án | [`TESTING.md`](./TESTING.md) |
 | Portal | Trang `/portal/` liệt kê các địa chỉ và trạng thái dịch vụ | [`README.md`](../README.md) |
 | Chế độ chỉ lõi | `dxos start --core` chỉ chạy Tầng 1, không có ứng dụng web, portal và giám sát | [`OPERATIONS.md`](OPERATIONS.md#chế-độ-chỉ-lõi) |
 | Điểm mở rộng | Chỗ để người dùng viết thêm dịch vụ, bên nhận webhook, giao diện riêng hay route riêng ở ngoài lõi | [`EXTENSIONS.md`](./EXTENSIONS.md) |
@@ -94,6 +94,7 @@ Mỗi từ được giải thích trong một hoặc hai dòng, kèm tài liệu
 | Thuật ngữ | Nghĩa | Xem thêm |
 |---|---|---|
 | Keycloak, realm `dxos` | Dịch vụ đăng nhập một lần; giữ tài khoản, mật khẩu và vai | [`ARCHITECTURE.md`](../ARCHITECTURE.md#3-định-danh-và-token) |
+| Dự án | Tên gom các mô hình và ứng dụng ngoài của một hệ thống tích hợp, để lọc và xem phạm vi ảnh hưởng; không cấp quyền và không cô lập dữ liệu | [`OPERATIONS.md`](OPERATIONS.md#dự-án) |
 | Client | Một ứng dụng đăng ký với Keycloak: `dxos-web` cho web, `dxos-cli` cho lệnh, `dxos-m-<mô hình>` giữ vai của mô hình, `dxos-app-<tên>` cho ứng dụng ngoài | [`ARCHITECTURE.md`](../ARCHITECTURE.md#3-định-danh-và-token) |
 | Token máy | Token một ứng dụng ngoài lấy bằng mã bí mật của nó; tài khoản dịch vụ giữ đúng một vai của một mô hình | [`EXTENSIONS.md`](./EXTENSIONS.md#dịch-vụ-riêng-gọi-api) |
 | OIDC, PKCE | Cách giao diện ở tên miền khác đăng nhập người dùng, không giữ mã bí mật trong trình duyệt | [`EXTENSIONS.md`](./EXTENSIONS.md#giao-diện-ngoài) |

@@ -5,6 +5,7 @@ import { Alert, Box, Skeleton, Snackbar, Tab, Tabs } from "@mui/material";
 import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined";
 import AutoAwesomeMosaicOutlinedIcon from "@mui/icons-material/AutoAwesomeMosaicOutlined";
 import EditNoteOutlinedIcon from "@mui/icons-material/EditNoteOutlined";
+import FolderOutlinedIcon from "@mui/icons-material/FolderOutlined";
 import LayersOutlinedIcon from "@mui/icons-material/LayersOutlined";
 import ApiOutlinedIcon from "@mui/icons-material/ApiOutlined";
 import PeopleOutlineIcon from "@mui/icons-material/PeopleOutline";
@@ -17,6 +18,7 @@ import EditorTab from "./EditorTab";
 import ModelsTab from "./ModelsTab";
 import { registerModelSchema } from "./monacoSetup";
 import OutboxTab from "./OutboxTab";
+import ProjectsTab from "./ProjectsTab";
 import TemplatesTab from "./TemplatesTab";
 import AppsTab from "./AppsTab";
 import DataCatalogTab from "./DataCatalogTab";
@@ -96,6 +98,7 @@ export default function ConsolePage() {
         <Tab icon={<PeopleOutlineIcon fontSize="small" />} iconPosition="start" label={t("Người dùng")} />
         <Tab icon={<ApiOutlinedIcon fontSize="small" />} iconPosition="start" label={t("Ứng dụng ngoài")} />
         <Tab icon={<AccountTreeOutlinedIcon fontSize="small" />} iconPosition="start" label={t("Danh mục dữ liệu")} />
+        <Tab icon={<FolderOutlinedIcon fontSize="small" />} iconPosition="start" label={t("Dự án")} />
       </Tabs>
       {!schema && (
         <Box>
@@ -136,6 +139,7 @@ export default function ConsolePage() {
       {schema && tab === 4 && <UsersTab />}
       {schema && tab === 5 && <AppsTab />}
       {schema && tab === 6 && <DataCatalogTab />}
+      {schema && tab === 7 && <ProjectsTab />}
       <Snackbar open={note !== null} autoHideDuration={6000} onClose={() => setNote(null)} message={note ?? ""} />
     </Box>
   );

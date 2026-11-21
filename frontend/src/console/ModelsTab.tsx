@@ -27,18 +27,22 @@ import {
   abandonModel,
   getVersion,
   listApplied,
+  listProjects,
   listRuns,
   listVersions,
   planRollback,
   resumeModel,
   rollbackModel,
+  setModelProject,
   type AppliedModel,
   type AppliedVersion,
   type Plan,
+  type Project,
   type Run,
 } from "./api";
 import { FAMILY_LABEL, RUN_STATUS, STEP_KIND, label, summarize, type ModelSummary } from "./labels";
 import PlanPanel from "./PlanPanel";
+import { ALL, ProjectFilter, ProjectSelect, inFilter } from "./ProjectFilter";
 import { t } from "../shell/t";
 
 interface Props {
@@ -64,8 +68,11 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
   const [working, setWorking] = useState<string | null>(null);
   const [giveUp, setGiveUp] = useState<AppliedModel | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [filter, setFilter] = useState(ALL);
 
   useEffect(() => {
+    listProjects().then(setProjects, (e: unknown) => setProblem(message(e)));
     listApplied().then(
       (loaded) => {
         setModels(loaded);
@@ -79,6 +86,17 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
       (e: unknown) => setError(message(e)),
     );
   }, [refresh]);
+
+  const moveToProject = async (model: AppliedModel, project: string | null) => {
+    setProblem(null);
+    try {
+      await setModelProject(model.model, project);
+      setModels((current) => current?.map((item) => (item.model === model.model ? { ...item, project } : item)) ?? null);
+      setProjects(await listProjects());
+    } catch (e) {
+      setProblem(message(e));
+    }
+  };
 
   const open = async (model: AppliedModel) => {
     try {
@@ -136,8 +154,13 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
           {problem}
         </Alert>
       )}
+      {projects.length > 0 && (
+        <Box sx={{ mb: 2 }}>
+          <ProjectFilter projects={projects} value={filter} onChange={setFilter} />
+        </Box>
+      )}
       <Box sx={{ display: "grid", gap: 2, gridTemplateColumns: "repeat(auto-fill, minmax(min(360px, 100%), 1fr))" }}>
-        {models.map((model) => {
+        {models.filter((model) => inFilter(filter, model.project)).map((model) => {
           const summary = summaries[model.model];
           return (
             <Card key={model.model} sx={{ p: 2.5, display: "flex", flexDirection: "column", gap: 1.5 }}>
@@ -163,6 +186,9 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
                   <span>{t(" · bởi {name}", { name: applier(model) })}</span>
                 </Tooltip>
               </Typography>
+              {(projects.length > 0 || model.project !== null) && (
+                <ProjectSelect projects={projects} value={model.project} onChange={(project) => moveToProject(model, project)} />
+              )}
               {summary ? (
                 <>
                   <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap" }}>

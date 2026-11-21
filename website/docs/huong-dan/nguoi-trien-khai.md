@@ -49,6 +49,7 @@ Vai `ADMIN` của nền tảng không cấp ở tab này mà cấp ở Keycloak 
 
 - **Webhook:** mọi thay đổi của hồ sơ được báo tới địa chỉ web hoặc kênh chat, có chữ ký để bên nhận kiểm tra; chi tiết ở [`docs/INTEGRATIONS.md`](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/INTEGRATIONS.md).
 - **Ứng dụng ngoài:** tab **Ứng dụng ngoài**, `dxos client add` hoặc `dxos connect` (một lệnh cho mọi vai, ghi sẵn `.env` của ứng dụng) đăng ký một ứng dụng gọi API với đúng một vai của một mô hình.
+- **Dự án:** tab **Dự án** hoặc `dxos project add` gom các mô hình và ứng dụng ngoài của một hệ thống tích hợp để lọc và xem phạm vi ảnh hưởng; dự án không cấp quyền và không tách dữ liệu, chi tiết ở [`docs/OPERATIONS.md`](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/OPERATIONS.md#dự-án).
 - **Hàng đợi sự kiện:** tab cùng tên cho xem việc chờ gửi và thử lại khi lỗi.
 - **Công cụ báo cáo:** nối bằng vai chỉ đọc `report_ro`; xem [`docs/REPORTING.md`](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/REPORTING.md).
 

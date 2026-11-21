@@ -19,6 +19,14 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Bảng điều khiển có tab Dự án, bộ lọc dự án ở tab Mô hình đang chạy và Ứng dụng ngoài, ô chọn dự án ngay trên từng mô hình và ứng dụng, nhãn "Dùng chéo dự án", và dự án ở Danh mục dữ liệu.
 - `dxos project list|add|remove`, `dxos model project <mô hình> <dự án|->`, `dxos client project <tên> <dự án|->`, và `--project` cho `dxos client add` và `dxos connect`.
   Client trình duyệt (`dxos client browser`) chưa có dự án; `docs/OPERATIONS.md` nêu khi nào nhiều dự án dùng chung một bản cài và khi nào tách bản cài hoặc realm Keycloak.
+- Dự án có thành viên và quản trị viên: `GET /api/v1/projects/{name}/members`, `PUT`, `DELETE /api/v1/projects/{name}/members/{userId}` (thân `{"level": "MEMBER"|"ADMIN"}`) và `GET /api/v1/projects/mine`.
+  Thành viên là người nằm trong phạm vi của dự án, không tự cấp quyền; xóa dự án xóa luôn danh sách thành viên.
+- Quản trị viên của một dự án không cần vai `ADMIN`: `GET /api/v1/users` chỉ thấy thành viên các dự án mình, và gán, gỡ vai của mô hình thuộc dự án cho thành viên của dự án đó.
+  Tạo, khóa, đặt lại mật khẩu, đơn vị và mô hình chưa phân loại chỉ `ADMIN` làm được; vượt phạm vi trả 403, backend kiểm ở mỗi lần gọi.
+  Đây là quản trị theo dự án, không phải cô lập giữa các tổ chức.
+- Nhật ký quản trị ghi thêm `project` ở `USER_ROLE_GRANTED`, `USER_ROLE_REVOKED`, và ghi `PROJECT_MEMBER_ADDED`, `PROJECT_MEMBER_CHANGED`, `PROJECT_MEMBER_REMOVED`.
+- Bảng điều khiển: tab Dự án có cột và hộp thành viên, đổi dự án của một mô hình hỏi xác nhận, và quản trị viên của dự án vào được Bảng điều khiển với hai tab Người dùng và Thành viên dự án.
+- `dxos project member list|add|remove`; `add` nhận `--admin`.
 - Ghi có điều kiện: `PATCH` một hồ sơ, hành động và giao việc nhận thêm `version` và `modelVersion`; hồ sơ hoặc mô hình đã đổi thì trả 409, `data.reason` là `MODEL_VERSION_CHANGED` khi mô hình đổi; `PATCH` kèm `version` cũ trả 409 kể cả khi giá trị không đổi.
 - `GET /api/v1/meta/models` trả `modelVersion` của từng mô hình và thực thể, `process.effects` (việc hoàn tất xếp vào hàng đợi, `asynchronous: true`) và `aiTasks`.
 - Thực thể khai báo được khối `ai.tasks` trong tệp mô hình: trường đầu vào, trường đề xuất, hướng dẫn và mã nguồn tham khảo; lõi chỉ kiểm khai báo, không gọi model.

@@ -95,6 +95,7 @@ Mỗi từ được giải thích trong một hoặc hai dòng, kèm tài liệu
 |---|---|---|
 | Keycloak, realm `dxos` | Dịch vụ đăng nhập một lần; giữ tài khoản, mật khẩu và vai | [`ARCHITECTURE.md`](../ARCHITECTURE.md#3-định-danh-và-token) |
 | Dự án | Tên gom các mô hình và ứng dụng ngoài của một hệ thống tích hợp, để lọc và xem phạm vi ảnh hưởng; không cấp quyền và không cô lập dữ liệu | [`OPERATIONS.md`](OPERATIONS.md#dự-án) |
+| Thành viên và quản trị viên dự án | Người nằm trong phạm vi của một dự án, và người ngoài đó quản lý được thành viên và vai của các mô hình trong dự án; không cần vai `ADMIN`, không cấp quyền dữ liệu | [`OPERATIONS.md`](OPERATIONS.md#dự-án) |
 | Client | Một ứng dụng đăng ký với Keycloak: `dxos-web` cho web, `dxos-cli` cho lệnh, `dxos-m-<mô hình>` giữ vai của mô hình, `dxos-app-<tên>` cho ứng dụng ngoài | [`ARCHITECTURE.md`](../ARCHITECTURE.md#3-định-danh-và-token) |
 | Token máy | Token một ứng dụng ngoài lấy bằng mã bí mật của nó; tài khoản dịch vụ giữ đúng một vai của một mô hình | [`EXTENSIONS.md`](./EXTENSIONS.md#dịch-vụ-riêng-gọi-api) |
 | OIDC, PKCE | Cách giao diện ở tên miền khác đăng nhập người dùng, không giữ mã bí mật trong trình duyệt | [`EXTENSIONS.md`](./EXTENSIONS.md#giao-diện-ngoài) |

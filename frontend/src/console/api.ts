@@ -404,6 +404,21 @@ export interface Project {
   description: string | null;
   models: string[];
   clients: { name: string; model: string; role: string }[];
+  memberCount: number;
+}
+
+// What the signed-in user administers: all of it for the platform administrator, else the projects
+// where the account is a member, with its level.
+export interface ProjectScope {
+  global: boolean;
+  projects: { name: string; label: string; level: "MEMBER" | "ADMIN" }[];
+}
+
+export interface ProjectMember {
+  userId: string;
+  username: string;
+  name: string;
+  level: "MEMBER" | "ADMIN";
 }
 
 export const listProjects = () => request<Project[]>("/projects");
@@ -416,3 +431,10 @@ export const setModelProject = (model: string, project: string | null) =>
   request<{ model: string; project: string | null }>(`/models/${model}/project`, json("PUT", { project }));
 export const setAppProject = (name: string, project: string | null) =>
   request<AppClient>(`/clients/${name}/project`, json("PUT", { project }));
+
+export const getProjectScope = () => request<ProjectScope>("/projects/mine");
+export const listProjectMembers = (project: string) => request<ProjectMember[]>(`/projects/${project}/members`);
+export const setProjectMember = (project: string, userId: string, level: "MEMBER" | "ADMIN") =>
+  request<ProjectMember>(`/projects/${project}/members/${userId}`, json("PUT", { level }));
+export const removeProjectMember = (project: string, userId: string) =>
+  request<null>(`/projects/${project}/members/${userId}`, { method: "DELETE" });

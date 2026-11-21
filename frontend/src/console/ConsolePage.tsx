@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import { useEffect, useRef, useState } from "react";
-import { Alert, Box, Skeleton, Snackbar, Tab, Tabs } from "@mui/material";
+import { Alert, Box, MenuItem, Skeleton, Snackbar, Tab, Tabs, TextField } from "@mui/material";
 import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined";
 import AutoAwesomeMosaicOutlinedIcon from "@mui/icons-material/AutoAwesomeMosaicOutlined";
 import EditNoteOutlinedIcon from "@mui/icons-material/EditNoteOutlined";
@@ -12,12 +12,13 @@ import PeopleOutlineIcon from "@mui/icons-material/PeopleOutline";
 import SyncAltIcon from "@mui/icons-material/SyncAlt";
 import { Title } from "react-admin";
 import PageHeader from "../shell/PageHeader";
-import { getSchema, listTemplates, type Template } from "./api";
+import { getProjectScope, getSchema, listTemplates, type ProjectScope, type Template } from "./api";
 import { describeSchema } from "./formGuide";
 import EditorTab from "./EditorTab";
 import ModelsTab from "./ModelsTab";
 import { registerModelSchema } from "./monacoSetup";
 import OutboxTab from "./OutboxTab";
+import ProjectMembersPanel from "./ProjectMembersPanel";
 import ProjectsTab from "./ProjectsTab";
 import TemplatesTab from "./TemplatesTab";
 import AppsTab from "./AppsTab";
@@ -38,8 +39,57 @@ entities:
     access: {USER: all}
 `;
 
-// The control panel of the implementer: pick a template, write the model, see the plan, apply.
+// The whole control panel for the platform administrator; an administrator of projects gets only
+// the people of those projects.
 export default function ConsolePage() {
+  const [scope, setScope] = useState<ProjectScope | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    getProjectScope().then(setScope, (e: unknown) => setError(e instanceof Error ? e.message : t("Không đọc được dữ liệu của bảng điều khiển")));
+  }, []);
+
+  if (error) return <Alert severity="error">{error}</Alert>;
+  if (!scope) return <Skeleton height={48} />;
+  if (scope.global) return <FullConsole />;
+  const administered = scope.projects.filter((project) => project.level === "ADMIN");
+  if (administered.length === 0) return <Alert severity="warning">{t("Tài khoản này không quản trị dự án nào.")}</Alert>;
+  return <ScopedConsole projects={administered} />;
+}
+
+// What an administrator of projects does: gives the roles of their models and keeps the members.
+function ScopedConsole({ projects }: { projects: ProjectScope["projects"] }) {
+  const [tab, setTab] = useState(0);
+  const [project, setProject] = useState(projects[0].name);
+  return (
+    <Box sx={{ contain: "inline-size" }}>
+      <Title title={t("Bảng điều khiển")} />
+      <PageHeader title={t("Bảng điều khiển")} subtitle={t("Quản lý người dùng của các dự án bạn quản trị.")} />
+      <Tabs value={tab} onChange={(_, next) => setTab(next)} sx={{ mb: 2.5, borderBottom: 1, borderColor: "divider" }}>
+        <Tab icon={<PeopleOutlineIcon fontSize="small" />} iconPosition="start" label={t("Người dùng")} />
+        <Tab icon={<FolderOutlinedIcon fontSize="small" />} iconPosition="start" label={t("Thành viên dự án")} />
+      </Tabs>
+      {tab === 0 && <UsersTab limited />}
+      {tab === 1 && (
+        <Box>
+          {projects.length > 1 && (
+            <TextField select size="small" label={t("Dự án")} value={project} onChange={(event) => setProject(event.target.value)} sx={{ width: 260, maxWidth: "100%", mb: 2 }}>
+              {projects.map((item) => (
+                <MenuItem key={item.name} value={item.name}>
+                  {item.label}
+                </MenuItem>
+              ))}
+            </TextField>
+          )}
+          <ProjectMembersPanel project={project} global={false} />
+        </Box>
+      )}
+    </Box>
+  );
+}
+
+// The control panel of the implementer: pick a template, write the model, see the plan, apply.
+function FullConsole() {
   const [tab, setTab] = useState(0);
   const [schema, setSchema] = useState<Record<string, unknown> | null>(null);
   const [templates, setTemplates] = useState<Template[]>([]);

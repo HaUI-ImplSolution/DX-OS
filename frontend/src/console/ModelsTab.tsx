@@ -171,10 +171,21 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
                   {modelTitle(model.model)}
                 </Typography>
                 <Box sx={{ display: "flex", gap: 0.75 }}>
+                  {model.leftOut && <Chip size="small" color="error" label={t("Không chạy")} />}
                   {model.held && <Chip size="small" color="warning" label={t("Đang dừng dở")} />}
                   <Chip size="small" color="primary" label={model.version > 0 ? t("Phiên bản {version}", { version: model.version }) : t("Chưa có phiên bản")} />
                 </Box>
               </Box>
+              {model.leftOut && (
+                <Alert severity="error" sx={{ py: 0 }}>
+                  {t("Phiên bản đã lưu không qua được các kiểm tra của bản này nên mô hình chưa chạy: {problems}. Dữ liệu và các phiên bản đã lưu còn nguyên; mô hình chạy lại khi phiên bản đã lưu qua được kiểm tra.", { problems: (model.problems ?? []).join("; ") })}
+                </Alert>
+              )}
+              {model.warnings.length > 0 && (
+                <Alert severity="warning" sx={{ py: 0 }}>
+                  {t("Mô hình chạy khi đã bỏ phần không qua được kiểm tra của bản này: {problems}. Sửa tệp rồi áp dụng lại để khai báo đúng.", { problems: model.warnings.join("; ") })}
+                </Alert>
+              )}
               {model.held && (
                 <Alert severity="warning" sx={{ py: 0 }}>
                   {model.version > 0

@@ -141,6 +141,7 @@ Nhãn chỉ là tên mô hình, tên thực thể, trạng thái và kết quả
 | `dxos_outbox_oldest_age_seconds` | gauge | không | Tuổi của sự kiện chưa chuyển cũ nhất, bằng giây; 0 khi hàng đợi trống |
 | `dxos_model_applies_total` | counter | `result` (`done`, `failed`) | Số lần áp dụng tệp mô hình theo kết quả, tính từ lịch sử áp dụng |
 | `dxos_models` | gauge | không | Số mô hình đang chạy |
+| `dxos_models_left_out` | gauge | không | Số mô hình đã lưu bị loại khỏi hoạt động vì phiên bản đã lưu không qua bộ kiểm của bản này; khác 0 thì xem lý do ở danh sách mô hình và áp dụng tệp đã sửa |
 
 Dịch vụ cũng xuất các số đo chuẩn của JVM, cơ sở dữ liệu và HTTP (`jvm_*`, `hikaricp_*`, `http_server_requests_*`); nhãn `uri` của chúng là mẫu đường dẫn như `/api/v1/data/{model}/{entity}`, không chứa mã hồ sơ.
 

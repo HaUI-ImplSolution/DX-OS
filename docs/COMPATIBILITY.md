@@ -40,6 +40,8 @@ Tệp mô hình ghi `format` là số của định dạng; hiện là `1`.
 - Thêm một khóa tùy chọn vào định dạng không đổi `format`.
 - Đổi định dạng theo cách làm tệp cũ không còn hợp lệ thì tăng `format`, và ghi cách chuyển ở `CHANGELOG.md`.
 - Trong cùng bản chính, một tệp hợp lệ ở bản trước vẫn hợp lệ.
+- Khi một luật kiểm được siết thêm, tệp mới vi phạm bị từ chối ngay; phải nói luật đó xử lý ra sao với phiên bản đã lưu, và không để mô hình đang chạy biến mất âm thầm.
+- Phiên bản đã lưu vi phạm luật mà bỏ phần vi phạm vẫn an toàn thì mô hình vẫn chạy với phần đó bị bỏ và có cảnh báo (hiện chỉ có `auto_close` gọi hành động cần ghi chú); không bỏ được thì mô hình bị loại khỏi hoạt động, được liệt kê kèm lý do và đo ở `dxos_models_left_out`.
 - Lõi tự nâng tệp format cũ trong bộ nhớ khi đọc; `dxos model upgrade` xem trước và ghi tệp đã nâng (xem `docs/MODEL.md`).
 - `dxos lint` đọc tệp bằng cùng bộ đọc nên nhận cùng các format như lõi, và từ chối format mới hơn bản lõi (xem `docs/MODEL.md`).
 

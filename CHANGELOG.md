@@ -39,6 +39,9 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
   README có ba phép thử cho thấy luật theo vai, lịch sử chống sửa và kế hoạch đổi quy trình nằm ở DX-OS.
 - Backend có `extra_hosts: host.docker.internal:host-gateway`, nên webhook tới ứng dụng cùng máy dùng địa chỉ `http://host.docker.internal:<cổng>/...` trong `deploy/webhooks/targets.yml`.
 - Hồ sơ trong API dữ liệu và thông điệp webhook, cùng feed `GET /api/v1/events`, mang `webUrl`, trang của hồ sơ trên giao diện web; ứng dụng ngoài đưa người duyệt sang đó bằng liên kết này (xem `docs/EXTENSIONS.md`). Chế độ `dxos start --core` không có `webUrl`.
+- Phiên bản đã lưu vi phạm một luật kiểm được siết thêm thì mô hình vẫn chạy khi bỏ phần vi phạm được an toàn: hiện là `auto_close` gọi hành động cần ghi chú, `auto_close` đó bị bỏ và có cảnh báo, áp dụng tệp đã sửa là xóa cảnh báo.
+  Không bỏ được thì mô hình bị loại khỏi hoạt động, yêu cầu dữ liệu của nó trả 409 kèm lý do và số đo `dxos_models_left_out` đếm nó.
+  `GET /api/v1/models` ghi `leftOut`, `problems` và `warnings`, bảng điều khiển hiện cả hai trường hợp trên thẻ của mô hình, và tệp mới vi phạm luật vẫn bị từ chối.
 
 ### Trợ lý nghiệp vụ (tùy chọn)
 

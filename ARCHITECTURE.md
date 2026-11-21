@@ -84,6 +84,8 @@ Các bảo đảm:
 - Một bước lỗi làm lần áp dụng dừng và mô hình vẫn bị giữ, kể cả sau khi backend khởi động lại, vì trạng thái suy ra từ `engine.apply_run`, nơi lưu tệp, các lần đổi tên và mức đã xác nhận.
 - `POST /api/v1/models/{model}/resume` hoàn tất lần dở mà không cần tệp.
 - `POST /api/v1/models/{model}/abandon` đưa các bảng về phiên bản đang chạy; cột và bảng mà lần dở đã thêm bị xóa cùng dữ liệu.
+- Lúc khởi động và sau mỗi lần áp dụng, registry đọc phiên bản mới nhất của từng mô hình bằng bộ kiểm hiện hành.
+  Phiên bản vi phạm một luật được siết thêm mà bỏ phần vi phạm vẫn an toàn thì mô hình chạy với phần đó bị bỏ và `GET /api/v1/models` ghi `warnings`; không bỏ được thì mô hình bị loại khỏi hoạt động, ghi `leftOut` kèm `problems`, các yêu cầu dữ liệu của nó trả 409 và số đo `dxos_models_left_out` đếm nó.
 
 ### Vai và đơn vị
 

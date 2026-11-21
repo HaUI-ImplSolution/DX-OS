@@ -49,7 +49,10 @@ public class ModelController {
               + " the token gave then; it is empty for versions saved without one. held is true while"
               + " an apply of the model runs or stopped before it finished; the model is then closed to"
               + " its users. A model whose first apply stopped is listed with version 0. project is"
-              + " the project the model belongs to, null while it is unclassified.")
+              + " the project the model belongs to, null while it is unclassified. leftOut is true"
+              + " when the stored version fails the checks of this release, so the model is not"
+              + " running; problems lists why, and its data and stored versions are kept. warnings lists what a running model was read without, for a check made"
+              + " stricter after the version was stored; applying a corrected file clears it.")
   public ApiResponse<List<Map<String, Object>>> list() {
     List<Map<String, Object>> models = service.models();
     Map<String, String> projectOf = projects.ofModels();

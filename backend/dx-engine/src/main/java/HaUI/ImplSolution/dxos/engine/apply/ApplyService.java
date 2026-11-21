@@ -13,6 +13,7 @@ import HaUI.ImplSolution.dxos.engine.event.AdminEventPublisher;
 import HaUI.ImplSolution.dxos.engine.event.WebhookTargets;
 import HaUI.ImplSolution.dxos.engine.files.AttachmentCleaner;
 import HaUI.ImplSolution.dxos.engine.process.ProcessDeployer;
+import HaUI.ImplSolution.dxos.engine.process.ProcessRules;
 import HaUI.ImplSolution.dxos.engine.registry.ModelClient;
 import HaUI.ImplSolution.dxos.engine.registry.ModelRegistry;
 import HaUI.ImplSolution.dxos.model.FieldType;
@@ -64,6 +65,11 @@ public class ApplyService {
   // Rows that break a new rule, with some of their ids.
   public record Violation(String entity, String field, String rule, long rows, List<Long> sample) {}
 
+  // Records waiting in the states an action is taken from that lack a field the action now
+  // requires: the action refuses them until the field is filled in.
+  public record Impact(
+      String entity, String action, List<String> states, List<String> fields, long rows) {}
+
   public record Plan(
       String model,
       int fromVersion,
@@ -75,6 +81,7 @@ public class ApplyService {
       List<String> questions,
       List<Violation> violations,
       Map<String, Long> openRecords,
+      List<Impact> impacts,
       List<String> statements) {}
 
   public record Applied(
@@ -254,6 +261,7 @@ public class ApplyService {
             List.of(),
             List.of(),
             Map.of(),
+            List.of(),
             List.of());
       }
     }
@@ -263,6 +271,7 @@ public class ApplyService {
     webhooks.missing(model).ifPresent(rejections::add);
     rejections.addAll(processes.problems(model));
     Map<String, Long> openRecords = openRecords(running, diff);
+    List<Impact> impacts = impacts(running, diff);
     rejections.addAll(processRuleChangesWithOpenRecords(diff, openRecords));
     rejections.addAll(dropDependencyRejections(model, diff));
     List<Violation> violations = List.of();
@@ -301,6 +310,7 @@ public class ApplyService {
         diff.questions,
         violations,
         openRecords,
+        impacts,
         statements);
   }
 
@@ -1059,6 +1069,46 @@ public class ApplyService {
             : "(" + String.join("and".equals(group.op()) ? " AND " : " OR ", parts) + ")";
       }
     };
+  }
+
+  // For each action that now requires fields: the records in its source states that lack one of
+  // them. A field the running table does not have yet is empty for every record.
+  private List<Impact> impacts(Running running, ModelDiff diff) {
+    List<Impact> impacts = new ArrayList<>();
+    if (running == null) {
+      return impacts;
+    }
+    for (ModelDiff.RequireGain gain : diff.requireGains) {
+      Entity entity = running.model().entities().get(gain.entity());
+      if (entity == null || entity.process() == null) {
+        continue;
+      }
+      Map<String, String> renames = diff.renames.getOrDefault(gain.entity(), Map.of());
+      List<String> columns = new ArrayList<>();
+      boolean fresh = false;
+      for (String field : gain.fields()) {
+        String column = renames.getOrDefault(field, field);
+        if (entity.fields().containsKey(column)) {
+          columns.add(column);
+        } else {
+          fresh = true;
+        }
+      }
+      String states = gain.from().stream().map(Sql::literal).collect(Collectors.joining(", "));
+      Long rows =
+          jdbc.queryForObject(
+              "SELECT count(*) FROM "
+                  + Sql.table(running.model(), entity)
+                  + " t WHERE t.status IN ("
+                  + states
+                  + ") AND "
+                  + (fresh ? "TRUE" : ProcessRules.missingCondition(columns, "t")),
+              Long.class);
+      if (rows != null && rows > 0) {
+        impacts.add(new Impact(gain.entity(), gain.action(), gain.from(), gain.fields(), rows));
+      }
+    }
+    return impacts;
   }
 
   // Records of the touched entities still moving through their process.

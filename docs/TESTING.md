@@ -87,7 +87,7 @@ python3 e2e/api/check_bootstrap.py
 | `check_api.py` | Áp dụng mô hình mẫu vào hệ thống rỗng, lỗi tệp theo dòng và cột, quyền theo vai và theo dòng, chặn ghi `status`, chống SQL qua tên trường, 10.000 dòng có lọc và sắp xếp |
 | `check_recovery.py` | Lỗi sau bước quy trình thì hồ sơ và quy trình cùng quay về; áp dụng bị Keycloak làm gián đoạn rồi áp dụng lại |
 | `check_case.py` | Trạng thái và hành động, đơn vị, giao việc, hộp việc, lịch sử có giá trị cũ và mới, mã lý do của lỗi 403 và 409 |
-| `check_change.py` | Đổi mô hình khi đã có dữ liệu: mức rủi ro, đổi tên giữ dữ liệu, dòng vi phạm, quay về; tệp mở rộng từ mẫu bằng `extends` |
+| `check_change.py` | Đổi mô hình khi đã có dữ liệu: mức rủi ro, đổi tên giữ dữ liệu, dòng vi phạm, số hồ sơ chờ thiếu trường mà một `require` mới đòi, quay về; tệp mở rộng từ mẫu bằng `extends` |
 | `check_process.py` | Các họ mẫu, hạn và quá hạn, hành động hoàn tất qua outbox, tệp đính kèm, thống kê, chống ghi đè |
 | `check_codes.py` | Mã hồ sơ: mã đầu năm, đếm riêng theo thực thể, tạo đồng thời, từ chối ghi và sửa mã, tra theo mã, chuyển năm, đổi khuôn, hết số |
 | `check_booking.py` | Họ `reservation`, danh mục của bảng điều khiển, mọi mẫu áp dụng được |
@@ -178,6 +178,7 @@ Mỗi mục nêu điều phải thấy; lệnh và biến cấu hình chi tiết
 24. **Đổi quy trình khi còn hồ sơ đang mở:** thêm hoặc bỏ trạng thái, đổi `from`, `to`, `by`, `when`, `initial` hay hạn xử lý thì "Xem kế hoạch" báo không đổi được kèm câu tiếng Việt nêu số hồ sơ và không có nút Áp dụng; rút hết hồ sơ rồi xem lại thì có nút Áp dụng.
     Đổi nhãn, `role` hoặc `handler` thì áp dụng được: vai cũ không thực hiện được nữa, vai mới thực hiện được hồ sơ đang mở.
     Bỏ `terminal` của trạng thái cuối còn hồ sơ đã đóng thì bị từ chối kèm số dòng vi phạm ở `status`.
+    Thêm `require` vào một hành động (thêm cả trường mới cũng được) thì kế hoạch vẫn `SAFE`, `CHANGE_ACTIONS` nêu hành động và trường, và một dải cảnh báo nêu số hồ sơ đang ở trạng thái nguồn còn thiếu trường; hồ sơ đã đủ trường hoặc đã đóng không được đếm, bỏ `require` thì không có dải cảnh báo.
 25. **Áp dụng dừng dở:** dừng Keycloak (`docker compose stop keycloak`), áp dụng một thay đổi rồi bật lại thì thẻ mô hình hiện "Đang dừng dở" kèm Tiếp tục áp dụng và Hủy bỏ; Tiếp tục thì phiên bản tăng, Hủy bỏ hỏi xác nhận rồi về phiên bản đang chạy.
     Với lần áp dụng đầu dừng dở (`ENGINE_FAULT_APPLY_STEP=ENSURE_CLIENT`) thẻ hiện "Chưa có phiên bản" và Hủy bỏ làm thẻ biến mất.
     Mô hình đã lưu vi phạm luật kiểm: thêm vào `engine.model_version` một phiên bản có `auto_close` gọi hành động `needs_note: true` rồi khởi động lại backend; thẻ của mô hình ở tab **Mô hình đang chạy** có dải cảnh báo, mô hình vẫn chạy, và áp dụng tệp đã sửa (kèm `base`) xóa cảnh báo.

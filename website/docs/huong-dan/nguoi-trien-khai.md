@@ -32,6 +32,7 @@ Thêm một nghiệp vụ mới là thêm một tệp mô hình; cách viết �
 1. Mở phiên bản đang chạy ở tab **Soạn và áp dụng** và sửa.
 2. Bấm **Xem kế hoạch**: kế hoạch nêu mức an toàn, thay đổi nào chuyển được dữ liệu, thay đổi nào bị từ chối và vì sao.
    Lỗi trong tệp được chỉ đúng dòng và cột.
+   Khi một hành động của quy trình đổi, kế hoạch nói hành động nào đổi gì; nếu hành động đó vừa đòi thêm một trường, kế hoạch cho biết có bao nhiêu hồ sơ đang chờ còn thiếu trường ấy và sẽ bị từ chối cho đến khi được bổ sung.
 3. Bấm **Áp dụng** khi kế hoạch đúng ý; hệ thống đang chạy không bị dừng.
 4. Muốn quay lại, ở tab **Mô hình đang chạy** bấm **Lịch sử** của mô hình rồi **Quay về phiên bản trước**; việc quay về cũng có kế hoạch để xem trước.
 

@@ -111,15 +111,9 @@ public class AutoCloseSweep {
   private static String dueCondition(ProcessFamily.Action action) {
     String states = action.from().stream().map(state -> "?").collect(Collectors.joining(", "));
     String required =
-        action.require().stream()
-            .map(
-                field ->
-                    " AND t."
-                        + Sql.ident(field)
-                        + " IS NOT NULL AND btrim(t."
-                        + Sql.ident(field)
-                        + "::text) <> ''")
-            .collect(Collectors.joining());
+        action.require().isEmpty()
+            ? ""
+            : " AND NOT " + ProcessRules.missingCondition(action.require(), "t");
     return "t.status IN ("
         + states
         + ")"

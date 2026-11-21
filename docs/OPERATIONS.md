@@ -247,6 +247,9 @@ Stack có `PUBLIC_HOST` khác `localhost` từ chối chạy nếu thiếu `--al
 ### Đổi mô hình bằng dòng lệnh
 
 `dxos plan <tệp>` in kế hoạch của tệp mô hình mà không đổi gì; mã thoát 1 khi kế hoạch bị từ chối.
+Thay đổi hành động của quy trình hiện từng hành động và từng thuộc tính đổi (nhãn, vai, `needs_note`, điều kiện kiểm, `require` thêm hoặc bỏ).
+Hành động nhận thêm `require` thì kế hoạch vẫn ở mức SAFE và có thêm mục `impacts`: với mỗi hành động, số hồ sơ đang chờ ở trạng thái nguồn mà còn thiếu trường mới (trống hoặc chỉ có khoảng trắng cũng là thiếu); hành động từ chối những hồ sơ đó cho đến khi bổ sung.
+Chế độ `auto` của GitOps vẫn tự áp dụng kế hoạch SAFE, nên `impacts` chỉ là cảnh báo cho người đọc kế hoạch, không chặn lần áp dụng.
 `dxos plan --check <tệp>` thoát với mã 0 khi mô hình đang chạy giống tệp, 2 khi kế hoạch có thay đổi và 1 khi bị từ chối, để dùng trong pipeline.
 `dxos apply <tệp> [--accept SAFE|MIGRATION|LOSS]` lấy kế hoạch rồi áp dụng với phiên bản của kế hoạch làm `base`.
 Kế hoạch có mức cao hơn `--accept` (mặc định `SAFE`) thì bị từ chối với mã thoát 1 và không đổi gì; lệnh không bao giờ tự nâng mức.

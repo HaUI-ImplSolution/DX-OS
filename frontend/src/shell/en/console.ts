@@ -660,4 +660,5 @@ export const console: Record<string, string> = {
   "Đổi dự án của {model}?": "Change the project of {model}?",
   "Quản trị viên của dự án cũ không còn gán được vai của mô hình này, còn quản trị viên của dự án mới thì gán được cho thành viên của dự án mới. Các vai đã gán cho tài khoản vẫn giữ nguyên, kể cả với người không thuộc dự án mới.": "The administrators of the old project can no longer give the roles of this model; the administrators of the new project can give them to the members of the new project. Roles already given to accounts stay, including to people outside the new project.",
   "Đổi dự án": "Change project",
+  "Hành động {action} của {entity} sẽ cần {fields}: {rows} hồ sơ đang ở {states} chưa có, và hành động từ chối chúng đến khi được bổ sung.": "The action {action} of {entity} will need {fields}: {rows} records waiting in {states} lack it, and the action refuses them until it is filled in.",
 };

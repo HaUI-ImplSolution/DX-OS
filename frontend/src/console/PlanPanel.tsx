@@ -160,6 +160,17 @@ export default function PlanPanel({ plan, busy, applyLabel = t("Áp dụng"), on
           {t("Hồ sơ đang xử lý bị ảnh hưởng: {list}.", { list: open.map(([entity, count]) => `${entity} ${count}`).join(", ") })}
         </Alert>
       )}
+      {plan.impacts.map((impact) => (
+        <Alert key={`${impact.entity}-${impact.action}`} severity="warning" sx={{ mt: 1 }}>
+          {t("Hành động {action} của {entity} sẽ cần {fields}: {rows} hồ sơ đang ở {states} chưa có, và hành động từ chối chúng đến khi được bổ sung.", {
+            action: impact.action,
+            entity: impact.entity,
+            fields: impact.fields.join(", "),
+            rows: impact.rows,
+            states: impact.states.join(", "),
+          })}
+        </Alert>
+      ))}
       {plan.changes.length > 0 && (
         <Table size="small" sx={{ mt: 1.5 }}>
           <TableHead>

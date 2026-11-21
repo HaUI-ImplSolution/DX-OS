@@ -20,6 +20,15 @@ export interface Violation {
   sample: number[];
 }
 
+// An action that now requires fields, and the records waiting for it that lack one of them.
+export interface Impact {
+  entity: string;
+  action: string;
+  states: string[];
+  fields: string[];
+  rows: number;
+}
+
 export interface Plan {
   model: string;
   fromVersion: number;
@@ -31,6 +40,7 @@ export interface Plan {
   questions: string[];
   violations: Violation[];
   openRecords: Record<string, number>;
+  impacts: Impact[];
   statements: string[];
 }
 

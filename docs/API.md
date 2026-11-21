@@ -6,7 +6,7 @@ Script `e2e/api/check_docs.py` kiểm mọi đường dẫn nêu ở đây có t
 
 | Đường dẫn | Việc |
 |---|---|
-| `POST /api/v1/models/plan`, `/apply` | Xem trước và áp dụng tệp mô hình (ADMIN) |
+| `POST /api/v1/models/plan`, `/apply` | Xem trước và áp dụng tệp mô hình (ADMIN); kế hoạch có `impacts`: mỗi hành động mới đòi thêm trường bằng `require` kèm số hồ sơ đang ở trạng thái nguồn còn thiếu trường đó, và `CHANGE_ACTIONS` nêu hành động đã đổi |
 | `POST /api/v1/models/merge` | Ghép tệp có `extends` với mẫu của thư viện và trả tệp đầy đủ để xem trước, không lưu; `plan` và `apply` ghép theo cùng cách (ADMIN) |
 | `POST /api/v1/models/upgrade` | Chạy tuần tự các migration đến format hiện hành và trả nội dung để xem trước, không lưu tệp (ADMIN) |
 | `POST /api/v1/models/{model}/rollback/plan`, `/rollback` | Xem trước và quay về phiên bản trước (ADMIN) |

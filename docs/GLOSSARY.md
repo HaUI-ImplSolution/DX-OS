@@ -63,7 +63,7 @@ Mỗi từ được giải thích trong một hoặc hai dòng, kèm tài liệu
 
 | Thuật ngữ | Nghĩa | Xem thêm |
 |---|---|---|
-| Kế hoạch (`plan`) | Kết quả xem trước một lần đổi: những gì sẽ đổi, mức rủi ro và dòng đang vi phạm; chưa đổi gì | [`ARCHITECTURE.md`](../ARCHITECTURE.md#4-áp-dụng-một-mô-hình) |
+| Kế hoạch (`plan`) | Kết quả xem trước một lần đổi: những gì sẽ đổi (với hành động của quy trình, hành động nào và thuộc tính nào), mức rủi ro, dòng đang vi phạm và số hồ sơ đang chờ sẽ bị một `require` mới chặn (`impacts`); chưa đổi gì | [`ARCHITECTURE.md`](../ARCHITECTURE.md#4-áp-dụng-một-mô-hình) |
 | Áp dụng (`apply`) | Đưa hệ thống về đúng tệp mô hình, từng bước một và ghi lại từng bước | [`ARCHITECTURE.md`](../ARCHITECTURE.md#4-áp-dụng-một-mô-hình) |
 | `SAFE`, `MIGRATION`, `LOSS` | Ba mức rủi ro của kế hoạch: áp dụng được ngay; cần chuyển dữ liệu (dòng vi phạm thì dừng); mất dữ liệu nên cần xác nhận riêng | [`ARCHITECTURE.md`](../ARCHITECTURE.md#4-áp-dụng-một-mô-hình) |
 | Áp dụng dở | Một bước lỗi làm lần áp dụng dừng; mô hình bị giữ cho tới khi quản trị viên chọn tiếp tục (`resume`) hoặc hủy bỏ (`abandon`) | [`ARCHITECTURE.md`](../ARCHITECTURE.md#giữ-mô-hình-và-áp-dụng-dở) |

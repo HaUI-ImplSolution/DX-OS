@@ -39,10 +39,10 @@ entities:
     process: {family: approval, handler: OFFICER, deadline: 72h}
     documents:
       confirmation:
-        label: Giấy xác nhận
-        file: giay-xac-nhan-{{id}}
+        label: Kết quả xử lý hồ sơ
+        file: ket-qua-xu-ly-ho-so-{{id}}
         when: approved
-        title: GIẤY XÁC NHẬN
+        title: KẾT QUẢ XỬ LÝ HỒ SƠ
         body:
           - heading: Thông tin hồ sơ
           - text: "Hồ sơ số {{id}} đã được duyệt."

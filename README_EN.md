@@ -95,7 +95,7 @@ The labels of the sample models are in Vietnamese, and the interface text follow
 
 From a submitted request to a record that is approved and printed:
 
-![An officer opens a record in the inbox, approves it and prints the certificate](website/docs/images/video/request-flow.gif)
+![An officer opens a record in the inbox, approves it and prints the result document](website/docs/images/video/request-flow.gif)
 
 Edit the model file, preview the plan of the change and apply it; the system moves to the new version and the old data stays:
 

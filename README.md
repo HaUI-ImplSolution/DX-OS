@@ -94,7 +94,7 @@ Các màn hình dưới đây chụp từ hệ thống đang chạy với dữ l
 
 Từ một yêu cầu gửi đi đến khi hồ sơ được duyệt và in ra:
 
-![Cán bộ mở một hồ sơ trong hộp việc, duyệt và in giấy xác nhận](website/docs/images/video/request-flow.gif)
+![Cán bộ mở một hồ sơ trong hộp việc, duyệt và in kết quả xử lý](website/docs/images/video/request-flow.gif)
 
 Sửa tệp mô hình, xem kế hoạch thay đổi rồi áp dụng; hệ thống chuyển sang phiên bản mới mà dữ liệu cũ vẫn còn:
 

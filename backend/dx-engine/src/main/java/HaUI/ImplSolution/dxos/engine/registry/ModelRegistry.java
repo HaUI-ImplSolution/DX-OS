@@ -6,7 +6,9 @@ import HaUI.ImplSolution.dxos.core.api.exception.InvalidStateException;
 import HaUI.ImplSolution.dxos.core.api.exception.ResourceNotFoundException;
 import HaUI.ImplSolution.dxos.model.Model;
 import HaUI.ImplSolution.dxos.model.ModelException;
+import HaUI.ImplSolution.dxos.model.ModelException.Problem;
 import HaUI.ImplSolution.dxos.model.ModelParser;
+import HaUI.ImplSolution.dxos.model.ModelParser.ParsedStored;
 import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,8 +30,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 // The models in force: the latest applied version of each, kept in memory and refreshed after
-// every apply. A stored model that no longer passes the checks is left out and logged, so the
-// others keep running.
+// every apply. A stored model that no longer passes the checks is left out, logged and listed with
+// its problems, so the others keep running. A check that a later release made stricter can be
+// tolerated when reading a stored model: it runs without the part that breaks the check, and the
+// warning stays listed until a corrected file is applied.
 //
 // A request that uses a model holds its read lock until the request ends, and an apply takes the
 // write lock to hold the model, so an apply starts only after the requests already using the model
@@ -48,6 +52,8 @@ public class ModelRegistry {
   private final Map<String, ReentrantReadWriteLock> locks = new ConcurrentHashMap<>();
   private volatile Map<String, Model> models = Map.of();
   private volatile Set<String> maintenance = Set.of();
+  private volatile Map<String, List<String>> leftOut = Map.of();
+  private volatile Map<String, List<String>> warnings = Map.of();
 
   public ModelRegistry(JdbcTemplate jdbc) {
     this.jdbc = jdbc;
@@ -62,20 +68,50 @@ public class ModelRegistry {
                     + "FROM engine.apply_run ORDER BY model, id DESC) latest "
                     + "WHERE status IN ('running', 'failed')",
                 String.class));
-    List<String> contents =
+    List<Map<String, Object>> stored =
         jdbc.queryForList(
-            "SELECT DISTINCT ON (model) content FROM engine.model_version ORDER BY model, version DESC",
-            String.class);
+            "SELECT DISTINCT ON (model) model, content FROM engine.model_version "
+                + "ORDER BY model, version DESC");
     Map<String, Model> loaded = new LinkedHashMap<>();
-    for (String content : contents) {
+    Map<String, List<String>> rejected = new LinkedHashMap<>();
+    Map<String, List<String>> tolerated = new LinkedHashMap<>();
+    for (Map<String, Object> row : stored) {
+      String name = (String) row.get("model");
       try {
-        Model model = ModelParser.parse(content);
-        loaded.put(model.name(), model);
+        ParsedStored parsed = ModelParser.parseStored((String) row.get("content"));
+        loaded.put(parsed.model().name(), parsed.model());
+        if (!parsed.tolerated().isEmpty()) {
+          List<String> reasons = parsed.tolerated().stream().map(Problem::toString).toList();
+          tolerated.put(name, reasons);
+          log.warn(
+              "Model {} runs without the part that fails the checks of this release: {}."
+                  + " Apply a corrected file to fix it.",
+              name,
+              reasons);
+        }
       } catch (ModelException e) {
-        log.error("A stored model is left out because it fails the checks: {}", e.problems());
+        List<String> reasons = e.problems().stream().map(Problem::toString).toList();
+        rejected.put(name, reasons);
+        log.error(
+            "The stored model {} is left out because it fails the checks: {}. Its data and stored"
+                + " versions are kept; it runs again once the stored version passes the checks.",
+            name,
+            reasons);
       }
     }
     models = Map.copyOf(loaded);
+    leftOut = Map.copyOf(rejected);
+    warnings = Map.copyOf(tolerated);
+  }
+
+  // The stored models that fail the checks, by name, each with its problems.
+  public Map<String, List<String>> leftOut() {
+    return leftOut;
+  }
+
+  // The problems a stored model runs with, tolerated; empty for a model with none.
+  public List<String> warnings(String name) {
+    return warnings.getOrDefault(name, List.of());
   }
 
   // Waits for the requests that use the model to end, then holds it.
@@ -124,6 +160,14 @@ public class ModelRegistry {
   }
 
   public Model require(String name) {
+    List<String> problems = leftOut.get(name);
+    if (problems != null) {
+      throw new InvalidStateException(
+          "Model "
+              + name
+              + " is left out because its stored version fails the checks: "
+              + problems);
+    }
     if (!use(name)) {
       throw new InvalidStateException(
           "Model " + name + " is being applied or needs reconciliation");

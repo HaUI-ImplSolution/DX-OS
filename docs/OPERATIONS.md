@@ -294,6 +294,15 @@ Chọn Tiếp tục để hoàn tất, hoặc Hủy bỏ để đưa các bảng
 Nhóm đơn vị mà lần dở đã tạo ở Keycloak không bị xóa, vì các mô hình dùng chung nhóm theo tên; quản trị viên xóa nhóm rỗng ở Keycloak nếu muốn.
 Trước khi áp dụng thay đổi mức mất dữ liệu (`accept=LOSS`), chạy `deploy/backup.sh`.
 
+### Mô hình đã lưu không còn qua bộ kiểm
+
+Khi một bản mới siết thêm một luật kiểm, phiên bản đã lưu của một mô hình có thể vi phạm luật đó.
+Nếu bỏ phần vi phạm vẫn an toàn thì mô hình tiếp tục chạy và danh sách mô hình (`GET /api/v1/models`) ghi `warnings` về phần đã bị bỏ; hiện chỉ có `auto_close` gọi hành động cần ghi chú, và `auto_close` đó không chạy.
+Nếu không bỏ được thì mô hình bị loại khỏi hoạt động: danh sách ghi `leftOut` kèm `problems`, các yêu cầu dữ liệu của nó trả 409 nêu lý do, `dxos_models_left_out` khác 0 và log ghi lý do khi khởi động.
+Dữ liệu và các phiên bản đã lưu không mất.
+Mô hình có `warnings` sửa bằng cách sửa tệp mô hình rồi `dxos apply`: lần áp dụng tạo phiên bản mới và xóa cảnh báo.
+Mô hình `leftOut` chưa sửa được bằng `dxos apply`, vì kế hoạch và lần áp dụng đọc phiên bản đã lưu trước và gặp lại chính lỗi đó; mô hình chạy lại khi phiên bản đã lưu qua được bộ kiểm, và hiện chỉ sửa được ở bảng `engine.model_version`.
+
 ### Tệp bị gỡ khỏi hồ sơ
 
 Gỡ hoặc thay một tệp, xóa hồ sơ hay xóa thực thể thì đối tượng rời kho sau `DXOS_FILE_DELETE_DELAY` (mặc định 24 giờ).

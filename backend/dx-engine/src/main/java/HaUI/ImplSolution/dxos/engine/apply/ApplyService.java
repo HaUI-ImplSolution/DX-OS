@@ -514,7 +514,7 @@ public class ApplyService {
   // Finishes the apply that stopped, with the file, the renames and the level it was started with.
   public Applied resume(String modelName, Actor actor) {
     Stalled stalled = stalled(modelName);
-    Model model = ModelParser.parse(stalled.content());
+    Model model = ModelParser.parseStored(stalled.content()).model();
     return announced(
         "MODEL_RESUMED",
         actor,
@@ -537,7 +537,7 @@ public class ApplyService {
   public Applied abandon(String modelName, Actor actor) {
     Running running = running(modelName);
     Stalled stalled = stalled(modelName);
-    Model stopped = ModelParser.parse(stalled.content());
+    Model stopped = ModelParser.parseStored(stalled.content()).model();
     if (running == null) {
       return announced(
           "MODEL_ABANDONED",
@@ -676,7 +676,6 @@ public class ApplyService {
         jdbc.queryForList(
             "SELECT DISTINCT ON (model) model, version, hash, applied_by, applied_by_name, applied_at "
                 + "FROM engine.model_version ORDER BY model, version DESC");
-    models.forEach(model -> model.put("held", registry.isHeld((String) model.get("model"))));
     // A model whose first apply stopped has no version yet, but its tables may exist.
     models.addAll(
         jdbc.queryForList(
@@ -685,6 +684,17 @@ public class ApplyService {
                 + "FROM engine.apply_run r WHERE r.id = (SELECT max(id) FROM engine.apply_run "
                 + "WHERE model = r.model) AND r.status IN ('running', 'failed') AND NOT EXISTS "
                 + "(SELECT 1 FROM engine.model_version v WHERE v.model = r.model)"));
+    models.forEach(
+        model -> {
+          String name = (String) model.get("model");
+          model.put("held", registry.isHeld(name));
+          List<String> problems = registry.leftOut().get(name);
+          model.put("leftOut", problems != null);
+          if (problems != null) {
+            model.put("problems", problems);
+          }
+          model.put("warnings", registry.warnings(name));
+        });
     models.sort(Comparator.comparing(model -> (String) model.get("model")));
     return models;
   }
@@ -747,7 +757,7 @@ public class ApplyService {
       throw new InvalidStateException("Model " + modelName + " has no earlier version");
     }
     String content = contents.get(0);
-    Model target = ModelParser.parse(content);
+    Model target = ModelParser.parseStored(content).model();
     Map<String, Map<String, String>> reversed = new LinkedHashMap<>();
     ModelDiff.between(target, running.model(), Map.of())
         .renames
@@ -824,7 +834,7 @@ public class ApplyService {
     return new Running(
         ((Number) row.get("version")).intValue(),
         (String) row.get("hash"),
-        ModelParser.parse((String) row.get("content")));
+        ModelParser.parseStored((String) row.get("content")).model());
   }
 
   private Optional<Map<String, Object>> lastRun(String modelName) {

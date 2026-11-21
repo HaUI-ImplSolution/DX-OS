@@ -178,6 +178,8 @@ Mỗi mục nêu điều phải thấy; lệnh và biến cấu hình chi tiết
     Bỏ `terminal` của trạng thái cuối còn hồ sơ đã đóng thì bị từ chối kèm số dòng vi phạm ở `status`.
 25. **Áp dụng dừng dở:** dừng Keycloak (`docker compose stop keycloak`), áp dụng một thay đổi rồi bật lại thì thẻ mô hình hiện "Đang dừng dở" kèm Tiếp tục áp dụng và Hủy bỏ; Tiếp tục thì phiên bản tăng, Hủy bỏ hỏi xác nhận rồi về phiên bản đang chạy.
     Với lần áp dụng đầu dừng dở (`ENGINE_FAULT_APPLY_STEP=ENSURE_CLIENT`) thẻ hiện "Chưa có phiên bản" và Hủy bỏ làm thẻ biến mất.
+    Mô hình đã lưu vi phạm luật kiểm: thêm vào `engine.model_version` một phiên bản có `auto_close` gọi hành động `needs_note: true` rồi khởi động lại backend; thẻ của mô hình ở tab **Mô hình đang chạy** có dải cảnh báo, mô hình vẫn chạy, và áp dụng tệp đã sửa (kèm `base`) xóa cảnh báo.
+    Một phiên bản không đọc được (thiếu `roles`) làm thẻ có chip "Không chạy", yêu cầu dữ liệu của mô hình trả 409 và `dxos_models_left_out` bằng 1; tệp mới vi phạm vẫn bị từ chối ở kế hoạch.
 26. **Người dùng:** tìm, gán và gỡ vai và đơn vị, tạo (mật khẩu tạm phải đổi ở lần đăng nhập đầu), khóa, mở, đặt lại mật khẩu; hộp thoại hiện lịch sử thay đổi và không có mật khẩu nào.
 27. **Ứng dụng ngoài:** đăng ký một ứng dụng với một vai của một mô hình, mã bí mật hiện một lần kèm nút sao chép; token lấy bằng mã đó đọc được mô hình đã gán, gọi bảng điều khiển hay quản trị người dùng thì 403.
     Đổi mã thì mã cũ bị từ chối; "Đổi vai" giữ mã cũ lấy được token, token mới mang vai mới và token cũ giữ vai cũ đến khi hết hạn; xóa thì không lấy được token và hồ sơ đã tạo vẫn còn.

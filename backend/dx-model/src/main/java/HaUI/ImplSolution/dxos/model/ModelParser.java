@@ -81,6 +81,9 @@ public final class ModelParser {
       List.of("id", "status", "created_at", "updated_at", "decided_at");
 
   private final List<Problem> problems = new ArrayList<>();
+  // The problems that a stored file is read with anyway, because the parser drops the part at
+  // fault.
+  private final List<Problem> tolerated = new ArrayList<>();
 
   private final Set<String> unitNames = new LinkedHashSet<>();
   private final Set<String> calendarNames = new LinkedHashSet<>();
@@ -96,6 +99,20 @@ public final class ModelParser {
     }
     return model;
   }
+
+  // A file that was stored before a check was tightened. It is read without the problems that the
+  // parser can drop safely (listed in tolerated, the model then runs without the part at fault) and
+  // refused with every problem when any other is left. New files go through parse.
+  public static ParsedStored parseStored(String yaml) {
+    ModelParser parser = new ModelParser();
+    Model model = parser.read(ModelUpgrader.upgrade(yaml).content());
+    if (model == null || parser.problems.size() > parser.tolerated.size()) {
+      throw new ModelException(parser.problems);
+    }
+    return new ParsedStored(model, List.copyOf(parser.tolerated));
+  }
+
+  public record ParsedStored(Model model, List<Problem> tolerated) {}
 
   private Model read(String yaml) {
     Node root;
@@ -148,7 +165,7 @@ public final class ModelParser {
       }
     }
     checkScopes(entities);
-    if (!problems.isEmpty()) {
+    if (problems.size() > tolerated.size()) {
       return null;
     }
     return new Model(
@@ -2517,7 +2534,7 @@ public final class ModelParser {
       return new AutoClose(null, null);
     }
     if (found.needsNote()) {
-      problem(node, "the action of auto_close cannot need a note, as the system writes none");
+      tolerated(node, "the action of auto_close cannot need a note, as the system writes none");
       return new AutoClose(null, null);
     }
     return new AutoClose(after, action);
@@ -2575,6 +2592,12 @@ public final class ModelParser {
 
   private static String scalar(Node node) {
     return node instanceof ScalarNode scalar ? scalar.getValue() : "";
+  }
+
+  // A problem that a stored file may keep: the caller drops the part at fault.
+  private void tolerated(Node node, String message) {
+    problem(node, message);
+    tolerated.add(problems.get(problems.size() - 1));
   }
 
   private void problem(Node node, String message) {

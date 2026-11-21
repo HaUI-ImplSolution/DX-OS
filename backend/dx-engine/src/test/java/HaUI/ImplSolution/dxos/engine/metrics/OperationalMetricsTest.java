@@ -52,6 +52,7 @@ class OperationalMetricsTest {
           "dxos.records",
           "dxos.records.overdue",
           "dxos.models",
+          "dxos.models.left_out",
           "dxos.outbox.pending",
           "dxos.outbox.retrying",
           "dxos.outbox.oldest.age",

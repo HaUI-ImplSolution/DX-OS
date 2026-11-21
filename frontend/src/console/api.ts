@@ -52,6 +52,11 @@ export interface AppliedModel {
   held: boolean;
   // The project the model belongs to; null while it is unclassified.
   project: string | null;
+  // The stored version fails the checks of this release, so the model is not running; problems says why.
+  leftOut: boolean;
+  problems?: string[];
+  // What a running model was read without, for a check made stricter after the version was stored.
+  warnings: string[];
 }
 
 export interface AppliedVersion {

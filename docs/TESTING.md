@@ -164,7 +164,7 @@ Mỗi mục nêu điều phải thấy; lệnh và biến cấu hình chi tiết
     Vai `own` chỉ nhận số của hồ sơ mình; `report?groupBy=<trường số>` hoặc `metrics=sum(<trường chữ>)` trả 400, vai không có quyền đọc trả 403.
     Hồ sơ đóng sau hạn có dòng `overdue` trước dòng quyết định và tính là muộn (kể cả khi được trả lại rồi duyệt), hồ sơ rút lại sau hạn thì không; `closedOnTime` cộng `closedLate` bằng số hồ sơ đã quyết định và `GET /api/v1/history/verify` báo chuỗi nguyên vẹn.
     Tên hành động dành riêng (như `overdue`, `created`, `escalated`, xem [`MODEL.md`](MODEL.md)) bị từ chối ở bước kiểm kèm dòng và cột.
-20. **Mẫu in** (`onestop`, Giấy xác nhận chỉ cho hồ sơ Đã duyệt): hồ sơ Chờ xử lý không có nút In; sau khi `OFFICER` duyệt, nút "In: Giấy xác nhận" hiện và trình duyệt lưu `giay-xac-nhan-<mã>.pdf` có tiêu đề, các trường đã khai báo và chỗ ký.
+20. **Mẫu in** (`onestop`, Kết quả xử lý hồ sơ chỉ cho hồ sơ Đã duyệt): hồ sơ Chờ xử lý không có nút In; sau khi `OFFICER` duyệt, nút "In: Kết quả xử lý hồ sơ" hiện và trình duyệt lưu `ket-qua-xu-ly-ho-so-<mã>.pdf` có tiêu đề, các trường đã khai báo và chỗ ký.
     Người nộp thấy nút; người không đọc được hồ sơ thì không in được; ở điện thoại nút hiện dạng biểu tượng.
 
 ### Bảng điều khiển

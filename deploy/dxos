@@ -68,6 +68,9 @@
 #                              a project groups the models and outside applications of one integration, to
 #                              browse and to judge impact; it grants no access and isolates nothing;
 #                              list shows what each project holds, remove refuses while it holds any
+#   dxos project member list <project> | add <project> <username> [--admin] | remove <project> <username>
+#                              the members of a project; a member can be given the roles of its models, an
+#                              administrator (--admin) also manages the members of the project
 #   dxos connect <model> --role R [--role R ...] [--app NAME] [--project P] [--prefix PREFIX] [--env-file FILE] [--base-url URL] [--rotate]
 #                              register a client for each role (in the project P when given) and write DXOS_BASE_URL and their
 #                              PREFIX_ROLE_CLIENT_ID and PREFIX_ROLE_CLIENT_SECRET to the .env file of the
@@ -665,9 +668,61 @@ project_text() {
   if [[ "$1" == - ]]; then echo "$2 is in no project now."; else echo "$2 is in the project $1 now."; fi
 }
 
+# The Keycloak id of an account, found by its exact username.
+user_id_of() {
+  local username="${1,,}" found id
+  [[ "$username" =~ ^[a-z0-9._@-]{1,100}$ ]] || die "not a username: $1"
+  api GET "/users?search=$username&size=50"
+  [[ "$API_STATUS" == 200 ]] || { pretty "$API_BODY"; return 1; }
+  found="$(tr '{' '\n' <<<"$API_BODY" | grep "\"username\":\"$username\"" | head -n1 || true)"
+  id="$(json_field id "$found")"
+  [[ -n "$id" ]] || die "no account has the username $username"
+  printf '%s\n' "$id"
+}
+
+cmd_project_member() {
+  local action="${1:-}" project user id level=MEMBER work
+  case "$action" in
+    list)
+      (( $# == 2 )) || die "usage: dxos project member list <project>"
+      [[ "$2" =~ ^[a-z][a-z0-9_-]{0,39}$ ]] || die "not a project name: $2"
+      api GET "/projects/$2/members"
+      pretty "$API_BODY"
+      [[ "$API_STATUS" == 200 ]] || return 1 ;;
+    add)
+      shift
+      project="${1:-}"
+      user="${2:-}"
+      [[ "$project" =~ ^[a-z][a-z0-9_-]{0,39}$ && -n "$user" ]] || die "usage: dxos project member add <project> <username> [--admin]"
+      shift 2
+      while (( $# )); do
+        case "$1" in
+          --admin) level=ADMIN; shift ;;
+          *) die "unknown option: $1" ;;
+        esac
+      done
+      id="$(user_id_of "$user")" || return 1
+      work="$(mktemp)"
+      printf '{"level":"%s"}' "$level" >"$work"
+      api PUT "/projects/$project/members/$id" "$work" application/json
+      rm -f "$work"
+      if [[ "$API_STATUS" != 200 ]]; then pretty "$API_BODY"; return 1; fi
+      echo "${user,,} is now ${level,,} of the project $project." ;;
+    remove)
+      (( $# == 3 )) || die "usage: dxos project member remove <project> <username>"
+      [[ "$2" =~ ^[a-z][a-z0-9_-]{0,39}$ ]] || die "not a project name: $2"
+      id="$(user_id_of "$3")" || return 1
+      api DELETE "/projects/$2/members/$id"
+      if [[ "$API_STATUS" != 200 ]]; then pretty "$API_BODY"; return 1; fi
+      echo "${3,,} is no longer in the project $2; the roles it was given stay until they are removed." ;;
+    *) die "usage: dxos project member list <project> | add <project> <username> [--admin] | remove <project> <username>" ;;
+  esac
+}
+
 cmd_project() {
   local action="${1:-}" name label="" description="" work
   case "$action" in
+    member) shift; cmd_project_member "$@" ;;
     list)
       (( $# == 1 )) || die "usage: dxos project list"
       api GET /projects
@@ -699,7 +754,7 @@ cmd_project() {
       api DELETE "/projects/$2"
       if [[ "$API_STATUS" != 200 ]]; then pretty "$API_BODY"; return 1; fi
       echo "Removed the project $2." ;;
-    *) die "usage: dxos project list | add <name> [--label TEXT] [--description TEXT] | remove <name>" ;;
+    *) die "usage: dxos project list | add <name> [--label TEXT] [--description TEXT] | remove <name> | member list|add|remove" ;;
   esac
 }
 

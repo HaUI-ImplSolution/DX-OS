@@ -26,11 +26,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/users")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("isAuthenticated()")
 @Tag(
     name = "Users",
     description =
-        "See and change who holds the roles and units of the models, and keep accounts; ADMIN only")
+        "See and change who holds the roles and units of the models, and keep accounts. ADMIN"
+            + " reaches everything; an administrator of a project sees the members of that project"
+            + " and gives or takes the roles of its models; 403 for anyone else and for anything"
+            + " outside that scope")
 public class UserAdminController {
 
   private final UserAdminService service;
@@ -40,7 +43,9 @@ public class UserAdminController {
   }
 
   @GetMapping
-  @Operation(summary = "A page of the accounts, found by name, username or email")
+  @Operation(
+      summary = "A page of the accounts, found by name, username or email",
+      description = "An administrator of a project sees only the members of their projects.")
   public ApiResponse<PageResponse<UserView>> list(
       @RequestParam(required = false) String search,
       @RequestParam(required = false) Integer page,
@@ -51,7 +56,9 @@ public class UserAdminController {
   @GetMapping("/options")
   @Operation(
       summary = "The roles and units that running models declare",
-      description = "These are the only roles and units the other endpoints give or take.")
+      description =
+          "These are the only roles and units the other endpoints give or take. An administrator"
+              + " of a project gets the roles of the models of their projects and no units.")
   public ApiResponse<Options> options() {
     return ApiResponse.success(service.options());
   }
@@ -61,7 +68,9 @@ public class UserAdminController {
       summary = "One account with the roles it holds in each model and its units",
       description =
           "A role change reaches a user's token at the next sign-in or refresh. 404 when"
-              + " the account does not exist.")
+              + " the account does not exist. An administrator of a project sees only a member of"
+              + " their projects, with the roles of the models of those projects and no units;"
+              + " 403 otherwise.")
   public ApiResponse<UserDetail> get(@PathVariable String id) {
     return ApiResponse.success(service.get(id));
   }
@@ -71,7 +80,8 @@ public class UserAdminController {
       summary = "Give a role of a model",
       description =
           "404 when the account, the model or the role does not exist. The roles of the"
-              + " platform are not reachable here.")
+              + " platform are not reachable here. An administrator of a project gives roles of"
+              + " the models of their projects to members of that project; 403 otherwise.")
   public ApiResponse<Void> grantRole(
       @PathVariable String id, @PathVariable String model, @PathVariable String role) {
     service.grantRole(id, model, role);
@@ -83,7 +93,7 @@ public class UserAdminController {
       summary = "Take a role of a model",
       description =
           "Not holding the role changes nothing; 404 when the account or the role does"
-              + " not exist.")
+              + " not exist. The scope is the same as for giving a role.")
   public ApiResponse<Void> revokeRole(
       @PathVariable String id, @PathVariable String model, @PathVariable String role) {
     service.revokeRole(id, model, role);
@@ -93,7 +103,7 @@ public class UserAdminController {
   @PutMapping("/{id}/units/{unit}")
   @Operation(
       summary = "Add the account to a unit declared by a running model",
-      description = "404 when the account or the unit does not exist.")
+      description = "ADMIN only. 404 when the account or the unit does not exist.")
   public ApiResponse<Void> addUnit(@PathVariable String id, @PathVariable String unit) {
     service.addUnit(id, unit);
     return ApiResponse.success(null);
@@ -103,8 +113,8 @@ public class UserAdminController {
   @Operation(
       summary = "Take the account out of a unit",
       description =
-          "Not being in the unit changes nothing; 404 when the account or the unit does"
-              + " not exist.")
+          "ADMIN only. Not being in the unit changes nothing; 404 when the account or the unit"
+              + " does not exist.")
   public ApiResponse<Void> removeUnit(@PathVariable String id, @PathVariable String unit) {
     service.removeUnit(id, unit);
     return ApiResponse.success(null);
@@ -114,8 +124,8 @@ public class UserAdminController {
   @Operation(
       summary = "Create an account with a temporary password",
       description =
-          "The password is generated when none is given. It is returned once and must be"
-              + " changed at the first sign-in. 400 when the username or the full name is missing,"
+          "ADMIN only. The password is generated when none is given. It is returned once and must"
+              + " be changed at the first sign-in. 400 when the username or the full name is missing,"
               + " 409 when the username or the email is taken.")
   public ApiResponse<CreatedUser> create(@RequestBody NewUser request) {
     return ApiResponse.success(service.create(request));
@@ -125,7 +135,7 @@ public class UserAdminController {
   @Operation(
       summary = "Lock or unlock an account",
       description =
-          "Body: {\"enabled\": true|false}. 400 when enabled is missing, 409 when an"
+          "ADMIN only. Body: {\"enabled\": true|false}. 400 when enabled is missing, 409 when an"
               + " administrator locks their own account.")
   public ApiResponse<Void> setEnabled(
       @PathVariable String id, @RequestBody Map<String, Boolean> body) {
@@ -140,7 +150,8 @@ public class UserAdminController {
   @PostMapping("/{id}/password")
   @Operation(
       summary = "Set a new temporary password",
-      description = "The password is returned once and must be changed at the next sign-in.")
+      description =
+          "ADMIN only. The password is returned once and must be changed at the next sign-in.")
   public ApiResponse<Map<String, String>> resetPassword(@PathVariable String id) {
     return ApiResponse.success(Map.of("temporaryPassword", service.resetPassword(id)));
   }

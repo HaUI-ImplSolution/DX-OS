@@ -28,6 +28,7 @@ import { i18nProvider } from "../shell/i18n";
 import LanguageSwitch from "../shell/LanguageSwitch";
 import { darkTheme, lightTheme } from "../shell/theme";
 import { listModels } from "./api";
+import { getProjectScope } from "../console/api";
 import authProvider from "./authProvider";
 import { createDataProvider } from "./dataProvider";
 import InboxPage from "./InboxPage";
@@ -114,6 +115,16 @@ function menuGroups(entities: EntityMeta[]) {
 const makeMenu = (models: ModelMeta[], assistantEnabled: boolean) =>
   function AppMenu() {
     const { permissions } = usePermissions();
+    const admin = Array.isArray(permissions) && permissions.includes("ADMIN");
+    // An account that administers a project reaches the people of that project in the console.
+    const [projectAdmin, setProjectAdmin] = useState(false);
+    useEffect(() => {
+      if (!Array.isArray(permissions) || admin) return;
+      getProjectScope().then(
+        (scope) => setProjectAdmin(scope.projects.some((project) => project.level === "ADMIN")),
+        () => setProjectAdmin(false),
+      );
+    }, [permissions, admin]);
     const reachable = models.map((model) => ({
       model,
       // The model file may order the entities and put some of them under a heading of their own.
@@ -150,7 +161,7 @@ const makeMenu = (models: ModelMeta[], assistantEnabled: boolean) =>
               ))}
             </Box>
           ))}
-        {Array.isArray(permissions) && permissions.includes("ADMIN") && (
+        {(admin || projectAdmin) && (
           <Box>
             <ListSubheader disableSticky sx={{ background: "transparent", lineHeight: "32px", mt: 1, fontSize: 11, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase" }}>
               {t("Quản trị")}

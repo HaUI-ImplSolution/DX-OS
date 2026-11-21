@@ -8,6 +8,7 @@ Run after check_guards.py on the same stack (it needs the models applied by the 
 import json
 import subprocess
 import sys
+import time
 
 import check_api as rt
 import kc
@@ -30,6 +31,106 @@ def grant_status(username, password="Test1234!"):
     status, body = kc.form(f"{kc.BASE}/realms/dxos/protocol/openid-connect/token", {
         "grant_type": "password", "client_id": kc.CLIENT, "username": username, "password": password})
     return status, str(body)
+
+
+def scoped_administration(admin):
+    # T13-15 to T13-21: a project administrator reaches only the models and the members of their own project.
+    status, body = kc.api(admin, "GET", "/models")
+    if "notes" not in [m["model"] for m in body["data"]]:
+        kc.api(admin, "POST", "/models/apply", rt.read("backend/dx-engine/src/main/resources/templates/notes.yaml"), rt.YAML)
+    status, body = kc.api(admin, "GET", "/models")
+    rt.check("T13-15 the two models of the scope checks are running", {"equipment", "notes"} <= {m["model"] for m in body["data"]}, str(status))
+    stamp = int(time.time())
+    sa, sb = f"sca{stamp}", f"scb{stamp}"
+    names = {"adm_a": "scp_adm_a", "mem_a": "scp_mem_a", "both": "scp_both", "mem_b": "scp_mem_b", "none": "scp_none"}
+    for username in names.values():
+        kc.ensure_user(username, [])
+    ids = {key: user_id(admin, username) for key, username in names.items()}
+    for project in (sa, sb):
+        kc.api(admin, "POST", "/projects", {"name": project, "label": project})
+    kc.api(admin, "PUT", "/models/equipment/project", {"project": sa})
+    kc.api(admin, "PUT", "/models/notes/project", {"project": sb})
+    member = lambda project, key, level: kc.api(admin, "PUT", f"/projects/{project}/members/{ids[key]}", {"level": level})
+    done = [member(sa, "adm_a", "ADMIN")[0], member(sa, "mem_a", "MEMBER")[0], member(sa, "both", "MEMBER")[0],
+            member(sb, "both", "MEMBER")[0], member(sb, "mem_b", "MEMBER")[0]]
+    status, body = kc.api(admin, "GET", f"/projects/{sa}/members")
+    levels = {m["username"]: m["level"] for m in body["data"]} if status == 200 else {}
+    rt.check("T13-15 the platform administrator gives membership and the project lists its members with their level",
+             done == [200] * 5 and levels == {"scp_adm_a": "ADMIN", "scp_mem_a": "MEMBER", "scp_both": "MEMBER"}, f"{done} {status} {levels}")
+
+    boss = kc.token(names["adm_a"])
+    status, body = kc.api(boss, "GET", "/users?size=50")
+    seen = sorted(u["username"] for u in body["data"]["items"]) if status == 200 else []
+    status_options, options = kc.api(boss, "GET", "/users/options")
+    option_models = [m["model"] for m in options["data"]["models"]] if status_options == 200 else []
+    rt.check("T13-16 a project administrator lists only the members of their project and the options of its models, with no units",
+             status == 200 and seen == ["scp_adm_a", "scp_both", "scp_mem_a"] and option_models == ["equipment"] and options["data"]["units"] == [],
+             f"{status} {seen} {option_models}")
+    status, _ = kc.api(boss, "PUT", f"/users/{ids['mem_a']}/roles/equipment/BORROWER")
+    status_token, _ = kc.api(kc.token(names["mem_a"]), "GET", "/data/equipment/loan")
+    status_other, _ = kc.api(kc.token(names["mem_a"]), "GET", "/data/notes/note")
+    rt.check("T13-17 a project administrator gives a role of a model of their project, and it reaches that model only",
+             status == 200 and status_token == 200 and status_other == 403, f"{status} {status_token} {status_other}")
+
+    refused = {
+        "a role of a model of another project": kc.api(boss, "PUT", f"/users/{ids['both']}/roles/notes/EDITOR")[0],
+        "a role to an account that is not a member": kc.api(boss, "PUT", f"/users/{ids['mem_b']}/roles/equipment/BORROWER")[0],
+        "the detail of an account outside the project": kc.api(boss, "GET", f"/users/{ids['mem_b']}")[0],
+        "a unit": kc.api(boss, "PUT", f"/users/{ids['mem_a']}/units/DAO_TAO")[0],
+        "a new account": kc.api(boss, "POST", "/users", {"username": "scp_new", "fullName": "No One", "email": "scp_new@example.com"})[0],
+        "a lock": kc.api(boss, "PUT", f"/users/{ids['mem_a']}/enabled", {"enabled": False})[0],
+        "a new password": kc.api(boss, "POST", f"/users/{ids['mem_a']}/password")[0],
+        "making a member an administrator": kc.api(boss, "PUT", f"/projects/{sa}/members/{ids['both']}", {"level": "ADMIN"})[0],
+        "the members of another project": kc.api(boss, "GET", f"/projects/{sb}/members")[0],
+    }
+    rt.check("T13-18 a project administrator is refused with 403 whatever is outside the scope",
+             all(code == 403 for code in refused.values()), str({k: v for k, v in refused.items() if v != 403}))
+
+    status, _ = kc.api(boss, "PUT", f"/projects/{sa}/members/{ids['mem_b']}", {"level": "MEMBER"})
+    status_given, _ = kc.api(boss, "PUT", f"/users/{ids['mem_b']}/roles/equipment/BORROWER")
+    status_remove_admin, _ = kc.api(boss, "DELETE", f"/projects/{sa}/members/{ids['adm_a']}")
+    status_remove, _ = kc.api(boss, "DELETE", f"/projects/{sa}/members/{ids['mem_b']}")
+    status_still, _ = kc.api(kc.token(names["mem_b"]), "GET", "/data/equipment/loan")
+    rt.check("T13-19 a project administrator adds and removes members, and not an administrator; a member taken out keeps the roles already given until they are taken",
+             status == 200 and status_given == 200 and status_remove_admin == 403 and status_remove == 200 and status_still == 200,
+             f"{status} {status_given} {status_remove_admin} {status_remove} {status_still}")
+
+    # The account in both projects holds the role of one model only after being given it.
+    kc.api(boss, "PUT", f"/users/{ids['both']}/roles/equipment/BORROWER")
+    token_both = kc.token(names["both"])
+    status_a, _ = kc.api(token_both, "GET", "/data/equipment/loan")
+    status_b, _ = kc.api(token_both, "GET", "/data/notes/note")
+    kc.api(admin, "PUT", f"/users/{ids['both']}/roles/notes/EDITOR")
+    status_b_after, _ = kc.api(kc.token(names["both"]), "GET", "/data/notes/note")
+    rt.check("T13-20 an account in two projects reaches a model only with the role of that model", (status_a, status_b, status_b_after) == (200, 403, 200), f"{status_a} {status_b} {status_b_after}")
+
+    status_none, _ = kc.api(kc.token(names["none"]), "GET", "/users")
+    status_member, _ = kc.api(kc.token(names["mem_a"]), "GET", "/users")
+    status_mine, mine = kc.api(boss, "GET", "/projects/mine")
+    rt.check("T13-21 an account that administers no project is refused, and the scope of an administrator is told by /projects/mine",
+             status_none == 403 and status_member == 403 and status_mine == 200 and mine["data"]["global"] is False
+             and [(p["name"], p["level"]) for p in mine["data"]["projects"]] == [(sa, "ADMIN")], f"{status_none} {status_member} {status_mine} {mine}")
+
+    status, _ = kc.api(admin, "PUT", f"/users/{ids['mem_a']}/roles/notes/EDITOR")
+    rt.check("T13-22 the platform administrator still gives a role of any model", status == 200, str(status))
+    granted = [e for e in audited(admin, "USER_ROLE_GRANTED", ids["mem_a"]) if e["metadata"].get("model") == "equipment"]
+    refused_notes = [e for e in audited(admin, "USER_ROLE_GRANTED", ids["both"]) if e["metadata"].get("model") == "notes" and e["actorName"] == names["adm_a"]]
+    rt.check("T13-22 the record of a role given by a project administrator names the project, and a refused one leaves none",
+             any(e["actorName"] == names["adm_a"] and e["outcome"] == "SUCCESS" and e["metadata"].get("project") == sa for e in granted) and not refused_notes, str(granted)[:300])
+
+    kc.api(admin, "PUT", "/models/equipment/project", {"project": None})
+    status, _ = kc.api(boss, "PUT", f"/users/{ids['mem_a']}/roles/equipment/KEEPER")
+    rt.check("T13-23 a model that belongs to no project is reached by the platform administrator alone", status == 403, str(status))
+
+    for key in ("mem_a", "both", "mem_b"):
+        for model, role in (("equipment", "BORROWER"), ("equipment", "KEEPER"), ("notes", "EDITOR")):
+            kc.api(admin, "DELETE", f"/users/{ids[key]}/roles/{model}/{role}")
+    kc.api(admin, "PUT", "/models/notes/project", {"project": None})
+    for project in (sa, sb):
+        kc.api(admin, "DELETE", f"/projects/{project}")
+    for key in ids:
+        if ids[key]:
+            kc.kc("DELETE", f"/users/{ids[key]}")
 
 
 def main():
@@ -170,6 +271,8 @@ def main():
     rt.check("T13-14 Keycloak records the changes of the accounts", status == 200 and any(uid_lock in (e.get("resourcePath") or "") for e in events), f"{status} {len(events) if status == 200 else ''}")
     rt.check("T13-14 and its events do not hold a temporary password", password not in text and fresh not in text)
     kc.kc("DELETE", f"/users/{uid_new}")
+
+    scoped_administration(admin)
 
     failed = [case for case, ok in rt.results if not ok]
     print(f"\n{len(rt.results) - len(failed)}/{len(rt.results)} passed", failed)

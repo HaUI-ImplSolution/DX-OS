@@ -151,7 +151,19 @@ function CreateDialog({ onClose, onCreated }: { onClose: () => void; onCreated: 
 }
 
 // One user: the roles by model and the units, each given or taken with a click.
-function UserDialog({ id, options, onClose, onChanged }: { id: string; options: UserOptions; onClose: () => void; onChanged: () => void }) {
+function UserDialog({
+  id,
+  options,
+  limited,
+  onClose,
+  onChanged,
+}: {
+  id: string;
+  options: UserOptions;
+  limited: boolean;
+  onClose: () => void;
+  onChanged: () => void;
+}) {
   const [detail, setDetail] = useState<UserDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -174,8 +186,8 @@ function UserDialog({ id, options, onClose, onChanged }: { id: string; options: 
     [id],
   );
   useEffect(() => {
-    loadHistory(0);
-  }, [loadHistory]);
+    if (!limited) loadHistory(0);
+  }, [limited, loadHistory]);
 
   const run = async (action: () => Promise<unknown>) => {
     setBusy(true);
@@ -183,7 +195,7 @@ function UserDialog({ id, options, onClose, onChanged }: { id: string; options: 
     try {
       await action();
       load();
-      loadHistory(0);
+      if (!limited) loadHistory(0);
       onChanged();
     } catch (e) {
       setError(message(e));
@@ -268,6 +280,13 @@ function UserDialog({ id, options, onClose, onChanged }: { id: string; options: 
                 </Box>
               </Box>
             )}
+            {limited && (
+              <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 2 }}>
+                {t("Bạn chỉ thấy và gán được vai của các mô hình trong dự án mình quản trị. Đơn vị, mật khẩu và khóa tài khoản do quản trị viên hệ thống giữ.")}
+              </Typography>
+            )}
+            {!limited && (
+              <>
             <Typography variant="subtitle2" sx={{ mt: 3, mb: 0.5 }}>
               {t("Đơn vị")}
             </Typography>
@@ -320,11 +339,13 @@ function UserDialog({ id, options, onClose, onChanged }: { id: string; options: 
                 {t("Xem thêm")}
               </Button>
             )}
+              </>
+            )}
           </>
         )}
       </DialogContent>
       <DialogActions>
-        {detail && (
+        {detail && !limited && (
           <>
             <Button disabled={busy} onClick={reset}>
               {t("Đặt lại mật khẩu")}
@@ -344,7 +365,7 @@ function UserDialog({ id, options, onClose, onChanged }: { id: string; options: 
 }
 
 // The people of the system: who holds which role of which model, and the keeping of accounts.
-export default function UsersTab() {
+export default function UsersTab({ limited = false }: { limited?: boolean }) {
   const [search, setSearch] = useState("");
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(0);
@@ -390,9 +411,11 @@ export default function UsersTab() {
           {t("Tìm")}
         </Button>
         <Box sx={{ flex: 1 }} />
-        <Button variant="contained" onClick={() => setCreating(true)}>
-          {t("Tạo người dùng")}
-        </Button>
+        {!limited && (
+          <Button variant="contained" onClick={() => setCreating(true)}>
+            {t("Tạo người dùng")}
+          </Button>
+        )}
       </Box>
       <Card sx={{ overflowX: "auto" }}>
         <Table size="small">
@@ -419,7 +442,7 @@ export default function UsersTab() {
               <TableRow>
                 <TableCell colSpan={4}>
                   <Typography variant="body2" color="text.secondary" sx={{ py: 2, textAlign: "center" }}>
-                    {t("Không có người dùng nào khớp.")}
+                    {limited ? t("Chưa có thành viên nào khớp trong các dự án bạn quản trị.") : t("Không có người dùng nào khớp.")}
                   </Typography>
                 </TableCell>
               </TableRow>
@@ -432,7 +455,7 @@ export default function UsersTab() {
           <Pagination count={data.totalPages} page={page + 1} onChange={(_, next) => setPage(next - 1)} />
         </Box>
       )}
-      {open && options && <UserDialog id={open} options={options} onClose={() => setOpen(null)} onChanged={load} />}
+      {open && options && <UserDialog id={open} options={options} limited={limited} onClose={() => setOpen(null)} onChanged={load} />}
       {creating && (
         <CreateDialog
           onClose={() => setCreating(false)}

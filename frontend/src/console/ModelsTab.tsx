@@ -70,6 +70,8 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
   const [problem, setProblem] = useState<string | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [filter, setFilter] = useState(ALL);
+  // A change of project waits here until the administrator confirms it.
+  const [moving, setMoving] = useState<{ model: AppliedModel; project: string | null } | null>(null);
 
   useEffect(() => {
     listProjects().then(setProjects, (e: unknown) => setProblem(message(e)));
@@ -187,7 +189,7 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
                 </Tooltip>
               </Typography>
               {(projects.length > 0 || model.project !== null) && (
-                <ProjectSelect projects={projects} value={model.project} onChange={(project) => moveToProject(model, project)} />
+                <ProjectSelect projects={projects} value={model.project} onChange={(project) => setMoving({ model, project })} />
               )}
               {summary ? (
                 <>
@@ -234,6 +236,28 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
           );
         })}
       </Box>
+      {moving && (
+        <Dialog open onClose={() => setMoving(null)} maxWidth="sm" fullWidth>
+          <DialogTitle>{t("Đổi dự án của {model}?", { model: modelTitle(moving.model.model) })}</DialogTitle>
+          <DialogContent>
+            <Typography variant="body2">
+              {t("Quản trị viên của dự án cũ không còn gán được vai của mô hình này, còn quản trị viên của dự án mới thì gán được cho thành viên của dự án mới. Các vai đã gán cho tài khoản vẫn giữ nguyên, kể cả với người không thuộc dự án mới.")}
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setMoving(null)}>{t("Giữ nguyên")}</Button>
+            <Button
+              variant="contained"
+              onClick={() => {
+                void moveToProject(moving.model, moving.project);
+                setMoving(null);
+              }}
+            >
+              {t("Đổi dự án")}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
       {giveUp && (
         <Dialog open onClose={() => setGiveUp(null)} maxWidth="sm" fullWidth>
           <DialogTitle>{t("Hủy bỏ lần áp dụng dở của {model}?", { model: modelTitle(giveUp.model) })}</DialogTitle>

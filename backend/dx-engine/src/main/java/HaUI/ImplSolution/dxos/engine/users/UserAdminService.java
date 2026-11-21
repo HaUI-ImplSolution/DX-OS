@@ -13,25 +13,34 @@ import HaUI.ImplSolution.dxos.core.identity.KeycloakAdminClient.Account;
 import HaUI.ImplSolution.dxos.core.identity.KeycloakAdminClient.Accounts;
 import HaUI.ImplSolution.dxos.engine.event.AdminEventPublisher;
 import HaUI.ImplSolution.dxos.engine.exception.ModelValidationException;
+import HaUI.ImplSolution.dxos.engine.projects.ProjectLinks;
+import HaUI.ImplSolution.dxos.engine.projects.ProjectMembers;
+import HaUI.ImplSolution.dxos.engine.projects.UserScope;
+import HaUI.ImplSolution.dxos.engine.projects.UserScope.Scope;
 import HaUI.ImplSolution.dxos.engine.registry.ModelClient;
 import HaUI.ImplSolution.dxos.engine.registry.ModelRegistry;
 import HaUI.ImplSolution.dxos.model.Model;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 // Lets an administrator see who holds which role of which model, change roles and units, and keep
 // accounts. The roles of the platform (ADMIN) are not reachable from here: only the roles and
-// units that running models declare can be given or taken. Every change is written to the audit
-// log with the administrator who made it; a password is never written.
+// units that running models declare can be given or taken. The platform administrator reaches
+// everything; an administrator of a project sees the members of that project and gives or takes the
+// roles of the models of that project, nothing else. Every change is written to the audit log with
+// the administrator who made it and the project of the model; a password is never written.
 @Service
 public class UserAdminService {
 
@@ -64,6 +73,9 @@ public class UserAdminService {
   private final UserContext user;
   private final AuditRecorder audit;
   private final AdminEventPublisher events;
+  private final UserScope scope;
+  private final ProjectMembers members;
+  private final ProjectLinks links;
   private final SecureRandom random = new SecureRandom();
 
   public UserAdminService(
@@ -71,18 +83,29 @@ public class UserAdminService {
       ModelRegistry registry,
       UserContext user,
       AuditRecorder audit,
-      AdminEventPublisher events) {
+      AdminEventPublisher events,
+      UserScope scope,
+      ProjectMembers members,
+      ProjectLinks links) {
     this.keycloak = keycloak;
     this.registry = registry;
     this.user = user;
     this.audit = audit;
     this.events = events;
+    this.scope = scope;
+    this.members = members;
+    this.links = links;
   }
 
   public PageResponse<UserView> list(String search, Integer page, Integer size) {
+    Scope current = scope.current();
+    current.requireAny();
     int pageNumber = page == null || page < 0 ? 0 : page;
     int pageSize = size == null || size < 1 ? DEFAULT_PAGE_SIZE : Math.min(size, MAX_PAGE_SIZE);
     int first = (int) Math.min((long) pageNumber * pageSize, Integer.MAX_VALUE);
+    if (!current.global()) {
+      return inProjects(current, search, pageNumber, pageSize);
+    }
     Accounts accounts = keycloak.searchAccounts(search, first, pageSize);
     int pages = (int) ((accounts.total() + pageSize - 1) / pageSize);
     return new PageResponse<>(
@@ -94,23 +117,35 @@ public class UserAdminService {
   }
 
   public UserDetail get(String id) {
+    Scope current = scope.current();
+    current.requireAny();
+    current.requireUser(id);
     UserView view = view(require(id));
     Map<String, List<String>> roles = new LinkedHashMap<>();
     keycloak
         .clientRolesOf(id)
         .forEach(
             (client, names) ->
-                ModelClient.modelOf(client).ifPresent(model -> roles.put(model, names)));
+                ModelClient.modelOf(client)
+                    .filter(current::coversModel)
+                    .ifPresent(model -> roles.put(model, names)));
+    if (!current.global()) {
+      return new UserDetail(view, roles, List.of());
+    }
     Set<String> declared =
         declaredUnits().stream().map(Model.Unit::name).collect(Collectors.toSet());
     List<String> units = keycloak.groupsOf(id).stream().filter(declared::contains).toList();
     return new UserDetail(view, roles, units);
   }
 
-  // What can be given: the roles and units of the models that run now.
+  // What can be given: the roles and units of the models that run now, and for an administrator of
+  // projects only the roles of the models of those projects.
   public Options options() {
+    Scope current = scope.current();
+    current.requireAny();
     List<ModelRoles> models =
         registry.all().stream()
+            .filter(model -> current.coversModel(model.name()))
             .map(
                 model ->
                     new ModelRoles(
@@ -120,11 +155,14 @@ public class UserAdminService {
                             .toList()))
             .toList();
     List<UnitInfo> units =
-        declaredUnits().stream().map(unit -> new UnitInfo(unit.name(), unit.label())).toList();
+        current.global()
+            ? declaredUnits().stream().map(unit -> new UnitInfo(unit.name(), unit.label())).toList()
+            : List.of();
     return new Options(models, units);
   }
 
   public void grantRole(String id, String model, String role) {
+    requireRoleScope(id, model);
     Account account = require(id);
     Model running =
         registry
@@ -134,16 +172,18 @@ public class UserAdminService {
       throw new ResourceNotFoundException("Model " + model + " has no role " + role);
     }
     keycloak.grantClientRole(id, ModelClient.of(model), role);
-    audited("USER_ROLE_GRANTED", account, Map.of("model", model, "role", role));
+    audited("USER_ROLE_GRANTED", account, roleFacts(model, role));
   }
 
   public void revokeRole(String id, String model, String role) {
+    requireRoleScope(id, model);
     Account account = require(id);
     keycloak.revokeClientRole(id, ModelClient.of(model), role);
-    audited("USER_ROLE_REVOKED", account, Map.of("model", model, "role", role));
+    audited("USER_ROLE_REVOKED", account, roleFacts(model, role));
   }
 
   public void addUnit(String id, String unit) {
+    scope.current().requireGlobal();
     Account account = require(id);
     requireUnit(unit);
     keycloak.addUserToGroup(id, unit);
@@ -151,6 +191,7 @@ public class UserAdminService {
   }
 
   public void removeUnit(String id, String unit) {
+    scope.current().requireGlobal();
     Account account = require(id);
     requireUnit(unit);
     keycloak.removeUserFromGroup(id, unit);
@@ -159,6 +200,7 @@ public class UserAdminService {
 
   // Creates the account with a temporary password that the person changes at the first sign-in.
   public CreatedUser create(NewUser request) {
+    scope.current().requireGlobal();
     Map<String, String> problems = new LinkedHashMap<>();
     if (request == null || request.username() == null || request.username().isBlank()) {
       problems.put("username", "is required");
@@ -183,6 +225,7 @@ public class UserAdminService {
   }
 
   public void setEnabled(String id, boolean enabled) {
+    scope.current().requireGlobal();
     Account account = require(id);
     if (!enabled && id.equals(user.currentUserId())) {
       throw new InvalidStateException("You cannot lock your own account");
@@ -193,11 +236,66 @@ public class UserAdminService {
 
   // Sets a new temporary password and returns it, once.
   public String resetPassword(String id) {
+    scope.current().requireGlobal();
     Account account = require(id);
     String password = generatePassword();
     keycloak.resetPassword(id, password);
     audited("USER_PASSWORD_RESET", account, Map.of());
     return password;
+  }
+
+  // A role of a model is given or taken by the platform administrator, or by an administrator of
+  // the project of that model for a member of that project.
+  private void requireRoleScope(String id, String model) {
+    Scope current = scope.current();
+    current.requireAny();
+    current.requireModel(model);
+    if (!current.global()) {
+      String project = links.ofModels().get(model);
+      if (!members.levelOf(project, id).isPresent()) {
+        throw new AccessDeniedException("The account is not a member of the project of this model");
+      }
+    }
+  }
+
+  // What a role change records: the model, the role and the project of the model, when it has one.
+  private Map<String, Object> roleFacts(String model, String role) {
+    Map<String, Object> facts = new LinkedHashMap<>();
+    facts.put("model", model);
+    facts.put("role", role);
+    String project = links.ofModels().get(model);
+    if (project != null) {
+      facts.put("project", project);
+    }
+    return facts;
+  }
+
+  // The accounts that belong to the projects an administrator reaches, found by the same text as
+  // for the whole instance.
+  private PageResponse<UserView> inProjects(
+      Scope current, String search, int pageNumber, int pageSize) {
+    String text = search == null ? "" : search.trim().toLowerCase();
+    List<UserView> found =
+        members.userIdsOf(current.projects()).stream()
+            .map(keycloak::findAccount)
+            .flatMap(Optional::stream)
+            .filter(
+                account ->
+                    text.isEmpty()
+                        || contains(account.username(), text)
+                        || contains(account.name(), text)
+                        || contains(account.email(), text))
+            .sorted(Comparator.comparing(Account::username))
+            .map(UserAdminService::view)
+            .toList();
+    int from = (int) Math.min((long) pageNumber * pageSize, found.size());
+    int to = Math.min(from + pageSize, found.size());
+    int pages = (found.size() + pageSize - 1) / pageSize;
+    return new PageResponse<>(found.subList(from, to), pageNumber, pageSize, found.size(), pages);
+  }
+
+  private static boolean contains(String value, String text) {
+    return value != null && value.toLowerCase().contains(text);
   }
 
   // Writes what the administrator changed about an account; the actor comes from the token.

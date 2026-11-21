@@ -20,6 +20,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import ProjectMembersPanel from "./ProjectMembersPanel";
 import { createProject, deleteProject, listProjects, updateProject, type Project } from "./api";
 import { t } from "../shell/t";
 
@@ -37,6 +38,7 @@ export default function ProjectsTab() {
   const [label, setLabel] = useState("");
   const [description, setDescription] = useState("");
   const [removing, setRemoving] = useState<Project | null>(null);
+  const [managing, setManaging] = useState<Project | null>(null);
 
   const load = useCallback(() => {
     listProjects().then(setProjects, (e: unknown) => setError(message(e)));
@@ -70,7 +72,7 @@ export default function ProjectsTab() {
   return (
     <Box>
       <Alert severity="info" sx={{ mb: 2 }}>
-        {t("Một dự án gom các mô hình và ứng dụng ngoài mà một hệ thống tích hợp dùng, để lọc và xem phạm vi ảnh hưởng. Dự án không cấp quyền và không tách dữ liệu giữa các nhóm.")}
+        {t("Một dự án gom các mô hình và ứng dụng ngoài mà một hệ thống tích hợp dùng, để lọc và xem phạm vi ảnh hưởng. Dự án không cấp quyền và không tách dữ liệu giữa các nhóm. Quản trị viên của dự án chỉ quản lý được thành viên và vai của các mô hình trong dự án đó.")}
       </Alert>
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
@@ -89,6 +91,7 @@ export default function ProjectsTab() {
               <TableCell>{t("Dự án")}</TableCell>
               <TableCell>{t("Mô hình")}</TableCell>
               <TableCell>{t("Ứng dụng ngoài")}</TableCell>
+              <TableCell>{t("Thành viên")}</TableCell>
               <TableCell align="right" />
             </TableRow>
           </TableHead>
@@ -118,7 +121,11 @@ export default function ProjectsTab() {
                     ))}
                   </Box>
                 </TableCell>
+                <TableCell>{project.memberCount}</TableCell>
                 <TableCell align="right">
+                  <Button size="small" disabled={busy} onClick={() => setManaging(project)}>
+                    {t("Thành viên")}
+                  </Button>
                   <Button size="small" disabled={busy} onClick={() => open(project)}>
                     {t("Sửa")}
                   </Button>
@@ -130,7 +137,7 @@ export default function ProjectsTab() {
             ))}
             {projects?.length === 0 && (
               <TableRow>
-                <TableCell colSpan={4}>
+                <TableCell colSpan={5}>
                   <Typography variant="body2" color="text.secondary" sx={{ py: 2, textAlign: "center" }}>
                     {t("Chưa có dự án nào. Mô hình và ứng dụng ngoài chưa gán dự án vẫn dùng bình thường.")}
                   </Typography>
@@ -171,6 +178,13 @@ export default function ProjectsTab() {
           >
             {t("Lưu")}
           </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog open={managing !== null} onClose={() => setManaging(null)} maxWidth="md" fullWidth>
+        <DialogTitle>{managing?.label}</DialogTitle>
+        <DialogContent>{managing && <ProjectMembersPanel project={managing.name} global onChanged={load} />}</DialogContent>
+        <DialogActions>
+          <Button onClick={() => setManaging(null)}>{t("Đóng")}</Button>
         </DialogActions>
       </Dialog>
       <Dialog open={removing !== null} onClose={() => setRemoving(null)}>

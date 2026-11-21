@@ -212,8 +212,8 @@ def main():
         code, out, err = dxos(work, "archive", "check", "--store", run_id)
         check("CLI-20 archive check --store passes on the run in the store", code == 0 and "Archive matches its manifest" in out and "SHA-256 matches" in out, f"{code} {out[-200:]} {err[-200:]}")
         code, out, err = dxos(work, "archive", "auto")
-        code_list, listing, _ = dxos(work, "archive", "list")
-        runs_of_model = [line for line in listing.splitlines() if line.startswith(name + " ")]
+        code_list, archive_list, _ = dxos(work, "archive", "list")
+        runs_of_model = [line for line in archive_list.splitlines() if line.startswith(name + " ")]
         check("CLI-21 archive auto writes nothing for records newer than ARCHIVE_AFTER_DAYS and list shows the one run", code == 0 and f"{name}: nothing" in out and len(runs_of_model) == 1, f"{code} {out[-200:]} {err[-200:]} {runs_of_model}")
 
         # model format: preview first, replace atomically only on request, and keep future files intact.

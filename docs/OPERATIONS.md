@@ -56,7 +56,8 @@ Hướng dẫn cấu hình ứng dụng từ đầu đến cuối ở [`docs/EXT
 ## Dự án
 
 Một dự án gom các mô hình và các ứng dụng ngoài mà một nơi tích hợp dùng, để lọc danh sách và xem một thay đổi chạm tới ai.
-Nó chỉ là tên gọi để quản trị: dự án không cấp quyền, không cô lập dữ liệu, và vai vẫn là `dxos-m-<mô hình>`, `ADMIN` vẫn là một và áp cho cả hệ thống.
+Nó là tên gọi để quản trị và để chia việc quản trị người dùng: dự án không cô lập dữ liệu, không cấp quyền đọc hay ghi dữ liệu, và vai vẫn là `dxos-m-<mô hình>`.
+`ADMIN` của hệ thống vẫn quản trị tất cả; quản trị viên của một dự án chỉ quản trị người dùng trong dự án đó (xem Thành viên và quản trị viên dự án).
 Dự án nằm ngoài tệp mô hình, nên đổi dự án không tạo phiên bản mới và không cần áp dụng lại.
 Hệ thống không đoán dự án từ tên mô hình, tên ứng dụng hay người áp dụng; chỉ có liên kết được khai rõ.
 
@@ -81,8 +82,37 @@ Xóa dự án còn mô hình hoặc ứng dụng bị từ chối (409); đưa c
 Xóa một ứng dụng thì liên kết của nó biến mất theo.
 Nhật ký quản trị ghi `PROJECT_CREATED`, `PROJECT_UPDATED`, `PROJECT_DELETED`, `MODEL_PROJECT_CHANGED` và `CLIENT_PROJECT_CHANGED`.
 
-Nhiều dự án dùng chung một bản cài khi cùng một nhóm quản trị chịu trách nhiệm cho tất cả và chỉ cần lọc cho gọn.
-Tách bản cài, hoặc ít nhất tách realm Keycloak, khi các dự án cần người quản trị riêng, danh sách người dùng riêng, hoặc ranh giới an toàn mà dự án này không được nhìn thấy dự án kia; dự án không làm được việc đó.
+### Thành viên và quản trị viên dự án
+
+Một tài khoản là thành viên (`MEMBER`) hoặc quản trị viên (`ADMIN`) của một dự án, và thuộc nhiều dự án khi được thêm vào từng dự án một cách rõ ràng.
+Thành viên chỉ là tư cách để nhận vai của các mô hình trong dự án; quyền đọc và ghi dữ liệu vẫn đến từ vai của mô hình, và có vai của mô hình A không cho chạm vào mô hình B.
+
+Quản trị viên của dự án A làm được những việc này, chỉ trong dự án A:
+
+- Xem tài khoản thành viên của A, với vai của các mô hình thuộc A; không thấy đơn vị và không thấy vai của dự án khác.
+- Gán và gỡ vai của mô hình thuộc A cho thành viên của A; người chưa là thành viên bị từ chối, nên thêm thành viên là bước riêng.
+- Thêm và bớt thành viên thường; không đổi cấp của quản trị viên, không nâng ai lên quản trị viên.
+
+Chỉ `ADMIN` của hệ thống làm được: tạo tài khoản, khóa và mở, đặt lại mật khẩu, đơn vị, nâng và hạ quản trị viên dự án, tạo và xóa dự án, đổi dự án của mô hình hay ứng dụng, và mọi việc với mô hình chưa thuộc dự án nào.
+Việc ngoài phạm vi trả 403 và được ghi vào nhật ký từ chối; tài khoản không quản trị dự án nào bị từ chối ở mọi API người dùng.
+Phạm vi đọc từ cơ sở dữ liệu ở từng yêu cầu, nên đổi cấp hay đổi dự án của mô hình có hiệu lực ngay; vai trong token vẫn trễ tối đa khoảng 5 phút.
+Việc gán và gỡ vai ghi thêm `project` của mô hình vào nhật ký.
+
+Gỡ một thành viên, hoặc chuyển mô hình sang dự án khác, không gỡ các vai đã cấp: vai còn đến khi bị gỡ, và bảng điều khiển cảnh báo trước khi làm.
+Xóa dự án xóa các thành viên của nó; dự án còn mô hình hoặc ứng dụng vẫn bị từ chối.
+Nhật ký quản trị ghi `PROJECT_MEMBER_ADDED`, `PROJECT_MEMBER_CHANGED` và `PROJECT_MEMBER_REMOVED`.
+
+```bash
+dxos project member list <dự án>
+dxos project member add <dự án> <tên đăng nhập> [--admin]      # --admin: quản trị viên của dự án
+dxos project member remove <dự án> <tên đăng nhập>
+```
+
+Thành viên cũng quản lý ở tab Dự án của bảng điều khiển (nút Thành viên); quản trị viên dự án đăng nhập thấy hai tab Người dùng và Thành viên dự án.
+
+Nhiều dự án dùng chung một bản cài khi cùng một nhóm quản trị chịu trách nhiệm cho tất cả, hoặc khi mỗi dự án chỉ cần người quản trị người dùng riêng cho các mô hình của mình.
+Quản trị viên dự án không phải ranh giới giữa các tổ chức: các dự án vẫn chung một realm, một danh sách tài khoản (nhìn thấy qua `ADMIN` của hệ thống và qua tìm người), một hạ tầng và một `ADMIN`.
+Tách bản cài, hoặc ít nhất tách realm Keycloak, khi các dự án thuộc miền tin cậy khác nhau, cần danh sách người dùng riêng, hoặc không được để `ADMIN` chung nhìn thấy dữ liệu của nhau.
 
 ## Cài đặt và lệnh `dxos`
 
@@ -119,6 +149,7 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 | `dxos demo [--password MẬT_KHẨU]`, `dxos demo remove` | Áp dụng mô hình Một cửa sinh viên nếu chưa chạy, tạo bốn tài khoản thử `judge_student`, `judge_officer`, `judge_officer2` và `judge_supervisor` với một mật khẩu (ngẫu nhiên nếu không nêu, in một lần; chạy lại thì đặt và in mật khẩu mới) và nộp khoảng 40 hồ sơ mẫu qua API chung, mỗi bước do đúng người làm; chạy lại không nộp thêm hồ sơ; `remove` chỉ gỡ bốn tài khoản, hồ sơ có quy trình không xóa được nên còn lại; cần client `dxos-cli` như `dxos plan`. Hạn xử lý 72 giờ của mô hình nên hồ sơ quá hạn chỉ có sau ba ngày kể từ lần nộp |
 | `dxos connect <mô hình> --role R [--role R ...] [--project P]`, `dxos client add <tên> --model M --role R [--project P]`, `dxos client list`, `dxos client role <tên> --role R`, `dxos client rotate <tên>`, `dxos client remove <tên>` | Đăng ký và quản lý ứng dụng ngoài gọi API bằng token máy (xem phần Ứng dụng ngoài ở trên) |
 | `dxos project list`, `dxos project add <tên> [--label NHÃN] [--description MÔ_TẢ]`, `dxos project remove <tên>`, `dxos model project <mô hình> <dự án\|->`, `dxos client project <tên> <dự án\|->` | Gom mô hình và ứng dụng ngoài theo dự án để lọc và xem phạm vi ảnh hưởng (xem phần Dự án ở trên) |
+| `dxos project member list <dự án>`, `dxos project member add <dự án> <tên đăng nhập> [--admin]`, `dxos project member remove <dự án> <tên đăng nhập>` | Thành viên và quản trị viên của một dự án, để quản trị người dùng theo dự án |
 | `dxos client browser add <tên> --redirect-uri URL [...]`, `dxos client browser list`, `dxos client browser remove <tên>` | Đăng ký và quản lý public OIDC client dùng PKCE cho giao diện trình duyệt ở origin khác |
 | `dxos uninstall [--purge]` | Xóa container và lệnh `dxos`; `--purge` xóa cả dữ liệu và thư mục cài, phải gõ xác nhận |
 

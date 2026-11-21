@@ -6,6 +6,9 @@ import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
 import HaUI.ImplSolution.dxos.engine.clients.AppClientService.AppView;
 import HaUI.ImplSolution.dxos.engine.projects.ProjectService.ChangedProject;
 import HaUI.ImplSolution.dxos.engine.projects.ProjectService.Link;
+import HaUI.ImplSolution.dxos.engine.projects.ProjectService.MemberLevel;
+import HaUI.ImplSolution.dxos.engine.projects.ProjectService.MemberView;
+import HaUI.ImplSolution.dxos.engine.projects.ProjectService.Mine;
 import HaUI.ImplSolution.dxos.engine.projects.ProjectService.ModelLink;
 import HaUI.ImplSolution.dxos.engine.projects.ProjectService.NewProject;
 import HaUI.ImplSolution.dxos.engine.projects.ProjectService.ProjectView;
@@ -24,13 +27,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("isAuthenticated()")
 @Tag(
     name = "Projects",
     description =
-        "Group the models and outside applications that one integration uses; ADMIN only."
-            + " A project is for browsing and judging impact, it grants no access and isolates"
-            + " nothing.")
+        "Group the models and outside applications that one integration uses; ADMIN only, except"
+            + " the members and the scope of the caller. A project is for browsing and judging"
+            + " impact, it grants no access and isolates nothing; its administrators manage its"
+            + " members and the roles of its models.")
 public class ProjectController {
 
   private final ProjectService service;
@@ -40,6 +44,7 @@ public class ProjectController {
   }
 
   @GetMapping("/projects")
+  @PreAuthorize("hasRole('ADMIN')")
   @Operation(
       summary = "The projects with the models and applications in each",
       description =
@@ -50,6 +55,7 @@ public class ProjectController {
   }
 
   @PostMapping("/projects")
+  @PreAuthorize("hasRole('ADMIN')")
   @Operation(
       summary = "Create a project",
       description =
@@ -60,6 +66,7 @@ public class ProjectController {
   }
 
   @PutMapping("/projects/{name}")
+  @PreAuthorize("hasRole('ADMIN')")
   @Operation(
       summary = "Change the label and the description of a project",
       description = "404 when the project does not exist.")
@@ -69,6 +76,7 @@ public class ProjectController {
   }
 
   @DeleteMapping("/projects/{name}")
+  @PreAuthorize("hasRole('ADMIN')")
   @Operation(
       summary = "Delete a project",
       description =
@@ -80,6 +88,7 @@ public class ProjectController {
   }
 
   @PutMapping("/models/{model}/project")
+  @PreAuthorize("hasRole('ADMIN')")
   @Operation(
       summary = "Put a model in a project",
       description =
@@ -91,6 +100,7 @@ public class ProjectController {
   }
 
   @PutMapping("/clients/{name}/project")
+  @PreAuthorize("hasRole('ADMIN')")
   @Operation(
       summary = "Put an outside application in a project",
       description =
@@ -100,5 +110,53 @@ public class ProjectController {
   public ApiResponse<AppView> setClientProject(
       @PathVariable String name, @RequestBody Link request) {
     return ApiResponse.success(service.setClientProject(name, request));
+  }
+
+  @GetMapping("/projects/mine")
+  @Operation(
+      summary = "What the signed-in account administers",
+      description =
+          "global is true for the platform administrator, who reaches every project. projects"
+              + " lists the projects the account is a member of, with its level. Any signed-in"
+              + " account may call it.")
+  public ApiResponse<Mine> mine() {
+    return ApiResponse.success(service.mine());
+  }
+
+  @GetMapping("/projects/{name}/members")
+  @Operation(
+      summary = "The members of a project",
+      description =
+          "For the platform administrator and the administrators of that project; 403 for anyone"
+              + " else, 404 when the project does not exist. A member whose account no longer"
+              + " exists is left out.")
+  public ApiResponse<List<MemberView>> members(@PathVariable String name) {
+    return ApiResponse.success(service.members(name));
+  }
+
+  @PutMapping("/projects/{name}/members/{userId}")
+  @Operation(
+      summary = "Add an account to a project or change its level",
+      description =
+          "Body: {\"level\": \"MEMBER\"|\"ADMIN\"}. A member can be given the roles of the models of"
+              + " the project; an administrator also manages the members. An administrator of the"
+              + " project adds and removes members; only the platform administrator makes or"
+              + " changes an administrator, otherwise 403. 400 when the level is wrong, 404 when"
+              + " the project or the account does not exist.")
+  public ApiResponse<MemberView> setMember(
+      @PathVariable String name, @PathVariable String userId, @RequestBody MemberLevel request) {
+    return ApiResponse.success(service.setMember(name, userId, request));
+  }
+
+  @DeleteMapping("/projects/{name}/members/{userId}")
+  @Operation(
+      summary = "Take an account out of a project",
+      description =
+          "The roles the account was given stay. Not being a member changes nothing. 403 when an"
+              + " administrator of the project removes an administrator, 404 when the project does"
+              + " not exist.")
+  public ApiResponse<Void> removeMember(@PathVariable String name, @PathVariable String userId) {
+    service.removeMember(name, userId);
+    return ApiResponse.success(null);
   }
 }

@@ -55,6 +55,7 @@ Mô hình đi qua một đường duy nhất, từ hệ thống rỗng hay từ 
 - Dòng đang vi phạm quy tắc mới: siết hoặc thêm `min`, `max`, `pattern` hay danh sách lựa chọn là `MIGRATION` kèm số dòng và bị từ chối đến khi dữ liệu được sửa; nới hoặc bỏ là `SAFE`.
   Đổi `required_when`, `ui:` hay `documents:` là `SAFE` và không bị chặn khi còn hồ sơ đang xử lý.
 - Số hồ sơ đang xử lý của các quy trình bị ảnh hưởng, và các câu lệnh pgschema sẽ chạy.
+- Với mỗi hành động mới đòi thêm trường bằng `require`: `CHANGE_ACTIONS` nêu hành động và trường (cùng đổi nhãn, vai, `needs_note`), và `impacts` đếm hồ sơ đang ở trạng thái nguồn mà còn thiếu trường; mức vẫn `SAFE`, hành động từ chối các hồ sơ đó đến khi trường được bổ sung.
 
 ### Áp dụng
 

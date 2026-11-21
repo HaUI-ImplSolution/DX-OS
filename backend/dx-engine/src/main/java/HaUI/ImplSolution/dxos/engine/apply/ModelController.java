@@ -71,7 +71,9 @@ public class ModelController {
               + " MIGRATION, LOSS), what is refused, existing rows that break a new rule, open records"
               + " of the touched processes and the statements to run. Changes that collide with"
               + " another model, affect open process records, or have attachments or executions are"
-              + " refused. A file that did not change but whose tables, client, roles or unit groups"
+              + " refused. impacts names each action that now requires fields and counts the records in"
+              + " its source states that lack one of them; the action refuses those records until the"
+              + " field is filled in, and the plan stays SAFE. A file that did not change but whose tables, client, roles or unit groups"
               + " no longer match it has action repair, with the changes REPAIR_SCHEMA, REPAIR_CLIENT,"
               + " REPAIR_ROLE and REPAIR_UNIT. No record or table changes.")
   public ApiResponse<ApplyService.Plan> plan(@RequestBody String content) {

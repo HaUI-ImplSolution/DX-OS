@@ -255,6 +255,7 @@ Một lần đổi vừa tăng vừa giảm, như `own` sang `read`, hoặc khô
 - Quy trình khác khung gốc chạy trên BPMN riêng, sinh từ các trạng thái và hành động khai báo khi áp dụng mô hình.
 - Đổi trạng thái đầu, thêm hoặc bỏ trạng thái, hay đổi `from`, `to`, `by`, `when` của một hành động khi còn hồ sơ chưa ở trạng thái cuối thì kế hoạch bị từ chối.
 - Đổi nhãn, `role`, `require`, các trạng thái của `withdraw` hay danh sách `handler` thì an toàn và có hiệu lực ngay, kể cả với hồ sơ đang mở.
+- Thêm `require` cho một hành động vẫn là thay đổi an toàn, nhưng hồ sơ đang chờ ở trạng thái nguồn của hành động mà còn thiếu trường đó (trống hoặc chỉ có khoảng trắng cũng là thiếu) bị hành động từ chối cho đến khi bổ sung; kế hoạch nêu hành động, trường và số hồ sơ như vậy ở `impacts`.
 - Bỏ một trạng thái còn hồ sơ nằm ở đó, hoặc bỏ `terminal` của trạng thái còn hồ sơ đã đóng, cũng bị từ chối, vì hồ sơ đã đóng không chạy tiếp được.
 
 ```yaml

@@ -317,6 +317,7 @@ Dùng tài liệu này để sinh client thay vì viết tay.
 | `dxos apply` bị từ chối | Kế hoạch có thay đổi nặng hơn mức an toàn, hoặc tệp sai | Đọc kết quả `dxos plan`; chấp nhận thì thêm `--accept MIGRATION` hoặc `--accept LOSS`; tệp sai thì `dxos lint` chỉ đúng dòng và cột |
 | `/console` trả 404 | DX-OS đang chạy chế độ chỉ lõi | `dxos start --full` |
 | Quên mật khẩu `admin` | | `dxos admin` in mật khẩu tạm mới |
+| `dxos start` bị ngắt giữa chừng, hoặc báo cổng bị chiếm | Mới có một phần dịch vụ chạy, hoặc một chương trình khác giữ cổng `APISIX_HOST_PORT` hoặc `POSTGRES_HOST_PORT` | Chạy lại `dxos start`, nó dựng nốt phần còn thiếu; cổng do chương trình khác giữ thì `dxos doctor` nêu khóa cần đổi trong `deploy/.env` |
 | Không rõ dịch vụ nào hỏng | | `dxos status`, rồi `dxos logs <dịch vụ>` |
 
 Vẫn không rõ nguyên nhân thì xem [xử lý sự cố](./OPERATIONS.md#ứng-phó-sự-cố).

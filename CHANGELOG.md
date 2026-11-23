@@ -45,6 +45,10 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
   Không bỏ được thì mô hình bị loại khỏi hoạt động, yêu cầu dữ liệu của nó trả 409 kèm lý do và số đo `dxos_models_left_out` đếm nó.
   `GET /api/v1/models` ghi `leftOut`, `problems` và `warnings`, bảng điều khiển hiện cả hai trường hợp trên thẻ của mô hình, và tệp mới vi phạm luật vẫn bị từ chối.
 
+### Tệp mô hình
+
+- Mẫu Một cửa in "Kết quả xử lý hồ sơ" sau khi duyệt, nên cùng một mẫu không gọi hồ sơ Hoãn thi hoặc Phúc khảo là giấy xác nhận.
+
 ### Trợ lý nghiệp vụ (tùy chọn)
 
 - Trợ lý đề xuất một giá trị trường từ hồ sơ và nguồn tham khảo; người dùng sửa, hủy hoặc xác nhận, Core kiểm quyền và phiên bản trước khi ghi.

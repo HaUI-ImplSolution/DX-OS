@@ -15,10 +15,25 @@ x-hardened: &hardened
   cap_drop:
     - ALL
 
+# The assistant runs on an internal network: it reaches Core, the identity service and the gateway,
+# and the inference endpoint only through assistant-egress.
+networks:
+  assistant:
+    internal: true
+
 services:
   apisix-config:
     environment:
       DXOS_ASSISTANT: "true"
+
+  apisix:
+    networks: [default, assistant]
+
+  backend:
+    networks: [default, assistant]
+
+  keycloak:
+    networks: [default, assistant]
 
   # Prepares the state directory and the keys of the assistant.
   assistant-init:
@@ -58,6 +73,31 @@ services:
     entrypoint: [bash, -c, "bash /assistant-sso.sh || echo 'WARNING: the assistant sign-in client was not set up; Core is not affected.' >&2"]
     tmpfs: ["/tmp:rw,nosuid,nodev,noexec,size=64m,mode=1777"]
 
+  # The only way out of the assistant network: a forward proxy that reaches the host and port of ASSISTANT_INFERENCE_URL and nothing else.
+  assistant-egress:
+    <<: *hardened
+    logging: *default-logging
+    image: ${DXOS_IMAGE_PREFIX:-dxos}-assistant:${DXOS_IMAGE_TAG:-local}
+    user: "1000:1000"
+    restart: unless-stopped
+    read_only: true
+    mem_limit: 128m
+    cpus: 0.25
+    pids_limit: 64
+    # An inference service on this machine is reached as host.docker.internal.
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    networks: [default, assistant]
+    env_file:
+      - path: ./assistant.env
+        required: false
+    command: [dist/egress.js]
+    tmpfs: ["/tmp:rw,nosuid,nodev,noexec,size=16m"]
+    healthcheck:
+      test: [CMD, node, -e, "require('node:net').connect(3128,'127.0.0.1').on('connect',()=>process.exit(0)).on('error',()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 4
+
   assistant-control:
     <<: *hardened
     logging: *default-logging
@@ -68,9 +108,10 @@ services:
     mem_limit: 256m
     cpus: 0.5
     pids_limit: 128
-    # An inference service on this machine is reached as host.docker.internal.
-    extra_hosts: ["host.docker.internal:host-gateway"]
+    networks: [assistant]
     depends_on:
+      assistant-egress:
+        condition: service_healthy
       backend:
         condition: service_healthy
       assistant-init:
@@ -93,6 +134,10 @@ services:
       ASSISTANT_OIDC_JWKS_URL: http://keycloak:8080/realms/dxos/protocol/openid-connect/certs
       ASSISTANT_OIDC_TOKEN_URL: http://keycloak:8080/realms/dxos/protocol/openid-connect/token
       ASSISTANT_OIDC_CLIENT_ID: dxos-assistant
+      NODE_USE_ENV_PROXY: "1"
+      HTTP_PROXY: http://assistant-egress:3128
+      HTTPS_PROXY: http://assistant-egress:3128
+      NO_PROXY: backend,keycloak,localhost,127.0.0.1
     volumes:
       - ./data/assistant/control:/state
       - ./data/assistant/private:/run/secrets:ro

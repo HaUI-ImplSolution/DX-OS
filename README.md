@@ -35,7 +35,7 @@ Người triển khai mô tả nghiệp vụ của mình trong một tệp mô h
 Đổi nghiệp vụ là đổi tệp, không đổi mã.
 
 Toàn bộ hệ thống lắp từ phần mềm nguồn mở có giấy phép được OSI công nhận, tự cài trên máy của bạn, dữ liệu nằm hoàn toàn ở đó.
-Phiên bản hiện tại là `2.0.2`; thay đổi theo từng phiên bản ở [`CHANGELOG.md`](./CHANGELOG.md).
+Phiên bản hiện tại là `2.1.0`; thay đổi theo từng phiên bản ở [`CHANGELOG.md`](./CHANGELOG.md).
 
 ## Kiến trúc
 
@@ -186,7 +186,7 @@ Hướng dẫn kiểm thử đầy đủ ở [`docs/TESTING.md`](./docs/TESTING.
 
 ## Chạy thử
 
-Bản `2.0.1` chạy công khai tại https://khuongdev.io.vn/ với mô hình Một cửa sinh viên và 40 hồ sơ mẫu.
+Bản `2.1.0` chạy công khai tại https://khuongdev.io.vn/ với mô hình Một cửa sinh viên và 40 hồ sơ mẫu.
 Đăng nhập bằng một trong bốn tài khoản thử dưới đây, cùng mật khẩu `15c9777835f0dfcf4e8d`.
 
 | Tài khoản | Vai |
@@ -279,11 +279,12 @@ Các tài liệu về viết tệp mô hình, API, vận hành, giám sát, tíc
 | `sso` | Lõi | Keycloak realm |
 | `portal` | Ứng dụng | Trang liên kết các địa chỉ và trạng thái dịch vụ |
 | `examples` | Ngoài lõi | Chương trình mẫu: bên nhận sự kiện giữ hash lịch sử ([`history-witness`](./examples/history-witness/README.md)), giả lập hệ thống IT/OT ([`itot-simulator`](./examples/itot-simulator/README.md)), ứng dụng duyệt đơn và tệp mô hình đi kèm ([`order_approval`](./examples/order_approval/README.md)), ứng dụng bán hàng ngoài thêm quy trình đổi trả và bảo hành làm trên Console ([`appliance-store`](./examples/appliance-store/README.md)), kho tệp mô hình trong git ([`model-repo`](./examples/model-repo/README.md)), so sánh công sức với viết tay ([`effort-benchmark`](./examples/effort-benchmark/README.md)) |
+| `assistant` | Tùy chọn | Trợ lý nghiệp vụ: dịch vụ Node.js đề xuất giá trị một trường, chỉ nạp khi bật ([`assistant/README.md`](./assistant/README.md)) |
 | `tools` | Công cụ | Công cụ của người phát triển, như đếm mã tự viết |
 | `e2e` | Kiểm thử | Kiểm tự động trên stack đang chạy: API (`api/`), giao diện web bằng Playwright (`web/`) và tệp mô hình sai mẫu (`fixtures/`) |
 | `website` | Tài liệu | Trang tài liệu (Docusaurus), đăng lên GitHub Pages |
 | `docs` | Tài liệu | Hướng dẫn kiểm thử, tệp mô hình, API, vận hành, giám sát, tích hợp, báo cáo, lưu trữ tệp; hướng thiết kế ở `dynamic-core/` |
-| `sbom` | Giấy phép | Danh mục thành phần CycloneDX của backend, web, và trang tài liệu |
+| `sbom` | Giấy phép | Danh mục thành phần CycloneDX của backend, web, trợ lý và trang tài liệu |
 | `LICENSES` | Giấy phép | Toàn văn giấy phép của kho theo chuẩn REUSE |
 | `.github` | Dùng chung | Workflow CI, mẫu issue và pull request, quy tắc nhánh, script kiểm tra |
 

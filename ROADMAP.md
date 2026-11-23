@@ -11,14 +11,13 @@ Mọi việc dưới đây giữ hướng đó: thêm nghiệp vụ là thêm t�
 
 ## Tiếp theo
 
-- **Chứng minh lõi phục vụ ứng dụng bên ngoài:** một ứng dụng mẫu có giao diện riêng chỉ gọi lõi qua API; một ví dụ cho thấy tệp mô hình sống trong git, chạy kế hoạch trên pull request và áp dụng khi gộp.
-- **Dữ liệu:** truy vấn trực tiếp trên kho lưu trữ dài hạn.
+- **Thử với đơn vị thật:** đưa DX-OS cho một đơn vị có quy trình duyệt để kiểm các giả thuyết về nhu cầu, vì đội chưa nói chuyện với khách hàng nào.
+- **Tài liệu tiếng Anh:** `README_EN.md` đã có; các tài liệu còn lại chỉ có tiếng Việt.
 
 ## Sau đó
 
 - **Trí tuệ nhân tạo:** hỏi đáp có trích nguồn và tác tử nghe sự kiện, thêm vào trợ lý đề xuất giá trị một trường đã có, chỉ dùng mô hình mở hoàn toàn theo định nghĩa của OSI.
 - **Quy trình:** thêm họ mẫu khi có đủ ba miền chạy được bằng tham số.
-- **Tệp mô hình:** nâng tệp cũ khi định dạng đổi.
 
 ## Đã cân nhắc và không làm
 

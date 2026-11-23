@@ -7,6 +7,11 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-11-26
+
+Thêm và sửa sau bản `2.0.2`: dự án gom mô hình và ứng dụng ngoài kèm quản trị theo dự án, `dxos connect` và `webUrl` để nối ứng dụng ngoài, ứng dụng mẫu `appliance-store`, kế hoạch đổi mô hình báo tác động lên hồ sơ đang chờ, ghi có điều kiện theo phiên bản, và trợ lý nghiệp vụ tùy chọn.
+Nâng cấp từ `2.0.2` giữ nguyên dữ liệu; hai migration mới thêm bảng dự án và thành viên dự án.
+
 ### Lõi chạy ngầm
 
 - Kế hoạch đổi mô hình nêu hành động nào đổi (`CHANGE_ACTIONS` ghi nhãn, vai, `needs_note`, `check` và `require` thêm hoặc bỏ), và thêm `impacts`: với mỗi hành động mới đòi thêm trường bằng `require`, số hồ sơ đang ở trạng thái nguồn còn thiếu trường đó.
@@ -456,7 +461,8 @@ Bản phát hành đầu tiên của DX-OS.
 - Backend, Keycloak và frontend không publish cổng, mọi truy cập đi qua gateway; `deploy/demo/seed_demo.py` tạo tài khoản và dữ liệu demo.
 - Tài liệu và nguồn mở: `LICENSE`, `LICENSES.md`, SBOM CycloneDX, `CONTRIBUTING.md`, mẫu issue và pull request.
 
-[Unreleased]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v2.0.2...main
+[Unreleased]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v2.1.0...main
+[2.1.0]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v2.0.2...v2.1.0
 [2.0.2]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v1.1.1...v2.0.0

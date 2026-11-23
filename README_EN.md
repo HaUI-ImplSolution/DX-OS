@@ -35,7 +35,7 @@ The person deploying it describes their business in one model file — what a re
 Changing the business means changing the file, not the code.
 
 The whole system is assembled from open-source software under OSI-approved licenses, installs on your own machine, and the data stays there.
-The current version is `2.0.2`; the changes of each version are in [`CHANGELOG.md`](./CHANGELOG.md).
+The current version is `2.1.0`; the changes of each version are in [`CHANGELOG.md`](./CHANGELOG.md).
 
 ## Architecture
 
@@ -187,7 +187,7 @@ The full testing guide is in [`docs/TESTING.md`](./docs/TESTING.md) (Vietnamese)
 
 ## Try it
 
-Version `2.0.1` runs publicly at https://khuongdev.io.vn/ with the One-stop student model and 40 sample requests.
+Version `2.1.0` runs publicly at https://khuongdev.io.vn/ with the One-stop student model and 40 sample requests.
 Sign in with one of the four trial accounts below, all with the password `15c9777835f0dfcf4e8d`.
 
 | Account | Role |
@@ -281,11 +281,12 @@ The documents on writing a model file, the API, operation, monitoring, integrati
 | `sso` | Core | The Keycloak realm |
 | `portal` | Apps | The page that links the addresses and the state of the services |
 | `examples` | Outside the core | Sample programs: a receiver that keeps history hashes ([`history-witness`](./examples/history-witness/README.md)), an IT/OT system simulator ([`itot-simulator`](./examples/itot-simulator/README.md)), an order-approval application with its model file ([`order_approval`](./examples/order_approval/README.md)), an outside sales application that adds returns and warranty processes from the console ([`appliance-store`](./examples/appliance-store/README.md)), model files kept in a git repository ([`model-repo`](./examples/model-repo/README.md)), the effort compared with hand-written code ([`effort-benchmark`](./examples/effort-benchmark/README.md)) |
+| `assistant` | Optional | The business assistant: a Node.js service that proposes the value of one field, loaded only when enabled ([`assistant/README.md`](./assistant/README.md)) |
 | `tools` | Tools | Developer tools, such as counting hand-written code |
 | `e2e` | Testing | Automatic checks on a running stack: the API (`api/`), the web interface with Playwright (`web/`) and invalid model files (`fixtures/`) |
 | `website` | Documentation | The docs site (Docusaurus), published on GitHub Pages |
 | `docs` | Documentation | The testing guide, the model file, the API, operation, monitoring, integration, reporting and file storage; the design is in `dynamic-core/` |
-| `sbom` | Licenses | CycloneDX component lists of the backend, the web interface and the docs site |
+| `sbom` | Licenses | CycloneDX component lists of the backend, the web interface, the assistant and the docs site |
 | `LICENSES` | Licenses | The full text of the licenses of the repository, as the REUSE specification asks |
 | `.github` | Shared | CI workflows, issue and pull request templates, branch rules, check scripts |
 

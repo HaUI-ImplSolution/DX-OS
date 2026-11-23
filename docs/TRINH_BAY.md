@@ -118,7 +118,7 @@ Cửa hàng điện máy không liên quan đến dự án thêm hai quy trình 
 | Chỉ số | Kết quả |
 |---|---|
 | Luồng ticket: mã riêng phải viết | Lab 347 dòng Java, Core 28 dòng YAML, giảm 91,93% (đếm theo số dòng, không phải giờ công) |
-| Bản phát hành | Chín bản `v1.0.0` đến `v2.0.2`, mỗi bản có `.tar.gz`, `.sha256`, SBOM |
+| Bản phát hành | Mười bản `v1.0.0` đến `v2.1.0`, mỗi bản có `.tar.gz`, `.sha256`, SBOM |
 | Kiểm tự động | Tám mục "thế nào là đạt" chạy bằng `check_demo.py`; CI `Platform`, `Compliance` |
 | Cài | Hai lệnh trên máy sạch, một lệnh tạo tài khoản và hồ sơ thử |
 

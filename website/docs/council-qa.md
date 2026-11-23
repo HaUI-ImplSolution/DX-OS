@@ -1,6 +1,6 @@
 # Bộ trả lời câu hỏi hội đồng
 
-Những câu hội đồng dễ hỏi sau phần trình diễn, kèm câu trả lời của đội cho bản `2.0.2`.
+Những câu hội đồng dễ hỏi sau phần trình diễn, kèm câu trả lời của đội cho bản `2.1.0`.
 Mười câu đầu theo thứ tự câu hỏi định hướng ở mục 13 của [đề thi](https://vfossa.vn/tin-tuc/de-thi-phan-mem-nguon-mo-olp-2026-798.html); các câu sau là câu hỏi phụ hay gặp.
 Mỗi câu trả lời nói được trong khoảng nửa phút.
 Dòng **Bằng chứng** là chỗ mở ngay khi hội đồng muốn xem: đường dẫn trong repository, lệnh, bước CI.

@@ -2,7 +2,7 @@
 
 Đối chiếu lõi dynamic với đề thi, thể lệ, chuẩn của một repository nguồn mở, rồi nêu các hướng mở rộng lõi.
 Việc còn thiếu và chỗ lệch hướng nằm ở [`BACKLOG.md`](./BACKLOG.md); hướng đi của lõi ở [`README.md`](./README.md).
-Số liệu kiểm ngày 18/11/2026 trên nhánh `Khuong/main` và API công khai của GitHub.
+Số liệu kiểm ngày 18/11/2026, riêng commit, pull request, issue, CI và `reuse lint` cập nhật ngày 23/11/2026, trên nhánh `Khuong/main` và API công khai của GitHub.
 Mỗi mục ghi một trong bốn mức: Đạt, Đạt một phần, Chưa đạt, Chưa kiểm; tài liệu này không ghi số điểm, vì việc chấm là của Ban giám khảo.
 Bản đánh giá nêu cả điểm yếu và những chỗ mình chưa kiểm được.
 
@@ -19,7 +19,7 @@ Nguồn: [đề thi](https://vfossa.vn/tin-tuc/de-thi-phan-mem-nguon-mo-olp-2026
 | Dữ liệu phi cấu trúc | SeaweedFS, tệp đính kèm theo quyền của hồ sơ, ClamAV; quét mã độc bật mặc định, tệp EICAR bị chặn trong CI | Đạt |
 | Động cơ luồng công việc | Flowable nhúng, BPMN sinh từ mô hình, ba họ mẫu | Đạt |
 | Ít nhất một ứng dụng Tầng 2 trong H-P-D-I | Ứng dụng web dựng từ metadata và bảng điều khiển, chạm H, P và D; chữ I có một thành phần là trợ lý đề xuất giá trị trường từ hồ sơ và nguồn tham khảo, chạy self-host qua endpoint suy luận chuẩn mở, tắt mặc định, người dùng xác nhận trước khi lưu; thiếu tìm kiếm toàn văn và theo ngữ nghĩa, quản trị tác tử AI, OCR và hỏi đáp trên tri thức nội bộ (đề không nêu số thành phần phải làm); `README.md` có mục đối chiếu với đề | Đạt một phần |
-| Giấy phép OSI, mã công khai, có bản phát hành trước khi nộp | Apache-2.0; chín bản `v1.0.0` đến `v2.0.2` | Đạt |
+| Giấy phép OSI, mã công khai, có bản phát hành trước khi nộp | Apache-2.0; mười bản `v1.0.0` đến `v2.1.0` | Đạt |
 
 Các giao diện đi kèm được tính như sau.
 Giao diện của DX-OS là giao diện web, bảng điều khiển, trang liên kết (portal) và màn hình giám sát, đều ở Tầng 2; lõi chạy riêng không kèm giao diện nào.
@@ -54,12 +54,12 @@ Cách đọc của đội là bốn dịch vụ ở mục 1 là điều kiện b
 
 | Tiêu chí | Điểm | Đã có | Mức | Còn thiếu |
 |---|---|---|---|---|
-| Quản lý mã nguồn trên Internet | 5 | GitHub công khai; 1065 commit trên `Khuong/main`; 220 pull request đã gộp; 23 kiểm tra của CI đều xanh trên pull request #296, và workflow trên `main` đều xanh | Đạt | Không có |
-| Giấy phép OSI | 10 | Apache-2.0 cho mã, tài liệu, ảnh, video và sơ đồ; OFL-1.1 cho hai tệp phông; `LICENSE` toàn văn; `NOTICE` có mục "Mục đích của giấy phép"; dòng SPDX ở tệp mã; `reuse lint` đạt 579 trên 579 tệp; CI kiểm giấy phép của mọi gói, của `REUSE.toml` và của `LICENSES/`; chỉ hai gói dữ liệu chỉ đọc lúc dựng trang docs nằm ngoài danh sách OSI, nêu tên kèm lý do ở mục 7 của `DEPENDENCIES.txt` | Đạt | Không có |
-| Bản phát hành | 5 | Chín bản theo SemVer, mỗi bản có `.tar.gz`, `.sha256` và SBOM, không có `.zip` do đội đăng | Đạt | Không có |
+| Quản lý mã nguồn trên Internet | 5 | GitHub công khai; 1159 commit trên `Khuong/main`; 238 pull request đã gộp; 20 kiểm tra của CI đều xanh ở commit mới nhất của `Khuong/main` | Đạt | Không có |
+| Giấy phép OSI | 10 | Apache-2.0 cho mã, tài liệu, ảnh, video và sơ đồ; OFL-1.1 cho hai tệp phông; `LICENSE` toàn văn; `NOTICE` có mục "Mục đích của giấy phép"; dòng SPDX ở tệp mã; `reuse lint` đạt 641 trên 641 tệp; CI kiểm giấy phép của mọi gói, của `REUSE.toml` và của `LICENSES/`; chỉ hai gói dữ liệu chỉ đọc lúc dựng trang docs nằm ngoài danh sách OSI, nêu tên kèm lý do ở mục 7 của `DEPENDENCIES.txt` | Đạt | Không có |
+| Bản phát hành | 5 | Mười bản theo SemVer, mỗi bản có `.tar.gz`, `.sha256` và SBOM, không có `.zip` do đội đăng | Đạt | Không có |
 | Dịch từ mã nguồn | 10 | Cấu hình ở `.env` trước khi dựng, Docker, Maven wrapper và npm, cài ra ngoài thư mục mã nguồn, CI cài từ gói phát hành và chạy trình duyệt trên stack rỗng; công cụ cần có trên máy chạy đã khai giấy phép; ngày 18/11 mình clone `Khuong/main` vào thư mục trống và chạy đúng các lệnh của README (`make_env.sh`, `docker compose up -d --build`, `dxos admin`): 9 dịch vụ `healthy`, 4 địa chỉ trả 200; cùng ngày cài `v2.0.1` từ release bằng `dxos-install.sh` và làm theo `docs/QUICKSTART.md` cả hai đường (CLI và giao diện web) đều chạy đúng | Đạt | Lần chạy dùng bộ nhớ đệm image của Docker nên chưa đo trên máy hoàn toàn mới; mới chạy trên `Khuong/main`, chưa chạy trên `main` hoặc Windows |
 | Thư viện và gói đính kèm | 10 | `DEPENDENCIES.txt` có tên, phiên bản, giấy phép, vai trò, trang chủ và nguồn; SBOM khớp tệp khóa; image ghim digest; không chép và không vá mã của dự án khác | Đạt | Không có |
-| Tài liệu và giao tiếp | 10 | README hai thứ tiếng, CHANGELOG, mẫu issue, CONTRIBUTING, SECURITY, quy tắc ứng xử, trang docs, `ROADMAP.md`, Discussions; trang Contributors ngày 18/11 liệt kê ba thành viên (555, 117 và 93 commit trong ba tháng gần nhất, không kể commit gộp), cùng `claude` (394) và `codex` (32) do dòng đồng tác giả trong commit, và dependabot; API `contributors` chỉ trả hai người | Đạt một phần | Phần lớn tài liệu chỉ có tiếng Việt |
+| Tài liệu và giao tiếp | 10 | README hai thứ tiếng, CHANGELOG, mẫu issue, CONTRIBUTING, SECURITY, quy tắc ứng xử, trang docs, `ROADMAP.md`, Discussions; `git shortlog` ngày 23/11 liệt kê ba thành viên (854, 154 và 142 commit, kể cả commit gộp), cùng dependabot (7), và dòng đồng tác giả trong commit ghi Claude (798) và Codex hoặc OpenAI (58); API `contributors` của GitHub đọc nhánh mặc định `main` nên chỉ trả `nddKhanh`, `tung51652-alt`, dependabot và `Khuong-PlanB` | Đạt một phần | Phần lớn tài liệu chỉ có tiếng Việt |
 
 Các việc ở cột cuối nằm ở `BACKLOG.md`, mục 2 và 3.
 Thư gửi bài (thành viên, người hướng dẫn, đường dẫn kho, cam kết bản quyền) không nằm trong bảng chấm và do đội gửi; đề không đòi báo cáo kỹ thuật, slide hay video.
@@ -71,7 +71,7 @@ Phần này do Ban giám khảo chấm ở buổi chung kết; bảng ghi điể
 | Tiêu chí | Điểm tựa | Điểm yếu |
 |---|---|---|
 | Tính nguyên gốc | Đổi mô hình an toàn trên hệ thống đang chạy: kế hoạch, mức rủi ro, dòng vi phạm, quay lui; quy tắc bất biến nằm trong engine; lịch sử nối chuỗi hash | Đề không hỏi trực tiếp, nên phải giải thích được giá trị trong vài phút; các đội cùng dùng Keycloak, APISIX, PostgreSQL, Flowable nên phần riêng chỉ là vòng đời mô hình; chưa nói chuyện với khách hàng nào (#231) |
-| Mức hoàn thiện | Mười mẫu mô hình trên ba họ quy trình; 20 kiểm tra của CI trên stack thật, kể cả trình duyệt; bộ kiểm chung cho mô hình mới | Phần AI chỉ có một thành phần, trợ lý đề xuất giá trị trường (tùy chọn); pull request trợ lý nhiều người dùng (#199) còn mở, chưa gộp |
+| Mức hoàn thiện | Mười mẫu mô hình trên ba họ quy trình; 20 kiểm tra của CI trên stack thật, kể cả trình duyệt; bộ kiểm chung cho mô hình mới | Phần AI chỉ có một thành phần, trợ lý đề xuất giá trị trường (tùy chọn); trợ lý phục vụ nhiều người nhưng chỉ đề xuất, không tự hành động |
 | Thân thiện | Cài một lệnh, bảng điều khiển, thư viện mẫu, tài khoản và hồ sơ thử, mã hồ sơ đọc được, giao diện điện thoại, tiếng Việt và tiếng Anh | Giao diện sinh từ metadata dễ trông chung chung; chữ do mô hình định nghĩa không được dịch (`BACKLOG.md`, mục 4) |
 | Phát triển bền vững | Tài liệu kiến trúc, tệp mô hình, API và vận hành; mục ứng phó sự cố; lệnh `dxos`; bộ kiểm chung cho mô hình; SBOM; ứng dụng mẫu của bên ngoài ở `examples/appliance-store` | Đóng góp tập trung vào một người |
 | Trình diễn, thu hút cộng đồng | Kịch bản 15 phút ở `docs/DEMO.md`, hai video và ảnh động kiến trúc | Bài trình bày chung kết ở `docs/TRINH_BAY.md` (slide Marp, chưa xuất PDF); buổi thi kéo DX-OS vào một web đã được deploy sẵn |
@@ -138,7 +138,7 @@ GitHub chấm hồ sơ cộng đồng của repository là 100 trên 100; mẫu 
 | Mẫu issue | Có `.github/ISSUE_TEMPLATE` (hai mẫu và `config.yml`); API hồ sơ cộng đồng ghi `false` dù mẫu có thật nên không phải điểm trừ | Phần lớn có | Đạt |
 | `SECURITY.md`, quy trình báo lỗ hổng | Có, kèm mốc phản hồi và quy tắc thử trên bản trực tuyến; private vulnerability reporting đang bật (API trả `enabled: true`) | Một nửa có | Đạt |
 | `CHANGELOG`, `ROADMAP`, `NOTICE` | Có cả ba | Rất ít dự án có đủ | Đạt |
-| Giấy phép đọc được bằng máy | `reuse lint` đạt 579 trên 579 tệp; SBOM kèm mỗi bản phát hành | Ít dự án có | Đạt |
+| Giấy phép đọc được bằng máy | `reuse lint` đạt 641 trên 641 tệp; SBOM kèm mỗi bản phát hành | Ít dự án có | Đạt |
 | Cập nhật và quét phụ thuộc | Dependabot, Trivy, gitleaks; tab Security ngày 18/11 có 5 cảnh báo Dependabot mở (1 cao, 4 vừa), đều ở thư viện npm gián tiếp (`decode-uri-component`, `react-router` trong web; `uuid` trong trang docs) và đều mở từ 6 đến 11/11, chưa cái nào quá 60 ngày; quét độc lập ngày 14/11 bằng Trivy 0.58.1 (cùng image với CI) trên các tệp khóa thấy 0 lỗ hổng cao hoặc nghiêm trọng, và các lỗ hổng mức vừa bị giới hạn bởi phiên bản mà `react-admin` và Docusaurus cho phép | Phần lớn có công cụ cập nhật | Đạt một phần |
 | Bảo vệ nhánh và tag | Hai ruleset đang `active`: `main` (bắt buộc pull request, 16 kiểm tra phải xanh, một đối tượng được bỏ qua) và tag `v*` bất biến | Không đo được từ ngoài | Đạt |
 | `.editorconfig` | Thêm ngày 14/11 | 6 trên 7 dự án có | Đạt |

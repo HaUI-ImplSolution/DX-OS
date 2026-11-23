@@ -15,8 +15,8 @@ Việc còn lại trước hạn nằm ở mục 2.
 
 | Việc | Ghi chú |
 |---|---|
-| Rà soát cuối trên bản phát hành | Trước 17:00 ngày 06/12, trên commit gắn tag: clone vào máy sạch rồi `deploy/make_env.sh` và `docker compose up -d --build` thành công; CI xanh (`Platform`, `Compliance`, `Backend`, `Frontend`, `Dependencies`); trang docs mô tả đúng bản gắn tag; số issue, pull request và commit ở `website/docs/pof-audit.md` lấy lại theo ngày gắn tag |
-| Kiểm lại khi có bản phát hành mới | Cài bằng `dxos-install.sh` của bản mới rồi làm theo `docs/QUICKSTART.md` (`client add --env`, `client test` và gợi ý sau `dxos start` phải có; liên kết `raw.githubusercontent.com/.../main/examples/order_approval/dxos.yaml` phải hết 404 sau khi gộp vào `main`); chạy `dxos update` từ `v2.0.1` lên bản mới ở locale `en_US.UTF-8` |
+| Rà soát cuối trên bản phát hành | Trước 17:00 ngày 06/12, trên commit gắn tag: clone vào máy sạch rồi `deploy/make_env.sh` và `docker compose up -d --build` thành công; CI xanh (`Platform`, `Compliance`, `Backend`, `Frontend`, `Dependencies`); trang docs mô tả đúng bản gắn tag; số issue, pull request và commit ở `website/docs/pof-audit.md` và `docs/dynamic-core/DANH_GIA.md` lấy lại theo ngày gắn tag |
+| Kiểm lại khi có bản phát hành mới | Cài bằng `dxos-install.sh` của bản mới rồi làm theo `docs/QUICKSTART.md` (`client add --env`, `client test` và gợi ý sau `dxos start` phải có; liên kết `raw.githubusercontent.com/.../main/examples/order_approval/dxos.yaml` phải hết 404 sau khi gộp vào `main`); chạy `dxos update` từ `v2.0.2` lên `v2.1.0` ở locale `en_US.UTF-8` |
 | Gửi bài | Thư tới `olpvietnam@vaip.vn` và `thuky@vfossa.vn` trước 17:00 ngày 06/12/2026, tiêu đề `BÀI THI PMNM 2026 - [Tên Đội] - [Tên Trường]`, nội dung gồm thành viên đội, người hướng dẫn, đường dẫn kho mã nguồn và cam kết bản quyền theo mẫu trong đề; trước đó xác nhận với trường rằng đội đã có trong danh sách đăng ký gửi BTC, và ghi người hướng dẫn vào mục Nhóm phát triển của `README.md` |
 
 ## 3. Giới hạn đã biết

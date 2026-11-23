@@ -22,7 +22,7 @@ const ownerKey = (owner: Owner) => JSON.stringify([owner.issuer, owner.subject])
 
 export class Store {
   private readonly db: DatabaseSync;
-  private readonly key: Buffer;
+  private key: Buffer;
 
   constructor(path: string, key: Buffer) {
     if (key.length !== 32) throw new Error('The master key must contain 32 bytes');
@@ -170,6 +170,36 @@ export class Store {
     const result = this.db.prepare("UPDATE proposals SET state='cancelled' WHERE id=? AND owner=? AND state='pending'")
       .run(id, ownerKey(owner));
     if (result.changes !== 1) throw new ApiError(409, 'ERR_PROPOSAL_CLOSED', 'Proposal is already handled');
+  }
+
+  cancelPending(owner: Owner): void {
+    this.db.prepare("UPDATE proposals SET state='cancelled' WHERE owner=? AND state='pending'").run(ownerKey(owner));
+  }
+
+  // Seals every row again under the new key in one transaction; the key is replaced only when it commits.
+  rotateKey(next: Buffer): void {
+    if (next.length !== 32) throw new Error('The master key must contain 32 bytes');
+    const owner = (value: string) => { const [issuer, subject] = JSON.parse(value) as [string, string]; return { issuer, subject }; };
+    const old = this.key, fresh = Buffer.from(next);
+    const reseal = (who: Owner, name: string, value: string) => {
+      const data = this.unseal<unknown>(who, name, value);
+      this.key = fresh; try { return this.seal(who, name, data); } finally { this.key = old; }
+    };
+    this.db.exec('BEGIN IMMEDIATE');
+    try {
+      this.db.exec('DELETE FROM oauth_flows');
+      for (const row of this.db.prepare('SELECT owner,name,value FROM secrets').all() as { owner: string; name: string; value: string }[])
+        this.db.prepare('UPDATE secrets SET value=? WHERE owner=? AND name=?')
+          .run(reseal(owner(row.owner), row.name, row.value), row.owner, row.name);
+      for (const row of this.db.prepare('SELECT id,owner,snapshot,receipt FROM proposals').all() as
+          { id: string; owner: string; snapshot: string; receipt: string | null }[]) {
+        const who = owner(row.owner);
+        this.db.prepare('UPDATE proposals SET snapshot=?,receipt=? WHERE id=?').run(reseal(who, row.id, row.snapshot),
+          row.receipt ? reseal(who, `${row.id}:receipt`, row.receipt) : null, row.id);
+      }
+      this.db.exec('COMMIT');
+    } catch (error) { this.db.exec('ROLLBACK'); fresh.fill(0); throw error; }
+    this.key = fresh; old.fill(0);
   }
 
   finish(owner: Owner, id: string, state: 'succeeded' | 'failed' | 'uncertain', receipt: unknown): void {

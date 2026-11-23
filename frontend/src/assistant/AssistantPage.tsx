@@ -11,6 +11,7 @@ export default function AssistantPage() {
   const [me, setMe] = useState<{ linked: boolean; model: { configured: boolean } } | null>(null);
   const [items, setItems] = useState<Proposal[]>([]); const [page, setPage] = useState(0);
   const [error, setError] = useState(""); const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState("");
   useEffect(() => {
     let active = true; setError("");
     void assistantRequest<typeof me>("/me").then(async result => {
@@ -28,6 +29,7 @@ export default function AssistantPage() {
     <Title title={t("Trợ lý nghiệp vụ")} />
     <PageHeader title={t("Trợ lý nghiệp vụ")} subtitle={t("Kết nối và theo dõi các đề xuất xử lý hồ sơ.")} />
     {error && <Alert severity="error">{error}</Alert>}
+    {notice && <Alert severity="info">{notice}</Alert>}
     <Card sx={{ p: 2 }}><Stack spacing={2}>
       <Typography>{me?.linked ? t("Đã liên kết tài khoản DX-OS.") : t("Liên kết tài khoản DX-OS để trợ lý truy cập đúng quyền của bạn.")}</Typography>
       <Typography>{me?.model.configured ? t("Bản cài đã cấu hình model self-host.") : t("Người vận hành chưa cấu hình model self-host.")}</Typography>
@@ -37,6 +39,14 @@ export default function AssistantPage() {
           window.location.assign(result.url);
         }).catch(e => { setError(e instanceof Error ? e.message : t("Không thể liên kết tài khoản.")); setBusy(false); });
       }}>{me?.linked ? t("Liên kết lại DX-OS") : t("Liên kết DX-OS")}</Button>
+      {me?.linked && <Button disabled={busy} color="error" variant="outlined" onClick={() => {
+        setBusy(true); setError(""); setNotice("");
+        void assistantRequest<{ revoked: boolean }>("/me/core/link", "DELETE").then(result => {
+          setMe(current => current && { ...current, linked: false }); setItems([]); setPage(0);
+          setNotice(result.revoked ? t("Đã hủy liên kết và thu hồi quyền của trợ lý.")
+            : t("Đã hủy liên kết ở trợ lý; dịch vụ đăng nhập chưa xác nhận thu hồi nên hãy kiểm tra phiên của bạn ở Keycloak."));
+        }).catch(e => setError(e instanceof Error ? e.message : t("Không thể hủy liên kết."))).finally(() => setBusy(false));
+      }}>{t("Hủy liên kết")}</Button>}
       <Typography variant="body2" color="text.secondary">{t("Mở hồ sơ có nhiệm vụ AI để tạo, xem căn cứ và xác nhận đề xuất.")}</Typography>
     </Stack></Card>
     <Card sx={{ p: 2 }}><Stack spacing={2}>

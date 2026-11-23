@@ -65,6 +65,12 @@ export async function createServer(store: Store, verify: ReturnType<typeof ident
       reply.header('Set-Cookie', cookie(link.cookie, 300));
       return { success: true, message: 'OK', data: { url: link.url } };
     });
+    app.delete('/assistant-api/v1/me/core/link', async request => {
+      if (request.headers.origin !== options.publicUrl.origin)
+        throw new ApiError(403, 'ERR_ORIGIN', 'The request origin is not allowed');
+      const owner = await verify(request.headers.authorization);
+      return { success: true, message: 'OK', data: await options.session.unlink(owner) };
+    });
     app.get<{ Querystring: { code: string; state: string } }>('/assistant-api/v1/oauth/callback', {
       schema: { querystring: { type: 'object', required: ['code', 'state'], properties: {
         code: { type: 'string', minLength: 1, maxLength: 4096 },
@@ -106,7 +112,9 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const verify = identityVerifier(issuer, required('ASSISTANT_OIDC_AUDIENCE'), jwks);
   const publicUrl = new URL(required('ASSISTANT_PUBLIC_URL'));
   const session = new CoreSession(store, { authorizationUrl: `${issuer}/protocol/openid-connect/auth`,
-    tokenUrl: required('ASSISTANT_OIDC_TOKEN_URL'), clientId: required('ASSISTANT_OIDC_CLIENT_ID'),
+    tokenUrl: required('ASSISTANT_OIDC_TOKEN_URL'),
+    revokeUrl: process.env.ASSISTANT_OIDC_REVOKE_URL ?? required('ASSISTANT_OIDC_TOKEN_URL').replace(/\/token$/, '/revoke'),
+    clientId: required('ASSISTANT_OIDC_CLIENT_ID'),
     callbackUrl: new URL('/assistant-api/v1/oauth/callback', publicUrl).toString(),
   }, identityVerifier(issuer, required('ASSISTANT_CORE_AUDIENCE'), jwks));
   const core = new CoreClient(new URL(required('ASSISTANT_CORE_URL')), session);

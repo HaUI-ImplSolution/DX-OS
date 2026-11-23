@@ -17,9 +17,10 @@
 #   dxos doctor                check this machine and deploy/.env
 #   dxos backup [args]         encrypted backup, see backup.sh
 #   dxos av [on|off]           turn the virus scan of uploads (ClamAV, about 1 GB of RAM) on or off, or show it
-#   dxos plan [--check] <model-file>
+#   dxos plan [--check] [--json] <model-file>
 #                              show what applying the file would change, without changing anything;
-#                              --check exits 0 when nothing differs, 2 when the plan has changes, 1 when refused
+#                              --check exits 0 when nothing differs, 2 when the plan has changes, 1 when refused;
+#                              the plan is text, or JSON with --json (also when jq is missing)
 #   dxos apply <model-file> [--accept SAFE|MIGRATION|LOSS]
 #                              apply the file; a plan above SAFE needs --accept with its level
 #   dxos lint <model-file>...  check model files with the reader of the backend, without a running system,
@@ -478,6 +479,81 @@ pretty() {
 # First value of a key in a JSON text, for the few plain values the commands need.
 json_field() { sed -n "s/.*\"$1\":\"\{0,1\}\([^\",}]*\).*/\1/p" <<<"$2" | head -n1; }
 
+# Prints the plan in an API answer as text, with the file name for the apply hint. Fails, printing nothing, when
+# jq is missing or the answer is no plan.
+plan_text() {
+  command -v jq >/dev/null 2>&1 || return 1
+  jq -er --arg file "$2" '
+    def kinds: {
+      ADD_ROLE: "Add role", ADD_UNIT: "Add unit", ADD_ENTITY: "Add entity", DROP_ENTITY: "Drop entity",
+      ADD_FIELD: "Add field", DROP_FIELD: "Drop field", RENAME_FIELD: "Rename field",
+      ADD_REQUIRED: "Make input required", DROP_REQUIRED: "Make input optional",
+      ADD_UNIQUE: "Require unique values", DROP_UNIQUE: "Allow repeated values",
+      CHANGE_OPTIONS: "Change the choices", CHANGE_LABEL: "Change the label", CHANGE_DEFAULT: "Change the default value",
+      CHANGE_FORMAT: "Change the code format", CHANGE_PATTERN: "Change the text pattern", DROP_PATTERN: "Remove the text pattern",
+      CHANGE_REQUIRED_WHEN: "Change the condition for required input", DROP_REQUIRED_WHEN: "Remove the condition for required input",
+      CHANGE_UI: "Change how the entity is displayed", CHANGE_DOCUMENTS: "Change the printable documents",
+      CHANGE_AI_TASKS: "Change the assistant tasks",
+      GRANT_ACCESS: "Grant access to a role", REVOKE_ACCESS: "Revoke the access of a role",
+      WIDEN_ACCESS: "Widen access", NARROW_ACCESS: "Narrow access", CHANGE_ACCESS: "Change access",
+      CHANGE_OWNER_VIA: "Change the owner taken from the parent record",
+      ADD_PROCESS: "Add process", DROP_PROCESS: "Drop process", CHANGE_HANDLER: "Change the handler role",
+      CHANGE_FLOW: "Change states or actions", CHANGE_ACTIONS: "Change the label, role or required fields of an action",
+      CHANGE_SELF_DECISION: "Change who may decide on own records", CHANGE_COMPLETION: "Change the completion action",
+      CHANGE_BOOKING: "Change the booking block", CHANGE_DEADLINE: "Change the deadline", CHANGE_CALENDAR: "Change the working calendar",
+      CHANGE_ESCALATION: "Change the escalation levels", CHANGE_AUTO_CLOSE: "Change the time before a record closes itself",
+      REPAIR_SCHEMA: "Repair the table structure", REPAIR_CLIENT: "Recreate the client in Keycloak",
+      REPAIR_ROLE: "Recreate the role in Keycloak", REPAIR_UNIT: "Recreate the unit group in Keycloak"
+    };
+    def rules: {
+      REQUIRED: "required", NEW_REQUIRED: "new field that is required", REQUIRED_WHEN: "required under a condition",
+      UNIQUE: "must be unique", OPTIONS: "accepts only the new choices", ELEMENTS: "number of elements",
+      MIN: "minimum value", MAX: "maximum value", PATTERN: "text pattern"
+    };
+    def levels: {
+      SAFE: "can be applied now, no data moves",
+      MIGRATION: "existing data is moved to the new structure",
+      LOSS: "some data will be deleted, back it up with deploy/backup.sh first"
+    };
+    def target: [.entity, .field] | map(select(. != null)) | join(".");
+    def change:
+      "  " + ((.level + "         ")[0:9]) + " " + (kinds[.kind] // .kind)
+      + (if target != "" then ": " + target + (if (.detail // "") != "" then " (" + .detail + ")" else "" end)
+         elif (.detail // "") != "" then ": " + .detail else "" end);
+    if (.data | type) == "array" then (.message // "The model file has problems:"), (.data[] | "  " + tostring)
+    else .data | select(.changes != null) | . as $p
+    | ($p.version | tostring) as $v
+    | (if $p.action == "create" then "Model \($p.model): new, created as version \($v)"
+       elif $p.action == "change" then "Model \($p.model): version \($p.fromVersion) -> \($v)"
+       elif $p.action == "repair" then "Model \($p.model): the file is unchanged, but tables or Keycloak entries drifted from it; applying repairs them and keeps version \($p.fromVersion)"
+       elif $p.action == "rejected" then "Model \($p.model): the plan is refused, nothing can be applied"
+       else "Model \($p.model): the running model already equals this file, nothing to apply" end),
+      (if $p.action == "unchanged" then empty else "Level: \($p.level), \(levels[$p.level] // "")" end),
+      (if ($p.changes | length) > 0 then "", "Changes (\($p.changes | length)):", ($p.changes[] | change) else empty end),
+      (if ($p.openRecords | length) > 0 then "", "Records in progress: " + ($p.openRecords | to_entries | map("\(.key) \(.value)") | join(", ")) else empty end),
+      (if ($p.impacts | length) > 0 then "", "Actions that will refuse waiting records until they are filled in:",
+         ($p.impacts[] | "  \(.entity).\(.action) needs \(.fields | join(", ")): \(.rows) records in \(.states | join(", ")) lack it") else empty end),
+      (if ($p.violations | length) > 0 then "", "Existing data that breaks a new rule:",
+         ($p.violations[] | "  " + target + ": " + (rules[.rule] // .rule) + ", \(.rows) rows" + (if (.sample | length) > 0 then ", ids " + (.sample | map(tostring) | join(", ")) else "" end)) else empty end),
+      (if ($p.rejections | length) > 0 then "", "Refused:", ($p.rejections[] | "  " + .) else empty end),
+      (if ($p.questions | length) > 0 then "", "To confirm:", ($p.questions[] | "  " + .) else empty end),
+      (if ($p.statements | length) > 0 then "", "SQL statements: \($p.statements | length) (dxos plan --json lists them)" else empty end),
+      (if $p.action != "rejected" and $p.action != "unchanged" and $p.level != "SAFE"
+         then "", "To apply: dxos apply \($file) --accept \($p.level)" else empty end)
+    end
+  ' <<<"$1" 2>/dev/null
+}
+
+# Prints a plan answer as text, or as JSON when asked, when jq is missing or when the answer is no plan.
+print_plan() {
+  local text
+  if [[ "${3:-}" != json ]] && text="$(plan_text "$1" "$2")"; then
+    printf '%s\n' "$text"
+  else
+    pretty "$1"
+  fi
+}
+
 model_file_arg() {
   [[ -n "${1:-}" ]] || die "usage: dxos $2 <model-file>"
   [[ -f "$1" && -r "$1" ]] || die "model file not found or not readable: $1"
@@ -486,13 +562,20 @@ model_file_arg() {
 # Prints the plan; exit code 1 when the plan is refused or the API says no. With --check the exit code is
 # 0 when the running model equals the file and 2 when the plan has changes.
 cmd_plan() {
-  local check=false file
-  if [[ "${1:-}" == --check ]]; then check=true; shift; fi
-  (( $# == 1 )) || die "usage: dxos plan [--check] <model-file>"
-  file="$(from_caller "$1")"
+  local check=false form=text file=""
+  while (( $# )); do
+    case "$1" in
+      --check) check=true; shift ;;
+      --json) form=json; shift ;;
+      -*) die "unknown option: $1" ;;
+      *) [[ -z "$file" ]] || die "usage: dxos plan [--check] [--json] <model-file>"; file="$1"; shift ;;
+    esac
+  done
+  [[ -n "$file" ]] || die "usage: dxos plan [--check] [--json] <model-file>"
+  file="$(from_caller "$file")"
   model_file_arg "$file" plan
   api POST /models/plan "$file"
-  pretty "$API_BODY"
+  print_plan "$API_BODY" "$file" "$form"
   [[ "$API_STATUS" == 200 && "$(json_field action "$API_BODY")" != rejected ]] || return 1
   if $check && [[ "$(json_field action "$API_BODY")" != unchanged ]]; then return 2; fi
   return 0
@@ -514,10 +597,10 @@ cmd_apply() {
   model_file_arg "$file" apply
   [[ -z "$accept" || "$accept" =~ ^(SAFE|MIGRATION|LOSS)$ ]] || die "--accept takes SAFE, MIGRATION or LOSS"
   api POST /models/plan "$file"
-  if [[ "$API_STATUS" != 200 ]]; then pretty "$API_BODY"; return 1; fi
+  if [[ "$API_STATUS" != 200 ]]; then print_plan "$API_BODY" "$file"; return 1; fi
   case "$(json_field action "$API_BODY")" in
     unchanged) echo "Nothing to apply: the model runs this file already."; return 0 ;;
-    rejected) pretty "$API_BODY"; echo "dxos: the plan is refused; nothing was applied" >&2; return 1 ;;
+    rejected) print_plan "$API_BODY" "$file"; echo "dxos: the plan is refused; nothing was applied" >&2; return 1 ;;
   esac
   query="base=$(json_field fromVersion "$API_BODY")"
   [[ -n "$accept" ]] && query="$query&accept=$accept"

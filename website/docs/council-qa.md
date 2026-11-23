@@ -73,13 +73,13 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - **H, môi trường số chung:** một lần đăng nhập, vai và đơn vị khai trong mô hình; sinh viên chỉ thấy hồ sơ của mình, cán bộ chỉ thấy hồ sơ của đơn vị mình hoặc được giao, và xử lý từ hộp việc.
 - **P, rào chắn và luồng tự động:** trạng thái chỉ đổi qua quy trình (gọi thẳng API để đổi bị chặn); từ chối và trả lại bắt buộc có lý do; người tạo không tự quyết hồ sơ của mình; hạn xử lý, quá hạn lên đầu hộp việc; việc sau khi duyệt chạy qua hàng đợi và được thử lại.
 - **D, một nguồn sự thật:** dữ liệu nghiệp vụ, lịch sử và hàng đợi cùng nằm ở PostgreSQL; lịch sử hồ sơ nối thành chuỗi hash; mọi thay đổi báo ra ngoài bằng webhook có chữ ký.
-- **I, trí tuệ:** chưa làm (xem câu 6 và 11).
+- **I, trí tuệ:** một thành phần, trợ lý tùy chọn đề xuất giá trị một trường, người xác nhận trước khi ghi (xem câu 6 và 11).
 - **Bằng chứng:** `python3 e2e/api/check_demo.py` (tám tiêu chí của kịch bản trình diễn); `check_case.py`, `check_process.py`, `check_events.py`.
 
 ## 6. AI nằm ở đâu, dữ liệu và giới hạn là gì?
 
 - Trợ lý nghiệp vụ đã đề xuất giá trị một trường từ hồ sơ và nguồn cấu hình; người dùng sửa, hủy hoặc xác nhận trước khi ghi qua API Core.
-- Phần còn lại: hỏi đáp có trích nguồn và tác tử nghe sự kiện; giữ xác nhận trước khi ghi và suy luận tại chỗ.
+- Hỏi đáp có trích nguồn, tìm kiếm tri thức và tác tử nghe sự kiện nằm ngoài phạm vi; mọi đề xuất của trợ lý cần người xác nhận trước khi ghi, và suy luận chạy tại chỗ.
 - Suy luận AI: hỗ trợ endpoint chuẩn mở tương thích OpenAI API hoặc llama.cpp chạy self-host; DX-OS không áp đặt hay đóng gói model mặc định để đảm bảo 100% chuẩn OSI; người vận hành tự cấp endpoint và model phù hợp.
 - Lõi đã có sẵn chỗ để nối: hàng đợi sự kiện, webhook có chữ ký và `GET /api/v1/events` cho tác tử đọc việc mới, còn ghi lại vẫn đi qua API chung nên quyền, quy tắc và quy trình vẫn áp dụng.
 - **Bằng chứng:** [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md), dòng "Phạm vi AI"; `docs/dynamic-core/README.md`, mục "Cam kết nguồn mở".

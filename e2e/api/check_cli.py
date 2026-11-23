@@ -61,7 +61,7 @@ def dxos(work, *args):
 
 
 def plan(work, file):
-    code, out, err = dxos(work, "plan", file)
+    code, out, err = dxos(work, "plan", "--json", file)
     try:
         return code, json.loads(out)["data"]
     except (ValueError, KeyError):

@@ -253,7 +253,7 @@ Kiểm bằng đúng các lệnh và thao tác trong tài liệu.
     - Địa chỉ SSH với host lạ, khóa sai hoặc khóa có quyền rộng bị từ chối, mỗi lỗi ghi nguyên nhân riêng.
     - API tắt thì nguồn mô hình ghi `error` và thoát mã 1.
     - `dxos gitops install` tạo timer và `uninstall` gỡ; `history.log` ghi mỗi lần commit hoặc kết quả đổi.
-48. **Kế hoạch khi đổi quyền truy cập:** áp dụng một mẫu (ví dụ `equipment`), sửa `access` của một thực thể rồi chạy `dxos plan <tệp>` hoặc bấm Xem kế hoạch ở tab Soạn và áp dụng:
+48. **Kế hoạch khi đổi quyền truy cập:** áp dụng một mẫu (ví dụ `equipment`), sửa `access` của một thực thể rồi chạy `dxos plan <tệp>` (bản chữ ghi "Widen access", "Narrow access"...; `dxos plan --json <tệp>` ghi các mã dưới đây) hoặc bấm Xem kế hoạch ở tab Soạn và áp dụng:
     - `own` sang `all` ra `WIDEN_ACCESS` với `BORROWER: own → all`; `all` sang `read` ra `NARROW_ACCESS`.
     - Thêm một vai vào `access` ra `GRANT_ACCESS` (`AUDITOR: none → read`); bỏ một vai ra `REVOKE_ACCESS` (`BORROWER: own → none`).
     - `own` sang `assigned`, hoặc `read` sang `own`, ra `CHANGE_ACCESS`.

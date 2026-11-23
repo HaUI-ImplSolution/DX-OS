@@ -11,9 +11,9 @@ Việc chưa làm, chưa kiểm và giới hạn đã biết nằm ở [`BACKLOG
 - **Miền phục vụ:** quy trình chung cho bản ghi có vòng đời và có người tham gia (hồ sơ, ticket, đặt chỗ, mượn trả...), đổi được mô hình và quy trình an toàn khi hệ thống đang chạy; xem [Miền phục vụ](#miền-phục-vụ).
 - **Người dùng chính:** người triển khai hệ thống cho một tổ chức, làm việc qua [bảng điều khiển](#bảng-điều-khiển).
 - **Cách xây:** lõi headless, ghép từ các dịch vụ nguồn mở; đội tự viết một dịch vụ Java gồm phần điều khiển và API chung đọc mô hình lúc chạy.
-- **Ba tính năng đào sâu:** GitOps cho nghiệp vụ, quy trình không lách được, tác tử AI có người duyệt.
+- **Ba tính năng đào sâu:** GitOps cho nghiệp vụ, quy trình không lách được, trợ lý AI tùy chọn có người xác nhận.
 - **Mở rộng:** người dùng có thể viết thêm API và giao diện, luôn nằm ngoài lõi.
-- **Nguồn mở:** mọi thành phần của bản phát hành đều mở, kể cả công cụ, mô hình AI và dữ liệu.
+- **Nguồn mở:** mọi thành phần của bản phát hành đều mở, kể cả công cụ và dữ liệu; bản phát hành không kèm mô hình AI, người vận hành tự chọn và tự chạy.
 - **Hạn gửi bài:** 17:00 ngày 2026-12-06.
 
 ## Đề thi
@@ -91,7 +91,7 @@ Các hàm ý sau là suy luận từ cách đề viết, người ra đề khôn
 | Điều chỉnh quy trình không cần sửa mã nguồn, BPMN | Họ mẫu quy trình trên Flowable, hoặc tự khai báo trạng thái và hành động; BPMN sinh từ tệp mô hình |
 | GitOps, tự phục hồi                                                  | Triển khai hạ tầng và nghiệp vụ kéo từ git (`dxos gitops`), tệp sai bị chặn, áp dụng dở được hoàn tất hoặc hủy bỏ, `dxos reconcile` tự phục hồi |
 | Kiến trúc hướng sự kiện | Trục sự kiện bằng bảng outbox: webhook có chữ ký, API kéo theo `eventId`, kênh báo cho hộp việc đang mở |
-| Tác tử AI, Human-in-the-loop, RAG                                     | Tác tử có người duyệt và hỏi đáp kèm nguồn                                     |
+| Tác tử AI, Human-in-the-loop, RAG                                     | Trợ lý tùy chọn đề xuất giá trị một trường, người xác nhận trước khi ghi; hỏi đáp kèm nguồn và tác tử nghe sự kiện không làm |
 | Chống nguyên khối, chủ quyền số                                   | Thành phần thay được, dữ liệu trong PostgreSQL thuần                               |
 | Chống ốc đảo dữ liệu | Một định danh, một cơ sở dữ liệu, mô hình là danh mục dữ liệu và trang Danh mục dữ liệu đọc từ đó; hồ sơ đã đóng ghi ra kho Parquet |
 
@@ -327,7 +327,7 @@ Thêm năng lực mới nghĩa là thêm provider, không phải sửa lõi.
 | Trục sự kiện                   | Bảng outbox trong PostgreSQL             | Webhook theo mô hình, API kéo sự kiện theo `eventId`, thông điệp của việc áp dụng mô hình và của tài khoản (chỉ qua webhook); kênh sự kiện `GET /api/v1/inbox/stream` báo cho giao diện khi hồ sơ đổi |
 | Thông báo                       | Mattermost hoặc Slack do người triển khai cấp | Đích webhook dạng `chat`: việc mới, sắp đến hạn, quá hạn, leo thang |
 | Báo cáo | Công cụ báo cáo do người triển khai cấp | Vai `report_ro` chỉ đọc các bảng nghiệp vụ, cách kết nối ở [`docs/REPORTING.md`](../REPORTING.md) |
-| AI | Mô hình ngôn ngữ và embedding mở hoàn toàn | Khai báo nguồn tri thức và tác tử |
+| AI | Mô hình ngôn ngữ mở do người vận hành tự chạy, không kèm bản phát hành | Nhiệm vụ trợ lý khai trong mô hình (`ai.tasks`) |
 | Vận hành                        | `dx-monitor`, `deploy/backup.sh`          | Giữ nguyên                                                    |
 
 ### Nguyên tắc mã nguồn
@@ -348,7 +348,7 @@ Trần dưới đây giữ cho tệp mô hình không biến thành ngôn ngữ 
 | Mức              | Nội dung                                               | Cách làm                                                      |
 | ------------------- | --------------------------------------------------------- | ----------------------------------------------------------------- |
 | **1. Khai báo**  | Thực thể, kiểu trường, quyền, luồng, đích webhook | Chỉ tệp mô hình                                             |
-| **2. Cấu hình** | Quy tắc, biểu thức, hạn xử lý, tác tử AI        | Chỉ tệp mô hình, không viết mã                           |
+| **2. Cấu hình** | Quy tắc, biểu thức, hạn xử lý, nhiệm vụ trợ lý AI | Chỉ tệp mô hình, không viết mã                           |
 | **3. Mở rộng**  | Logic đặc thù, giao diện riêng                     | Mã nằm ngoài lõi, xem [Điểm mở rộng](#điểm-mở-rộng) |
 
 
@@ -359,7 +359,7 @@ Trần dưới đây giữ cho tệp mô hình không biến thành ngôn ngữ 
 | Quy tắc       | Bắt buộc, bắt buộc có điều kiện, duy nhất, giới hạn giá trị, mẫu chuỗi, chống trùng khoảng thời gian, chặn khi chưa đủ điều kiện |
 | Biểu thức    | Một dòng, không có vòng lặp, không có tác dụng phụ                              |
 | Quy trình     | Chọn từ mẫu có sẵn, hoặc tự khai báo trạng thái và hành động                                                |
-| Tác tử AI    | Khi có sự kiện, đề xuất giá trị một trường, người xác nhận                  |
+| Trợ lý AI    | Theo yêu cầu của người dùng, đề xuất giá trị một trường, người xác nhận     |
 
 Một năng lực mới chỉ được thêm khi cần ở ít nhất 3 lĩnh vực, khai báo được mà không cần cú pháp mới, và không làm hỏng các mô hình đã có.
 Không đạt thì đi qua điểm mở rộng.
@@ -447,22 +447,23 @@ Trạng thái hồ sơ không thể bị đi vòng:
 - Flowable chạy nhúng trong dịch vụ lõi dùng chung cơ sở dữ liệu, để đổi trạng thái và ghi hồ sơ nằm trong một giao dịch.
 
 Quy tắc khai báo được API chung kiểm để báo lỗi rõ và biên dịch thành ràng buộc trong cơ sở dữ liệu.
-Mọi thay đổi hồ sơ và bước quy trình phát ra sự kiện vào trục sự kiện, để thông báo, báo cáo và AI cùng nghe.
+Mọi thay đổi hồ sơ và bước quy trình phát ra sự kiện vào trục sự kiện, để thông báo và báo cáo cùng nghe.
 Tệp mô hình chọn đích webhook bằng `webhook: <tên đích>`; địa chỉ và bí mật của đích nằm ngoài tệp mô hình, trong một tệp cấu hình của bản cài.
 Các dòng của một hồ sơ tới đích theo đúng thứ tự, và bên nhận lỡ tin kéo lại theo `eventId`.
 
 Lõi có ba họ mẫu là chuỗi duyệt, công việc cần xử lý và chiếm dụng tài nguyên theo thời gian, cùng bộ quy tắc bất biến; có hộp việc, giao việc và quy tắc chặn; trục sự kiện có webhook theo mô hình, thông báo chat, nhắc hạn và leo thang khi quá hạn.
 Tham số của từng họ mẫu ở [`docs/MODEL.md`](../MODEL.md#tự-khai-báo-hoặc-mở-rộng-quy-trình).
 
-### 3. Tác tử AI có người duyệt
+### 3. Trợ lý AI có người xác nhận
 
-Khai báo trên một mô hình bất kỳ để có hỏi đáp kèm nguồn và tác tử nghe sự kiện.
-Có hồ sơ mới thì AI đề xuất và dẫn nguồn, người xác nhận.
-Đây là chuỗi từ P tới I đúng với Human-in-the-loop của đề, và cũng chứng minh cơ chế provider hoạt động.
+Khai báo `ai.tasks` trên một thực thể để người dùng nhờ trợ lý đề xuất giá trị cho một trường.
+Người dùng xem căn cứ, sửa hoặc xác nhận; Core kiểm quyền, quy tắc và phiên bản trước khi ghi, nên model không có đường ghi trực tiếp.
+Đây là bước từ P tới I với Human-in-the-loop của đề.
 
-AI là một provider nối vào lõi qua trục sự kiện và API, chạy bằng mô hình ngôn ngữ và embedding đạt định nghĩa Open Source AI của OSI.
-Tìm kiếm tri thức có nguồn, hỏi đáp sinh câu trả lời và tác tử đề xuất giá trị một trường đều cần người xác nhận; tác tử không tự hành động khi chưa có xác nhận.
-Bản hiện có là trợ lý tùy chọn đề xuất giá trị một trường theo yêu cầu của người dùng, ở [`assistant/README.md`](../../assistant/README.md); hỏi đáp có nguồn và tác tử nghe sự kiện chưa làm.
+Trợ lý là dịch vụ tùy chọn, tắt mặc định, nối vào lõi qua API; lõi và mọi nghiệp vụ chạy đủ khi không có nó.
+Mô hình ngôn ngữ do người vận hành tự chạy và tự chọn; bản phát hành không kèm mô hình và không gọi dịch vụ AI bên ngoài theo mặc định.
+Cách bật, giới hạn và gỡ ở [`assistant/README.md`](../../assistant/README.md).
+Hỏi đáp có nguồn, tìm kiếm tri thức và tác tử nghe sự kiện không nằm trong phạm vi; lý do ở mục "Phạm vi AI" của [`BACKLOG.md`](./BACKLOG.md).
 
 ## Điểm mở rộng
 
@@ -488,7 +489,7 @@ Lõi có webhook theo mô hình và API kéo sự kiện, kèm hai ví dụ ở 
 
 Kịch bản demo chính là **Một cửa sinh viên**: gửi yêu cầu xin giấy xác nhận, phúc khảo, hoãn thi kèm minh chứng.
 Đây là mô hình yêu cầu và phê duyệt chạy trên lõi.
-Phần AI đề xuất và hỏi đáp quy chế dựa trên một kho văn bản đạt [cam kết nguồn mở](#cam-kết-nguồn-mở).
+Phần trợ lý AI đề xuất giá trị trường dựa trên một kho văn bản đạt [cam kết nguồn mở](#cam-kết-nguồn-mở).
 
 **Mô hình thứ hai** là cấp phát dịch vụ IT, rất ngắn, chứng minh tính trung lập: nhân viên xin vào một nhóm quyền, được duyệt thì Keycloak cấp thật.
 Nếu mô hình này tốn hơn một tệp, đó là tín hiệu lõi còn gắn với ứng dụng đầu.

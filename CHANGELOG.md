@@ -10,10 +10,12 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 ### Lõi chạy ngầm
 
 - Người dùng đóng hoặc tải lại trang không còn bị ghi thành lỗi server: luồng SSE của Hộp việc ngắt kết nối thì không có ERROR trong nhật ký và không có bản ghi audit `SERVER_ERROR`.
+- `dxos plan` in kế hoạch bằng chữ: mức rủi ro, mỗi thay đổi một dòng, hồ sơ đang xử lý, tác động lên hành động, dòng vi phạm và lệnh `dxos apply --accept` cần dùng; `--json` in JSON đầy đủ như trước.
 
 ### Giao diện
 
 - Kế hoạch đổi mô hình hiện "Hồ sơ hiện có được cấp mã" bằng tiếng Việt khi thêm một trường kiểu `code`.
+- Bảng kế hoạch có nhãn tiếng Việt và tiếng Anh cho định dạng mã, mẫu chuỗi, điều kiện bắt buộc nhập, cách hiển thị và tài liệu in, và cho các quy tắc bắt buộc có điều kiện, số phần tử, giá trị nhỏ nhất, giá trị lớn nhất và mẫu chuỗi ở dòng vi phạm.
 
 ## [2.1.0] - 2026-11-26
 

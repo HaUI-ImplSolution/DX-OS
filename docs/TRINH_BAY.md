@@ -160,7 +160,7 @@ Cửa hàng điện máy không liên quan đến dự án thêm hai quy trình 
 
 ## 13. Chưa có, và nói thẳng
 
-- AI mới có trợ lý tùy chọn đề xuất giá trị một trường, người dùng xác nhận trước khi lưu; chưa có hỏi đáp trên tri thức nội bộ.
+- AI là trợ lý tùy chọn đề xuất giá trị một trường, người dùng xác nhận trước khi lưu; không có hỏi đáp trên tri thức nội bộ.
 - Một bản cài là Compose một máy; chưa chạy nhiều bản sao của lõi.
 - Chưa có chữ ký số, đa thuê giữa các tổ chức, tìm kiếm toàn văn.
 - Chưa nói chuyện với khách hàng thật.

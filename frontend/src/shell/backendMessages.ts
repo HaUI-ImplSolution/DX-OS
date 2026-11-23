@@ -173,6 +173,7 @@ const VI: Rule[] = [
   pattern("The schema tool failed: (.*)", "Công cụ đổi lược đồ báo lỗi: $1"),
   fixed("An entity cannot be renamed; its table, rows and attached files are removed", "Thực thể không đổi tên được; bảng, dữ liệu và tệp đính kèm của nó sẽ bị xóa"),
   pattern("Renamed from (.+); rows are kept, callers of the old name break", "Đổi tên từ $1; dữ liệu được giữ, nơi nào còn gọi tên cũ sẽ lỗi"),
+  fixed("Existing records receive a code", "Hồ sơ hiện có được cấp mã"),
   fixed("The column and its values are removed", "Cột và các giá trị của nó sẽ bị xóa"),
   pattern("Is (.+) a rename of (.+)\\? Then declare renamed_from: (.+) to keep the values", "Có phải $1 là tên mới của $2? Nếu đúng, hãy khai báo renamed_from: $3 để giữ các giá trị"),
   pattern("Field (.+) changes its type from (.+) to (.+), which is not supported; add a new field instead", "Trường $1 đổi kiểu từ $2 sang $3, điều này chưa được hỗ trợ; hãy thêm một trường mới"),

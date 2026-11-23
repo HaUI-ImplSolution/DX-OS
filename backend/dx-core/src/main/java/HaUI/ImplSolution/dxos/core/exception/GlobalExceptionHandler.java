@@ -30,8 +30,10 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.RestClientResponseException;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
@@ -223,6 +225,13 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ApiResponse<Void>> handleIllegalArgument(IllegalArgumentException ex) {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
         .body(ApiResponse.error("ERR_BAD_REQUEST", ex.getMessage()));
+  }
+
+  // A client that closes its page ends the stream it opened; that is not a server error.
+  @ExceptionHandler(AsyncRequestNotUsableException.class)
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void handleClientDisconnect(AsyncRequestNotUsableException ex) {
+    log.debug("Client disconnected: {}", ex.getMessage());
   }
 
   @ExceptionHandler(Exception.class)

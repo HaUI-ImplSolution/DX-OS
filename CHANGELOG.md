@@ -7,6 +7,14 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ## [Unreleased]
 
+### Lõi chạy ngầm
+
+- Người dùng đóng hoặc tải lại trang không còn bị ghi thành lỗi server: luồng SSE của Hộp việc ngắt kết nối thì không có ERROR trong nhật ký và không có bản ghi audit `SERVER_ERROR`.
+
+### Giao diện
+
+- Kế hoạch đổi mô hình hiện "Hồ sơ hiện có được cấp mã" bằng tiếng Việt khi thêm một trường kiểu `code`.
+
 ## [2.1.0] - 2026-11-26
 
 Thêm và sửa sau bản `2.0.2`: dự án gom mô hình và ứng dụng ngoài kèm quản trị theo dự án, `dxos connect` và `webUrl` để nối ứng dụng ngoài, ứng dụng mẫu `appliance-store`, kế hoạch đổi mô hình báo tác động lên hồ sơ đang chờ, ghi có điều kiện theo phiên bản, và trợ lý nghiệp vụ tùy chọn.

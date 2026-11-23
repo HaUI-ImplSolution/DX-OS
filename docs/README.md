@@ -27,6 +27,7 @@ Tự cài và nối vào ứng dụng của bạn thì theo [`QUICKSTART.md`](./
 | [`EXTENSIONS.md`](./EXTENSIONS.md) | Viết dịch vụ riêng, bên nhận webhook, giao diện ngoài và route riêng ở ngoài lõi |
 | [`TESTING.md`](./TESTING.md) | Các loại kiểm, cách dựng stack, các script kiểm API và danh sách kiểm tay trước khi phát hành |
 | [`DEMO.md`](./DEMO.md) | Kịch bản trình diễn 15 phút và cách xử lý khi sự cố |
+| [`TRINH_BAY.md`](./TRINH_BAY.md) | Bài trình bày chung kết 15 phút dạng slide Markdown (Marp), theo bốn phần của đề |
 | [`SIZING.md`](./SIZING.md) | Số người dùng đồng thời và cấu hình nhỏ nhất, kèm cách đo lại |
 | [`TARGETS.md`](./TARGETS.md) | Kiểm chứng các chỉ số mục tiêu: mã tự viết, thời gian dựng, chi phí tự cài |
 | [`COMPATIBILITY.md`](./COMPATIBILITY.md) | Những gì giữ nguyên giữa các bản: API, số đo, tệp mô hình, webhook, cơ sở dữ liệu |

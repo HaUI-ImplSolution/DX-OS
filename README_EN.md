@@ -261,7 +261,7 @@ The documents on writing a model file, the API, operation, monitoring, integrati
 | Connecting a reporting tool | [`docs/REPORTING.md`](./docs/REPORTING.md) (Vietnamese) |
 | Testing | [`docs/TESTING.md`](./docs/TESTING.md), [`e2e/README.md`](./e2e/README.md) |
 | Verified targets and self-hosting cost | [`docs/TARGETS.md`](./docs/TARGETS.md) |
-| The 15-minute demonstration script | [`docs/DEMO.md`](./docs/DEMO.md) |
+| The 15-minute demonstration script and the final presentation | [`docs/DEMO.md`](./docs/DEMO.md), [`docs/TRINH_BAY.md`](./docs/TRINH_BAY.md) (Vietnamese) |
 | Design and remaining work | [`docs/dynamic-core/README.md`](./docs/dynamic-core/README.md), [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md) |
 | Changes by version | [`CHANGELOG.md`](./CHANGELOG.md) |
 | Compatibility between versions | [`docs/COMPATIBILITY.md`](./docs/COMPATIBILITY.md) (Vietnamese) |

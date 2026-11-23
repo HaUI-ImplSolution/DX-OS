@@ -33,7 +33,7 @@ Keycloak Admin Console là giao diện của dịch vụ nguồn mở đi kèm c
 | (i) Tách theo vòng đời dữ liệu, đẩy lịch sử xuống hồ dữ liệu | Hồ sơ đã đóng tự ghi ra Parquet trong kho đối tượng theo lịch (kho lạnh; PostgreSQL là kho ấm), kèm manifest và hash; `dxos archive query` truy vấn chỉ đọc từng lần chạy bằng DuckDB; phạm vi là kho hồ sơ, ghi ra tệp Parquet không kèm lớp bảng | Đạt |
 | (ii) Hội tụ IT và OT, bản sao số | Số đo của thiết bị giả lập thành hồ sơ sự cố, đi cùng quy trình và quyền với hồ sơ hành chính | Đạt một phần |
 | (iii) Dòng chảy, phả hệ, chất lượng dữ liệu | Mô hình là danh mục dữ liệu, tab Danh mục dữ liệu kèm phả hệ từng trường, lịch sử nối chuỗi hash | Đạt |
-| (iv) Zero-Trust, GitOps, kiểm dịch mã độc, tự phục hồi | Token kiểm ở cổng và ở lõi; mô hình áp dụng theo kế hoạch, phần lệch được sửa khi áp dụng lại; container bị xóa được chạy lại; hạ tầng và mô hình kéo từ git bằng `dxos gitops`; quét mã độc bật mặc định, và nhóm chế độ lõi của CI kiểm tệp EICAR bị chặn; phạm vi là một máy chạy Compose, GitOps và tự phục hồi chạy trên Compose | Đạt |
+| (iv) Zero-Trust, GitOps, kiểm dịch mã độc, tự phục hồi | Token kiểm ở cổng và ở lõi; trợ lý chạy trên network nội bộ, chỉ ra được tới endpoint inference qua một proxy; mô hình áp dụng theo kế hoạch, phần lệch được sửa khi áp dụng lại; container bị xóa được chạy lại; hạ tầng và mô hình kéo từ git bằng `dxos gitops`; quét mã độc bật mặc định, và nhóm chế độ lõi của CI kiểm tệp EICAR bị chặn; phạm vi là một máy chạy Compose, GitOps và tự phục hồi chạy trên Compose | Đạt |
 
 ## 3. Bảy cụm dịch vụ của Tầng 1
 
@@ -74,7 +74,7 @@ Phần này do Ban giám khảo chấm ở buổi chung kết; bảng ghi điể
 | Mức hoàn thiện | Mười mẫu mô hình trên ba họ quy trình; 20 kiểm tra của CI trên stack thật, kể cả trình duyệt; bộ kiểm chung cho mô hình mới | Phần AI chỉ có một thành phần, trợ lý đề xuất giá trị trường (tùy chọn); pull request trợ lý nhiều người dùng (#199) còn mở, chưa gộp |
 | Thân thiện | Cài một lệnh, bảng điều khiển, thư viện mẫu, tài khoản và hồ sơ thử, mã hồ sơ đọc được, giao diện điện thoại, tiếng Việt và tiếng Anh | Giao diện sinh từ metadata dễ trông chung chung; chữ do mô hình định nghĩa không được dịch (`BACKLOG.md`, mục 4) |
 | Phát triển bền vững | Tài liệu kiến trúc, tệp mô hình, API và vận hành; mục ứng phó sự cố; lệnh `dxos`; bộ kiểm chung cho mô hình; SBOM; ứng dụng mẫu của bên ngoài ở `examples/appliance-store` | Đóng góp tập trung vào một người |
-| Trình diễn, thu hút cộng đồng | Kịch bản 15 phút ở `docs/DEMO.md`, hai video và ảnh động kiến trúc | Chưa có phần trình chiếu; buổi thi kéo DX-OS vào một web đã được deploy sẵn |
+| Trình diễn, thu hút cộng đồng | Kịch bản 15 phút ở `docs/DEMO.md`, hai video và ảnh động kiến trúc | Bài trình bày chung kết ở `docs/TRINH_BAY.md` (slide Marp, chưa xuất PDF); buổi thi kéo DX-OS vào một web đã được deploy sẵn |
 
 ## 6. Đề xuất mở rộng lõi
 

@@ -33,9 +33,6 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 
 | Việc | Ghi chú |
 |---|---|
-| Lỗ hổng trong phụ thuộc gián tiếp | Scorecard báo 5 lỗ hổng: `decode-uri-component` 0.2.2 (sửa ở 0.5.1), `react-router` 6.30.6 ở web và 5.3.4 ở trang docs (sửa ở 7.18.0), `uuid` 8.3.2 ở trang docs (sửa ở 11.1.1); đều đến từ thư viện cha (react-admin, Docusaurus), nên vá cần nâng bản chính của thư viện cha hoặc ép `overrides` |
-| Egress trợ lý | Trợ lý chạy trên network mặc định của stack và chưa có allowlist kết nối cho container; cần giới hạn mạng ra ngoài endpoint inference cố định |
-| Thu hồi và thay khóa/token trợ lý | Hoàn thiện quy trình thu hồi và thay mới khóa và token của trợ lý |
 | Tài liệu tiếng Anh | Phần lớn tài liệu chỉ có tiếng Việt; `README_EN.md` đã có, các tài liệu còn lại chưa |
 | Đóng góp tập trung | Một thành viên giữ khoảng hai phần ba commit; `CODEOWNERS` nêu ba thành viên cho mọi đường dẫn, chưa chia người phụ trách theo vùng; chia hay không là quyết định của nhóm |
 | Cảnh báo Scorecard và huy hiệu | Tab Security có 8 cảnh báo của Scorecard chưa duyệt (Maintained, CodeReview, Vulnerabilities, Fuzzing, SAST, TokenPermissions hai cảnh báo, BranchProtection); huy hiệu OpenSSF Best Practices mức passing còn ba tiêu chí khuyến nghị chưa đạt (`test_most`, `warnings_strict`, `dynamic_analysis`), và lời giải thích từng tiêu chí trỏ về tệp trên `main` nên chỉ khớp khi nhánh tích hợp vào `main` |

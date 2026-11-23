@@ -1,6 +1,7 @@
 # Kịch bản trình diễn 15 phút
 
 Kịch bản cho phần trình diễn chung kết của bản `2.0.2`.
+Phần trình chiếu đi cùng ở [`TRINH_BAY.md`](./TRINH_BAY.md); ba phần demo của nó theo các mục 3, 4 và 5 dưới đây.
 Mỗi bước nêu việc làm, tài khoản dùng, kết quả mong đợi và cách xử lý khi sự cố.
 Khung kiểm gốc là tám mục "Thế nào là đạt" ở [`docs/dynamic-core/README.md`](./dynamic-core/README.md#thế-nào-là-đạt), chạy tự động bằng `python3 e2e/api/check_demo.py`.
 

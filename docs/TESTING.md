@@ -297,6 +297,7 @@ Kiểm bằng đúng các lệnh và thao tác trong tài liệu.
 48. Theo [`assistant/README.md`](../assistant/README.md), liên kết SSO, cấu hình inference/nguồn của bản cài và khai báo nhiệm vụ `ai.tasks`.
     Mở hồ sơ, tạo đề xuất, xem nguồn, sửa hoặc hủy, rồi xác nhận và đối chiếu phiên bản/lịch sử Core.
     Kiểm hai chủ không đọc/ghi chéo; giá trị trùng không tạo lịch sử sửa và model tắt không cản nghiệp vụ.
+    Kiểm container trợ lý không ra được Internet và chỉ `assistant-egress` tới được endpoint inference; "Hủy liên kết" làm trợ lý không đọc được hồ sơ nữa và xóa phiên của Keycloak; `dist/rotate.js` giữ nguyên liên kết sau khi thay master key.
     Kiểm nâng cấp giữ liên kết SSO và lịch sử, không thực thi lại đề xuất cũ; sau khôi phục từ sao lưu, người dùng liên kết lại tài khoản.
 
 ## 7. Hồi quy

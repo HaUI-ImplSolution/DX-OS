@@ -44,6 +44,12 @@ Model chỉ nhận các trường mà nhiệm vụ khai báo và các nguồn li
 Nó không nhận token của Core, không có công cụ shell, filesystem hay quyền gọi HTTP.
 Tắt inference không ảnh hưởng Core hay form nghiệp vụ.
 
+Container `assistant-control` chạy trên network nội bộ `assistant`, không có đường ra Internet và không thấy các dịch vụ khác của stack.
+Chỉ `backend`, `keycloak`, `apisix` và `assistant-egress` nằm trên network đó.
+`assistant-egress` (cùng image, không thêm thành phần) là đường ra duy nhất và là proxy chuyển tiếp chỉ tới host và cổng của `ASSISTANT_INFERENCE_URL`.
+Với endpoint `http`, nó chỉ cho `POST` tới `/v1/chat/completions` và `/completion`; với `https`, nó chỉ cho kết nối tới đúng host và cổng đó.
+Đích khác bị từ chối, và chưa đặt `ASSISTANT_INFERENCE_URL` thì không đi đâu được.
+
 Danh mục nguồn là một mảng JSON ngoài Git, do `ASSISTANT_SOURCES_FILE` chỉ tới.
 Mỗi mục có `id`, `title`, `revision`, `text` (tối đa 12.000 ký tự) và `license` (CC0-1.0, CC-BY-4.0 hoặc ODbL-1.0).
 Nhiệm vụ tham chiếu nguồn theo `id`; thiếu nguồn thì nhiệm vụ báo chưa cấu hình, trợ lý không tự lấy tài liệu từ Internet.
@@ -78,6 +84,7 @@ Liên kết với Core dùng PKCE và state dùng một lần.
 | `GET /openapi.json` | OpenAPI, cần đăng nhập |
 | `GET /me` | Trạng thái liên kết và cấu hình model |
 | `POST /me/core/link`, `GET /oauth/callback` | Liên kết Core bằng SSO |
+| `DELETE /me/core/link` | Hủy liên kết: thu hồi refresh token ở Keycloak, xóa token đã lưu, hủy các đề xuất đang chờ; trả `revoked` cho biết Keycloak có xác nhận không, kiểm Origin và danh tính |
 | `POST /me/proposals` | Tạo đề xuất từ model, entity, id và nhiệm vụ |
 | `GET /me/proposals`, `GET /me/proposals/{id}` | Lịch sử và chi tiết của chủ còn quyền đọc hồ sơ |
 | `POST /me/proposals/{id}/revise` | Sửa giá trị, tạo đề xuất mới |
@@ -93,6 +100,23 @@ State có sẵn mà thiếu hoặc sai master key thì trợ lý không khởi �
 Một trợ lý phục vụ nhiều người, mỗi người có state riêng và dùng chung một slot suy luận; không chạy nhiều bản trên cùng SQLite.
 Hỏi đáp mở, embedding, reranker và tác tử tự tạo đề xuất theo sự kiện chưa có.
 Model tự host và trọng số Apache-2.0 chưa chứng minh model đạt định nghĩa Open Source AI của OSI; việc này còn mở ở [BACKLOG](../docs/dynamic-core/BACKLOG.md).
+
+## Thu hồi và thay khóa
+
+- **Hủy liên kết của một người:** nút "Hủy liên kết" ở trang Trợ lý nghiệp vụ, hoặc `DELETE /assistant-api/v1/me/core/link`.
+  Khóa hoặc xóa tài khoản ở Keycloak cũng chặn trợ lý: lần làm mới token kế tiếp bị từ chối và token đã lưu bị xóa.
+- **Thay master key:** dừng trợ lý, chạy lệnh dưới, rồi bật lại.
+  Lệnh mã hóa lại toàn bộ state bằng khóa mới trong một giao dịch rồi mới thay `master.key`; bị ngắt giữa chừng thì chạy lại lệnh.
+  Các phiên liên kết đang dở bị xóa, người dùng bắt đầu liên kết lại.
+
+  ```sh
+  docker compose stop assistant-control
+  docker compose run --rm assistant-init dist/rotate.js /bootstrap
+  docker compose up -d
+  ```
+
+- **Thay khóa gọi inference:** ghi khóa mới vào tệp của `ASSISTANT_INFERENCE_KEY_FILE` (mode 0600) rồi `docker compose restart assistant-control`.
+  Đổi đường dẫn tệp hoặc biến trong `deploy/assistant.env` thì chạy `docker compose up -d --force-recreate assistant-control assistant-egress`.
 
 ## Kiểm tra
 

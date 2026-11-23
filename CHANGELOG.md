@@ -56,6 +56,9 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Trợ lý nằm trong `deploy/docker-compose.assistant.yml`, chỉ nạp khi `COMPOSE_FILE` nêu tệp đó; bật hay tắt không tạo lại service nào của lõi.
 - Cấu hình ở `deploy/assistant.env`, kiểm tra ở workflow `Assistant`, và `assistant/README.md` có danh sách các chỗ cần xóa để gỡ trợ lý.
 - Image trợ lý chỉ chứa Node.js và mã của trợ lý, không có npm, corepack và yarn.
+- Trợ lý chạy trên network nội bộ riêng; đường ra duy nhất là dịch vụ `assistant-egress`, chỉ tới host và cổng của `ASSISTANT_INFERENCE_URL`.
+- Người dùng hủy liên kết ở trang Trợ lý nghiệp vụ (`DELETE /assistant-api/v1/me/core/link`): refresh token bị thu hồi ở Keycloak, token đã lưu bị xóa và các đề xuất đang chờ bị hủy.
+- `docker compose run --rm assistant-init dist/rotate.js /bootstrap` thay master key và mã hóa lại state; cách thay khóa gọi inference ở `assistant/README.md`.
 
 ### Phát hành
 

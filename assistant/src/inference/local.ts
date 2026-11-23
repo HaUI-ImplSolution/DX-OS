@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import { createHash } from 'node:crypto';
+import { request as httpRequest } from 'node:http';
+import { request as httpsRequest } from 'node:https';
 import { ApiError } from '../errors.js';
 
 export type Framing = { bos: string; systemPrefix: string; systemSuffix: string;
@@ -54,24 +56,30 @@ export class LocalInference {
     };
     this.busy = true;
     try {
-      const response = await fetch(new URL(framing ? '/completion' : '/v1/chat/completions', this.url), {
-        method: 'POST', redirect: 'error', headers: { 'Content-Type': 'application/json',
-          ...(this.config.key ? { Authorization: `Bearer ${this.config.key}` } : {}) },
-        body: JSON.stringify(body), signal: AbortSignal.any([AbortSignal.timeout(this.config.timeoutMs),
-          ...(signal ? [signal] : [])]),
+      const url = new URL(framing ? '/completion' : '/v1/chat/completions', this.url);
+      const payload = JSON.stringify(body);
+      const text = await new Promise<string>((resolve, reject) => {
+        // node:http honours the egress proxy of the container; redirects are not followed.
+        const request = (url.protocol === 'https:' ? httpsRequest : httpRequest)(url, {
+          method: 'POST', signal: AbortSignal.any([AbortSignal.timeout(this.config.timeoutMs), ...(signal ? [signal] : [])]),
+          headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload),
+            ...(this.config.key ? { Authorization: `Bearer ${this.config.key}` } : {}) },
+        }, incoming => {
+          if ((incoming.statusCode ?? 0) < 200 || (incoming.statusCode ?? 0) >= 300) {
+            incoming.resume(); reject(new ApiError(503, 'ERR_INFERENCE_REJECTED', 'Inference rejected the request')); return;
+          }
+          const chunks: Buffer[] = []; let size = 0;
+          incoming.on('data', (chunk: Buffer) => {
+            size += chunk.length;
+            if (size > 65536) request.destroy(new Error('Oversized output'));
+            else chunks.push(chunk);
+          });
+          incoming.on('error', reject);
+          incoming.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
+        });
+        request.on('error', reject); request.end(payload);
       });
-      if (!response.ok) { await response.body?.cancel(); throw new ApiError(503, 'ERR_INFERENCE_REJECTED', 'Inference rejected the request'); }
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error('Empty response');
-      const chunks: Uint8Array[] = []; let size = 0;
-      for (;;) {
-        const next = await reader.read();
-        if (next.done) break;
-        size += next.value.byteLength;
-        if (size > 65536) { await reader.cancel(); throw new Error('Oversized output'); }
-        chunks.push(next.value);
-      }
-      const data = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+      const data = JSON.parse(text);
       const content = framing ? data.content : data.choices?.[0]?.message?.content;
       if (typeof content !== 'string') throw new Error('Missing content');
       return JSON.parse(content);

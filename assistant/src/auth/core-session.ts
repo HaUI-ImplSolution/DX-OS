@@ -8,7 +8,7 @@ import { Store, type Owner } from '../storage/store.js';
 import type { Identity } from './identity.js';
 
 type Tokens = { accessToken: string; refreshToken: string; expires: number };
-type Config = { authorizationUrl: string; tokenUrl: string; clientId: string; callbackUrl: string };
+type Config = { authorizationUrl: string; tokenUrl: string; revokeUrl: string; clientId: string; callbackUrl: string };
 
 export class CoreSession {
   private readonly refreshing = new Map<string, Promise<Tokens>>();
@@ -42,13 +42,12 @@ export class CoreSession {
       throw new ApiError(403, 'ERR_LINK_IDENTITY', 'Sign in with the same account as DX-OS');
   }
 
-  private async exchange(params: Record<string, string>): Promise<Tokens> {
-    let response: { status: number; body: string };
+  private async post(endpoint: string, params: Record<string, string>): Promise<{ status: number; body: string }> {
     try {
-      const url = new URL(this.config.tokenUrl), publicUrl = new URL(this.config.authorizationUrl);
-      if (!['http:', 'https:'].includes(url.protocol)) throw new Error('Invalid token endpoint');
+      const url = new URL(endpoint), publicUrl = new URL(this.config.authorizationUrl);
+      if (!['http:', 'https:'].includes(url.protocol)) throw new Error('Invalid identity endpoint');
       const body = new URLSearchParams({ ...params, client_id: this.config.clientId }).toString();
-      response = await new Promise((resolve, reject) => {
+      return await new Promise((resolve, reject) => {
         // Keycloak uses this host for the issuer when its public hostname is dynamic.
         const request = (url.protocol === 'https:' ? httpsRequest : httpRequest)(url, {
           method: 'POST', signal: AbortSignal.timeout(10000), headers: {
@@ -61,7 +60,7 @@ export class CoreSession {
           const chunks: Buffer[] = []; let size = 0;
           incoming.on('data', chunk => {
             size += chunk.length;
-            if (size > 65536) request.destroy(new Error('Invalid token response'));
+            if (size > 65536) request.destroy(new Error('Invalid identity response'));
             else chunks.push(chunk);
           });
           incoming.on('error', reject);
@@ -72,6 +71,10 @@ export class CoreSession {
     } catch {
       throw new ApiError(503, 'ERR_IDENTITY_UNAVAILABLE', 'The identity service is unavailable');
     }
+  }
+
+  private async exchange(params: Record<string, string>): Promise<Tokens> {
+    const response = await this.post(this.config.tokenUrl, params);
     if (response.status < 200 || response.status >= 300) throw new ApiError(response.status === 400 || response.status === 401 ? 401 : 503,
       'ERR_CORE_LINK', 'Link your DX-OS account again');
     let data: Record<string, unknown>;
@@ -82,6 +85,22 @@ export class CoreSession {
       throw new ApiError(502, 'ERR_IDENTITY_RESPONSE', 'The identity service returned an invalid session');
     return { accessToken: data.access_token, refreshToken: data.refresh_token,
       expires: Date.now() + data.expires_in * 1000 };
+  }
+
+  // Ends the link: the refresh token is revoked at the identity service, then the stored session is deleted.
+  // The result tells whether the identity service confirmed the revocation.
+  async unlink(owner: Owner): Promise<{ revoked: boolean }> {
+    const saved = this.store.getSecret<Tokens>(owner, 'core');
+    let revoked = !saved;
+    try {
+      if (saved) {
+        const response = await this.post(this.config.revokeUrl, { token: saved.refreshToken, token_type_hint: 'refresh_token' });
+        revoked = response.status >= 200 && response.status < 300;
+      }
+    } catch { revoked = false; }
+    this.store.deleteSecret(owner, 'core');
+    this.store.cancelPending(owner);
+    return { revoked };
   }
 
   async accessToken(owner: Owner): Promise<string> {

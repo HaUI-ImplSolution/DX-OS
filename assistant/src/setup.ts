@@ -1,8 +1,9 @@
 // SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import { randomBytes } from 'node:crypto';
-import { mkdirSync, readFileSync, writeFileSync, existsSync, chmodSync, chownSync, lstatSync, readdirSync, renameSync, rmSync } from 'node:fs';
+import { mkdirSync, readFileSync, existsSync, chmodSync, lstatSync } from 'node:fs';
 import { join, isAbsolute } from 'node:path';
+import { own, write } from './files.js';
 
 const [operation, root] = process.argv.slice(2);
 if (operation !== 'prepare' || !root || !isAbsolute(root) || root === '/') throw new Error('Use prepare with a private absolute directory');
@@ -12,19 +13,6 @@ function directory(path: string) {
     throw new Error('Use ordinary private state directories');
   mkdirSync(path, { recursive: true, mode: 0o700 });
   chmodSync(path, 0o700);
-}
-function write(path: string, value: string | Buffer) {
-  if (existsSync(path) && (!lstatSync(path).isFile() || lstatSync(path).isSymbolicLink()))
-    throw new Error('Use ordinary private configuration files');
-  const data = Buffer.isBuffer(value) ? value : Buffer.from(value);
-  if (!existsSync(path) || !readFileSync(path).equals(data)) {
-    const temporary = path + '.' + randomBytes(8).toString('hex') + '.tmp';
-    try {
-      writeFileSync(temporary, data, { mode: 0o600, flag: 'wx' });
-      renameSync(temporary, path);
-    } finally { rmSync(temporary, { force: true }); }
-  }
-  chmodSync(path, 0o600);
 }
 for (const path of [root, privateDir, join(root, 'control'), join(root, 'sso')]) directory(path);
 const publicUrl = new URL(process.env.ASSISTANT_PUBLIC_URL ?? '');
@@ -53,12 +41,5 @@ const client = { clientId: 'dxos-assistant', name: 'DX-OS business assistant', p
         'claim.name': 'groups', 'userinfo.token.claim': 'false' } },
   ] };
 write(join(root, 'sso/client.json'), JSON.stringify(client));
-// The service uses the node uid/gid 1000.
-function own(path: string) {
-  const entry = lstatSync(path);
-  if (entry.isSymbolicLink()) return;
-  if (entry.uid !== 1000 || entry.gid !== 1000) chownSync(path, 1000, 1000);
-  if (entry.isDirectory()) for (const name of readdirSync(path)) own(join(path, name));
-}
 if (process.getuid?.() === 0) own(root);
 console.log('Assistant state is ready; existing keys and account data were kept.');

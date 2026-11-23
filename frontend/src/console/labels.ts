@@ -28,6 +28,13 @@ export const CHANGE_KIND: Record<string, string> = {
   CHANGE_LABEL: t("Đổi nhãn hiển thị"),
   CHANGE_AI_TASKS: t("Đổi nhiệm vụ trợ lý nghiệp vụ"),
   CHANGE_DEFAULT: t("Đổi giá trị mặc định"),
+  CHANGE_FORMAT: t("Đổi định dạng mã"),
+  CHANGE_PATTERN: t("Đổi mẫu chuỗi"),
+  DROP_PATTERN: t("Bỏ mẫu chuỗi"),
+  CHANGE_REQUIRED_WHEN: t("Đổi điều kiện bắt buộc nhập"),
+  DROP_REQUIRED_WHEN: t("Bỏ điều kiện bắt buộc nhập"),
+  CHANGE_UI: t("Đổi cách hiển thị của thực thể"),
+  CHANGE_DOCUMENTS: t("Đổi tài liệu in"),
   GRANT_ACCESS: t("Cấp quyền truy cập cho vai"),
   REVOKE_ACCESS: t("Thu hồi quyền truy cập của vai"),
   WIDEN_ACCESS: t("Mở rộng quyền truy cập"),
@@ -57,6 +64,11 @@ export const RULE: Record<string, string> = {
   NEW_REQUIRED: t("trường mới bắt buộc nhập"),
   UNIQUE: t("không được trùng"),
   OPTIONS: t("chỉ nhận các lựa chọn mới"),
+  REQUIRED_WHEN: t("bắt buộc nhập có điều kiện"),
+  ELEMENTS: t("số phần tử"),
+  MIN: t("giá trị nhỏ nhất"),
+  MAX: t("giá trị lớn nhất"),
+  PATTERN: t("mẫu chuỗi"),
 };
 
 export const STEP_KIND: Record<string, string> = {

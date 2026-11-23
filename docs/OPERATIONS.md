@@ -136,7 +136,7 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 | `dxos update [vX.Y.Z]` | Cài bản mới hơn (mặc định bản mới nhất): thay tệp chạy, giữ `.env`, `data/` và `apisix/local.yaml`, thêm biến mới, rồi chạy `update.sh`; script này gán cho `dxos-backend-admin` scope `kc-admin-api` mà Keycloak 26.8 đòi (`keycloak-admin-scope.sh`, chạy lại được), và nên sao lưu trước vì cơ sở dữ liệu của Keycloak không hạ phiên bản được |
 | `dxos doctor`, `dxos backup` | Chạy `doctor.sh`, `backup.sh` |
 | `dxos av [on\|off]` | Bật hoặc tắt quét mã độc tệp tải lên (xem dưới); không có đối số thì in trạng thái quét |
-| `dxos plan [--check] <tệp>`, `dxos apply <tệp> [--accept MỨC]` | In kế hoạch của một tệp mô hình, hoặc áp dụng nó (xem dưới) |
+| `dxos plan [--check] [--json] <tệp>`, `dxos apply <tệp> [--accept MỨC]` | In kế hoạch của một tệp mô hình, hoặc áp dụng nó (xem dưới) |
 | `dxos lint <tệp>...` | Kiểm tệp mô hình bằng bộ đọc của backend, không cần hệ thống đang chạy (xem dưới) |
 | `dxos conformance <mô hình> [--allow-test-users]` | Kiểm các rào chắn của lõi cho một mô hình đã áp dụng (xem dưới) |
 | `dxos model upgrade [--write] <tệp>` | Xem diff nâng tuần tự tệp lên format hiện hành; `--write` thay tệp nguyên tử sau khi in diff (xem dưới) |
@@ -247,6 +247,8 @@ Stack có `PUBLIC_HOST` khác `localhost` từ chối chạy nếu thiếu `--al
 ### Đổi mô hình bằng dòng lệnh
 
 `dxos plan <tệp>` in kế hoạch của tệp mô hình mà không đổi gì; mã thoát 1 khi kế hoạch bị từ chối.
+Kế hoạch in bằng chữ tiếng Anh: mô hình và phiên bản, mức rủi ro, mỗi thay đổi một dòng, hồ sơ đang xử lý, tác động lên hành động, dòng vi phạm, lý do từ chối và lệnh `dxos apply` kèm `--accept` cần dùng.
+`dxos plan --json <tệp>` in JSON đầy đủ, gồm cả các câu lệnh SQL; không có `jq` thì lệnh luôn in JSON.
 Thay đổi hành động của quy trình hiện từng hành động và từng thuộc tính đổi (nhãn, vai, `needs_note`, điều kiện kiểm, `require` thêm hoặc bỏ).
 Hành động nhận thêm `require` thì kế hoạch vẫn ở mức SAFE và có thêm mục `impacts`: với mỗi hành động, số hồ sơ đang chờ ở trạng thái nguồn mà còn thiếu trường mới (trống hoặc chỉ có khoảng trắng cũng là thiếu); hành động từ chối những hồ sơ đó cho đến khi bổ sung.
 Chế độ `auto` của GitOps vẫn tự áp dụng kế hoạch SAFE, nên `impacts` chỉ là cảnh báo cho người đọc kế hoạch, không chặn lần áp dụng.

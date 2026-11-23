@@ -16,12 +16,11 @@ Mọi việc dưới đây giữ hướng đó: thêm nghiệp vụ là thêm t�
 
 ## Sau đó
 
-- **Trí tuệ nhân tạo:** hỏi đáp có trích nguồn và tác tử nghe sự kiện, thêm vào trợ lý đề xuất giá trị một trường đã có, chỉ dùng mô hình mở hoàn toàn theo định nghĩa của OSI.
 - **Quy trình:** thêm họ mẫu khi có đủ ba miền chạy được bằng tham số.
 
 ## Đã cân nhắc và không làm
 
-Nhập CSV, tìm kiếm hồ sơ, ủy quyền có thời hạn, quyền theo từng trường và vài việc khác đã được cân nhắc rồi giữ nguyên; lý do ở mục "Giới hạn chấp nhận" của [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md), và chỉ mở lại khi có yêu cầu thật.
+Nhập CSV, tìm kiếm hồ sơ, hỏi đáp có trích nguồn và tác tử nghe sự kiện, ủy quyền có thời hạn, quyền theo từng trường và vài việc khác đã được cân nhắc rồi giữ nguyên; lý do ở mục "Giới hạn chấp nhận" của [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md), và chỉ mở lại khi có yêu cầu thật.
 
 ## Đóng góp vào lộ trình
 

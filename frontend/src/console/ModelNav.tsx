@@ -13,6 +13,7 @@ export interface NavEntity {
   key: string;
   label: string;
   fields: number;
+  documents: number;
   process: boolean;
 }
 
@@ -21,6 +22,8 @@ export const ENTITY_PART_LABEL: Record<EntityPart, string> = {
   fields: t("Trường dữ liệu"),
   access: t("Quyền truy cập"),
   process: t("Quy trình"),
+  ui: t("Giao diện"),
+  documents: t("Mẫu in"),
   ai: t("Trợ lý nghiệp vụ"),
 };
 
@@ -32,7 +35,7 @@ export const PROCESS_PART_LABEL: Record<ProcessPart, string> = {
   automation: t("Tự động hóa"),
 };
 
-const ENTITY_PARTS: EntityPart[] = ["general", "fields", "access", "process", "ai"];
+const ENTITY_PARTS: EntityPart[] = ["general", "fields", "access", "process", "ui", "documents", "ai"];
 const PROCESS_PARTS: ProcessPart[] = ["overview", "states", "actions", "deadline", "automation"];
 
 function Item({
@@ -168,9 +171,11 @@ export default function ModelNav({
                   const label =
                     part === "fields"
                       ? `${ENTITY_PART_LABEL.fields} (${entity.fields})`
-                      : part === "process" && !entity.process
-                        ? t("Quy trình (chưa bật)")
-                        : ENTITY_PART_LABEL[part];
+                      : part === "documents"
+                        ? `${ENTITY_PART_LABEL.documents} (${entity.documents})`
+                        : part === "process" && !entity.process
+                          ? t("Quy trình (chưa bật)")
+                          : ENTITY_PART_LABEL[part];
                   if (part !== "process" || !entity.process) {
                     return (
                       <Item

@@ -18,6 +18,8 @@ const PART_TITLE: Record<Section, string> = {
   fields: t("Trường dữ liệu"),
   access: t("Quyền truy cập theo vai trò"),
   process: t("Quy trình"),
+  ui: t("Giao diện"),
+  documents: t("Mẫu in"),
 };
 
 const EXAMPLE = [
@@ -55,6 +57,8 @@ export interface Focus {
   sections: Section[];
   process?: ProcessPart;
   assistant?: boolean;
+  // The prefix of the keys of the file that the part being edited is written in.
+  keys?: string;
 }
 
 // The keys of `process` each step of the process page edits.
@@ -73,6 +77,8 @@ export function focusOf(nav: NavTarget): Focus {
   if (nav.kind === "entities") return { part: PART_TITLE.entities, sections: ["entities"] };
   if (nav.part === "fields") return { part: PART_TITLE.fields, sections: ["fields"] };
   if (nav.part === "access") return { part: PART_TITLE.access, sections: ["access"] };
+  if (nav.part === "ui") return { part: PART_TITLE.ui, sections: ["ui"], keys: "entities.ui." };
+  if (nav.part === "documents") return { part: PART_TITLE.documents, sections: ["documents"], keys: "entities.documents." };
   if (nav.part === "ai") return { part: t("Trợ lý nghiệp vụ"), sections: [], assistant: true };
   if (nav.part === "process") return { part: PART_TITLE.process, sections: [], process: nav.step ?? "overview" };
   return { part: PART_TITLE.entities, sections: ["entities"] };
@@ -89,6 +95,7 @@ export default function SyntaxGuide({ focus }: { focus?: Focus }) {
     const key = path.slice("entities.process.".length).split(".")[0];
     return !step || STEP_KEYS[step].includes(key);
   });
+  const partKeys = focus?.keys ? Object.entries(SCHEMA_HELP).filter(([path]) => path.startsWith(focus.keys as string)) : [];
   const assistantKeys = Object.entries(SCHEMA_HELP).filter(([path]) => path.startsWith("entities.ai"));
   // Without a focus the guide shows everything; with one it shows only what the part being edited is written in.
   const showFamilies = !focus || step === "overview" || step === "states" || step === "actions";
@@ -204,6 +211,20 @@ export default function SyntaxGuide({ focus }: { focus?: Focus }) {
           <AccordionDetails>
             <Typography variant="body2">{GUIDE[section].summary}</Typography>
             <GuideBlocks guide={GUIDE[section]} />
+            {partKeys.length > 0 && (
+              <>
+                <Typography variant="caption" sx={{ display: "block", mt: 1.5, fontWeight: 700 }}>
+                  {t("CÁC KHÓA")}
+                </Typography>
+                <Box component="ul" sx={{ m: 0, pl: 2.5, fontSize: 13 }}>
+                  {partKeys.map(([path, help]) => (
+                    <li key={path}>
+                      <span style={mono}>{path.replace("entities.", "")}</span>: {help}
+                    </li>
+                  ))}
+                </Box>
+              </>
+            )}
           </AccordionDetails>
         </Accordion>
       ))}

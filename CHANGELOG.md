@@ -25,6 +25,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Trang Thống kê có thẻ "Thời gian trung bình ở từng trạng thái", đánh dấu trạng thái giữ hồ sơ lâu nhất; bấm một dòng mở danh sách hồ sơ ở trạng thái đó.
 - Kế hoạch đổi mô hình hiện "Hồ sơ hiện có được cấp mã" bằng tiếng Việt khi thêm một trường kiểu `code`.
 - Hủy hộp thoại nhập lý do, của một hồ sơ hay của thao tác hàng loạt, thì ghi chú vừa gõ bị xóa, nên không lọt sang thao tác khác; gửi lỗi thì ghi chú được giữ để gửi lại.
+- Thẻ danh sách trên điện thoại hiện số và ngày theo ngôn ngữ đang chọn như trang chi tiết, ví dụ `1.500.000` và `20/11/2026`; trang chi tiết cũng định dạng số theo ngôn ngữ đang chọn.
 - Chế độ Điền form của trình soạn mô hình là một trình dựng mô hình: cây cấu trúc của mô hình, trường dữ liệu dạng bảng có ô tìm, ma trận quyền vai trò × thực thể, quy trình chia Tổng quan, Trạng thái, Hành động, Thời hạn và Tự động hóa, và bấm trạng thái hay mũi tên trên sơ đồ thì mở chỗ sửa nó.
 - Trình dựng mô hình hỏi lại trước khi xóa trường, vai trò hay thực thể đang được dùng; lỗi Core chặn áp dụng và cảnh báo của form được tách màu, đánh dấu trên cây và liệt kê kèm liên kết tới chỗ sửa; cạnh tên tệp có nhãn khi còn thay đổi chưa áp dụng.
 - Ở chế độ form, "Viết được gì trong tệp" nằm dưới khung chính và chỉ nêu phần đang sửa; biểu tượng xóa màu đỏ.

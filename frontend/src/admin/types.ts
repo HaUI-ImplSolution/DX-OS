@@ -90,6 +90,8 @@ export interface EntityMeta {
   canWrite: boolean;
   canHandle: boolean;
   canAssign: boolean;
+  // The applied version of the model, sent with a decision so a changed model is refused.
+  modelVersion?: number | null;
   // Names of the process actions the roles of the user may take.
   handlerActions?: string[];
   ui?: EntityUi | null;

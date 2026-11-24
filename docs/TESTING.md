@@ -172,9 +172,16 @@ Mỗi mục nêu điều phải thấy; lệnh và biến cấu hình chi tiết
 
 21. **Soạn và áp dụng:** sơ đồ quy trình vẽ lại sau 5 giây không gõ theo `deadline`, `auto_close` và `after`; tệp sai báo lỗi kèm dòng và cột và giữ sơ đồ đúng gần nhất; sơ đồ mở to thành hộp thoại.
     Vai `ADMIN` khai báo trong tệp báo lỗi tiếng Việt kèm dòng và cột và không có nút Áp dụng; vai trùng tên với mô hình khác thì áp dụng được.
-22. **Chế độ Điền form:** các tab Chung, Vai, Đơn vị, Thực thể gọn trên một màn hình; Thực thể có tab con Chung, Trường, Quyền, Quy trình; vai, trường và thực thể chọn từ danh sách đã khai báo.
-    Thêm vai xử lý chưa có quyền xem hồ sơ thì form cảnh báo và sơ đồ báo lỗi kèm dòng và cột; cho quyền thì hết lỗi.
-    Thêm hành động, đổi mã trạng thái, bỏ hoặc khôi phục một hành động của khung, chọn "Tự khai báo, không dùng khung": sơ đồ vẽ lại và YAML giữ nguyên dòng chú thích.
+22. **Chế độ Điền form:** cây bên trái gồm Thông tin chung, Vai trò, Đơn vị và từng thực thể với Thông tin chung, Trường dữ liệu, Quyền truy cập, Quy trình (Tổng quan, Trạng thái, Hành động, Thời hạn, Tự động hóa) và Trợ lý nghiệp vụ; đường dẫn phía trên nêu chỗ đang sửa.
+    Chuyển sang Soạn YAML rồi quay lại thì form vẫn ở chỗ cũ; vai trò, trường và thực thể chọn từ danh sách đã khai báo.
+    Trường dữ liệu là bảng, có ô tìm khi hơn 5 trường; bấm một dòng mở phần sửa của trường đó, chỉ với các thuộc tính hợp kiểu.
+    Mục Vai trò có ma trận vai trò × thực thể; ô báo đỏ khi vai trò xử lý quy trình mà không xem được hồ sơ.
+    Xóa trường, vai trò hay thực thể đang được dùng thì hộp xác nhận liệt kê các chỗ dùng; đổi tên vai trò thì quyền, vai trò xử lý, vai trò của từng hành động và các cấp báo quá hạn đổi theo.
+    Ở Quy trình → Tổng quan, bấm một trạng thái trên sơ đồ mở Trạng thái với dòng đó được chọn, bấm một mũi tên mở hành động đó, bấm mũi tên tự đóng mở Thời hạn.
+    Thêm vai trò xử lý chưa có quyền xem hồ sơ thì cây và trang hiện cảnh báo màu cam; cho quyền thì hết.
+    Tệp có lỗi kèm dòng và cột thì cây đánh dấu đỏ đúng mục, và bấm lỗi trong danh sách đầu form thì đi tới mục đó.
+    Sửa một chữ thì cạnh tên tệp hiện "Có thay đổi chưa áp dụng"; áp dụng xong mở lại thì hiện "Chưa sửa gì".
+    Thêm hành động, đổi mã trạng thái, bỏ hoặc khôi phục một hành động của mẫu, chọn "Tự khai báo, không dùng mẫu": sơ đồ vẽ lại và YAML giữ nguyên dòng chú thích.
 23. **Hướng dẫn trong trình soạn:** nút "Phạm vi có thể làm" ở mỗi phần của form và bảng "Viết được gì trong tệp" nêu hệ thống chấp nhận gì, mở rộng được gì, tự tạo được gì, tên trạng thái và hành động của từng khung; rê chuột lên một khóa trong YAML hiện giải thích tiếng Việt; trình soạn không gạch chân `when`.
 24. **Đổi quy trình khi còn hồ sơ đang mở:** thêm hoặc bỏ trạng thái, đổi `from`, `to`, `by`, `when`, `initial` hay hạn xử lý thì "Xem kế hoạch" báo không đổi được kèm câu tiếng Việt nêu số hồ sơ và không có nút Áp dụng; rút hết hồ sơ rồi xem lại thì có nút Áp dụng.
     Đổi nhãn, `role` hoặc `handler` thì áp dụng được: vai cũ không thực hiện được nữa, vai mới thực hiện được hồ sơ đang mở.

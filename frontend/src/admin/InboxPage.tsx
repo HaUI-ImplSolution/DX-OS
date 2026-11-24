@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import {
   Alert,
   Box,
+  Button,
   Card,
   Chip,
   Pagination,
@@ -79,6 +80,10 @@ export default function InboxPage({ models }: { models: ModelMeta[] }) {
   const entityOf = (item: InboxItem) =>
     models.find((model) => model.name === item.model)?.entities.find((entity) => entity.name === item.entity);
   const overdue = items?.filter((item) => item.overdue).length ?? 0;
+  // The entities the user may create, offered when nothing waits for them.
+  const creatable = models
+    .filter((model) => !model.held)
+    .flatMap((model) => model.entities.filter((entity) => entity.canWrite).map((entity) => ({ model: model.name, entity })));
 
   return (
     <Box>
@@ -119,6 +124,15 @@ export default function InboxPage({ models }: { models: ModelMeta[] }) {
               {t("Không có việc nào đang chờ bạn")}
             </Typography>
             <Typography variant="body2">{t("Hồ sơ mới giao cho bạn sẽ hiện ở đây.")}</Typography>
+            {creatable.length > 0 && (
+              <Box sx={{ mt: 3, display: "flex", gap: 1, flexWrap: "wrap", justifyContent: "center", px: 2 }}>
+                {creatable.map(({ model, entity }) => (
+                  <Button key={`${model}-${entity.name}`} variant="outlined" component={Link} to={`/${resourceName(model, entity.name)}/create`}>
+                    {t("Tạo {name}", { name: entity.label })}
+                  </Button>
+                ))}
+              </Box>
+            )}
           </Box>
         )}
         {items && items.length > 0 && phone && (

@@ -28,6 +28,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 | 17 | Bảo mật: gọi thẳng API để lách quy trình thì sao? |
 | 18 | Giấy phép tuân thủ thế nào? |
 | 19 | Mã có phần do công cụ AI viết, đội kiểm soát thế nào? |
+| 20 | Bảng giám sát dùng Grafana theo AGPL, có trái cam kết nguồn mở không? |
 
 ## 1. Open-Core nằm ở đâu, thành phần nào chạy headless?
 
@@ -191,7 +192,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 ## 18. Giấy phép tuân thủ thế nào?
 
 - Mã của đội theo Apache-2.0, có `LICENSE` toàn văn, `NOTICE` và dòng SPDX ở đầu mỗi tệp mã.
-- Mã, tài liệu và ảnh của repository theo Apache-2.0, hai tệp phông theo OFL-1.1; không có thành phần AGPL nào trong cây mã.
+- Mã, tài liệu và ảnh của repository theo Apache-2.0, hai tệp phông theo OFL-1.1; không có thành phần AGPL nào trong cây mã; Grafana (AGPL-3.0) chỉ là image tùy chọn, chạy nguyên bản ở dịch vụ riêng.
 - Mỗi bản phát hành có gói `.tar.gz` kèm `.sha256` và SBOM CycloneDX; không dùng định dạng đóng.
 - Job `Check licenses` của workflow `Compliance` chạy ở mọi pull request: kiểm header, giấy phép của từng gói trong SBOM, danh mục image.
 - Cam kết của đội chặt hơn thể lệ: cả công cụ, mô hình AI (khi có) và dữ liệu đều phải mở; thành phần không đạt đã gỡ khỏi bản phát hành.
@@ -206,3 +207,15 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - Giấy phép của phần đóng góp do người gửi bảo đảm; thư viện mới qua kiểm OSI trước khi thêm, nên mã sinh ra không kéo theo thành phần ngoài danh sách.
 - Quy tắc nằm ở mục "Công cụ AI hỗ trợ" của `CONTRIBUTING.md`.
 - **Bằng chứng:** `git log --grep "Co-Authored-By"`; `CONTRIBUTING.md`; job `Check licenses` và `Scan for secrets` của workflow `Compliance`.
+
+## 20. Bảng giám sát dùng Grafana theo AGPL, có trái cam kết nguồn mở không?
+
+- Không: AGPL-3.0 nằm trong danh sách giấy phép được OSI công nhận, đúng yêu cầu nguồn mở của thể lệ.
+- Grafana chỉ là image tùy chọn, tắt mặc định; chỉ chạy khi đặt `COMPOSE_FILE` có `docker-compose.grafana.yml`, lõi và cây mã không phụ thuộc vào nó.
+- Đội chạy image gốc như một dịch vụ riêng, nối với lõi qua HTTP; không sửa mã Grafana, không nhúng, không liên kết thư viện của nó.
+- Nghĩa vụ công bố mã của AGPL chỉ phát sinh khi sửa chương trình rồi cho người khác dùng qua mạng; đội không sửa nên không có nghĩa vụ thêm.
+- Repository chỉ chứa tệp cấu hình và dashboard của đội, theo Apache-2.0; không chứa mã của Grafana.
+- Lõi đã phát số đo theo chuẩn Prometheus nên Grafana đọc thẳng, đội không phải tự viết trang biểu đồ.
+- Dashboard là một tệp JSON chuẩn; ai không muốn dùng Grafana của đội thì nạp tệp đó vào Grafana của mình, hoặc chỉ dùng Prometheus (Apache-2.0).
+- Phiên bản và kết quả rà từng thành phần của image ghi ở mục [13] của `DEPENDENCIES.txt`.
+- **Bằng chứng:** `deploy/docker-compose.grafana.yml`, `deploy/grafana/dashboards/dxos.json`, `DEPENDENCIES.txt` mục [13]; `python3 .github/scripts/check_licenses.py`; mục "Prometheus và Grafana kèm theo" của `docs/MONITORING.md`.

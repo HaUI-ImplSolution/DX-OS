@@ -154,6 +154,7 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 | `dxos import <mô hình> <thực thể> <tệp.csv> --client TÊN [--dry-run] [--secret-file TỆP] [--offset +HH:MM]` | Tạo mỗi dòng của tệp CSV thành một hồ sơ qua API dữ liệu, bằng ứng dụng ngoài đã đăng ký (xem dưới) |
 | `dxos uninstall [--purge]` | Xóa container và lệnh `dxos`; `--purge` xóa cả dữ liệu và thư mục cài, phải gõ xác nhận |
 
+Prometheus và Grafana là thành phần tùy chọn nằm ngoài stack mặc định; cách bật và đọc dashboard ở [`MONITORING.md`](./MONITORING.md#prometheus-và-grafana-kèm-theo-tùy-chọn).
 Cầu nối MQTT là thành phần tùy chọn nằm ngoài stack mặc định; cách bật, cấu hình tuyến và giới hạn ở [`INTEGRATIONS.md`](./INTEGRATIONS.md#cầu-nối-mqtt-tùy-chọn).
 Trợ lý nghiệp vụ là thành phần tùy chọn nằm ngoài stack mặc định; cách bật, cấu hình, thay khóa và gỡ ở [`assistant/README.md`](../assistant/README.md).
 File route riêng `deploy/apisix/local.yaml` được giữ khi cập nhật và ghép với cấu hình lõi mới sau khi kiểm; cấu hình xung đột làm cập nhật dừng trước khi thay container.

@@ -150,7 +150,7 @@ def main():
         code, data = plan(work, "v1.yaml")
         check("CLI-01 plan prints the plan of a new model and exits 0", code == 0 and data.get("action") == "create" and data.get("level") == "SAFE", str(data)[:200])
         code, out, err = dxos(work, "apply", "v1.yaml")
-        check("CLI-02 apply of a new model applies it", code == 0 and '"status": "applied"' in out and [v["version"] for v in versions(admin, name)] == [1], f"{code} {out[-200:]} {err}")
+        check("CLI-02 apply of a new model applies it", code == 0 and f"Applied model {name}: version 1" in out and [v["version"] for v in versions(admin, name)] == [1], f"{code} {out[-200:]} {err}")
         code, out, err = dxos(work, "apply", "v1.yaml")
         check("CLI-03 apply of the same file changes nothing and exits 0", code == 0 and "Nothing to apply" in out and len(versions(admin, name)) == 1, f"{code} {out} {err}")
         code, data = plan(work, "v2.yaml")

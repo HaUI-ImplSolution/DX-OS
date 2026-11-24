@@ -34,15 +34,24 @@ function toApiValue(meta: EntityMeta | undefined, name: string, value: unknown) 
   return value === "" ? null : value;
 }
 
+// The values to write: only the fields the model declares for the entity, so a key the API adds to a
+// record, such as webUrl, is never sent back. Without the description of the entity nothing says which
+// keys are fields, so the system columns and webUrl are the only ones left out.
 function body(meta: EntityMeta | undefined, data: Row) {
   const payload: Row = {};
   Object.entries(data).forEach(([name, value]) => {
     const field = meta?.fields.find((field) => field.name === name);
-    if (!SYSTEM_FIELDS.includes(name) && field?.type !== "file" && field?.type !== "code") {
+    const declared = meta ? field !== undefined : !SYSTEM_FIELDS.includes(name) && name !== "webUrl";
+    if (declared && field?.type !== "file" && field?.type !== "code") {
       payload[name] = toApiValue(meta, name, value);
     }
   });
   return payload;
+}
+
+// The names of the fields of an entity, or undefined while its description is not loaded.
+function namesOf(meta: EntityMeta | undefined) {
+  return meta ? new Set(meta.fields.map((field) => field.name)) : undefined;
 }
 
 // The version of the record the form was opened on; the API refuses the save with 409 when someone else
@@ -52,13 +61,16 @@ function versionOf(previous: Row | undefined) {
 }
 
 // The API answers a rule that failed with the problem of each field; react-admin shows them on the form.
-async function call<T>(action: () => Promise<T>): Promise<T> {
+// When none of the problems belongs to a field of the form, the form has no place to show them, so the
+// message of the server is raised as it is instead of the general "the form is not valid".
+async function call<T>(action: () => Promise<T>, fields?: Set<string>): Promise<T> {
   try {
     return await action();
   } catch (error) {
     if (error instanceof ApiError) {
       const errors = error.data && typeof error.data === "object" ? error.data : undefined;
-      throw new HttpError(error.message, error.status, errors ? { errors } : undefined);
+      const shown = errors && fields ? Object.keys(errors).some((name) => fields.has(name)) : errors !== undefined;
+      throw new HttpError(error.message, error.status, shown ? { errors } : undefined);
     }
     throw error;
   }
@@ -114,16 +126,19 @@ export function createDataProvider(metaOf: (resource: string) => EntityMeta | un
         ...filterParams(filter, { [target]: id }),
       }),
     create: async (resource, { data }) => ({
-      data: (await call(() =>
-        request<Row>(path(resource), json("POST", body(metaOf(resource), data))),
+      data: (await call(
+        () => request<Row>(path(resource), json("POST", body(metaOf(resource), data))),
+        namesOf(metaOf(resource)),
       )) as never,
     }),
     update: async (resource, { id, data, previousData }) => ({
-      data: (await call(() =>
-        request<Row>(
-          `${path(resource)}/${id}`,
-          json("PATCH", { ...body(metaOf(resource), data), ...versionOf(previousData) }),
-        ),
+      data: (await call(
+        () =>
+          request<Row>(
+            `${path(resource)}/${id}`,
+            json("PATCH", { ...body(metaOf(resource), data), ...versionOf(previousData) }),
+          ),
+        namesOf(metaOf(resource)),
       )) as never,
     }),
     updateMany: async (resource, { ids, data }) => {

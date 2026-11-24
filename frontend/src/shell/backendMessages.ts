@@ -303,7 +303,7 @@ const VI: Rule[] = [
   fixed("Interrupted while running the schema tool", "Công cụ đổi lược đồ bị ngắt giữa chừng"),
   pattern("Not a safe identifier: (.+)", "Tên $1 không dùng được làm tên trong cơ sở dữ liệu"),
   fixed("Files cannot be checked right now, please try again later", "Chưa kiểm tra được tệp lúc này, vui lòng thử lại sau"),
-  fixed("The record was modified by someone else, reload and try again", "Bản ghi vừa được người khác thay đổi, hãy tải lại rồi thử lại"),
+  fixed("The record was modified by someone else, reload and try again", "Hồ sơ vừa được thay đổi, hãy xem lại"),
   pattern("Invalid value for (.+)", "Giá trị không hợp lệ cho $1"),
   pattern("Missing parameter (.+)", "Thiếu tham số $1"),
   fixed("Invalid value", "Giá trị không hợp lệ"),

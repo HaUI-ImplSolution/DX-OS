@@ -46,11 +46,23 @@ export const getStats = (model: string, entity: string) => request<EntityStats>(
 
 const recordPath = (model: string, entity: string, id: number | string) => `/data/${model}/${entity}/${id}`;
 
-export const takeAction = (model: string, entity: string, id: number | string, action: string, note?: string) =>
-  request<Record<string, unknown>>(`${recordPath(model, entity, id)}/actions/${action}`, json("POST", { note }));
+// The versions a decision rests on: the record as the screen read it and the model it was read under.
+// The API answers 409 when either has changed since, so nobody decides on content they have not seen.
+export interface Seen {
+  version?: unknown;
+  modelVersion?: number | null;
+}
 
-export const assignRecord = (model: string, entity: string, id: number | string, assignee: string | null) =>
-  request<Record<string, unknown>>(`${recordPath(model, entity, id)}/assign`, json("POST", { assignee }));
+const seenBody = ({ version, modelVersion }: Seen) => ({
+  ...(typeof version === "number" ? { version } : {}),
+  ...(typeof modelVersion === "number" ? { modelVersion } : {}),
+});
+
+export const takeAction = (model: string, entity: string, id: number | string, action: string, note: string | undefined, seen: Seen) =>
+  request<Record<string, unknown>>(`${recordPath(model, entity, id)}/actions/${action}`, json("POST", { note, ...seenBody(seen) }));
+
+export const assignRecord = (model: string, entity: string, id: number | string, assignee: string | null, seen: Seen) =>
+  request<Record<string, unknown>>(`${recordPath(model, entity, id)}/assign`, json("POST", { assignee, ...seenBody(seen) }));
 
 export const listHandlers = (model: string, entity: string, id: number | string) =>
   request<Person[]>(`${recordPath(model, entity, id)}/handlers`);

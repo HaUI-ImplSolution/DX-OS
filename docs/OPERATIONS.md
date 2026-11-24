@@ -136,7 +136,7 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 | `dxos update [vX.Y.Z]` | Cài bản mới hơn (mặc định bản mới nhất): thay tệp chạy, giữ `.env`, `data/` và `apisix/local.yaml`, thêm biến mới, rồi chạy `update.sh`; script này gán cho `dxos-backend-admin` scope `kc-admin-api` mà Keycloak 26.8 đòi (`keycloak-admin-scope.sh`, chạy lại được), và nên sao lưu trước vì cơ sở dữ liệu của Keycloak không hạ phiên bản được |
 | `dxos doctor`, `dxos backup` | Chạy `doctor.sh`, `backup.sh` |
 | `dxos av [on\|off]` | Bật hoặc tắt quét mã độc tệp tải lên (xem dưới); không có đối số thì in trạng thái quét |
-| `dxos plan [--check] [--json] <tệp>`, `dxos apply <tệp> [--accept MỨC]` | In kế hoạch của một tệp mô hình, hoặc áp dụng nó (xem dưới) |
+| `dxos plan [--check] [--json] <tệp>`, `dxos apply <tệp> [--accept MỨC] [--json]` | In kế hoạch của một tệp mô hình, hoặc áp dụng nó (xem dưới) |
 | `dxos lint <tệp>...` | Kiểm tệp mô hình bằng bộ đọc của backend, không cần hệ thống đang chạy (xem dưới) |
 | `dxos conformance <mô hình> [--allow-test-users]` | Kiểm các rào chắn của lõi cho một mô hình đã áp dụng (xem dưới) |
 | `dxos model upgrade [--write] <tệp>` | Xem diff nâng tuần tự tệp lên format hiện hành; `--write` thay tệp nguyên tử sau khi in diff (xem dưới) |
@@ -256,7 +256,8 @@ Thay đổi hành động của quy trình hiện từng hành động và từn
 Hành động nhận thêm `require` thì kế hoạch vẫn ở mức SAFE và có thêm mục `impacts`: với mỗi hành động, số hồ sơ đang chờ ở trạng thái nguồn mà còn thiếu trường mới (trống hoặc chỉ có khoảng trắng cũng là thiếu); hành động từ chối những hồ sơ đó cho đến khi bổ sung.
 Chế độ `auto` của GitOps vẫn tự áp dụng kế hoạch SAFE, nên `impacts` chỉ là cảnh báo cho người đọc kế hoạch, không chặn lần áp dụng.
 `dxos plan --check <tệp>` thoát với mã 0 khi mô hình đang chạy giống tệp, 2 khi kế hoạch có thay đổi và 1 khi bị từ chối, để dùng trong pipeline.
-`dxos apply <tệp> [--accept SAFE|MIGRATION|LOSS]` lấy kế hoạch rồi áp dụng với phiên bản của kế hoạch làm `base`.
+`dxos apply <tệp> [--accept SAFE|MIGRATION|LOSS] [--json]` lấy kế hoạch rồi áp dụng với phiên bản của kế hoạch làm `base`.
+Khi áp dụng thành công, lệnh in tên mô hình, phiên bản và các bước đã chạy bằng chữ tiếng Anh, còn `--json` in phản hồi JSON cho công cụ đọc.
 Kế hoạch có mức cao hơn `--accept` (mặc định `SAFE`) thì bị từ chối với mã thoát 1 và không đổi gì; lệnh không bao giờ tự nâng mức.
 Tệp giống mô hình đang chạy và không có gì lệch thì in "Nothing to apply" và thoát với mã 0.
 Tệp giống nhưng bảng hoặc Keycloak đã lệch khỏi tệp thì kế hoạch ghi `repair`; `dxos apply` sửa phần lệch, và cần `--accept MIGRATION` khi kế hoạch ở mức đó.

@@ -125,6 +125,46 @@ Nó build và test dịch vụ không cần key, so SBOM với tệp khóa, ki�
 Các workflow khác không chạy và không phụ thuộc trợ lý.
 Hai bài kiểm trình duyệt ở `e2e/web/tests/assistant.spec.ts` tự bỏ qua khi không đặt `E2E_ASSISTANT_RECORD_PATH` (hồ sơ mà đề xuất khác giá trị hiện tại) hoặc `E2E_ASSISTANT_UNCHANGED_RECORD_PATH` (hồ sơ mà đề xuất trùng giá trị hiện tại).
 
+## Đo độ đúng của đề xuất
+
+Một lệnh chạy trợ lý trên bộ mẫu cố định và in số đề xuất đúng, sai, từ chối đúng và từ chối nhầm.
+Người vận hành dùng số này để chọn model và để so lại khi đổi model, khung prompt hay nguồn tham khảo.
+
+Bộ mẫu ở [`benchmark/suites.json`](./benchmark/suites.json) gồm 28 hồ sơ: 12 theo nhiệm vụ của mẫu `onestop`, 9 theo mẫu `support_desk` và 7 về quan hệ giữa hai số.
+Hồ sơ, nguồn (CC0-1.0) và đáp án do dự án tự viết cho bộ đo, không lấy từ dữ liệu thật.
+Bộ mẫu có cả ca khó: lý do chứa từ khóa của loại khác, lời nhấn mạnh như "khẩn cấp", lệnh nằm trong lý do, hai số bằng nhau, và hồ sơ thiếu dữ kiện mà trợ lý phải từ chối.
+Lệnh chạy đúng mã tạo đề xuất của trợ lý (lời nhắc, lược đồ, kiểm đầu ra và đối chiếu) trên một Core giả trong bộ nhớ, nên không cần stack, tài khoản hay hồ sơ thật.
+
+Chạy từ mã nguồn, với các biến của `deploy/assistant.env`:
+
+```sh
+cd assistant && npm ci
+ASSISTANT_INFERENCE_URL=http://127.0.0.1:8080 ASSISTANT_MODEL=<tên model> ASSISTANT_MODEL_REVISION=<revision> npm run benchmark
+```
+
+Hoặc trong container của bản cài đã bật trợ lý, dùng đúng cấu hình đang chạy: `docker compose run --rm assistant-control dist/benchmark.js`.
+`--suite onestop`, `--suite support` hoặc `--suite numeric` chỉ chạy một bộ, `--cases <tệp>` dùng bộ mẫu khác cùng khuôn, và `--json` in kết quả từng hồ sơ cho máy đọc.
+Cấu hình khung prompt, khóa, thời gian chờ và số token lấy từ cùng các biến `ASSISTANT_*` như dịch vụ.
+
+Mỗi hồ sơ được xếp vào một loại:
+
+| Kết quả | Ý nghĩa |
+|---|---|
+| đúng | Đề xuất đúng giá trị của đáp án |
+| sai | Đề xuất một giá trị khác đáp án |
+| đoán khi thiếu dữ kiện | Đề xuất một giá trị trong khi đáp án là từ chối |
+| từ chối đúng | Từ chối đúng chỗ đáp án là từ chối |
+| từ chối nhầm | Từ chối trong khi đáp án có giá trị |
+| không có đầu ra hợp lệ | Model trả đầu ra mà các kiểm tra của trợ lý loại, bị cắt giữa chừng hoặc quá thời gian chờ |
+
+Cuối kết quả có số đạt (đúng cộng từ chối đúng) trên tổng và theo từng bộ, và số đối chiếu: trong các hồ sơ có đề xuất, bao nhiêu hồ sơ có cảnh báo đơn vị đúng như đáp án, bỏ sót hoặc thừa.
+Kết quả ghi model, revision, kiểu gọi, mã băm của bộ mẫu và thời gian chạy, nên hai lần đo chỉ so được khi cùng bộ mẫu.
+Mọi hồ sơ đều được in, kể cả hồ sơ làm sai; lệnh không bỏ ca khó để số đẹp hơn.
+
+Chưa có model chạy được thì lệnh in lý do và thoát với mã 2, không in số: thiếu `ASSISTANT_INFERENCE_URL`, `ASSISTANT_MODEL` hoặc `ASSISTANT_MODEL_REVISION`, hoặc model không trả lời được ba hồ sơ đầu.
+Lệnh chỉ chạy khi có model tự host, không chạy trong CI chung, và không ghi gì vào Core hay vào state của trợ lý.
+Số đo chỉ nói về bộ mẫu này, không thay cho việc người duyệt đối chiếu nguồn trước khi xác nhận.
+
 ## Gỡ trợ lý
 
 Tắt tạm thì làm như bước 5 ở trên; Core, sao lưu và cập nhật chạy như bình thường.
@@ -132,7 +172,7 @@ Gỡ hẳn khỏi mã nguồn thì làm theo ba nhóm sau.
 
 **Xóa cả tệp hoặc thư mục**
 
-- `assistant/`, `sbom/assistant.cdx.json`
+- `assistant/` (gồm `benchmark/`), `sbom/assistant.cdx.json`
 - `deploy/docker-compose.assistant.yml`, `deploy/assistant-sso.sh`, `deploy/assistant.env.example`
 - `.github/workflows/ci-assistant.yml`
 - `frontend/src/assistant/`

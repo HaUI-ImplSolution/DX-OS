@@ -20,6 +20,11 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Tệp mô hình có khóa viết hai lần trong cùng một khối bị `dxos lint`, `dxos plan` và áp dụng từ chối, kèm dòng của lần viết thứ hai; mô hình đã lưu có khóa trùng vẫn chạy và hiện cảnh báo.
 - `dxos import <mô hình> <thực thể> <tệp.csv> --client TÊN` tạo mỗi dòng của tệp CSV thành một hồ sơ qua API dữ liệu chung, nên mỗi dòng đi qua quyền, ràng buộc, quy tắc và quy trình của thực thể; dòng bị từ chối được báo kèm số dòng và lý do, gửi lại cùng tệp không tạo trùng trong 24 giờ, và `--dry-run` kiểm tệp mà không tạo gì.
 
+### Trợ lý nghiệp vụ (tùy chọn)
+
+- `npm run benchmark` trong `assistant/` (hoặc `docker compose run --rm assistant-control dist/benchmark.js`) đo độ đúng của đề xuất trên bộ mẫu cố định 28 hồ sơ: in số đúng, sai, đoán khi thiếu dữ kiện, từ chối đúng, từ chối nhầm, đầu ra không hợp lệ và độ đúng của đối chiếu, kèm model, revision và mã băm của bộ mẫu.
+  Lệnh chạy mã tạo đề xuất của trợ lý trên một Core giả, in cả hồ sơ làm sai, và khi chưa có model chạy được thì thoát với mã 2 mà không in số.
+
 ### Giao diện
 
 - Thông báo lỗi của trợ lý nghiệp vụ hiện bằng tiếng Anh khi giao diện ở tiếng Anh.

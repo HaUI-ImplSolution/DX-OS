@@ -86,13 +86,22 @@ export function ActionButtons({ model, entity }: Props) {
     return !record.assignee || record.assignee === me;
   });
 
+  const openNote = (action: ProcessAction) => {
+    setNote("");
+    setNoteFor(action);
+  };
+
+  const closeNote = () => {
+    setNoteFor(null);
+    setNote("");
+  };
+
   const send = async (action: ProcessAction, text?: string) => {
     setBusy(true);
     try {
       await takeAction(model, entity.name, record.id, action.name, text);
       notify(t("{action}: xong", { action: ta(action.label) }), { type: "success" });
-      setNoteFor(null);
-      setNote("");
+      closeNote();
       refresh();
     } catch (error) {
       notify(message(error), { type: "error" });
@@ -111,7 +120,7 @@ export function ActionButtons({ model, entity }: Props) {
             {...actionStyle(action)}
             sx={{ ml: 1 }}
             disabled={busy || waiting}
-            onClick={() => (action.needsNote || action.name === WITHDRAW ? setNoteFor(action) : send(action))}
+            onClick={() => (action.needsNote || action.name === WITHDRAW ? openNote(action) : send(action))}
           >
             {ta(action.label)}
           </Button>
@@ -124,7 +133,7 @@ export function ActionButtons({ model, entity }: Props) {
           <Fragment key={action.name}>{button}</Fragment>
         );
       })}
-      <Dialog open={noteFor !== null} onClose={() => setNoteFor(null)} fullWidth>
+      <Dialog open={noteFor !== null} onClose={closeNote} fullWidth>
         <DialogTitle>{noteFor ? ta(noteFor.label) : null}</DialogTitle>
         <DialogContent>
           {noteFor?.name === WITHDRAW && (
@@ -141,7 +150,7 @@ export function ActionButtons({ model, entity }: Props) {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setNoteFor(null)}>{t("Hủy")}</Button>
+          <Button onClick={closeNote}>{t("Hủy")}</Button>
           <Button
             disabled={busy || (noteFor?.needsNote === true && !note.trim())}
             onClick={() => noteFor && send(noteFor, note.trim() || undefined)}

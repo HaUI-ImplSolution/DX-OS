@@ -62,12 +62,26 @@ import { PersonField, PersonInput } from "./people";
 import { StatusChip } from "./StatusChip";
 import { resourceName, type EntityMeta, type FieldMeta, type ModelMeta } from "./types";
 import { t } from "../shell/t";
-import { intlLocale, timeAgo } from "../shell/format";
+import { formatDate, formatNumber, intlLocale, timeAgo } from "../shell/format";
 
 interface Catalog {
   model: string;
   units: Record<string, string>;
   entities: Record<string, EntityMeta>;
+}
+
+// The value of a field on a phone list card, formatted as the detail page shows it.
+function mobileFieldValue(type: FieldMeta["type"], value: unknown, units: Catalog["units"]): string {
+  switch (type) {
+    case "number":
+      return formatNumber(value);
+    case "date":
+      return formatDate(value);
+    case "unit":
+      return units[String(value)] ?? String(value);
+    default:
+      return String(value);
+  }
 }
 
 // The field that names a record when another record refers to it.
@@ -126,12 +140,12 @@ function outputField(field: FieldMeta, catalog: Catalog) {
           source={field.name}
           label={field.label}
           locales={intlLocale()}
-          options={{ day: "2-digit", month: "2-digit", year: "numeric" }}
+          options={{ day: "2-digit", month: "2-digit", year: "numeric", timeZone: "UTC" }}
           emptyText="—"
         />
       );
     case "number":
-      return <NumberField key={field.name} source={field.name} label={field.label} emptyText="—" />;
+      return <NumberField key={field.name} source={field.name} label={field.label} locales={intlLocale()} emptyText="—" />;
     case "datetime":
       return <DateField key={field.name} source={field.name} label={field.label} locales={intlLocale()} showTime options={DATE_OPTIONS} emptyText="—" />;
     case "unit":
@@ -542,7 +556,7 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
                 .slice(0, 2)
                 .map((field) => (
                   <Box component="span" key={field.name} sx={{ fontSize: 13 }}>
-                    {field.label}: {catalog.units[String(record[field.name])] ?? String(record[field.name])}
+                    {field.label}: {mobileFieldValue(field.type, record[field.name], catalog.units)}
                   </Box>
                 ))}
             </Box>

@@ -10,12 +10,12 @@ import { conditionSource } from "../admin/condition";
 import { t, ta } from "../shell/t";
 
 const PART_TITLE: Record<Section, string> = {
-  general: t("Tên mô hình và đích gửi lịch sử"),
-  roles: t("Vai"),
+  general: t("Tên mô hình và kết nối gửi sự kiện"),
+  roles: t("Vai trò"),
   units: t("Đơn vị"),
   entities: t("Thực thể"),
-  fields: t("Trường"),
-  access: t("Quyền theo vai"),
+  fields: t("Trường dữ liệu"),
+  access: t("Quyền truy cập theo vai trò"),
   process: t("Quy trình"),
 };
 
@@ -63,7 +63,7 @@ export default function SyntaxGuide() {
       </Box>
       <Accordion disableGutters elevation={0} square>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="subtitle2">{t("Khung quy trình có sẵn và tên có thể ghi đè")}</Typography>
+          <Typography variant="subtitle2">{t("Mẫu quy trình có sẵn và tên có thể ghi đè")}</Typography>
         </AccordionSummary>
         <AccordionDetails>
           {families.length === 0 && <Typography variant="body2">{t("Đang tải…")}</Typography>}

@@ -42,6 +42,41 @@ Sau khi đổi tài nguyên nên chạy `./mvnw clean verify`: tài nguyên cũ 
 Test của client Keycloak, bộ gửi webhook và bộ dò dịch vụ dùng WireMock, không cần Docker.
 Test chậm gắn `@Tag("slow")`, bỏ qua bằng `-DexcludedGroups=slow`.
 
+### Test của backend
+
+`./mvnw verify` chạy 388 test (ngày 24/11/2026), khoảng một phút ở máy dev.
+Test không cần Docker:
+
+| Nhóm | Kiểm gì |
+|---|---|
+| Bộ đọc mô hình (`dx-model`) | `ModelParser` theo từng khối: vai, quyền, tham chiếu, quy trình, hạn, báo quá hạn, hành động hoàn tất, đặt chỗ, trợ lý, mẫu in, giao diện, thuộc tính của trường; mỗi lỗi nêu đúng dòng; `ConditionText` (thứ tự `and`, `or`, `not`, ngoặc, trích dẫn); `CodeFormat`; `ModelExtends`; `ModelLint` |
+| Kế hoạch đổi mô hình (`ModelDiffTest`) | Từng loại thay đổi và mức rủi ro của nó: thêm, bỏ, đổi tên và đổi kiểu trường, ràng buộc chặt hơn hay lỏng hơn, quyền rộng ra hay hẹp lại, đổi quy trình, các câu hỏi, từ chối và dòng kiểm tra dữ liệu cũ |
+| Hạn theo lịch (`BusinessCalendarTest`, `DeadlinesTest`) | Hạn rơi vào nghỉ trưa, cuối tuần, ngày lễ, ngoài giờ, qua nửa đêm; hạn tính theo giờ và theo ngày làm |
+| Sinh mã, SQL và BPMN | Mã hồ sơ từ bộ đếm và năm của ngày làm việc, hết số; tên đi vào SQL; bảng và ràng buộc sinh từ mô hình; BPMN của từng họ quy trình |
+| Mẫu đóng gói sẵn (`BundledTemplatesTest`) | Mỗi mẫu đọc được, sinh đủ bảng, so với chính nó không đổi gì |
+| Phần còn lại | Tìm không dấu và ký tự đại diện, chặn mẫu chuỗi chạy vô hạn, câu chữ gửi vào kênh chat, PDF của mẫu in, tài liệu OpenAPI, giới hạn tốc độ theo người dùng, cột của màn giám sát |
+
+Test cần Docker (PostgreSQL thật bằng Testcontainers, áp dụng migration của `engine`):
+
+| Test | Kiểm gì |
+|---|---|
+| `HistoryChainIntegrationTest` | Chuỗi băm của lịch sử: dòng bị sửa, bị xóa hay chen vào đều bị chỉ đúng chỗ; ghi chú không nằm trong chuỗi; không phụ thuộc múi giờ của phiên |
+| `DataServiceIntegrationTest` | Tạo, đọc, sửa, xóa trên bảng sinh từ mô hình: mã, mặc định, ràng buộc, quyền `own`, `all`, `read`, xung đột phiên bản, lọc, sắp xếp, phân trang, tìm không dấu, lịch sử |
+| `ModelRegistryIntegrationTest` | Kho mô hình đọc phiên bản mới nhất, loại mô hình hỏng kèm lý do, giữ mô hình đang áp dụng |
+
+Phần dựa vào chương trình ngoài (áp dụng mô hình qua `pgschema`, quy trình Flowable, Keycloak) do các script `e2e/api/check_*.py` ở mục 4 kiểm.
+
+Đo độ phủ không cần sửa `pom.xml`:
+
+```bash
+cd backend && ./mvnw -pl dx-core,dx-model,dx-engine,dx-monitor \
+  org.jacoco:jacoco-maven-plugin:0.8.13:prepare-agent test \
+  org.jacoco:jacoco-maven-plugin:0.8.13:report
+```
+
+Báo cáo nằm ở `target/site/jacoco/` của từng module.
+Ngày 24/11/2026: `dx-model` phủ 75% số dòng, `dx-engine` 39%, `dx-core` 23%, `dx-monitor` 9%; các lớp thuần như `CodeFormat`, `ConditionText`, `BusinessCalendar`, `DdlGenerator`, `ModelDiff` phủ từ 96% đến 100%.
+
 ## 3. Dựng stack
 
 ```bash

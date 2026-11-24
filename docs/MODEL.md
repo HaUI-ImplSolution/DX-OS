@@ -84,6 +84,9 @@ Trên bản cài, lệnh chạy trong image backend đã cài, không mở mạn
 Trên máy không có DX-OS, tải `dxos-lint.jar` ở trang Release và chạy `java -jar dxos-lint.jar <tệp>...` với Java 21; đặt `DXOS_LINT_JAR` thì `dxos lint` dùng tệp này thay cho image.
 Ví dụ workflow CI cho kho mô hình ở [`examples/model-repo`](../examples/model-repo).
 
+Một khóa viết hai lần trong cùng một khối bị từ chối, kèm dòng và cột của lần viết thứ hai (`key BORROWER is written twice`), để một dòng quyền hay một trường không biến mất lặng lẽ.
+Mô hình đã lưu từ trước có khóa trùng vẫn chạy, khóa sau được dùng, và hiện cảnh báo trên tab Mô hình đang chạy; sửa tệp rồi áp dụng lại để hết cảnh báo.
+
 Lint chỉ kiểm tệp, nên `dxos plan` còn so tệp với mô hình đang chạy, đích webhook và dữ liệu hiện có.
 Kết quả lint hợp lệ không có nghĩa là `apply` thành công; kết quả lint có lỗi thì `plan` cũng từ chối đúng những lỗi đó.
 

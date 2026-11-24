@@ -41,7 +41,7 @@ cd ../frontend && npm install && npm run dev
 
 | Phần đổi | Lệnh kiểm |
 |---|---|
-| Backend | `./mvnw spotless:check` rồi `./mvnw verify` trong `backend/` |
+| Backend | `./mvnw spotless:check` rồi `./mvnw verify` trong `backend/`; các nhóm test và cách đo độ phủ ở [`docs/TESTING.md`](./docs/TESTING.md), «Test của backend» |
 | Frontend | `npx tsc --noEmit` rồi `npm run lint` trong `frontend/` |
 | Toàn stack | Các script `e2e/api/check_*.py` theo thứ tự ở [`docs/TESTING.md`](./docs/TESTING.md), mục 4, trên stack mới dựng |
 | Giấy phép | `python3 .github/scripts/check_licenses.py` |

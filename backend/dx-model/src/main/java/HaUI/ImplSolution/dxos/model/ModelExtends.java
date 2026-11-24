@@ -232,7 +232,7 @@ public final class ModelExtends {
   }
 
   // A key written twice in one mapping would silently keep only the last.
-  private static void repeated(Node node, List<Problem> problems) {
+  static void repeated(Node node, List<Problem> problems) {
     if (node instanceof MappingNode map) {
       Set<String> seen = new HashSet<>();
       for (NodeTuple tuple : map.getValue()) {

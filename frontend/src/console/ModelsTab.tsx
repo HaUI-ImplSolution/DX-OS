@@ -183,7 +183,7 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
               )}
               {model.warnings.length > 0 && (
                 <Alert severity="warning" sx={{ py: 0 }}>
-                  {t("Mô hình chạy khi đã bỏ phần không qua được kiểm tra của bản này: {problems}. Sửa tệp rồi áp dụng lại để khai báo đúng.", { problems: model.warnings.join("; ") })}
+                  {t("Mô hình đang chạy, nhưng tệp còn chỗ không qua được kiểm tra của bản này: {problems}. Sửa tệp rồi áp dụng lại để khai báo đúng.", { problems: model.warnings.join("; ") })}
                 </Alert>
               )}
               {model.held && (

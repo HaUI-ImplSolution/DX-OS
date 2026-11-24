@@ -101,7 +101,7 @@ public final class ModelParser {
   }
 
   // A file that was stored before a check was tightened. It is read without the problems that the
-  // parser can drop safely (listed in tolerated, the model then runs without the part at fault) and
+  // parser can drop or read as before (listed in tolerated, the model then keeps running) and
   // refused with every problem when any other is left. New files go through parse.
   public static ParsedStored parseStored(String yaml) {
     ModelParser parser = new ModelParser();
@@ -131,6 +131,12 @@ public final class ModelParser {
       problem(root, "the file must be a mapping with format, name, roles and entities");
       return null;
     }
+    // A key written twice keeps only the last, which can drop a line the author wrote, such as a
+    // role of an access. A new file is refused; a stored one runs as it always did.
+    List<Problem> repeated = new ArrayList<>();
+    ModelExtends.repeated(top, repeated);
+    problems.addAll(repeated);
+    tolerated.addAll(repeated);
     Map<String, Node> keys =
         mapping(
             top, Set.of("format", "name", "webhook", "roles", "units", "calendars", "entities"));

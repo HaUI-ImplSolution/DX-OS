@@ -622,7 +622,7 @@ export const console: Record<string, string> = {
   "Xóa dự án này; không mô hình hay ứng dụng nào bị ảnh hưởng.": "Delete this project; no model or application is affected.",
   "Không chạy": "Not running",
   "Phiên bản đã lưu không qua được các kiểm tra của bản này nên mô hình chưa chạy: {problems}. Dữ liệu và các phiên bản đã lưu còn nguyên; mô hình chạy lại khi phiên bản đã lưu qua được kiểm tra.": "The stored version fails the checks of this release, so the model is not running: {problems}. Its data and stored versions are kept; the model runs again once the stored version passes the checks.",
-  "Mô hình chạy khi đã bỏ phần không qua được kiểm tra của bản này: {problems}. Sửa tệp rồi áp dụng lại để khai báo đúng.": "The model runs without the part that fails the checks of this release: {problems}. Fix the file and apply it again to declare it correctly.",
+  "Mô hình đang chạy, nhưng tệp còn chỗ không qua được kiểm tra của bản này: {problems}. Sửa tệp rồi áp dụng lại để khai báo đúng.": "The model is running, but the file has parts that fail the checks of this release: {problems}. Fix the file and apply it again to declare it correctly.",
   "Thành viên": "Members",
   "Thành viên dự án": "Project members",
   "Quản trị viên dự án": "Project administrator",

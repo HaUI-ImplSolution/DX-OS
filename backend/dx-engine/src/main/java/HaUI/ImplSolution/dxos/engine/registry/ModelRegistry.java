@@ -32,8 +32,8 @@ import org.springframework.stereotype.Component;
 // The models in force: the latest applied version of each, kept in memory and refreshed after
 // every apply. A stored model that no longer passes the checks is left out, logged and listed with
 // its problems, so the others keep running. A check that a later release made stricter can be
-// tolerated when reading a stored model: it runs without the part that breaks the check, and the
-// warning stays listed until a corrected file is applied.
+// tolerated when reading a stored model: it keeps running, with the part at fault dropped or read
+// as before, and the warning stays listed until a corrected file is applied.
 //
 // A request that uses a model holds its read lock until the request ends, and an apply takes the
 // write lock to hold the model, so an apply starts only after the requests already using the model
@@ -84,7 +84,7 @@ public class ModelRegistry {
           List<String> reasons = parsed.tolerated().stream().map(Problem::toString).toList();
           tolerated.put(name, reasons);
           log.warn(
-              "Model {} runs without the part that fails the checks of this release: {}."
+              "Model {} runs, but its stored file fails the checks of this release: {}."
                   + " Apply a corrected file to fix it.",
               name,
               reasons);

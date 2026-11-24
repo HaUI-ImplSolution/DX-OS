@@ -16,6 +16,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - `dxos plan` in kế hoạch bằng chữ: mức rủi ro, mỗi thay đổi một dòng, hồ sơ đang xử lý, tác động lên hành động, dòng vi phạm và lệnh `dxos apply --accept` cần dùng; `--json` in JSON đầy đủ như trước.
 - `stats` của thực thể có quy trình trả `timeInStatus`: mỗi trạng thái có số lượt vào, thời gian trung bình và lâu nhất, sắp theo trung bình giảm dần.
   Mỗi lần vào lại tính một lượt, lượt đang mở tính đến `computedAt`, trạng thái cuối không tính; cùng quyền theo dòng, bộ lọc và mức cắt 10 giây như các số khác.
+- Tệp mô hình có khóa viết hai lần trong cùng một khối bị `dxos lint`, `dxos plan` và áp dụng từ chối, kèm dòng của lần viết thứ hai; mô hình đã lưu có khóa trùng vẫn chạy và hiện cảnh báo.
 - `dxos import <mô hình> <thực thể> <tệp.csv> --client TÊN` tạo mỗi dòng của tệp CSV thành một hồ sơ qua API dữ liệu chung, nên mỗi dòng đi qua quyền, ràng buộc, quy tắc và quy trình của thực thể; dòng bị từ chối được báo kèm số dòng và lý do, gửi lại cùng tệp không tạo trùng trong 24 giờ, và `--dry-run` kiểm tệp mà không tạo gì.
 
 ### Giao diện

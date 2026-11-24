@@ -38,11 +38,9 @@ import {
   FormGrid,
   Group,
   GuideBox,
-  list,
   NAME,
   NameInput,
   rec,
-  renameKey,
   text,
   texts,
   uniqueName,
@@ -50,7 +48,7 @@ import {
   compact,
   type Rec,
 } from "./formParts";
-import { fieldUses } from "./modelRefs";
+import { fieldUses, renameFieldIn } from "./modelRefs";
 import { t } from "../shell/t";
 
 // The fields of an entity as a table; the field picked in it opens below with every setting its type takes.
@@ -89,44 +87,7 @@ export default function FieldsEditor({
 
   // A field renamed here is renamed everywhere the entity names it, so nothing points at the old name.
   const renameField = (from: string, to: string) => {
-    const next: Rec = { fields: renameKey(fields, from, to) };
-    if (entity.owner_via === from) next.owner_via = to;
-    if (entity.process) {
-      const process = { ...rec(entity.process) };
-      const booking = rec(process.booking);
-      if (Object.keys(booking).length > 0) {
-        process.booking = Object.fromEntries(Object.entries(booking).map(([k, v]) => [k, v === from ? to : v]));
-      }
-      const after = rec(process.after);
-      if (Object.keys(after).length > 0) {
-        process.after = Object.fromEntries(
-          Object.entries(after).map(([state, items]) => [
-            state,
-            list(items).map((item) => {
-              const completion = { ...rec(item) };
-              if (completion.user === from) completion.user = to;
-              if (completion.group_from === from) completion.group_from = to;
-              return completion;
-            }),
-          ]),
-        );
-      }
-      next.process = process;
-    }
-    const ai = rec(entity.ai);
-    const tasks = rec(ai.tasks);
-    if (Object.keys(tasks).length) {
-      next.ai = {
-        ...ai,
-        tasks: Object.fromEntries(
-          Object.entries(tasks).map(([name, raw]) => {
-            const task = rec(raw);
-            return [name, { ...task, input_fields: texts(task.input_fields).map((field) => (field === from ? to : field)), output_field: task.output_field === from ? to : task.output_field }];
-          }),
-        ),
-      };
-    }
-    setEntity(next);
+    setEntity(renameFieldIn(entity, from, to, family));
     onSelect(to);
   };
 

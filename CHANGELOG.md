@@ -26,6 +26,9 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
   Giao diện sửa biểu tượng, nhóm và thứ tự trong menu, cột và cách sắp xếp của danh sách, nhóm trường trên form và gợi ý của từng trường.
   Mẫu in sửa tên mẫu, nhãn, tên tệp, tiêu đề, các trạng thái được in và các khối nội dung (tiêu đề, văn bản, bảng trường, dòng ký, đổi được thứ tự).
   Lỗi của Core thuộc `ui` hoặc `documents` hiện ở đúng trang đó, và mỗi trang có hướng dẫn về những gì khối nhận.
+  Lỗi của Core về hai khối này hiện bằng tiếng Việt khi giao diện ở tiếng Việt.
+- Đổi tên một trường hay một vai trò trong trình dựng mô hình đổi theo mọi chỗ đang dùng tên đó, đúng các chỗ hộp xác nhận khi xóa liệt kê, nên Xem kế hoạch không còn báo tham chiếu tới tên cũ.
+  Với trường: `required_when` của trường khác, `require` và `when` của hành động, cột, cách sắp xếp, nhóm trường và gợi ý trong `ui`, và `file`, `title`, `text`, `fields` và `signatures` của mẫu in; với vai trò: `role` của hành động và `escalate.to`.
 - Thông báo lỗi của trợ lý nghiệp vụ hiện bằng tiếng Anh khi giao diện ở tiếng Anh.
 - Danh sách hồ sơ có ô "Tìm theo chữ" ở đầu bộ lọc; nó thay ô lọc riêng của trường mã, vì mã cũng được tìm.
 - Trang Thống kê có thẻ "Thời gian trung bình ở từng trạng thái", đánh dấu trạng thái giữ hồ sơ lâu nhất; bấm một dòng mở danh sách hồ sơ ở trạng thái đó.

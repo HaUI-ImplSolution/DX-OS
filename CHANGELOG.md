@@ -24,8 +24,8 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Kế hoạch đổi mô hình hiện "Hồ sơ hiện có được cấp mã" bằng tiếng Việt khi thêm một trường kiểu `code`.
 - Chế độ Điền form của trình soạn mô hình là một trình dựng mô hình: cây cấu trúc của mô hình, trường dữ liệu dạng bảng có ô tìm, ma trận quyền vai trò × thực thể, quy trình chia Tổng quan, Trạng thái, Hành động, Thời hạn và Tự động hóa, và bấm trạng thái hay mũi tên trên sơ đồ thì mở chỗ sửa nó.
 - Trình dựng mô hình hỏi lại trước khi xóa trường, vai trò hay thực thể đang được dùng; lỗi Core chặn áp dụng và cảnh báo của form được tách màu, đánh dấu trên cây và liệt kê kèm liên kết tới chỗ sửa; cạnh tên tệp có nhãn khi còn thay đổi chưa áp dụng.
+- Ở chế độ form, "Viết được gì trong tệp" nằm dưới khung chính và chỉ nêu phần đang sửa; biểu tượng xóa màu đỏ.
 - Nhãn của form theo nghiệp vụ, ở cả tiếng Việt và tiếng Anh: Trường dữ liệu, Vai trò, Quyền truy cập, Mẫu quy trình, Kế thừa quyền từ hồ sơ liên quan, Kết nối gửi sự kiện, Nhóm người dùng (Keycloak).
-- Đổi tên vai trò trong form cũng đổi vai trò của từng hành động và các cấp báo quá hạn.
 - Bảng kế hoạch có nhãn tiếng Việt và tiếng Anh cho định dạng mã, mẫu chuỗi, điều kiện bắt buộc nhập, cách hiển thị và tài liệu in, và cho các quy tắc bắt buộc có điều kiện, số phần tử, giá trị nhỏ nhất, giá trị lớn nhất và mẫu chuỗi ở dòng vi phạm.
 
 ## [2.1.0] - 2026-11-26

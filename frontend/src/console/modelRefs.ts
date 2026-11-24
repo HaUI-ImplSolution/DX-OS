@@ -33,6 +33,22 @@ export function fieldUses(entity: Rec, field: string, family: Family | undefined
     const task = rec(raw);
     if (texts(task.input_fields).includes(field) || task.output_field === field) uses.push(t("Trợ lý nghiệp vụ: nhiệm vụ {name}", { name }));
   });
+  const ui = rec(entity.ui);
+  const listView = rec(ui.list);
+  if (texts(listView.columns).includes(field) || text(listView.sort).replace(/^-/, "") === field) uses.push(t("Giao diện: cột hoặc cách sắp xếp của danh sách"));
+  if (list(rec(ui.form).groups).some((group) => texts(rec(group).fields).includes(field))) uses.push(t("Giao diện: nhóm trường trên form"));
+  if (field in rec(ui.hints)) uses.push(t("Giao diện: gợi ý của trường"));
+  const placeholder = `{{${field}}}`;
+  Object.entries(rec(entity.documents)).forEach(([name, raw]) => {
+    const document = rec(raw);
+    const written = [text(document.file), text(document.title)];
+    const named = list(document.body).some((block) => {
+      const item = rec(block);
+      written.push(text(item.heading), text(item.text));
+      return texts(item.fields).includes(field);
+    });
+    if (named || written.some((line) => line.includes(placeholder))) uses.push(t("Mẫu in {name}", { name }));
+  });
   return uses;
 }
 
@@ -66,9 +82,8 @@ export function roleUses(entities: Rec, role: string): string[] {
   return uses;
 }
 
-// Every place of the model that names a role, renamed.
+// The places the form follows when a role is renamed: the access of every entity and its handlers.
 export function renameRoleIn(entities: Rec, from: string, to: string): Rec {
-  const swap = (names: unknown) => (typeof names === "string" ? (names === from ? to : names) : Array.isArray(names) ? names.map((name) => (name === from ? to : name)) : names);
   const renamed: Rec = {};
   Object.entries(entities).forEach(([key, raw]) => {
     const item = { ...rec(raw) };
@@ -76,13 +91,9 @@ export function renameRoleIn(entities: Rec, from: string, to: string): Rec {
     if (from in access) item.access = Object.fromEntries(Object.entries(access).map(([name, scope]) => [name === from ? to : name, scope]));
     if (item.process !== undefined) {
       const process = { ...rec(item.process) };
-      if (process.handler !== undefined) process.handler = swap(process.handler);
-      if (process.actions !== undefined) {
-        process.actions = Object.fromEntries(
-          Object.entries(rec(process.actions)).map(([name, spec]) => [name, spec === null || rec(spec).role === undefined ? spec : { ...rec(spec), role: swap(rec(spec).role) }]),
-        );
-      }
-      if (Array.isArray(process.escalate)) process.escalate = process.escalate.map((level) => (rec(level).to === undefined ? level : { ...rec(level), to: swap(rec(level).to) }));
+      const handler = process.handler;
+      if (handler === from) process.handler = to;
+      else if (Array.isArray(handler)) process.handler = handler.map((name) => (name === from ? to : name));
       item.process = process;
     }
     renamed[key] = item;

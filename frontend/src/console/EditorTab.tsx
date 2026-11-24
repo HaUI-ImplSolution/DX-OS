@@ -33,7 +33,7 @@ import { placeProblems, type NavTarget } from "./navModel";
 import PlanPanel from "./PlanPanel";
 import { FAMILY_LABEL } from "./labels";
 import ProcessDiagram from "./ProcessDiagram";
-import SyntaxGuide from "./SyntaxGuide";
+import SyntaxGuide, { focusOf } from "./SyntaxGuide";
 import YamlEditor from "./YamlEditor";
 import { t } from "../shell/t";
 
@@ -160,7 +160,10 @@ export default function EditorTab({ text, source, changed, schema, onText, onApp
 
   const diagrams = useDiagrams(text);
   const { processes, problems: diagramProblems, state: diagramState } = diagrams;
-  const selected = processes.find((item) => item.entity === entity) ?? processes[0];
+  const form = mode === "form";
+  // In the form the diagram follows the entity being edited; elsewhere the entity picked in the list.
+  const editing = form && nav.kind === "entity" ? nav.entity : "";
+  const selected = processes.find((item) => item.entity === (editing || entity)) ?? processes.find((item) => item.entity === entity) ?? processes[0];
   const placed = useMemo(() => placeProblems(text, diagramProblems), [text, diagramProblems]);
 
   // The form changes only the values it edits; every comment of the file is kept.
@@ -198,11 +201,11 @@ export default function EditorTab({ text, source, changed, schema, onText, onApp
     });
 
   const step = plan ? 2 : 1;
-  const form = mode === "form";
   // The form takes most of the width; the plan, the diagram and the syntax guide make room for it.
   const columns = !form ? "minmax(0, 3fr) minmax(0, 2fr)" : side ? "minmax(0, 1fr) minmax(320px, 400px)" : "minmax(0, 1fr)";
   return (
     <Box sx={{ display: "grid", gap: 2, alignItems: "start", gridTemplateColumns: { xs: "1fr", lg: columns } }}>
+      <Box sx={{ display: "grid", gap: 2, alignItems: "start", minWidth: 0 }}>
       <Card sx={{ p: 2, minWidth: 0 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1.5, flexWrap: "wrap" }}>
           <ToggleButtonGroup size="small" exclusive value={mode} onChange={(_, next) => next && setMode(next)}>
@@ -245,10 +248,12 @@ export default function EditorTab({ text, source, changed, schema, onText, onApp
               <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1.5 }}>
                 {t("Điền form chỉ sửa những chỗ bạn đổi, các dòng chú thích trong tệp được giữ.")}
               </Typography>
-              <ModelForm schema={schema} value={parsed.value} onChange={fromForm} nav={nav} onNav={setNav} diagrams={diagrams} problems={placed} />
+              <ModelForm schema={schema} value={parsed.value} onChange={fromForm} nav={nav} onNav={setNav} diagrams={diagrams} problems={placed} onZoom={() => setZoomed(true)} />
             </>
           ))}
       </Card>
+      {form && <SyntaxGuide focus={focusOf(nav)} />}
+      </Box>
       <Box sx={{ display: { xs: "grid", lg: form && !side ? "none" : "grid" }, gap: 2, minWidth: 0 }}>
         <Card sx={{ p: 2.5 }}>
           <Stepper activeStep={step} alternativeLabel sx={{ mb: plan ? 2.5 : 0 }}>

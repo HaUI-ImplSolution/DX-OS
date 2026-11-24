@@ -64,6 +64,8 @@ interface Props {
   nav: NavTarget;
   onNav: (target: NavTarget) => void;
   diagrams: Diagrams;
+  // Opens the diagram of the entity being edited in a large window.
+  onZoom: () => void;
   // The problems the backend found, placed on the part of the builder that edits them.
   problems: Issue[];
 }
@@ -107,7 +109,7 @@ const ITEM_ROW = { display: "grid", gap: 1.5, alignItems: "start", gridTemplateC
 
 // The model builder: a tree of the model on the left, and the part picked in it on the right. It offers
 // the roles, fields and entities already declared wherever one is named, and says what each part accepts.
-export default function ModelForm({ schema, value, onChange, nav, onNav, diagrams, problems }: Props) {
+export default function ModelForm({ schema, value, onChange, nav, onNav, diagrams, onZoom, problems }: Props) {
   const families = useFamilies();
   const [field, setField] = useState("");
   const [state, setState] = useState("");
@@ -204,7 +206,7 @@ export default function ModelForm({ schema, value, onChange, nav, onNav, diagram
                   aria-label={t("Xóa vai trò")}
                   onClick={() => ask(t("vai trò {name}", { name: roleNames[index] }), roleUses(entities, roleNames[index]), () => set({ roles: roles.filter((_, i) => i !== index) }))}
                 >
-                  <DeleteOutlineIcon fontSize="small" />
+                  <DeleteOutlineIcon fontSize="small" color="error" />
                 </IconButton>
               </Tooltip>
             </Box>
@@ -253,7 +255,7 @@ export default function ModelForm({ schema, value, onChange, nav, onNav, diagram
             />
             <Tooltip title={t("Xóa đơn vị")}>
               <IconButton size="small" aria-label={t("Xóa đơn vị")} onClick={() => set({ units: units.filter((_, i) => i !== index) })}>
-                <DeleteOutlineIcon fontSize="small" />
+                <DeleteOutlineIcon fontSize="small" color="error" />
               </IconButton>
             </Tooltip>
           </Box>
@@ -348,7 +350,7 @@ export default function ModelForm({ schema, value, onChange, nav, onNav, diagram
                               removeEntity(key);
                             }}
                           >
-                            <DeleteOutlineIcon fontSize="small" />
+                            <DeleteOutlineIcon fontSize="small" color="error" />
                           </IconButton>
                         </Tooltip>
                       </TableCell>
@@ -506,6 +508,7 @@ export default function ModelForm({ schema, value, onChange, nav, onNav, diagram
         familyOptions={familyOptions}
         step={target.step ?? "overview"}
         diagrams={diagrams}
+        onZoom={onZoom}
         view={diagrams.processes.find((item) => item.entity === entityKey)}
         selectedState={state}
         selectedAction={action}

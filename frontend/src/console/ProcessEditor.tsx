@@ -28,6 +28,7 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import type { Family, ProcessView } from "./api";
 import { DiagramStatus, type Diagrams } from "./diagramState";
 import { COMPLETION_LABEL, PARAM_HELP } from "./formGuide";
@@ -94,6 +95,7 @@ export default function ProcessEditor({
   familyOptions,
   step,
   diagrams,
+  onZoom,
   view,
   selectedState,
   selectedAction,
@@ -109,6 +111,7 @@ export default function ProcessEditor({
   familyOptions: string[];
   step: ProcessPart;
   diagrams: Diagrams;
+  onZoom: () => void;
   view: ProcessView | undefined;
   selectedState: string;
   selectedAction: string;
@@ -290,7 +293,19 @@ export default function ProcessEditor({
               )}
             </Group>
             {params.includes("booking") && <BookingGroup process={process} fields={fields} setProcess={setProcess} />}
-            <Group title={t("Sơ đồ quy trình")} hint={t("Bấm vào một trạng thái hoặc mũi tên để mở chỗ sửa nó.")}>
+            <Group
+              title={t("Sơ đồ quy trình")}
+              hint={t("Bấm vào một trạng thái hoặc mũi tên để mở chỗ sửa nó.")}
+              action={
+                view && (
+                  <Tooltip title={t("Mở to")}>
+                    <IconButton size="small" onClick={onZoom} aria-label={t("Mở to sơ đồ")}>
+                      <OpenInFullIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                )
+              }
+            >
               <DiagramStatus state={diagrams.state} problems={diagrams.problems} drawn={view !== undefined} />
               {view ? (
                 <ProcessDiagram
@@ -591,7 +606,7 @@ export default function ProcessEditor({
                   </FormGrid>
                   <Tooltip title={t("Xóa hành động")}>
                     <IconButton size="small" sx={{ mt: 1.5 }} aria-label={t("Xóa hành động")} onClick={() => setCompletions(state.name, items.filter((_, i) => i !== index))}>
-                      <DeleteOutlineIcon fontSize="small" />
+                      <DeleteOutlineIcon fontSize="small" color="error" />
                     </IconButton>
                   </Tooltip>
                 </Box>
@@ -722,7 +737,7 @@ function StatesTable({
                 ) : (
                   <Tooltip title={row.base ? t("Bỏ trạng thái của mẫu") : t("Xóa trạng thái")}>
                     <IconButton size="small" aria-label={t("Xóa trạng thái")} onClick={() => onRemove(row)}>
-                      <DeleteOutlineIcon fontSize="small" />
+                      <DeleteOutlineIcon fontSize="small" color="error" />
                     </IconButton>
                   </Tooltip>
                 )}

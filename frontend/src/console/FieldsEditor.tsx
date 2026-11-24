@@ -215,7 +215,7 @@ export default function FieldsEditor({
                               else remove(key);
                             }}
                           >
-                            <DeleteOutlineIcon fontSize="small" />
+                            <DeleteOutlineIcon fontSize="small" color="error" />
                           </IconButton>
                         </Tooltip>
                       </TableCell>

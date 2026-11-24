@@ -21,6 +21,7 @@ export interface EntityStats {
   avgDecisionSeconds?: number | null;
   avgOpenAgeSeconds?: number | null;
   oldestOpenAgeSeconds?: number | null;
+  timeInStatus?: { status: string; visits: number; avgSeconds: number; maxSeconds: number }[] | null;
   computedAt: string;
 }
 

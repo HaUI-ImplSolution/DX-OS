@@ -49,15 +49,31 @@ function Tile({ icon, label, value, tone, onClick }: { icon: JSX.Element; label:
   );
 }
 
-// One line per value: its name, a bar as long as its share of the total, and the count.
-function Breakdown({ title, rows, total }: { title: string; rows: { key: string; label: string; count: number; tone: string; filter: Filter }[]; total: number }) {
+type BreakdownRow = {
+  key: string;
+  label: string;
+  value: number;
+  tone: string;
+  filter: Filter;
+  display?: string;
+  detail?: string;
+  badge?: string;
+};
+
+// Each row shows a value and a bar proportional to the supplied scale.
+function Breakdown({ title, note, rows, scale }: { title: string; note?: string; rows: BreakdownRow[]; scale: number }) {
   const navigate = useNavigate();
   const { resource = "" } = useParams();
   return (
     <Card sx={{ p: 2, flex: "1 1 320px" }}>
-      <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>
+      <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: note ? 0 : 1 }}>
         {title}
       </Typography>
+      {note && (
+        <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>
+          {note}
+        </Typography>
+      )}
       {rows.length === 0 && (
         <Typography variant="body2" color="text.secondary">
           {t("Chưa có hồ sơ nào.")}
@@ -67,17 +83,29 @@ function Breakdown({ title, rows, total }: { title: string; rows: { key: string;
         <ButtonBase
           key={row.key}
           onClick={() => navigate(listPath(resource, row.filter))}
-          sx={{ width: "100%", display: "grid", gridTemplateColumns: "minmax(90px, 160px) 1fr auto", alignItems: "center", gap: 1.5, py: 0.75, textAlign: "left", borderRadius: 1 }}
+          sx={{ width: "100%", display: "grid", gridTemplateColumns: "minmax(90px, 160px) 1fr auto", alignItems: "center", columnGap: 1.5, rowGap: 0.25, py: 0.75, textAlign: "left", borderRadius: 1 }}
         >
-          <Typography variant="body2" noWrap title={row.label}>
-            {row.label}
-          </Typography>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography variant="body2" noWrap title={row.label}>
+              {row.label}
+            </Typography>
+            {row.badge && (
+              <Typography variant="caption" color="warning.dark" sx={{ display: "block", fontWeight: 700 }}>
+                {row.badge}
+              </Typography>
+            )}
+          </Box>
           <Box sx={{ height: 8, borderRadius: 4, bgcolor: "action.hover", overflow: "hidden" }}>
-            <Box sx={{ height: "100%", width: `${total ? (row.count / total) * 100 : 0}%`, bgcolor: `${row.tone}.main` }} />
+            <Box sx={{ height: "100%", width: `${scale > 0 ? (row.value / scale) * 100 : 0}%`, bgcolor: `${row.tone}.main` }} />
           </Box>
           <Typography variant="body2" sx={{ fontWeight: 700, minWidth: 32, textAlign: "right" }}>
-            {row.count}
+            {row.display ?? row.value}
           </Typography>
+          {row.detail && (
+            <Typography variant="caption" color="text.secondary" sx={{ gridColumn: "1 / -1" }}>
+              {row.detail}
+            </Typography>
+          )}
         </ButtonBase>
       ))}
     </Card>
@@ -114,6 +142,7 @@ export default function StatsPage({ models }: { models: ModelMeta[] }) {
   const what = entity.label.charAt(0).toLowerCase() + entity.label.slice(1);
   const stateLabel = (status: string) => t(entity.process?.states.find((state) => state.name === status)?.label ?? status);
   const unitLabel = (unit: string) => model.units.find((candidate) => candidate.name === unit)?.label ?? unit;
+  const timeInStatus = stats?.timeInStatus ?? [];
   const tone = (status: string) => {
     const value = TONES[status];
     return value && value !== "default" ? value : "secondary";
@@ -166,11 +195,11 @@ export default function StatsPage({ models }: { models: ModelMeta[] }) {
           <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
             <Breakdown
               title={t("Theo trạng thái")}
-              total={stats.total}
+              scale={stats.total}
               rows={stats.byStatus.map((row) => ({
                 key: row.status,
                 label: stateLabel(row.status),
-                count: row.count,
+                value: row.count,
                 tone: tone(row.status),
                 filter: { status: row.status },
               }))}
@@ -178,13 +207,30 @@ export default function StatsPage({ models }: { models: ModelMeta[] }) {
             {entity.unitField && stats.byUnit && (
               <Breakdown
                 title={t("Theo đơn vị")}
-                total={stats.total}
+                scale={stats.total}
                 rows={stats.byUnit.map((row) => ({
                   key: row.unit ?? "",
                   label: row.unit ? unitLabel(row.unit) : t("Chưa có đơn vị"),
-                  count: row.count,
+                  value: row.count,
                   tone: "info",
                   filter: row.unit ? { [entity.unitField as string]: row.unit } : {},
+                }))}
+              />
+            )}
+            {timeInStatus.length > 0 && (
+              <Breakdown
+                title={t("Thời gian trung bình ở từng trạng thái")}
+                note={t("Tính từ lúc hồ sơ vào trạng thái đến lúc rời đi; không tính trạng thái cuối.")}
+                scale={timeInStatus[0].avgSeconds}
+                rows={timeInStatus.map((row, index) => ({
+                  key: row.status,
+                  label: stateLabel(row.status),
+                  value: row.avgSeconds,
+                  display: formatDuration(row.avgSeconds),
+                  detail: t("Lượt lâu nhất {max} · {visits} lượt", { max: formatDuration(row.maxSeconds), visits: row.visits }),
+                  badge: index === 0 ? t("Chờ lâu nhất") : undefined,
+                  tone: index === 0 ? "warning" : tone(row.status),
+                  filter: { status: row.status },
                 }))}
               />
             )}

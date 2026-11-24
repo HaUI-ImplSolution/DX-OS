@@ -136,6 +136,10 @@ export const app: Record<string, string> = {
   "Theo trạng thái": "By status",
   "Theo đơn vị": "By unit",
   "Chưa có đơn vị": "No unit",
+  "Thời gian trung bình ở từng trạng thái": "Average time in each status",
+  "Tính từ lúc hồ sơ vào trạng thái đến lúc rời đi; không tính trạng thái cuối.": "Counted from when a record enters a status until it leaves; final statuses are not counted.",
+  "Chờ lâu nhất": "Longest wait",
+  "Lượt lâu nhất {max} · {visits} lượt": "Longest visit {max} · {visits} visits",
   // Record screens
   "Sửa": "Edit",
   "Sao chép mã": "Copy the code",

@@ -80,6 +80,7 @@ Ten templates are ready to pick in the control panel: student one-stop service, 
 | | **Printed documents from a record:** the model file declares a template for a certificate, slip or report; a record becomes a PDF with Vietnamese text for whoever may see that record, only in the states the template allows. |
 | **Using and running it** | **An interface set by declaration:** the model file can choose icons, menu groups, the default columns and sort, how forms are grouped and the hints; an officer selects several records and handles them at once, each still going through every rule. |
 | | **Board by state and list export:** the list of records with a process can be seen as a board with one column per state, and exported to a CSV file a spreadsheet can read, with exactly the rows the viewer may see. |
+| | **Search by words:** type a few words into the search box of a list, with or without accents and in any case; only the rows the viewer may see are shown. |
 | | **An inbox that updates itself:** when a record changes, the inbox, the lists and the detail page that are open refresh without reloading the page. |
 | | **Try it at once:** one command creates a trial account for each role and sample records in several states, so a visitor who signs in finds a system with work in it. |
 | | **Simple to install and run:** one command installs and one starts; backups can be checked, services restart on their own, attachments are virus-scanned, and the operational numbers can be read by the monitoring tool you already have. |

@@ -38,6 +38,7 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import org.springframework.stereotype.Component;
 
 // The OpenAPI document of one applied model, read from its model and metadata; it names no
@@ -731,6 +732,16 @@ public class ModelOpenApi {
 
   private List<Parameter> filterParameters(EntityMeta entity) {
     List<Parameter> parameters = new ArrayList<>();
+    if (entity.fields().stream()
+        .anyMatch(f -> !f.multiple() && Set.of("text", "code", "choice").contains(f.type()))) {
+      parameters.add(
+          new QueryParameter()
+              .name("q")
+              .description(
+                  "Rows where every word appears, ignoring case and diacritics, in a text, code or"
+                      + " single-choice field; at most 8 words and 200 characters")
+              .schema(new StringSchema().maxLength(200)));
+    }
     for (FieldMeta field : entity.fields()) {
       if (!"file".equals(field.type())) {
         parameters.add(

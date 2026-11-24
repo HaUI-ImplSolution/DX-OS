@@ -28,9 +28,11 @@ Nghiệp vụ có thể thêm hoặc đổi hành động, và có hành động
 Nếu nghiệp vụ có mẫu in, trang chi tiết hồ sơ hiện nút **In** ở những trạng thái mẫu cho phép; ví dụ giấy xác nhận chỉ in được khi hồ sơ đã duyệt.
 Bấm nút để tải tệp PDF của hồ sơ.
 
-## Tìm hồ sơ theo mã
+## Tìm hồ sơ
 
-Nếu nghiệp vụ cấp mã hồ sơ, danh sách có cột mã và ô tìm theo mã: gõ cả mã hoặc một phần của nó để lọc.
+Ô **Tìm theo chữ** ở đầu danh sách nhận một hoặc vài từ; hồ sơ hiện ra khi chứa đủ các từ đó trong các trường chữ, mã hoặc lựa chọn của nó.
+Không cần gõ dấu và không phân biệt hoa thường, nên `don nghi` tìm được "Đơn xin nghỉ phép".
+Nghiệp vụ cấp mã hồ sơ thì gõ cả mã hoặc một phần của nó vào cùng ô.
 Mã nằm ở đầu trang chi tiết kèm nút sao chép, tiện dán vào trao đổi hay biên bản.
 
 ## Nhận và giao việc

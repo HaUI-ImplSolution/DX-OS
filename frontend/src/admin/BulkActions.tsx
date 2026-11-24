@@ -70,8 +70,19 @@ export default function BulkActions({ model, entity }: Props) {
       ),
   );
 
+  const openNote = (action: ProcessAction) => {
+    setNote("");
+    setPending(action);
+  };
+
+  const closeNote = () => {
+    setPending(null);
+    setNote("");
+  };
+
   const run = async (action: ProcessAction, text: string | undefined) => {
     const ids = [...selectedIds] as number[];
+    const rows = new Map(selected.map((record) => [record.id, record]));
     const results: Outcome[] = [];
     let next = 0;
     let done = 0;
@@ -81,7 +92,7 @@ export default function BulkActions({ model, entity }: Props) {
         const index = next++;
         const id = ids[index];
         try {
-          await takeAction(model, entity.name, id, action.name, text);
+          await takeAction(model, entity.name, id, action.name, text, { version: rows.get(id)?.version, modelVersion: entity.modelVersion });
           results[index] = { id, error: null };
         } catch (error) {
           results[index] = { id, error: error instanceof Error ? error.message : t("Không xử lý được") };
@@ -92,8 +103,7 @@ export default function BulkActions({ model, entity }: Props) {
     };
     await Promise.all(Array.from({ length: Math.min(PARALLEL, ids.length) }, worker));
     setProgress(null);
-    setPending(null);
-    setNote("");
+    closeNote();
     setOutcomes(results);
     unselectAll();
     refresh();
@@ -111,7 +121,7 @@ export default function BulkActions({ model, entity }: Props) {
       {offered.map((action) => {
         const button = (
           // biome-ignore lint/correctness/useJsxKeyInIterable: the key is set on the wrapper that holds the button
-          <Button {...style(action)} size="small" disabled={tooMany} sx={{ ml: 1 }} onClick={() => setPending(action)}>
+          <Button {...style(action)} size="small" disabled={tooMany} sx={{ ml: 1 }} onClick={() => openNote(action)}>
             {ta(action.label)}
           </Button>
         );
@@ -123,7 +133,7 @@ export default function BulkActions({ model, entity }: Props) {
           <span key={action.name}>{button}</span>
         );
       })}
-      <Dialog open={pending !== null} onClose={() => !progress && setPending(null)} fullWidth>
+      <Dialog open={pending !== null} onClose={() => progress === null && closeNote()} fullWidth>
         <DialogTitle>{pending ? t("{action}: {n} hồ sơ", { action: ta(pending.label), n: selectedIds.length }) : null}</DialogTitle>
         <DialogContent>
           <DialogContentText sx={{ mb: 2 }}>
@@ -142,7 +152,7 @@ export default function BulkActions({ model, entity }: Props) {
           {progress && <LinearProgress variant="determinate" value={(progress.done / progress.total) * 100} sx={{ mt: 2 }} />}
         </DialogContent>
         <DialogActions>
-          <Button disabled={progress !== null} onClick={() => setPending(null)}>
+          <Button disabled={progress !== null} onClick={closeNote}>
             {t("Hủy")}
           </Button>
           <Button

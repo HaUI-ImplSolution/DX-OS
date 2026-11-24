@@ -6,6 +6,27 @@ import { t } from "./t";
 // The locale tag for dates and numbers in the current language.
 export const intlLocale = () => (getLocale() === "en" ? "en-GB" : "vi-VN");
 
+// A number in the current language, such as 1.500.000; anything else as it is.
+export function formatNumber(value: unknown): string {
+  const number = typeof value === "string" && value.trim() !== "" ? Number(value) : value;
+  return typeof number === "number" && Number.isFinite(number)
+    ? new Intl.NumberFormat(intlLocale()).format(number)
+    : String(value);
+}
+
+// A date-only value (YYYY-MM-DD) as 20/11/2026, read in UTC so no time zone moves it to another day.
+export function formatDate(value: unknown): string {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return String(value);
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== value) return value;
+  return date.toLocaleDateString(intlLocale(), {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
 // Dates as the reader expects them: 14:05 03/11/2026, and "2 giờ trước" next to them.
 export function formatDateTime(value: string | null | undefined): string {
   if (!value) return "";

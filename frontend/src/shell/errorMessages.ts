@@ -5,7 +5,7 @@ import { t } from "./t";
 
 // Vietnamese text per backend errorCode. Codes without an entry show the backend message.
 const ERROR_MESSAGES: Record<string, string> = {
-  ERR_CONCURRENT_MODIFICATION: t("Bản ghi vừa được người khác thay đổi, hãy tải lại rồi thử lại."),
+  ERR_CONCURRENT_MODIFICATION: t("Hồ sơ vừa được thay đổi, hãy xem lại."),
   ERR_BAD_CREDENTIALS: t("Sai tên đăng nhập hoặc mật khẩu."),
   ERR_UNAUTHENTICATED: t("Phiên đăng nhập đã hết hạn, hãy đăng nhập lại."),
   ERR_FORBIDDEN: t("Bạn không đủ quyền thực hiện thao tác này."),
@@ -34,6 +34,7 @@ const REASON_MESSAGES: Record<string, string> = {
   WRONG_STATE: t("Hồ sơ không thực hiện được thao tác này ở trạng thái hiện tại"),
   CONDITION_NOT_MET: t("Hồ sơ chưa đạt điều kiện của hành động này"),
   ASSIGNED_TO_OTHER: t("Hồ sơ đang được giao cho người khác"),
+  MODEL_VERSION_CHANGED: t("Mô hình vừa được đổi, hãy tải lại trang rồi thử lại"),
   RECORD_CLOSED: t("Hồ sơ đã đóng, không thay đổi được"),
   SLOT_TAKEN: t("Tài nguyên đã có người đặt trong khung giờ này"),
   STATUS_BY_PROCESS_ONLY: t("Trạng thái chỉ đổi qua quy trình"),

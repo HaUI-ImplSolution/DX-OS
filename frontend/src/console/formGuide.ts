@@ -32,7 +32,7 @@ export const GUIDE: Record<Section, Guide> = {
     ],
     extends: [
       t("Thêm vai trò bất cứ lúc nào; vai trò mới dùng được ngay ở mục Quyền truy cập và làm vai trò xử lý của quy trình."),
-      t("Đổi tên vai ở đây thì quyền và vai xử lý đang trỏ tới vai đó đổi theo."),
+      t("Đổi tên vai ở đây thì quyền, vai xử lý, vai của hành động và vai nhận thông báo quá hạn đang trỏ tới vai đó đổi theo."),
     ],
     creates: [
       t("Vai có thể đặt tên theo nghiệp vụ của bạn, ví dụ TRUONG_KHOA hay KE_TOAN."),
@@ -66,6 +66,7 @@ export const GUIDE: Record<Section, Guide> = {
       t("Kiểu lựa chọn cần danh sách lựa chọn; kiểu tham chiếu cần chọn thực thể được tham chiếu."),
     ],
     extends: [
+      t("Đổi tên trường ở đây thì điều kiện, hành động, giao diện, mẫu in và nhiệm vụ trợ lý đang dùng tên đó đổi theo."),
       t("Đổi tên trường mà giữ dữ liệu: điền tên cũ vào Nâng cao."),
       t("Đặt bắt buộc, không trùng hoặc giá trị mặc định ở từng trường."),
     ],

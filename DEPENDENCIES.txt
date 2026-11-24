@@ -192,6 +192,12 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 | Python 3.13.18 (image python:        | Python-2.0 (PSF), giấy phép của các  | Chạy cầu nối MQTT tùy chọn, chỉ dùng |
 | 3.13.18-alpine3.24) [12]             | gói Alpine của image                 | thư viện chuẩn                       |
 +--------------------------------------+--------------------------------------+--------------------------------------+
+| Prometheus 3.13.5 (image             | Apache-2.0                           | Đọc số đo dxos_* của lõi, dịch vụ    |
+| prom/prometheus) [13]                |                                      | riêng tùy chọn, không sửa mã         |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Grafana 12.4.15 (image               | AGPL-3.0-only (một số gói Apache-2.0)| Vẽ dashboard số đo của lõi, dịch vụ  |
+| grafana/grafana, bản OSS) [13]       |                                      | riêng tùy chọn, không sửa mã         |
++--------------------------------------+--------------------------------------+--------------------------------------+
 | Maven Wrapper 3.3.4 [7] (mvnw,       | Apache-2.0                           | Chạy Maven ở phiên bản đã ghim;      |
 | mvnw.cmd, maven-wrapper.properties)  |                                      | chép nguyên từ Apache Maven          |
 +--------------------------------------+--------------------------------------+--------------------------------------+
@@ -340,6 +346,18 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
     Cầu nối chỉ dùng thư viện chuẩn của Python và không gọi các thư viện này; chúng có mặt vì image Python chính thức dựng CPython cùng chúng.
     Các thành phần GPL của hai image chạy như tiến trình riêng, không sửa và không liên kết với mã của dự án.
     Mã của dự án ở deploy/mqtt/ và examples/itot-simulator theo Apache-2.0 và chỉ dùng thư viện chuẩn của Python.
+    Đây là đọc metadata và tài liệu của các dự án, không phải tư vấn pháp lý.
+
+[13] Prometheus và Grafana tùy chọn chạy hai image nguyên bản, không sửa và không phân phối lại; chúng chỉ được kéo khi bật deploy/docker-compose.grafana.yml.
+    Giấy phép của dự án nguồn được kiểm ở đúng phiên bản bằng .github/scripts/check_upstream_licenses.py: Prometheus v3.13.5 (Apache-2.0) và Grafana v12.4.15 (AGPL-3.0-only).
+    Grafana theo AGPL-3.0-only, đúng như dự án khai ở LICENSING.md; AGPL là giấy phép OSI công nhận và chỉ buộc mở mã nguồn khi sửa chương trình rồi cho người khác dùng qua mạng.
+    Dự án chạy Grafana nguyên bản ở dịch vụ riêng, và chỉ thêm tệp cấu hình, nguồn dữ liệu và dashboard của chính mình (Apache-2.0).
+    Image grafana/grafana là bản OSS; deploy/docker-compose.grafana.yml đặt GF_PLUGINS_PREINSTALL_DISABLED nên Grafana không tải thêm plugin nào lúc chạy, và dự án không dùng bản Enterprise.
+    Thành phần của image prometheus, đọc ngày 2026-11-24: Prometheus 3.13.5 cùng 234 mô-đun Go biên dịch vào tệp chạy (tra giấy phép của từng mô-đun ở đúng phiên bản bằng deps.dev: Apache-2.0, MIT, BSD-2-Clause, BSD-3-Clause, ISC và MPL-2.0; github.com/opencontainers/go-digest v1.0.0 khai Apache-2.0 cho mã và CC-BY-SA-4.0 cho tài liệu), BusyBox 1.38.0 (GPL-2.0-only) và bộ chứng chỉ CA (dữ liệu của Mozilla, MPL-2.0).
+    Thành phần của image grafana (Alpine 3.24.3): Grafana 12.4.15 cùng 510 mô-đun Go biên dịch vào tệp chạy (cùng cách tra: Apache-2.0, MIT, BSD, ISC, MPL-2.0, MIT-0 và AGPL-3.0 cho github.com/grafana/alerting, loki và tempo là mã của chính Grafana Labs; github.com/apparentlymart/go-textseg v15.0.0 khai MIT, Apache-2.0 và Unicode-DFS-2016), các gói nền Alpine (BusyBox, apk-tools, bash, readline, bubblewrap, curl, libidn2, libunistring, zstd và các gói tương tự theo GPL, LGPL, MIT, BSD-3-Clause, X11, Zlib hoặc Apache-2.0 như OpenSSL 3.5.9; curl theo giấy phép curl; tzdata ở phạm vi công cộng).
+    Giấy phép OSI không liệt kê trong hai image: giấy phép curl của curl 8.23.0 (kiểu MIT), tzdata ở phạm vi công cộng, và tài liệu CC-BY-SA-4.0 của go-digest.
+    Phần giao diện web của Grafana đóng gói sẵn các thư viện npm mà dự án nguồn không liệt kê theo phiên bản cho image; dự án chưa kiểm từng thư viện đó và dựa vào khai báo giấy phép của Grafana (AGPL-3.0-only, vài thư mục Apache-2.0).
+    Các gói GPL của hai image chạy như tiến trình riêng, không sửa và không liên kết với mã của dự án.
     Đây là đọc metadata và tài liệu của các dự án, không phải tư vấn pháp lý.
 
 6. TRANG CHỦ VÀ NGUỒN

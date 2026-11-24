@@ -121,7 +121,7 @@ Chạy lâu thì theo dõi dung lượng bảng.
 ## Số đo cho Prometheus
 
 Dịch vụ lõi xuất số đo vận hành theo định dạng Prometheus ở `GET /actuator/prometheus` của cổng `8081` trong mạng Docker, để Prometheus, Grafana Agent hoặc công cụ tương tự đọc.
-Công cụ giám sát bên ngoài là tùy chọn: stack không kèm Prometheus hay Grafana.
+Công cụ giám sát bên ngoài là tùy chọn: stack mặc định không kèm Prometheus hay Grafana, và overlay [Prometheus và Grafana kèm theo](#prometheus-và-grafana-kèm-theo-tùy-chọn) chạy cả hai khi bạn bật.
 
 Truy cập:
 
@@ -194,6 +194,55 @@ groups:
       - alert: DxosApplyFailed
         expr: increase(dxos_model_applies_total{result="failed"}[1h]) > 0
 ```
+
+## Prometheus và Grafana kèm theo (tùy chọn)
+
+Overlay `deploy/docker-compose.grafana.yml` chạy Prometheus và Grafana đã nối sẵn với số đo ở trên: Prometheus đọc `dxos_*` bằng `METRICS_PASSWORD`, Grafana có sẵn nguồn dữ liệu và dashboard "DX-OS".
+Stack mặc định không chạy chúng và lõi không đổi.
+
+### Bật
+
+1. Đặt `METRICS_PASSWORD` trong `deploy/.env` (`make_env.sh` sinh sẵn cho bản cài mới; bản cài cũ thì tự đặt, ví dụ bằng `openssl rand -hex 24`) rồi khởi động lại dịch vụ lõi; để trống thì endpoint đóng và Prometheus không khởi động.
+2. Chép `deploy/grafana.env.example` thành `deploy/grafana.env` (ngoài Git) và điền `GF_SECURITY_ADMIN_PASSWORD`, sinh bằng `openssl rand -hex 24`; để trống thì Grafana không khởi động.
+3. Đặt `COMPOSE_FILE=docker-compose.yml:docker-compose.grafana.yml` trong `deploy/.env`, rồi chạy `dxos start`.
+4. Mở `http://127.0.0.1:3000`, đăng nhập bằng `admin` và mật khẩu ở bước 2; dashboard "DX-OS" nằm ở mục Dashboards.
+5. Tắt bằng cách bỏ dòng `COMPOSE_FILE` rồi chạy `docker compose up -d --remove-orphans`; muốn xóa cả số đo đã lưu thì `docker volume rm <dự án>_prometheus_data <dự án>_grafana_data`.
+
+### Thiết lập
+
+- Grafana mở ở `127.0.0.1:3000`; đổi bằng `GRAFANA_BIND` và `GRAFANA_HOST_PORT` trong `deploy/.env`.
+  Grafana phục vụ HTTP thường, nên khi mở ra ngoài thì đặt sau VPN hoặc một proxy TLS.
+  Prometheus không mở cổng ra ngoài mạng Docker.
+- Prometheus đọc `backend:8081` mỗi 30 giây và giữ số đo 15 ngày trong volume `prometheus_data`; đổi thời gian giữ bằng `PROMETHEUS_RETENTION` (ví dụ `30d`) trong `deploy/.env`.
+- Grafana không cho đăng ký người dùng hay vào ẩn danh, không gửi thống kê, không kiểm bản cập nhật và không tải plugin.
+- Nguồn dữ liệu và dashboard là tệp chỉ đọc ở `deploy/grafana/`, nên giao diện không sửa được chúng; Grafana nạp lại tệp dashboard mỗi 60 giây, nên sửa `dxos.json` không cần khởi động lại.
+  Muốn dashboard riêng thì chép `dxos.json` ra tệp khác trong cùng thư mục và đổi `uid`.
+- Mỗi dịch vụ chạy với tối đa 512 MB RAM và nửa lõi CPU, hệ tệp chỉ đọc và không có quyền thừa.
+
+### Đọc dashboard
+
+Bộ lọc **Mô hình** ở đầu trang giới hạn các bảng theo mô hình.
+
+| Bảng | Cho biết | Khi nào cần xem |
+|---|---|---|
+| Mô hình đang chạy | Số mô hình đã áp dụng | Sau khi áp dụng hay quay lui một mô hình |
+| Mô hình bị loại | Mô hình đã lưu không qua bộ kiểm của bản này | Khác 0 thì mở danh sách mô hình ở `/console` để xem lý do |
+| Hồ sơ quá hạn | Hồ sơ đã quá hạn xử lý, mọi thực thể | Khác 0 lâu là có việc bị bỏ quên |
+| Sự kiện chưa chuyển, Sự kiện chưa chuyển cũ nhất | Hàng đợi webhook | Tuổi trên 10 phút thì xem tab Hàng đợi sự kiện ở `/console` |
+| Áp dụng thất bại trong 24 giờ | Lần áp dụng tệp mô hình thất bại | Khác 0 thì đọc lịch sử áp dụng |
+| Hồ sơ theo trạng thái | Số hồ sơ của từng thực thể theo trạng thái, theo thời gian | Thấy hồ sơ dồn ở một trạng thái |
+| Hồ sơ quá hạn theo thực thể | Thực thể nào có hồ sơ quá hạn | Tìm nơi cần thêm người xử lý |
+| Hàng đợi sự kiện gửi ra ngoài | Sự kiện chưa chuyển và sự kiện đã thử lỗi | Cả hai tăng mà không giảm là nơi nhận webhook đang lỗi |
+| Tuổi sự kiện chưa chuyển cũ nhất | Bao lâu rồi chưa chuyển được sự kiện cũ nhất | Như trên |
+| Lần áp dụng mô hình theo giờ | Số lần áp dụng mỗi giờ theo kết quả | Đối chiếu với lúc đổi mô hình |
+| Hồ sơ hiện có theo trạng thái | Bảng số hồ sơ hiện có, lớn nhất trước | Nhìn nhanh khối lượng việc |
+| Yêu cầu HTTP, thời gian trả lời, kết nối cơ sở dữ liệu | Tải của dịch vụ lõi | Hệ thống chậm: số kết nối đang chờ khác 0 lâu nghĩa là hết kết nối |
+
+### Giới hạn
+
+- Một Prometheus và một Grafana, không chạy nhiều bản sao; số đo chỉ có từ lúc bật overlay.
+- Không có Alertmanager; các quy tắc cảnh báo gợi ý ở trên cần người vận hành tự đưa vào Prometheus của mình.
+- Grafana theo giấy phép AGPL-3.0-only và chạy nguyên bản ở dịch vụ riêng; giấy phép của hai image và các thành phần đi kèm ở [`DEPENDENCIES.txt`](../DEPENDENCIES.txt), ghi chú 13.
 
 ## Màn hình giám sát
 

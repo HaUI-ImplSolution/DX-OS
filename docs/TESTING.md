@@ -161,6 +161,7 @@ Mỗi mục nêu điều phải thấy; lệnh và biến cấu hình chi tiết
     Trường nhiều lựa chọn có `default` là danh sách thì hồ sơ tạo không gửi trường đó nhận danh sách ấy; ở chế độ Điền form, ô mặc định chọn từ `options` và YAML ghi danh sách.
 19. **Thống kê:** thực thể khai hạn có ô "Đúng hạn" với phần trăm và `n/N`; thực thể không khai hạn không có ô này.
     Báo cáo theo trường: "Nhóm theo" lựa chọn, đơn vị, trạng thái hoặc ngày theo tháng, "Tính" đếm hoặc tổng, trung bình, nhỏ nhất, lớn nhất của trường số; có dòng Tất cả, nhóm rỗng hiện "Chưa có giá trị" và "—".
+    Thời gian trung bình ở từng trạng thái: hồ sơ trả lại rồi nộp lại tính mỗi lượt riêng, trạng thái cuối không có dòng, dòng đầu là trạng thái có trung bình lớn nhất và mang nhãn "Chờ lâu nhất"; vai `unit` chỉ thấy số trên hồ sơ của đơn vị mình.
     Vai `own` chỉ nhận số của hồ sơ mình; `report?groupBy=<trường số>` hoặc `metrics=sum(<trường chữ>)` trả 400, vai không có quyền đọc trả 403.
     Hồ sơ đóng sau hạn có dòng `overdue` trước dòng quyết định và tính là muộn (kể cả khi được trả lại rồi duyệt), hồ sơ rút lại sau hạn thì không; `closedOnTime` cộng `closedLate` bằng số hồ sơ đã quyết định và `GET /api/v1/history/verify` báo chuỗi nguyên vẹn.
     Tên hành động dành riêng (như `overdue`, `created`, `escalated`, xem [`MODEL.md`](MODEL.md)) bị từ chối ở bước kiểm kèm dòng và cột.

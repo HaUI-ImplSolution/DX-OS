@@ -276,6 +276,7 @@ public class DataService {
               values,
               Long.class));
       body.putAll(timings(from, values));
+      body.put("timeInStatus", timeInStatus(model, entity, from, values));
       if (entity.process().deadline() != null) {
         body.putAll(closings(model, entity, from, values));
       }
@@ -316,6 +317,49 @@ public class DataService {
     out.put("avgOpenAgeSeconds", seconds(row.get("open_avg")));
     out.put("oldestOpenAgeSeconds", seconds(row.get("open_max")));
     return out;
+  }
+
+  // A visit runs from a state entry to the next entry or computedAt.
+  // The last visit of a closed record is excluded.
+  private List<Map<String, Object>> timeInStatus(
+      Model model, Entity entity, String from, MapSqlParameterSource values) {
+    values.addValue("event_model", model.name());
+    values.addValue("event_entity", entity.name());
+    String sql =
+        "WITH visible AS (SELECT id, decided_at"
+            + from
+            + "),"
+            + """
+        visits AS (
+          SELECT e.to_status AS status, e.at, v.decided_at,
+                 lead(e.at) OVER (PARTITION BY e.record_id ORDER BY e.id) AS left_at
+          FROM engine.record_event e
+          JOIN visible v ON v.id = e.record_id
+          WHERE e.model = :event_model AND e.entity = :event_entity
+            AND e.to_status IS NOT NULL AND e.from_status IS DISTINCT FROM e.to_status
+        ),
+        durations AS (
+          SELECT s.status,
+                 EXTRACT(EPOCH FROM coalesce(s.left_at, CAST(:at AS timestamptz)) - s.at) AS elapsed
+          FROM visits s
+          WHERE s.left_at IS NOT NULL OR s.decided_at IS NULL
+        )
+        SELECT status, count(*) AS visits, avg(elapsed) AS avg_s, max(elapsed) AS max_s
+        FROM durations
+        GROUP BY status
+        ORDER BY floor(avg(elapsed) + 0.5) DESC, status
+        """;
+    return jdbc.query(
+        sql,
+        values,
+        (rs, row) -> {
+          Map<String, Object> visit = new LinkedHashMap<>();
+          visit.put("status", rs.getString("status"));
+          visit.put("visits", rs.getLong("visits"));
+          visit.put("avgSeconds", seconds(rs.getObject("avg_s")));
+          visit.put("maxSeconds", seconds(rs.getObject("max_s")));
+          return visit;
+        });
   }
 
   // The records that were decided, a withdrawn one excluded, split by whether the history holds an

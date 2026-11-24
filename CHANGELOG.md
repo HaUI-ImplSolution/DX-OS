@@ -9,12 +9,14 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Lõi chạy ngầm
 
+- API danh sách, `stats`, `report` và `quality` nhận `q`: mỗi từ phải có, không phân biệt hoa thường và dấu, trong ít nhất một trường chữ, mã hoặc lựa chọn đơn của hồ sơ; điều kiện nằm cùng câu SQL với quyền theo dòng nên không trả hồ sơ ngoài quyền, và truy vấn có `q` bị cắt sau 10 giây.
 - Người dùng đóng hoặc tải lại trang không còn bị ghi thành lỗi server: luồng SSE của Hộp việc ngắt kết nối thì không có ERROR trong nhật ký và không có bản ghi audit `SERVER_ERROR`.
 - `dxos plan` in kế hoạch bằng chữ: mức rủi ro, mỗi thay đổi một dòng, hồ sơ đang xử lý, tác động lên hành động, dòng vi phạm và lệnh `dxos apply --accept` cần dùng; `--json` in JSON đầy đủ như trước.
 - `dxos import <mô hình> <thực thể> <tệp.csv> --client TÊN` tạo mỗi dòng của tệp CSV thành một hồ sơ qua API dữ liệu chung, nên mỗi dòng đi qua quyền, ràng buộc, quy tắc và quy trình của thực thể; dòng bị từ chối được báo kèm số dòng và lý do, gửi lại cùng tệp không tạo trùng trong 24 giờ, và `--dry-run` kiểm tệp mà không tạo gì.
 
 ### Giao diện
 
+- Danh sách hồ sơ có ô "Tìm theo chữ" ở đầu bộ lọc; nó thay ô lọc riêng của trường mã, vì mã cũng được tìm.
 - Kế hoạch đổi mô hình hiện "Hồ sơ hiện có được cấp mã" bằng tiếng Việt khi thêm một trường kiểu `code`.
 - Bảng kế hoạch có nhãn tiếng Việt và tiếng Anh cho định dạng mã, mẫu chuỗi, điều kiện bắt buộc nhập, cách hiển thị và tài liệu in, và cho các quy tắc bắt buộc có điều kiện, số phần tử, giá trị nhỏ nhất, giá trị lớn nhất và mẫu chuỗi ở dòng vi phạm.
 

@@ -120,6 +120,7 @@ export const app: Record<string, string> = {
   "Loại": "Kind",
   "Hồ sơ": "Record",
   "Trạng thái": "Status",
+  "Tìm theo chữ": "Search by words",
   // Statistics
   "Chưa có hồ sơ nào.": "No records yet.",
   "Không đọc được số liệu": "Could not read the figures",

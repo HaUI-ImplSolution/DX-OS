@@ -37,7 +37,7 @@ Chỉ người xem được hồ sơ mới in được.
 Nghiệp vụ có thể cho mỗi hồ sơ một mã ngắn, ví dụ `HS-2026-00007`.
 Mã hiện ở cột đầu của danh sách và ở đầu trang chi tiết, kèm nút sao chép; dùng nó khi hỏi hay tra cứu hồ sơ với người xử lý.
 Bạn không nhập mã: hệ thống tự cấp khi hồ sơ được tạo và mã không đổi nữa.
-Gõ một phần của mã vào ô tìm theo mã của danh sách thì chỉ còn các hồ sơ có mã đó.
+Gõ một phần của mã vào ô **Tìm theo chữ** của danh sách thì chỉ còn các hồ sơ có mã đó.
 
 ## Theo dõi hồ sơ
 

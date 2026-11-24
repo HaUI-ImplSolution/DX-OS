@@ -20,7 +20,7 @@ Mọi việc dưới đây giữ hướng đó: thêm nghiệp vụ là thêm t�
 
 ## Đã cân nhắc và không làm
 
-Nhập CSV, tìm kiếm hồ sơ, hỏi đáp có trích nguồn và tác tử nghe sự kiện, ủy quyền có thời hạn, quyền theo từng trường và vài việc khác đã được cân nhắc rồi giữ nguyên; lý do ở mục "Giới hạn chấp nhận" của [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md), và chỉ mở lại khi có yêu cầu thật.
+Tìm trong nội dung tệp, hỏi đáp có trích nguồn và tác tử nghe sự kiện, ủy quyền có thời hạn, quyền theo từng trường và vài việc khác đã được cân nhắc rồi giữ nguyên; lý do ở mục "Giới hạn chấp nhận" của [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md), và chỉ mở lại khi có yêu cầu thật.
 
 ## Đóng góp vào lộ trình
 

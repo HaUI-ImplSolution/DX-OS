@@ -27,6 +27,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 | 16 | Lịch sử hồ sơ có chống sửa lén không? |
 | 17 | Bảo mật: gọi thẳng API để lách quy trình thì sao? |
 | 18 | Giấy phép tuân thủ thế nào? |
+| 19 | Mã có phần do công cụ AI viết, đội kiểm soát thế nào? |
 
 ## 1. Open-Core nằm ở đâu, thành phần nào chạy headless?
 
@@ -196,3 +197,12 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - Cam kết của đội chặt hơn thể lệ: cả công cụ, mô hình AI (khi có) và dữ liệu đều phải mở; thành phần không đạt đã gỡ khỏi bản phát hành.
 - Hai gói dữ liệu (CC-BY-4.0, CC0-1.0) chỉ dùng lúc dựng trang docs được nêu tên kèm lý do; ClamAV có image kèm `libclamunrar` theo giấy phép UnRAR, ghi rõ ở `DEPENDENCIES.txt`.
 - **Bằng chứng:** `LICENSE`, `NOTICE`, `DEPENDENCIES.txt`; `python3 .github/scripts/check_licenses.py`; [Thành phần được chọn và không chọn](./dependencies.md); [Rà soát PoF](./pof-audit.md).
+
+## 19. Mã có phần do công cụ AI viết, đội kiểm soát thế nào?
+
+- Đội dùng Claude (Anthropic) và Codex (OpenAI) để viết nháp mã và tài liệu; 439 trong 1098 commit trên `main` (ngày 24/11/2026) mang dòng `Co-Authored-By` của công cụ, và GitHub hiện chúng ở trang thống kê người đóng góp.
+- Người gửi pull request đọc, chạy và chịu trách nhiệm về từng thay đổi; công cụ không tự gộp vào nhánh nào.
+- Mọi thay đổi đi qua cùng kiểm tra của CI: biên dịch, định dạng, kiểm đầu-cuối trên stack thật, kiểm giấy phép và quét bí mật; mã do công cụ viết không có đường tắt.
+- Giấy phép của phần đóng góp do người gửi bảo đảm; thư viện mới qua kiểm OSI trước khi thêm, nên mã sinh ra không kéo theo thành phần ngoài danh sách.
+- Quy tắc nằm ở mục "Công cụ AI hỗ trợ" của `CONTRIBUTING.md`.
+- **Bằng chứng:** `git log --grep "Co-Authored-By"`; `CONTRIBUTING.md`; job `Check licenses` và `Scan for secrets` của workflow `Compliance`.

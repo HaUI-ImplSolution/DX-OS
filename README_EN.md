@@ -21,7 +21,7 @@ Entry of the **OLP Open Source Software 2026** contest, DX-OS track (VFOSSA), by
 
 **Documentation:** <https://haui-implsolution.github.io/DX-OS/>, with the documents sorted by need in [Documentation](#documentation).
 
-**Quick links:** [Overview](#overview) · [Architecture](#architecture) · [Features](#features) · [Screenshots](#screenshots) · [Technology](#technology-and-licenses) · [Install](#install) · [Try it](#try-it) · [Operation](#operation-and-troubleshooting) · [Brief](#against-the-brief) · [Documentation](#documentation) · [Structure](#repository-structure) · [Contributing](#contributing) · [License](#license)
+**Quick links:** [Overview](#overview) · [Architecture](#architecture) · [Features](#features) · [Screenshots](#screenshots) · [Technology](#technology-and-licenses) · [Install](#install) · [Try it](#try-it) · [Operation](#operation-and-troubleshooting) · [Brief](#against-the-brief) · [For judges](#for-judges) · [Limits](#known-limits) · [Documentation](#documentation) · [Structure](#repository-structure) · [Contributing](#contributing) · [License](#license)
 
 ---
 
@@ -81,6 +81,7 @@ Ten templates are ready to pick in the control panel: student one-stop service, 
 | | **Printed documents from a record:** the model file declares a template for a certificate, slip or report; a record becomes a PDF with Vietnamese text for whoever may see that record, only in the states the template allows. |
 | **Using and running it** | **An interface set by declaration:** the model file can choose icons, menu groups, the default columns and sort, how forms are grouped and the hints; an officer selects several records and handles them at once, each still going through every rule. |
 | | **Board by state and list export:** the list of records with a process can be seen as a board with one column per state, and exported to a CSV file a spreadsheet can read, with exactly the rows the viewer may see. |
+| | **Search by words:** type a few words into the search box of a list, with or without accents and in any case; only the rows the viewer may see are shown. |
 | | **An inbox that updates itself:** when a record changes, the inbox, the lists and the detail page that are open refresh without reloading the page. |
 | | **Try it at once:** one command creates a trial account for each role and sample records in several states, so a visitor who signs in finds a system with work in it. |
 | | **Simple to install and run:** one command installs and one starts; backups can be checked, services restart on their own, attachments are virus-scanned, and the operational numbers can be read by the monitoring tool you already have. |
@@ -237,7 +238,36 @@ DX-OS is, in Tier 1, a headless core, in Tier 2 a web interface and a control pa
 | D, one source of truth | Data, history and queue live in one database; the history is chained so tampering shows; every change is reported outside by a signed webhook; statistics and a data catalog | Done |
 | I, artificial intelligence | An optional business assistant suggests a value for one field from the record and reference sources, and the user confirms before saving; it runs self-hosted with an operator-configured inference endpoint | Done, one component |
 
+The brief also names four technical principles; the steps to show each one are in [`docs/DEMO.md`](./docs/DEMO.md#8-bốn-nguyên-lý-của-đề-tùy-chọn), in Vietnamese.
+
+| Principle | What DX-OS does | State |
+|---|---|---|
+| Split data by lifecycle | Records being handled live in the transactional database; closed records are written to an archive on a schedule, with a check and a query | Done |
+| Converge administrative and operational data | A device reading becomes an incident record that follows the same workflow and permissions as an administrative record; the core keeps no device state | Partly |
+| Data governance, lineage, quality | A data catalog shows where data lives, where each field comes from and goes to, and how complete and fresh it is; the record history resists tampering | Done |
+| Zero trust and automated operations | Tokens are checked at the gateway and at the core; uploads are scanned for malware; infrastructure and models are pulled from git; a deleted container is recreated | Done |
+
 How the interfaces that ship with the system are counted, and the detailed check of each point of the brief, are in [`DANH_GIA.md`](./docs/dynamic-core/DANH_GIA.md) and the remaining work in [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md), both in Vietnamese.
+
+## For judges
+
+The shortest way to check DX-OS:
+
+1. Open the running instance at <https://khuongdev.io.vn/> and sign in with a trial account from [Try it](#try-it).
+2. Follow the [15-minute demo script](./docs/DEMO.md) (Vietnamese), which also shows how to run the evidence for the four principles of the brief.
+3. Install it yourself with the two commands in [Install](#install), or follow the [quick start](./docs/QUICKSTART.md) (Vietnamese).
+4. Match each feature with its test in the [evidence matrix](https://haui-implsolution.github.io/DX-OS/docs/evidence-matrix), and the repository against the scoring scale in the [PoF audit](https://haui-implsolution.github.io/DX-OS/docs/pof-audit) (both Vietnamese).
+
+## Known limits
+
+- The AI part is one optional assistant that suggests a value for one field, and the user confirms before saving; there is no question answering over internal knowledge.
+- An install runs on one machine with Docker Compose; the core does not run as several replicas.
+- Device readings enter the core through the common API; the core keeps no device state.
+- There is no digital signature, secret vault, multi-tenancy across organizations or full-text search.
+- Installing on Windows has not been tried; Windows users run the Linux version in WSL2.
+- Most of the documentation is in Vietnamese only.
+
+The full list and the reasons are in [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md) (Vietnamese).
 
 ## Documentation
 

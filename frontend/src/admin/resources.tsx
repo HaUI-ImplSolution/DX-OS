@@ -27,6 +27,7 @@ import {
   SimpleForm,
   SimpleList,
   TextField,
+  SearchInput,
   TextInput,
   SaveButton,
   SelectArrayInput,
@@ -403,7 +404,12 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
     units: Object.fromEntries(model.units.map((unit) => [unit.name, unit.label])),
     entities: Object.fromEntries(model.entities.map((e) => [e.name, e])),
   };
+  // Words typed here match, ignoring case and diacritics, any text, code or single-choice field.
+  const searchable = entity.fields.some(
+    (field) => !field.multiple && (field.type === "text" || field.type === "code" || field.type === "choice"),
+  );
   const filters = [
+    ...(searchable ? [<SearchInput key="q" source="q" alwaysOn placeholder={t("Tìm theo chữ")} />] : []),
     ...(entity.hasProcess
       ? [
           <SelectInput
@@ -435,10 +441,6 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
           <DateInput key={`${field.name}.gte`} source={`${field.name}.gte`} label={t("{label} từ", { label: field.label })} />,
           <DateInput key={`${field.name}.lte`} source={`${field.name}.lte`} label={t("{label} đến", { label: field.label })} />,
         ];
-      }
-      // A code is searched by any part of it.
-      if (field.type === "code") {
-        return [<TextInput key={`${field.name}.like`} source={`${field.name}.like`} label={field.label} alwaysOn />];
       }
       // A field with several values is filtered by one option it holds.
       if ((field.type === "choice" || field.type === "unit") && field.multiple) {

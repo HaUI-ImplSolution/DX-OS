@@ -245,14 +245,14 @@ Một lần đổi vừa tăng vừa giảm, như `own` sang `read`, hoặc khô
   Hành động bị từ chối trả 403 `ERR_ACTION_NOT_ALLOWED` với `data.reason` là `CHECK_DENIED` và `data.code` là mã dịch vụ trả về.
   Dịch vụ không trả lời hoặc trả lời sai thì cách xử lý do `on_error` của đích quyết định, cách khai và giao thức ở [`docs/INTEGRATIONS.md`](INTEGRATIONS.md#kiểm-tra-trước-khi-chuyển-trạng-thái).
   Hành động tự đóng của `auto_close` không hỏi dịch vụ.
-- Khi có `family`, mục khai báo ghi đè từng khóa của khung; viết `null` để bỏ một trạng thái hoặc hành động của khung.
+- Khi có `family`, mục khai báo ghi đè từng khóa của mẫu quy trình; viết `null` để bỏ một trạng thái hoặc hành động của mẫu.
 - `withdraw` và trạng thái `withdrawn` là tên dành riêng: khai `withdraw: {from: [...]}` thì nền tảng tự thêm trạng thái `withdrawn`, và hành động này luôn do người nộp thực hiện.
 - Tên hành động `created`, `updated`, `deleted`, `assigned`, `file_added`, `file_removed`, `completion_skipped`, `auto_closed`, `overdue`, `due_soon`, `escalated`, `check_denied`, `check_unavailable` và `check_skipped` là tên dành riêng, vì lịch sử hồ sơ dùng chúng cho các dòng do nền tảng ghi.
 - Mỗi trạng thái không phải cuối phải có hành động đi ra, và ít nhất một hành động đi ra không có `when`, để hồ sơ luôn có lối đi; mọi trạng thái phải tới được từ `initial`, trạng thái cuối không có hành động đi ra, và phải có ít nhất một trạng thái cuối.
 - `auto_close` là thời gian chờ người nộp trước khi hệ thống thay họ làm một hành động.
   Họ `work_item` nhận dạng ngắn `auto_close: 7d` (hành động `confirm`); các trường hợp khác viết `auto_close: {after: 7d, action: <hành động của người nộp>}`.
   Hành động của `auto_close` không được đặt `needs_note: true`, vì hệ thống không viết ghi chú; tệp vi phạm bị từ chối khi kiểm, còn phiên bản đã lưu vi phạm chạy với `auto_close` bị bỏ và có cảnh báo (xem [`OPERATIONS.md`](OPERATIONS.md#mô-hình-đã-lưu-không-còn-qua-bộ-kiểm)).
-- Quy trình khác khung gốc chạy trên BPMN riêng, sinh từ các trạng thái và hành động khai báo khi áp dụng mô hình.
+- Quy trình khác mẫu gốc chạy trên BPMN riêng, sinh từ các trạng thái và hành động khai báo khi áp dụng mô hình.
 - Đổi trạng thái đầu, thêm hoặc bỏ trạng thái, hay đổi `from`, `to`, `by`, `when` của một hành động khi còn hồ sơ chưa ở trạng thái cuối thì kế hoạch bị từ chối.
 - Đổi nhãn, `role`, `require`, các trạng thái của `withdraw` hay danh sách `handler` thì an toàn và có hiệu lực ngay, kể cả với hồ sơ đang mở.
 - Thêm `require` cho một hành động vẫn là thay đổi an toàn, nhưng hồ sơ đang chờ ở trạng thái nguồn của hành động mà còn thiếu trường đó (trống hoặc chỉ có khoảng trắng cũng là thiếu) bị hành động từ chối cho đến khi bổ sung; kế hoạch nêu hành động, trường và số hồ sơ như vậy ở `impacts`.

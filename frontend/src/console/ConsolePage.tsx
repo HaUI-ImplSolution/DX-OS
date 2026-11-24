@@ -175,6 +175,7 @@ function FullConsole() {
         <EditorTab
           text={text}
           source={source}
+          changed={text !== baselineRef.current}
           schema={schema}
           onText={setText}
           onApplied={(message) => {

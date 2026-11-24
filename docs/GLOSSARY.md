@@ -45,7 +45,7 @@ Mỗi từ được giải thích trong một hoặc hai dòng, kèm tài liệu
 
 | Thuật ngữ | Nghĩa | Xem thêm |
 |---|---|---|
-| Họ mẫu | Khung quy trình viết sẵn: `approval` (chuỗi duyệt), `work_item` (công việc cần xử lý), `reservation` (chiếm dụng tài nguyên theo khung giờ) | [`MODEL.md`](./MODEL.md#quy-trình) |
+| Họ mẫu | Quy trình viết sẵn, trong bảng điều khiển gọi là mẫu quy trình: `approval` (chuỗi duyệt), `work_item` (công việc cần xử lý), `reservation` (chiếm dụng tài nguyên theo khung giờ) | [`MODEL.md`](./MODEL.md#quy-trình) |
 | Trạng thái | Chỗ một hồ sơ đang đứng trong quy trình; chỉ quy trình đổi được cột trạng thái | [`MODEL.md`](./MODEL.md#tự-khai-báo-hoặc-mở-rộng-quy-trình) |
 | Hành động | Một bước chuyển trạng thái do một vai thực hiện, có thể cần lý do, trường bắt buộc hoặc điều kiện `when` | [`MODEL.md`](./MODEL.md#tự-khai-báo-hoặc-mở-rộng-quy-trình) |
 | Trạng thái cuối | Trạng thái đóng hồ sơ: sau đó hồ sơ bị đóng băng và ghi ai quyết định, lúc nào | [`MODEL.md`](./MODEL.md#tự-khai-báo-hoặc-mở-rộng-quy-trình) |

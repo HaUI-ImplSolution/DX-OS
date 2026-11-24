@@ -172,10 +172,19 @@ Mỗi mục nêu điều phải thấy; lệnh và biến cấu hình chi tiết
 
 21. **Soạn và áp dụng:** sơ đồ quy trình vẽ lại sau 5 giây không gõ theo `deadline`, `auto_close` và `after`; tệp sai báo lỗi kèm dòng và cột và giữ sơ đồ đúng gần nhất; sơ đồ mở to thành hộp thoại.
     Vai `ADMIN` khai báo trong tệp báo lỗi tiếng Việt kèm dòng và cột và không có nút Áp dụng; vai trùng tên với mô hình khác thì áp dụng được.
-22. **Chế độ Điền form:** các tab Chung, Vai, Đơn vị, Thực thể gọn trên một màn hình; Thực thể có tab con Chung, Trường, Quyền, Quy trình; vai, trường và thực thể chọn từ danh sách đã khai báo.
-    Thêm vai xử lý chưa có quyền xem hồ sơ thì form cảnh báo và sơ đồ báo lỗi kèm dòng và cột; cho quyền thì hết lỗi.
-    Thêm hành động, đổi mã trạng thái, bỏ hoặc khôi phục một hành động của khung, chọn "Tự khai báo, không dùng khung": sơ đồ vẽ lại và YAML giữ nguyên dòng chú thích.
-23. **Hướng dẫn trong trình soạn:** nút "Phạm vi có thể làm" ở mỗi phần của form và bảng "Viết được gì trong tệp" nêu hệ thống chấp nhận gì, mở rộng được gì, tự tạo được gì, tên trạng thái và hành động của từng khung; rê chuột lên một khóa trong YAML hiện giải thích tiếng Việt; trình soạn không gạch chân `when`.
+22. **Chế độ Điền form:** cây bên trái gồm Thông tin chung, Vai trò, Đơn vị và từng thực thể với Thông tin chung, Trường dữ liệu, Quyền truy cập, Quy trình (Tổng quan, Trạng thái, Hành động, Thời hạn, Tự động hóa) và Trợ lý nghiệp vụ; đường dẫn phía trên nêu chỗ đang sửa.
+    Chuyển sang Soạn YAML rồi quay lại thì form vẫn ở chỗ cũ; vai trò, trường và thực thể chọn từ danh sách đã khai báo.
+    Trường dữ liệu là bảng, có ô tìm khi hơn 5 trường; bấm một dòng mở phần sửa của trường đó, chỉ với các thuộc tính hợp kiểu.
+    Mục Vai trò có ma trận vai trò × thực thể; ô báo đỏ khi vai trò xử lý quy trình mà không xem được hồ sơ.
+    Xóa trường, vai trò hay thực thể đang được dùng thì hộp xác nhận liệt kê các chỗ dùng; đổi tên vai trò thì quyền và vai trò xử lý đổi theo.
+    Ở chế độ form, bảng "Viết được gì trong tệp" nằm dưới khung chính và chỉ nêu phần đang sửa (mỗi trang một nhóm khóa; các bước của quy trình chỉ nêu khóa của bước đó); sơ đồ quy trình nằm ở Quy trình → Tổng quan và mở to được. Ở chế độ YAML bảng đầy đủ vẫn ở cột phải cùng thẻ sơ đồ.
+    Mọi biểu tượng thùng rác trong form màu đỏ.
+    Ở Quy trình → Tổng quan, bấm một trạng thái trên sơ đồ mở Trạng thái với dòng đó được chọn, bấm một mũi tên mở hành động đó, bấm mũi tên tự đóng mở Thời hạn.
+    Thêm vai trò xử lý chưa có quyền xem hồ sơ thì cây và trang hiện cảnh báo màu cam; cho quyền thì hết.
+    Tệp có lỗi kèm dòng và cột thì cây đánh dấu đỏ đúng mục, và bấm lỗi trong danh sách đầu form thì đi tới mục đó.
+    Sửa một chữ thì cạnh tên tệp hiện "Có thay đổi chưa áp dụng"; áp dụng xong mở lại thì hiện "Chưa sửa gì".
+    Thêm hành động, đổi mã trạng thái, bỏ hoặc khôi phục một hành động của mẫu, chọn "Tự khai báo, không dùng mẫu": sơ đồ vẽ lại và YAML giữ nguyên dòng chú thích.
+23. **Hướng dẫn trong trình soạn:** nút "Phạm vi có thể làm" ở mỗi phần của form và bảng "Viết được gì trong tệp" (ở chế độ form chỉ nêu phần đang sửa) nêu hệ thống chấp nhận gì, mở rộng được gì, tự tạo được gì, tên trạng thái và hành động của từng mẫu quy trình; rê chuột lên một khóa trong YAML hiện giải thích tiếng Việt; trình soạn không gạch chân `when`.
 24. **Đổi quy trình khi còn hồ sơ đang mở:** thêm hoặc bỏ trạng thái, đổi `from`, `to`, `by`, `when`, `initial` hay hạn xử lý thì "Xem kế hoạch" báo không đổi được kèm câu tiếng Việt nêu số hồ sơ và không có nút Áp dụng; rút hết hồ sơ rồi xem lại thì có nút Áp dụng.
     Đổi nhãn, `role` hoặc `handler` thì áp dụng được: vai cũ không thực hiện được nữa, vai mới thực hiện được hồ sơ đang mở.
     Bỏ `terminal` của trạng thái cuối còn hồ sơ đã đóng thì bị từ chối kèm số dòng vi phạm ở `status`.
@@ -267,7 +276,7 @@ Kiểm bằng đúng các lệnh và thao tác trong tài liệu.
     - `dxos lint` và Xem kế hoạch báo lỗi theo dòng và cột cho lịch không khai, giờ chồng nhau, giờ kết thúc trước giờ bắt đầu, `days` rỗng, ngày nghỉ sai dạng hoặc trùng, và `calendar` không có `deadline`.
     - Đổi giờ của lịch đang dùng, hoặc bỏ `calendar` khỏi quy trình, ra `CHANGE_CALENDAR` ở mức `SAFE` và bị từ chối khi thực thể còn hồ sơ đang xử lý; một lịch không quy trình nào dùng mà đổi vẫn ra một dòng `CHANGE_CALENDAR`.
     - Một tệp `extends` khai lại `office` chỉ với `hours` giữ `days` của mẫu và thêm lịch mới theo tên.
-    - Form quy trình ở tab Soạn và áp dụng có ô Lịch làm việc với các lịch đã khai, báo đỏ khi tên lịch chưa khai, và đủ ở tiếng Việt và tiếng Anh.
+    - Form quy trình (bước Thời hạn) ở tab Soạn và áp dụng có ô Lịch làm việc với các lịch đã khai, báo đỏ khi tên lịch chưa khai, và đủ ở tiếng Việt và tiếng Anh.
 50. **Điều kiện nối nhiều phép:** áp dụng một mô hình có thực thể `loan` với `amount` (number), `kind` (choice `book`, `pen`, `Phần mềm`) và `note` (text), một hành động có `when: "amount > 100 and (kind == book or kind == pen)"` và `note` có `required_when: "amount > 100 and not kind == \"Phần mềm\""`:
     - Hồ sơ `amount` 500, `kind` book: hành động làm được, và `note` để trống bị API từ chối với `is required when amount > 100 and not kind == "Phần mềm"`.
     - Hồ sơ `amount` 500, `kind` Phần mềm: hành động bị 409 `CONDITION_NOT_MET`, và `note` để trống được chấp nhận.

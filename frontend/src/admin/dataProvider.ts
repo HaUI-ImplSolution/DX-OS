@@ -77,6 +77,10 @@ function addFilter(params: Record<string, string>, name: string, value: unknown)
 function filterParams(filter: Row | undefined, extra: Row = {}) {
   const params: Record<string, string> = {};
   Object.entries({ ...filter, ...extra }).forEach(([name, value]) => {
+    if (name === "q") {
+      if (typeof value === "string" && value.trim() !== "") params.q = value.trim();
+      return;
+    }
     addFilter(params, name, value);
   });
   return params;

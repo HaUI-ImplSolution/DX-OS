@@ -61,7 +61,10 @@ public class DataController {
       summary = "List records",
       description =
           "filter.<field>=<value> (also filter.<field>.<op> with op eq, ne, lt, lte,"
-              + " gt, gte, like or in; in takes at least one comma-separated value), sort=<field>,"
+              + " gt, gte, like or in; in takes at least one comma-separated value),"
+              + " q=<words> (every word, ignoring case and diacritics, in a text, code or"
+              + " single-choice field; at most 8 words and 200 characters; stats, report and"
+              + " quality take it too), sort=<field>,"
               + " order=asc|desc, page (from 0) and size (at most 200). A role sees only the rows its"
               + " access reaches; 403 when no role of the caller reaches the entity.")
   public ApiResponse<PageResponse<Map<String, Object>>> list(

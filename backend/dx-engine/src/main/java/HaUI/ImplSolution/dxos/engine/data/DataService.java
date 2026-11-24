@@ -76,7 +76,7 @@ public class DataService {
 
   private static final int MAX_PAGE_SIZE = 200;
   private static final int DEFAULT_PAGE_SIZE = 20;
-  private static final int STATS_TIMEOUT_MS = 10_000;
+  private static final int QUERY_TIMEOUT_MS = 10_000;
   private static final Set<String> SYSTEM_COLUMNS =
       Set.of(
           "id",
@@ -170,6 +170,10 @@ public class DataService {
       Model model, Entity entity, Map<String, String> params) {
     Access access = access(model, entity);
     requireRead(access);
+    if (searching(params)) {
+      // Applies to this transaction only: a search that runs longer is stopped.
+      jdbc.getJdbcOperations().execute("SET LOCAL statement_timeout = " + QUERY_TIMEOUT_MS);
+    }
     MapSqlParameterSource values = new MapSqlParameterSource();
     List<String> where = new ArrayList<>();
     where.add(scope(model, entity, access.reads(), values));
@@ -248,7 +252,7 @@ public class DataService {
     Access access = access(model, entity);
     requireRead(access);
     // Applies to this transaction only: the counts below stop after the limit.
-    jdbc.getJdbcOperations().execute("SET LOCAL statement_timeout = " + STATS_TIMEOUT_MS);
+    jdbc.getJdbcOperations().execute("SET LOCAL statement_timeout = " + QUERY_TIMEOUT_MS);
     MapSqlParameterSource values = new MapSqlParameterSource();
     List<String> where = new ArrayList<>();
     where.add(scope(model, entity, access.reads(), values));
@@ -1189,6 +1193,52 @@ public class DataService {
       } else {
         throw new ModelValidationException(param.getKey(), "unknown operator " + operator);
       }
+    }
+    if (searching(params)) {
+      search(entity, params.get("q"), where, values);
+    }
+  }
+
+  private static boolean searching(Map<String, String> params) {
+    String q = params.get("q");
+    return q != null && !q.isBlank();
+  }
+
+  // Every word of q must appear, ignoring case and diacritics, in at least one text, code or
+  // single-choice field. The condition joins the row scope in the same query, so a search never
+  // reaches a row the caller cannot read.
+  private void search(Entity entity, String q, List<String> where, MapSqlParameterSource values) {
+    if (q.length() > TextSearch.MAX_LENGTH) {
+      throw new ModelValidationException(
+          "q", "is longer than " + TextSearch.MAX_LENGTH + " characters");
+    }
+    List<String> columns =
+        entity.fields().values().stream()
+            .filter(
+                field ->
+                    !field.multiple()
+                        && (field.type() == FieldType.TEXT
+                            || field.type() == FieldType.CODE
+                            || field.type() == FieldType.CHOICE))
+            .map(field -> "lower(translate(" + ident(field.name()) + ", :qfrom, :qto))")
+            .toList();
+    if (columns.isEmpty()) {
+      throw new ModelValidationException("q", "the entity has no text field to search");
+    }
+    String[] words = TextSearch.fold(q).trim().split("\\s+");
+    if (words.length > TextSearch.MAX_WORDS) {
+      throw new ModelValidationException("q", "has more than " + TextSearch.MAX_WORDS + " words");
+    }
+    values.addValue("qfrom", TextSearch.FROM).addValue("qto", TextSearch.TO);
+    for (int i = 0; i < words.length; i++) {
+      String name = "q" + i;
+      values.addValue(name, TextSearch.contains(words[i]));
+      where.add(
+          "("
+              + columns.stream()
+                  .map(column -> column + " LIKE :" + name)
+                  .collect(java.util.stream.Collectors.joining(" OR "))
+              + ")");
     }
   }
 

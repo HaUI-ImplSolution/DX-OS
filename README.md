@@ -80,6 +80,7 @@ Mười mẫu có sẵn, chọn được ngay ở bảng điều khiển: một 
 | | **In giấy tờ từ hồ sơ:** tệp mô hình khai báo mẫu giấy xác nhận, phiếu hay biên bản; hồ sơ thành tệp PDF tiếng Việt cho đúng người được xem hồ sơ đó, chỉ in được ở những trạng thái mẫu cho phép. |
 | **Dùng và vận hành** | **Giao diện theo khai báo:** tệp mô hình chọn được biểu tượng, nhóm menu, cột và sắp xếp mặc định, cách chia nhóm biểu mẫu và lời gợi ý; cán bộ chọn nhiều hồ sơ rồi xử lý cùng lúc, mỗi hồ sơ vẫn qua đủ luật. |
 | | **Xem theo trạng thái và xuất danh sách:** danh sách hồ sơ có quy trình xem được như một bảng theo từng trạng thái, xuất ra tệp CSV mà bảng tính đọc được, đúng phần người xem được quyền thấy. |
+| | **Tìm hồ sơ theo chữ:** gõ vài từ vào ô tìm của danh sách, không cần gõ dấu và không phân biệt hoa thường; chỉ hiện hồ sơ mà người xem được quyền thấy. |
 | | **Hộp việc tự cập nhật:** khi hồ sơ đổi, hộp việc, danh sách và trang chi tiết đang mở tự làm mới, không cần tải lại trang. |
 | | **Dùng thử ngay:** một lệnh tạo tài khoản thử cho từng vai cùng hồ sơ mẫu ở nhiều trạng thái, để người xem đăng nhập là thấy hệ thống có việc đang chạy. |
 | | **Cài và vận hành đơn giản:** một lệnh cài, một lệnh chạy; có sao lưu kiểm được, tự khởi động lại dịch vụ, quét mã độc cho tệp đính kèm và số đo vận hành đọc được bằng công cụ giám sát có sẵn của bạn. |

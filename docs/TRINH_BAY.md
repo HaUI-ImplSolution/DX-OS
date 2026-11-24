@@ -14,7 +14,7 @@ OLP Phần mềm nguồn mở 2026, khối thi DX-OS.
 Đội HaUI-ImplSolution, Trường Công nghệ Thông tin và Truyền thông, Đại học Công nghiệp Hà Nội.
 
 <!--
-Bài 15 phút ngày 10/12, bốn phần: giải pháp và công nghệ (slide 2 đến 5), tính năng và bài toán minh họa (6 đến 8), kết quả và demo (9 đến 12), định hướng (13 đến 14).
+Bài 15 phút ngày 10/12, bốn phần: giải pháp và công nghệ (slide 2 đến 5), tính năng và bài toán minh họa (6 đến 8), kết quả và demo (9 đến 13), định hướng (14 đến 15).
 Kịch bản demo từng bước ở docs/DEMO.md; slide này chỉ là phần nói.
 -->
 
@@ -158,7 +158,22 @@ Cửa hàng điện máy không liên quan đến dự án thêm hai quy trình 
 
 ---
 
-## 13. Chưa có, và nói thẳng
+## 13. Bốn nguyên lý của đề, mỗi nguyên lý một lệnh
+
+| Nguyên lý | Bằng chứng |
+|---|---|
+| (i) Vòng đời dữ liệu | `dxos archive` ghi hồ sơ đã đóng ra Parquet, `dxos archive query` đọc bằng DuckDB |
+| (ii) IT và OT | `examples/itot-simulator`: chỉ số vượt ngưỡng thành hồ sơ sự cố |
+| (iii) Phả hệ và chất lượng | Tab Danh mục dữ liệu ở `/console`, `dxos history verify` |
+| (iv) Zero-Trust, GitOps | Tệp EICAR bị chặn, `dxos gitops status`, `dxos reconcile` dựng lại container |
+
+Từng bước ở mục 8 của `docs/DEMO.md`.
+
+<!-- Chỉ mở khi hội đồng hỏi về bốn nguyên lý; nói thẳng: bộ mô phỏng gọi HTTP, chưa có bản sao số. -->
+
+---
+
+## 14. Chưa có, và nói thẳng
 
 - AI là trợ lý tùy chọn đề xuất giá trị một trường, người dùng xác nhận trước khi lưu; không có hỏi đáp trên tri thức nội bộ.
 - Một bản cài là Compose một máy; chưa chạy nhiều bản sao của lõi.
@@ -169,7 +184,7 @@ Danh sách đầy đủ ở `docs/dynamic-core/BACKLOG.md`.
 
 ---
 
-## 14. Định hướng
+## 15. Định hướng
 
 - Thêm họ quy trình và lĩnh vực chạy bằng tham số, giữ lõi không biết lĩnh vực nào.
 - Mở rộng phần AI khi có mô hình đạt định nghĩa Open Source AI của OSI.

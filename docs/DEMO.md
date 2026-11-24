@@ -137,6 +137,20 @@ Các bước từ máy sạch ở [`examples/appliance-store`](../examples/appli
 
 Sự cố: nếu ứng dụng không cập nhật trạng thái, kiểm `DXOS_BASE_URL` và `extra_hosts`; khi bật webhook thì mở tab Hàng đợi sự kiện ở `/console` để xem thông điệp bị dừng, kiểm địa chỉ trong `deploy/webhooks/targets.yml`, rồi bấm Thử lại.
 
+## 8. Bốn nguyên lý của đề (tùy chọn)
+
+Mục 4 của đề nêu bốn nguyên lý kỹ thuật.
+Bảng dưới đây chứng minh từng nguyên lý bằng vài lệnh trên bản đang chạy, dùng khi hội đồng hỏi hoặc khi còn thời gian ở phần 5.
+
+| Nguyên lý | Làm gì | Kết quả mong đợi | Nói thẳng |
+|---|---|---|---|
+| (i) Tách theo vòng đời dữ liệu | `dxos archive onestop --store`, rồi `dxos archive list` và `dxos archive check --store onestop/<lần chạy>`; đọc một tệp bằng `dxos archive query onestop/<lần chạy> --file <tệp> "SELECT ... FROM archive"` | Hồ sơ đã đóng và lịch sử nằm ở kho đối tượng dạng Parquet kèm manifest có hash; kiểm lại báo khớp; truy vấn chỉ đọc, không cần quyền cơ sở dữ liệu | Phạm vi là kho hồ sơ, tệp Parquet không kèm lớp bảng |
+| (ii) Hội tụ dữ liệu hành chính và vận hành | Áp dụng mẫu "Sự cố thiết bị" ở `/console`, rồi `python3 examples/itot-simulator/simulator.py setup` và `run --devices 3 --interval 5`; `replay` gửi lại lần đo cuối | Chỉ số vượt ngưỡng tạo hồ sơ sự cố ở hộp việc của vai kỹ thuật viên, đi cùng quy trình và quyền như hồ sơ hành chính; gửi lại cùng lần đo in `duplicate` | Bộ mô phỏng gọi HTTP; lõi không giữ trạng thái thiết bị |
+| (iii) Quản trị dữ liệu, phả hệ, chất lượng | `/console`, tab Danh mục dữ liệu; mục Chất lượng dữ liệu; `dxos history verify` | Mỗi mô hình có nơi lưu, người được xem, quan hệ giữa các loại hồ sơ, đường đi của từng trường, độ đầy đủ và độ mới; lịch sử hồ sơ báo nguyên vẹn | Không |
+| (iv) Zero-Trust, GitOps, kiểm dịch mã độc, tự phục hồi | Đính tệp EICAR đổi tên `.pdf` vào một hồ sơ; `dxos doctor`; `dxos gitops status models`; xóa một container bằng `docker rm -f <tên>` (tên ở `dxos status`) rồi `dxos reconcile` và `dxos status` | Tệp EICAR bị từ chối khi quét đang bật; `doctor` có dòng quét mã độc; `gitops` báo mô hình đang khớp kho git; container bị xóa được dựng lại theo khai báo | Một máy chạy Compose; tự phục hồi chạy trên Compose |
+
+Sự cố: tệp EICAR chỉ bị chặn khi quét mã độc đang bật (`dxos av`); lần chạy `dxos archive` đầu cần tải extension DuckDB từ mạng.
+
 ## Xử lý sự cố chung
 
 | Sự cố | Cách xử lý |

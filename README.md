@@ -21,7 +21,7 @@ Bài dự thi **OLP Phần mềm nguồn mở 2026**, khối thi DX-OS (VFOSSA),
 
 **Tài liệu:** <https://haui-implsolution.github.io/DX-OS/>, tìm tài liệu theo từng việc ở mục [Tài liệu](#tài-liệu).
 
-**Đọc nhanh:** [Giới thiệu](#giới-thiệu) · [Kiến trúc](#kiến-trúc) · [Tính năng](#tính-năng) · [Hình ảnh](#hình-ảnh) · [Công nghệ](#công-nghệ-và-giấy-phép) · [Cài đặt](#cài-đặt) · [Chạy thử](#chạy-thử) · [Vận hành](#vận-hành-và-xử-lý-sự-cố) · [Đề thi](#đối-chiếu-với-đề-thi) · [Tài liệu](#tài-liệu) · [Cấu trúc](#cấu-trúc-repository) · [Đóng góp](#đóng-góp) · [Giấy phép](#giấy-phép)
+**Đọc nhanh:** [Giới thiệu](#giới-thiệu) · [Kiến trúc](#kiến-trúc) · [Tính năng](#tính-năng) · [Hình ảnh](#hình-ảnh) · [Công nghệ](#công-nghệ-và-giấy-phép) · [Cài đặt](#cài-đặt) · [Chạy thử](#chạy-thử) · [Vận hành](#vận-hành-và-xử-lý-sự-cố) · [Đề thi](#đối-chiếu-với-đề-thi) · [Giám khảo](#dành-cho-giám-khảo) · [Giới hạn](#giới-hạn-đã-biết) · [Tài liệu](#tài-liệu) · [Cấu trúc](#cấu-trúc-repository) · [Đóng góp](#đóng-góp) · [Giấy phép](#giấy-phép)
 
 ---
 
@@ -235,7 +235,36 @@ DX-OS ở Tầng 1 là lõi không giao diện, ở Tầng 2 là giao diện web
 | D, một nguồn sự thật | Dữ liệu, lịch sử và hàng đợi cùng nằm ở một cơ sở dữ liệu; lịch sử nối thành chuỗi chống sửa; mọi thay đổi báo ra ngoài bằng webhook có chữ ký; thống kê và danh mục dữ liệu | Có |
 | I, trí tuệ nhân tạo | Trợ lý nghiệp vụ tùy chọn đề xuất giá trị một trường từ hồ sơ và nguồn tham khảo, người dùng xác nhận trước khi lưu; chạy self-host với endpoint suy luận do người vận hành cấu hình | Có, một thành phần |
 
+Đề cũng nêu bốn nguyên lý kỹ thuật; cách chạy từng việc ở [`docs/DEMO.md`](./docs/DEMO.md#8-bốn-nguyên-lý-của-đề-tùy-chọn).
+
+| Nguyên lý | DX-OS làm gì | Trạng thái |
+|---|---|---|
+| Tách theo vòng đời dữ liệu | Hồ sơ đang xử lý nằm ở cơ sở dữ liệu giao dịch; hồ sơ đã đóng được ghi sang kho lưu trữ theo lịch, kèm bản kiểm lại và truy vấn được | Có |
+| Hội tụ dữ liệu hành chính và dữ liệu vận hành | Số đo của thiết bị thành hồ sơ sự cố, đi cùng quy trình và quyền như hồ sơ hành chính; lõi không giữ trạng thái thiết bị | Một phần |
+| Quản trị dữ liệu, phả hệ, chất lượng | Danh mục dữ liệu cho biết dữ liệu nằm ở đâu, đi từ đâu tới đâu đến từng trường, đầy đủ và còn mới đến đâu; lịch sử hồ sơ chống sửa | Có |
+| Không tin mặc định, tự động hóa vận hành | Token kiểm ở cổng và ở lõi; tệp tải lên được quét mã độc; hạ tầng và mô hình kéo từ git; container bị xóa được tự dựng lại | Có |
+
 Cách tính các giao diện đi kèm và đối chiếu chi tiết từng ý của đề ở [`DANH_GIA.md`](./docs/dynamic-core/DANH_GIA.md), việc còn lại ở [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md).
+
+## Dành cho giám khảo
+
+Đường ngắn nhất để kiểm DX-OS:
+
+1. Mở bản chạy sẵn ở <https://khuongdev.io.vn/>, đăng nhập bằng tài khoản thử ở mục [Chạy thử](#chạy-thử).
+2. Làm theo [kịch bản trình diễn 15 phút](./docs/DEMO.md), kèm cách chạy bằng chứng cho bốn nguyên lý của đề.
+3. Tự cài bằng hai lệnh ở mục [Cài đặt](#cài-đặt), hoặc theo [Bắt đầu nhanh](./docs/QUICKSTART.md).
+4. Đối chiếu từng tính năng với bài kiểm của nó ở [ma trận bằng chứng](https://haui-implsolution.github.io/DX-OS/docs/evidence-matrix), và với thang chấm kho mã ở [bảng rà soát PoF](https://haui-implsolution.github.io/DX-OS/docs/pof-audit).
+
+## Giới hạn đã biết
+
+- Phần AI là một trợ lý tùy chọn đề xuất giá trị một trường, người dùng xác nhận trước khi lưu; chưa có hỏi đáp trên tri thức nội bộ.
+- Một bản cài chạy trên một máy bằng Docker Compose; chưa chạy nhiều bản sao của lõi.
+- Số đo của thiết bị vào lõi qua API chung; lõi không giữ trạng thái thiết bị.
+- Chưa có chữ ký số, két bí mật, đa thuê giữa các tổ chức và tìm kiếm toàn văn.
+- Chưa thử cài trên Windows; người dùng Windows chạy bản Linux trong WSL2.
+- Phần lớn tài liệu chỉ có tiếng Việt.
+
+Danh sách đầy đủ và lý do ở [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md).
 
 ## Tài liệu
 

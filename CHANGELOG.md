@@ -36,6 +36,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Bảng kế hoạch có nhãn tiếng Việt và tiếng Anh cho định dạng mã, mẫu chuỗi, điều kiện bắt buộc nhập, cách hiển thị và tài liệu in, và cho các quy tắc bắt buộc có điều kiện, số phần tử, giá trị nhỏ nhất, giá trị lớn nhất và mẫu chuỗi ở dòng vi phạm.
 - Form sửa và form tạo chỉ gửi các trường mô hình khai báo cho thực thể, nên `webUrl` và các khóa khác API thêm vào hồ sơ không còn bị gửi lại và làm lưu hồ sơ bị từ chối.
   Khi máy chủ trả 400 mà không lỗi nào thuộc trường trên form, form hiện nguyên thông báo của máy chủ.
+- Lịch sử xử lý của hồ sơ tách đang tải, chưa có hoạt động và tải lỗi kèm nút "Thử lại"; dòng thêm tệp và gỡ tệp hiện tên tệp.
 
 ## [2.1.0] - 2026-11-26
 

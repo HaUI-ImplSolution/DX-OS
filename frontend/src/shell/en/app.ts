@@ -213,6 +213,7 @@ export const app: Record<string, string> = {
   "{operation} bị bỏ qua: hồ sơ {what}": "{operation} was skipped: {what}",
   "Lịch sử xử lý": "History",
   "Chưa có hoạt động nào.": "Nothing has happened yet.",
+  "Không tải được lịch sử xử lý.": "Could not load the history.",
   "Tải lên": "Upload",
   "Chưa có tệp nào.": "No files yet.",
   // Sign-in

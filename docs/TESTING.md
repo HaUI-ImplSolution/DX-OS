@@ -203,7 +203,8 @@ Mỗi mục nêu điều phải thấy; lệnh và biến cấu hình chi tiết
     Chuyển sang Soạn YAML rồi quay lại thì form vẫn ở chỗ cũ; vai trò, trường và thực thể chọn từ danh sách đã khai báo.
     Trường dữ liệu là bảng, có ô tìm khi hơn 5 trường; bấm một dòng mở phần sửa của trường đó, chỉ với các thuộc tính hợp kiểu.
     Mục Vai trò có ma trận vai trò × thực thể; ô báo đỏ khi vai trò xử lý quy trình mà không xem được hồ sơ.
-    Xóa trường, vai trò hay thực thể đang được dùng thì hộp xác nhận liệt kê các chỗ dùng; đổi tên vai trò thì quyền và vai trò xử lý đổi theo.
+    Xóa trường, vai trò hay thực thể đang được dùng thì hộp xác nhận liệt kê các chỗ dùng.
+    Đổi tên một vai trò thì quyền, vai xử lý, `role` của hành động và `escalate.to` đổi theo; đổi tên một trường thì mọi chỗ hộp xác nhận liệt kê đều đổi theo, nên Xem kế hoạch không báo lỗi tham chiếu.
     Ở chế độ form, bảng "Viết được gì trong tệp" nằm dưới khung chính và chỉ nêu phần đang sửa (mỗi trang một nhóm khóa; các bước của quy trình chỉ nêu khóa của bước đó); sơ đồ quy trình nằm ở Quy trình → Tổng quan và mở to được. Ở chế độ YAML bảng đầy đủ vẫn ở cột phải cùng thẻ sơ đồ.
     Mọi biểu tượng thùng rác trong form màu đỏ.
     Ở Quy trình → Tổng quan, bấm một trạng thái trên sơ đồ mở Trạng thái với dòng đó được chọn, bấm một mũi tên mở hành động đó, bấm mũi tên tự đóng mở Thời hạn.

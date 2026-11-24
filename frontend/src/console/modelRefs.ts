@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import type { Family } from "./api";
-import { asList, list, mentions, rec, text, texts, type Rec } from "./formParts";
+import { asList, list, mentions, rec, renameKey, text, texts, type Rec } from "./formParts";
 import { processRows } from "./processModel";
 import { t } from "../shell/t";
 
@@ -44,12 +44,120 @@ export function fieldUses(entity: Rec, field: string, family: Family | undefined
     const written = [text(document.file), text(document.title)];
     const named = list(document.body).some((block) => {
       const item = rec(block);
-      written.push(text(item.heading), text(item.text));
+      written.push(text(item.heading), text(item.text), ...texts(item.signatures));
       return texts(item.fields).includes(field);
     });
     if (named || written.some((line) => line.includes(placeholder))) uses.push(t("Mẫu in {name}", { name }));
   });
   return uses;
+}
+
+const swap = (value: unknown, from: string, to: string) => (value === from ? to : value);
+// A name, or a list of names, with one name replaced; a single name stays a single name.
+const swapIn = (value: unknown, from: string, to: string) => (Array.isArray(value) ? value.map((item) => swap(item, from, to)) : swap(value, from, to));
+const inText = (value: unknown, from: string, to: string) => (typeof value === "string" ? value.split(`{{${from}}}`).join(`{{${to}}}`) : value);
+
+// A condition is written `field operator value`, joined by and, or, not and brackets.
+// Only the word before an operator is a field, so a value or a quoted text that equals the name stays as it is.
+export function renameInCondition(condition: unknown, from: string, to: string): unknown {
+  if (typeof condition !== "string") return condition;
+  const tokens = [...condition.matchAll(/"[^"]*"|'[^']*'|==|!=|<=|>=|<|>|[()]|[^\s()=!<>"']+/g)];
+  let written = "";
+  let last = 0;
+  tokens.forEach((token, at) => {
+    if (token[0] === from && /^(==|!=|<=|>=|<|>)$/.test(tokens[at + 1]?.[0] ?? "")) {
+      written += condition.slice(last, token.index) + to;
+      last = (token.index ?? 0) + token[0].length;
+    }
+  });
+  return written + condition.slice(last);
+}
+
+// The changes to one entity when a field is renamed: every place fieldUses lists follows the new name.
+export function renameFieldIn(entity: Rec, from: string, to: string, family: Family | undefined): Rec {
+  const fields = Object.fromEntries(
+    Object.entries(rec(entity.fields)).map(([name, raw]) => {
+      const spec = rec(raw);
+      return [name, spec.required_when === undefined ? raw : { ...spec, required_when: renameInCondition(spec.required_when, from, to) }];
+    }),
+  );
+  const next: Rec = { fields: renameKey(fields, from, to) };
+  if (entity.owner_via === from) next.owner_via = to;
+  if (entity.process) {
+    const process = { ...rec(entity.process) };
+    const booking = rec(process.booking);
+    if (Object.keys(booking).length > 0) process.booking = Object.fromEntries(Object.entries(booking).map(([key, value]) => [key, swap(value, from, to)]));
+    const after = rec(process.after);
+    if (Object.keys(after).length > 0) {
+      process.after = Object.fromEntries(
+        Object.entries(after).map(([state, items]) => [
+          state,
+          list(items).map((item) => ({ ...rec(item), ...Object.fromEntries(["user", "group_from"].filter((key) => rec(item)[key] === from).map((key) => [key, to])) })),
+        ]),
+      );
+    }
+    // An action of the template that requires the field or waits on it is written into the file with the new name.
+    const actions = { ...rec(process.actions) };
+    processRows(process, family).actions
+      .filter((action) => !action.removed)
+      .forEach((action) => {
+        const spec = { ...rec(actions[action.name]) };
+        const when = renameInCondition(typeof spec.when === "string" ? spec.when : action.when, from, to);
+        const waits = when !== (typeof spec.when === "string" ? spec.when : action.when);
+        const requires = action.require.includes(from);
+        if (!waits && !requires) return;
+        if (requires) spec.require = action.require.map((name) => swap(name, from, to));
+        if (waits) spec.when = when;
+        actions[action.name] = spec;
+      });
+    if (Object.keys(actions).length > 0) process.actions = actions;
+    next.process = process;
+  }
+  const ai = rec(entity.ai);
+  const tasks = rec(ai.tasks);
+  if (Object.keys(tasks).length > 0) {
+    next.ai = {
+      ...ai,
+      tasks: Object.fromEntries(
+        Object.entries(tasks).map(([name, raw]) => {
+          const task = rec(raw);
+          return [name, { ...task, input_fields: texts(task.input_fields).map((item) => swap(item, from, to)), output_field: swap(task.output_field, from, to) }];
+        }),
+      ),
+    };
+  }
+  if (entity.ui !== undefined) {
+    const ui = { ...rec(entity.ui) };
+    if (ui.list !== undefined) {
+      const view = { ...rec(ui.list) };
+      if (view.columns !== undefined) view.columns = texts(view.columns).map((column) => swap(column, from, to));
+      if (typeof view.sort === "string") view.sort = view.sort.replace(/^(-?)(.+)$/, (_all, sign: string, column: string) => `${sign}${swap(column, from, to)}`);
+      ui.list = view;
+    }
+    if (ui.form !== undefined) {
+      ui.form = { ...rec(ui.form), groups: list(rec(ui.form).groups).map((group) => ({ ...rec(group), fields: texts(rec(group).fields).map((item) => swap(item, from, to)) })) };
+    }
+    if (from in rec(ui.hints)) ui.hints = renameKey(rec(ui.hints), from, to);
+    next.ui = ui;
+  }
+  if (entity.documents !== undefined) {
+    next.documents = Object.fromEntries(
+      Object.entries(rec(entity.documents)).map(([name, raw]) => {
+        const document = rec(raw);
+        const body = list(document.body).map((block) => {
+          const item = rec(block);
+          return Object.fromEntries(
+            Object.entries(item).map(([key, value]) => [
+              key,
+              key === "fields" ? texts(value).map((field) => swap(field, from, to)) : key === "signatures" ? texts(value).map((line) => inText(line, from, to)) : inText(value, from, to),
+            ]),
+          );
+        });
+        return [name, { ...document, file: inText(document.file, from, to), title: inText(document.title, from, to), ...(document.body === undefined ? {} : { body }) }];
+      }),
+    );
+  }
+  return next;
 }
 
 // The places of the whole model that point at one entity.
@@ -82,7 +190,7 @@ export function roleUses(entities: Rec, role: string): string[] {
   return uses;
 }
 
-// The places the form follows when a role is renamed: the access of every entity and its handlers.
+// The places the form follows when a role is renamed: the access of every entity, its handlers, the roles of its actions and who is told when it is overdue.
 export function renameRoleIn(entities: Rec, from: string, to: string): Rec {
   const renamed: Rec = {};
   Object.entries(entities).forEach(([key, raw]) => {
@@ -94,6 +202,13 @@ export function renameRoleIn(entities: Rec, from: string, to: string): Rec {
       const handler = process.handler;
       if (handler === from) process.handler = to;
       else if (Array.isArray(handler)) process.handler = handler.map((name) => (name === from ? to : name));
+      const actions = rec(process.actions);
+      if (Object.keys(actions).length > 0) {
+        process.actions = Object.fromEntries(Object.entries(actions).map(([name, spec]) => [name, rec(spec).role === undefined ? spec : { ...rec(spec), role: swapIn(rec(spec).role, from, to) }]));
+      }
+      if (Array.isArray(process.escalate)) {
+        process.escalate = process.escalate.map((level) => (rec(level).to === undefined ? level : { ...rec(level), to: swapIn(rec(level).to, from, to) }));
+      }
       item.process = process;
     }
     renamed[key] = item;

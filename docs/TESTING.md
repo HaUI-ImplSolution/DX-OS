@@ -66,16 +66,8 @@ Test cần Docker (PostgreSQL thật bằng Testcontainers, áp dụng migration
 
 Phần dựa vào chương trình ngoài (áp dụng mô hình qua `pgschema`, quy trình Flowable, Keycloak) do các script `e2e/api/check_*.py` ở mục 4 kiểm.
 
-Đo độ phủ không cần sửa `pom.xml`:
-
-```bash
-cd backend && ./mvnw -pl dx-core,dx-model,dx-engine,dx-monitor \
-  org.jacoco:jacoco-maven-plugin:0.8.13:prepare-agent test \
-  org.jacoco:jacoco-maven-plugin:0.8.13:report
-```
-
-Báo cáo nằm ở `target/site/jacoco/` của từng module.
-Ngày 24/11/2026: `dx-model` phủ 75% số dòng, `dx-engine` 39%, `dx-core` 23%, `dx-monitor` 9%; các lớp thuần như `CodeFormat`, `ConditionText`, `BusinessCalendar`, `DdlGenerator`, `ModelDiff` phủ từ 96% đến 100%.
+Độ phủ chưa được đo trong CI và không có lệnh đo nào trong repository.
+Một lần đo bằng JaCoCo 0.8.13 chạy ngoài repository ngày 24/11/2026 cho: `dx-model` phủ 75% số dòng, `dx-engine` 38%, `dx-core` 23%, `dx-monitor` 9%, toàn backend 42%; các lớp thuần như `CodeFormat`, `ConditionText`, `BusinessCalendar`, `DdlGenerator`, `ModelDiff` phủ từ 96% đến 100%.
 
 ## 3. Dựng stack
 

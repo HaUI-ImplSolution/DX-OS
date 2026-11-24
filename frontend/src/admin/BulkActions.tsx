@@ -82,6 +82,7 @@ export default function BulkActions({ model, entity }: Props) {
 
   const run = async (action: ProcessAction, text: string | undefined) => {
     const ids = [...selectedIds] as number[];
+    const rows = new Map(selected.map((record) => [record.id, record]));
     const results: Outcome[] = [];
     let next = 0;
     let done = 0;
@@ -91,7 +92,7 @@ export default function BulkActions({ model, entity }: Props) {
         const index = next++;
         const id = ids[index];
         try {
-          await takeAction(model, entity.name, id, action.name, text);
+          await takeAction(model, entity.name, id, action.name, text, { version: rows.get(id)?.version, modelVersion: entity.modelVersion });
           results[index] = { id, error: null };
         } catch (error) {
           results[index] = { id, error: error instanceof Error ? error.message : t("Không xử lý được") };

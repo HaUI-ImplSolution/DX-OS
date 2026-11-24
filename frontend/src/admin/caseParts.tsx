@@ -23,6 +23,7 @@ import AttachFileIcon from "@mui/icons-material/AttachFile";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { useGetIdentity, useNotify, useRecordContext, useRefresh } from "react-admin";
+import { ApiError } from "../shell/api";
 import { translateBackend } from "../shell/backendMessages";
 import { formatDateTime, timeAgo } from "../shell/format";
 import { StatusChip, TONES } from "./StatusChip";
@@ -39,6 +40,9 @@ interface Props {
 }
 
 const message = (error: unknown) => (error instanceof Error ? error.message : t("Không xử lý được"));
+
+// The API answers 409 when the record or the model is no longer the one the screen read, so the screen reads it again.
+const changed = (error: unknown) => error instanceof ApiError && error.status === 409;
 
 // A titled card; a panel that has nothing to show returns null before it gets here.
 export function Section({ title, action, children }: { title: string; action?: JSX.Element; children: React.ReactNode }) {
@@ -99,12 +103,16 @@ export function ActionButtons({ model, entity }: Props) {
   const send = async (action: ProcessAction, text?: string) => {
     setBusy(true);
     try {
-      await takeAction(model, entity.name, record.id, action.name, text);
+      await takeAction(model, entity.name, record.id, action.name, text, { version: record.version, modelVersion: entity.modelVersion });
       notify(t("{action}: xong", { action: ta(action.label) }), { type: "success" });
       closeNote();
       refresh();
     } catch (error) {
       notify(message(error), { type: "error" });
+      if (changed(error)) {
+        setNoteFor(null);
+        refresh();
+      }
     } finally {
       setBusy(false);
     }
@@ -186,10 +194,11 @@ export function AssignPanel({ model, entity }: Props) {
 
   const assign = async (assignee: string | null) => {
     try {
-      await assignRecord(model, entity.name, record.id, assignee);
+      await assignRecord(model, entity.name, record.id, assignee, { version: record.version, modelVersion: entity.modelVersion });
       refresh();
     } catch (error) {
       notify(message(error), { type: "error" });
+      if (changed(error)) refresh();
     }
   };
 

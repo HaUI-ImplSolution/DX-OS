@@ -14,6 +14,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Prometheus và Grafana tùy chọn (`deploy/docker-compose.grafana.yml`, bật bằng `COMPOSE_FILE`): Prometheus đọc số đo `dxos_*` của lõi bằng `METRICS_PASSWORD`, Grafana có sẵn nguồn dữ liệu và dashboard "DX-OS" về hồ sơ, hạn xử lý, hàng đợi sự kiện, lần áp dụng mô hình và dịch vụ lõi; Grafana mở ở `127.0.0.1`, đòi mật khẩu quản trị và không tải plugin.
 - Người dùng đóng hoặc tải lại trang không còn bị ghi thành lỗi server: luồng SSE của Hộp việc ngắt kết nối thì không có ERROR trong nhật ký và không có bản ghi audit `SERVER_ERROR`.
 - `dxos plan` in kế hoạch bằng chữ: mức rủi ro, mỗi thay đổi một dòng, hồ sơ đang xử lý, tác động lên hành động, dòng vi phạm và lệnh `dxos apply --accept` cần dùng; `--json` in JSON đầy đủ như trước.
+- `dxos apply` in tên mô hình, phiên bản và từng bước đã chạy bằng chữ, in thông báo máy chủ khi áp dụng lỗi và in phản hồi JSON đầy đủ với `--json`.
 - `stats` của thực thể có quy trình trả `timeInStatus`: mỗi trạng thái có số lượt vào, thời gian trung bình và lâu nhất, sắp theo trung bình giảm dần.
   Mỗi lần vào lại tính một lượt, lượt đang mở tính đến `computedAt`, trạng thái cuối không tính; cùng quyền theo dòng, bộ lọc và mức cắt 10 giây như các số khác.
 - Tệp mô hình có khóa viết hai lần trong cùng một khối bị `dxos lint`, `dxos plan` và áp dụng từ chối, kèm dòng của lần viết thứ hai; mô hình đã lưu có khóa trùng vẫn chạy và hiện cảnh báo.

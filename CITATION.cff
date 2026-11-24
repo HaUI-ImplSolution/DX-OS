@@ -1,0 +1,26 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
+# SPDX-License-Identifier: Apache-2.0
+cff-version: 1.2.0
+message: "Nếu bạn dùng DX-OS trong công trình của mình, hãy trích dẫn như sau."
+title: "DX-OS"
+type: software
+abstract: >-
+  Lõi dynamic nguồn mở cho các hệ thống hồ sơ có quy trình:
+  khai báo nghiệp vụ trong một tệp mô hình, DX-OS dựng cơ sở dữ liệu,
+  vai trò, API có phân quyền, quy trình duyệt và giao diện.
+authors:
+  - family-names: "Phạm"
+    given-names: "Minh Khương"
+  - family-names: "Nguyễn"
+    given-names: "Đình Duy Khánh"
+  - family-names: "Trần"
+    given-names: "Quang Tùng"
+repository-code: "https://github.com/HaUI-ImplSolution/DX-OS"
+url: "https://haui-implsolution.github.io/DX-OS/"
+license: Apache-2.0
+keywords:
+  - open source
+  - digital transformation
+  - headless
+  - workflow
+  - model-driven

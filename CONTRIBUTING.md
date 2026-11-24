@@ -89,6 +89,14 @@ cd ../frontend && npm install && npm run dev
   `check_licenses.py sbom <tệp>` kiểm giấy phép của SBOM sinh lại từ pull request, nên bản mới của một thư viện Maven hay npm bị kiểm trước khi `sbom/` được sinh lại.
 - Không đưa mật khẩu, khóa hay dữ liệu thật vào kho mã; `deploy/.env` nằm ngoài Git.
 
+## Công cụ AI hỗ trợ
+
+Một phần mã và tài liệu của dự án được viết với sự hỗ trợ của công cụ AI (Claude của Anthropic và Codex của OpenAI); commit nào có dùng thì mang dòng `Co-Authored-By` tương ứng.
+Công cụ chỉ là người viết nháp: người gửi pull request đọc, chạy và chịu trách nhiệm về từng dòng như mã tự viết.
+Mọi thay đổi vào `Khuong/main` và `main` đi qua pull request và các kiểm tra của CI, kể cả thay đổi do công cụ viết.
+Người đóng góp bên ngoài được dùng công cụ AI với cùng điều kiện, và phải bảo đảm phần gửi lên không sao chép mã hay tài liệu có giấy phép ngoài danh sách OSI (xem mục dưới).
+Không đưa bí mật hay dữ liệu thật vào công cụ AI.
+
 ## Giấy phép của phần đóng góp
 
 Phần đóng góp, gồm mã, tài liệu, ảnh, video và sơ đồ, được cấp phép theo Apache License 2.0 như cả dự án (mục 5 của giấy phép), trừ khi bạn nêu rõ khác ngay trong pull request.

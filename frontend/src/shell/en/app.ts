@@ -55,7 +55,7 @@ export const app: Record<string, string> = {
   "{d} ngày {h} giờ": "{d} d {h} h",
   "{n} ngày": "{n} d",
   // Errors
-  "Bản ghi vừa được người khác thay đổi, hãy tải lại rồi thử lại.": "The record was just changed by someone else; reload and try again.",
+  "Hồ sơ vừa được thay đổi, hãy xem lại.": "The record has just changed; review it again.",
   "Sai tên đăng nhập hoặc mật khẩu.": "Wrong username or password.",
   "Phiên đăng nhập đã hết hạn, hãy đăng nhập lại.": "Your session has expired; sign in again.",
   "Bạn không đủ quyền thực hiện thao tác này.": "You do not have permission to do this.",
@@ -76,6 +76,7 @@ export const app: Record<string, string> = {
   "Hồ sơ không thực hiện được thao tác này ở trạng thái hiện tại": "The record cannot take this action in its current state",
   "Hồ sơ chưa đạt điều kiện của hành động này": "The record does not meet the condition of this action",
   "Hồ sơ đang được giao cho người khác": "The record is assigned to someone else",
+  "Mô hình vừa được đổi, hãy tải lại trang rồi thử lại": "The model has just changed; reload the page and try again",
   "Hồ sơ đã đóng, không thay đổi được": "The record is closed and cannot be changed",
   "Tài nguyên đã có người đặt trong khung giờ này": "The resource is already booked for this time",
   "Trạng thái chỉ đổi qua quy trình": "The status is changed by the process only",
@@ -213,6 +214,7 @@ export const app: Record<string, string> = {
   "{operation} bị bỏ qua: hồ sơ {what}": "{operation} was skipped: {what}",
   "Lịch sử xử lý": "History",
   "Chưa có hoạt động nào.": "Nothing has happened yet.",
+  "Không tải được lịch sử xử lý.": "Could not load the history.",
   "Tải lên": "Upload",
   "Chưa có tệp nào.": "No files yet.",
   // Sign-in

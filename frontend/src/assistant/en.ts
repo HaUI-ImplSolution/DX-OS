@@ -2,6 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 // English text of the business assistant screens, merged into the interface table by shell/en/index.ts.
 export const assistantEn: Record<string, string> = {
+  "Hãy mở trợ lý bằng đúng địa chỉ công khai của DX-OS. Liên hệ quản trị viên nếu đang dùng IP hoặc tên miền khác.": "Open the assistant at the public DX-OS address. Contact an administrator if you are using a different IP address or domain.",
+  "Nội dung gửi quá lớn. Hãy rút gọn rồi thử lại.": "The submitted content is too large. Shorten it and try again.",
+  "Dữ liệu gửi chưa hợp lệ. Hãy kiểm tra rồi thử lại.": "The submitted data is invalid. Review it and try again.",
+  "Phiên đăng nhập chưa hợp lệ hoặc đã hết hạn. Hãy đăng nhập lại DX-OS.": "Your sign-in session is invalid or has expired. Sign in to DX-OS again.",
+  "Hãy liên kết lại tài khoản DX-OS cho trợ lý.": "Relink your DX-OS account for the assistant.",
+  "Hãy liên kết bằng cùng tài khoản đang đăng nhập DX-OS.": "Link the same account that is signed in to DX-OS.",
+  "Phiên liên kết đã hết hạn hoặc đã dùng. Hãy bắt đầu liên kết lại.": "The linking session expired or was already used. Start the linking process again.",
+  "Hãy hoàn tất liên kết trong cùng trình duyệt đã bắt đầu.": "Complete the linking process in the same browser where it was started.",
+  "Chưa kết nối được dịch vụ đăng nhập. Hãy thử lại sau.": "The identity service is unavailable. Try again later.",
   "Không có thay đổi": "No changes",
   "Giá trị đề xuất đã trùng với hồ sơ. Không có thay đổi để lưu.": "The proposed value already matches the record. There are no changes to save.",
   "Sửa hồ sơ theo lưu ý": "Edit record to address review notes",
@@ -60,5 +69,9 @@ export const assistantEn: Record<string, string> = {
   "Nguồn tri thức của nhiệm vụ chưa được cấu hình đầy đủ.": "The task sources are not fully configured.",
   "Hồ sơ, mô hình hoặc nguồn đã đổi. Hãy tạo đề xuất mới.": "The record, model or sources changed. Create a new suggestion.",
   "Đề xuất của phiên bản cũ chỉ dùng để xem lịch sử.": "Legacy suggestions are read-only.",
+  "Đề xuất đã hết hạn hoặc đã được xử lý. Hãy tải lại.": "The suggestion expired or was already handled. Reload the page.",
+  "Chưa rõ kết quả. Kiểm tra lịch sử hồ sơ trước khi thử lại.": "The outcome is uncertain. Check the record history before trying again.",
+  "Backend cần hỗ trợ điều kiện phiên bản trước khi trợ lý được ghi dữ liệu.": "The backend must support version preconditions before the assistant can write data.",
+  "Đề xuất cũ thiếu phiên bản. Hãy tạo lại đề xuất trước khi xác nhận.": "The earlier suggestion has no version. Create it again before confirming.",
   "Chức năng này đã được thay bằng trợ lý nghiệp vụ.": "This feature was replaced by the business assistant.",
 };

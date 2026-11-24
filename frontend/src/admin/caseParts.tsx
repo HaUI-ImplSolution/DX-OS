@@ -23,6 +23,7 @@ import AttachFileIcon from "@mui/icons-material/AttachFile";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { useGetIdentity, useNotify, useRecordContext, useRefresh } from "react-admin";
+import { ApiError } from "../shell/api";
 import { translateBackend } from "../shell/backendMessages";
 import { formatDateTime, timeAgo } from "../shell/format";
 import { StatusChip, TONES } from "./StatusChip";
@@ -39,6 +40,9 @@ interface Props {
 }
 
 const message = (error: unknown) => (error instanceof Error ? error.message : t("Không xử lý được"));
+
+// The API answers 409 when the record or the model is no longer the one the screen read, so the screen reads it again.
+const changed = (error: unknown) => error instanceof ApiError && error.status === 409;
 
 // A titled card; a panel that has nothing to show returns null before it gets here.
 export function Section({ title, action, children }: { title: string; action?: JSX.Element; children: React.ReactNode }) {
@@ -99,12 +103,16 @@ export function ActionButtons({ model, entity }: Props) {
   const send = async (action: ProcessAction, text?: string) => {
     setBusy(true);
     try {
-      await takeAction(model, entity.name, record.id, action.name, text);
+      await takeAction(model, entity.name, record.id, action.name, text, { version: record.version, modelVersion: entity.modelVersion });
       notify(t("{action}: xong", { action: ta(action.label) }), { type: "success" });
       closeNote();
       refresh();
     } catch (error) {
       notify(message(error), { type: "error" });
+      if (changed(error)) {
+        setNoteFor(null);
+        refresh();
+      }
     } finally {
       setBusy(false);
     }
@@ -186,10 +194,11 @@ export function AssignPanel({ model, entity }: Props) {
 
   const assign = async (assignee: string | null) => {
     try {
-      await assignRecord(model, entity.name, record.id, assignee);
+      await assignRecord(model, entity.name, record.id, assignee, { version: record.version, modelVersion: entity.modelVersion });
       refresh();
     } catch (error) {
       notify(message(error), { type: "error" });
+      if (changed(error)) refresh();
     }
   };
 
@@ -320,28 +329,44 @@ function userIdsOf(event: RecordEvent, userFields: Set<string>): string[] {
 // What happened to this record, newest first, as a timeline.
 export function HistoryPanel({ model, entity }: Props) {
   const record = useRecordContext();
-  const [events, setEvents] = useState<RecordEvent[]>([]);
+  // null while the first load runs; a failed load says so instead of looking like an empty history.
+  const [events, setEvents] = useState<RecordEvent[] | null>(null);
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   const id = record?.id;
   const version = record?.version;
 
   useEffect(() => {
-    if (id !== undefined) listEvents(model, entity.name, id).then(setEvents, () => setEvents([]));
-  }, [model, entity.name, id, version]);
+    if (id === undefined) return;
+    setFailed(false);
+    listEvents(model, entity.name, id).then(setEvents, () => setFailed(true));
+  }, [model, entity.name, id, version, attempt]);
 
   const process = entity.process;
   const actionLabel = (name: string) =>
     EVENT_LABELS[name] ?? ta(process?.actions.find((action) => action.name === name)?.label ?? name);
   const fieldLabel = (name: string) => entity.fields.find((field) => field.name === name)?.label ?? name;
-  const ordered = [...events].reverse();
+  const ordered = [...(events ?? [])].reverse();
   const userFields = new Set(entity.fields.filter((field) => field.type === "user").map((field) => field.name));
-  const personNames = useNames(events.flatMap((event) => userIdsOf(event, userFields)));
+  const personNames = useNames(ordered.flatMap((event) => userIdsOf(event, userFields)));
 
   return (
     <Section title={t("Lịch sử xử lý")}>
-      {ordered.length === 0 && (
-        <Typography variant="body2" color="text.secondary">
-          {t("Chưa có hoạt động nào.")}
-        </Typography>
+      {failed ? (
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+          <Typography variant="body2" color="error">
+            {t("Không tải được lịch sử xử lý.")}
+          </Typography>
+          <Button size="small" onClick={() => setAttempt(attempt + 1)}>
+            {t("Thử lại")}
+          </Button>
+        </Box>
+      ) : (
+        ordered.length === 0 && (
+          <Typography variant="body2" color="text.secondary">
+            {events === null ? t("Đang tải...") : t("Chưa có hoạt động nào.")}
+          </Typography>
+        )
       )}
       <Box sx={{ position: "relative", pl: 3 }}>
         <Box sx={{ position: "absolute", left: 7, top: 6, bottom: 6, width: 2, bgcolor: "divider" }} />
@@ -354,7 +379,9 @@ export function HistoryPanel({ model, entity }: Props) {
                 ? skippedReason(event.detail, fieldLabel)
                 : event.action === "escalated" && event.detail
                   ? escalatedDetail(event.detail, process?.escalations ?? [])
-                  : null);
+                  : event.action === "file_added" || event.action === "file_removed"
+                    ? event.detail
+                    : null);
           const tone = event.to_status ? TONES[event.to_status] : undefined;
           const color = !tone || tone === "default" ? "text.disabled" : `${tone}.main`;
           return (

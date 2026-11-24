@@ -11,6 +11,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 - API danh sách, `stats`, `report` và `quality` nhận `q`: mỗi từ phải có, không phân biệt hoa thường và dấu, trong ít nhất một trường chữ, mã hoặc lựa chọn đơn của hồ sơ; điều kiện nằm cùng câu SQL với quyền theo dòng nên không trả hồ sơ ngoài quyền, và truy vấn có `q` bị cắt sau 10 giây.
 - Cầu nối MQTT tùy chọn (`deploy/docker-compose.mqtt.yml`, bật bằng `COMPOSE_FILE`): một broker Mosquitto có mật khẩu và một cầu nối nhận bản tin theo chủ đề khai báo rồi tạo hồ sơ qua API dữ liệu chung bằng client máy; bản tin giao hai lần chỉ tạo một hồ sơ, bản tin bị từ chối hoặc sai khuôn được ghi log và bỏ qua, và lõi ngừng thì bản tin được giữ ở broker đến khi xử lý. `examples/itot-simulator` có `--transport mqtt`.
+- Overlay giám sát tùy chọn (`deploy/docker-compose.monitoring.yml`, bật bằng `COMPOSE_FILE`) chạy Prometheus đọc số đo nội bộ và Grafana chỉ mở tại `127.0.0.1`, có sẵn dashboard `DX-OS` cho các số đo `dxos_*`.
 - Người dùng đóng hoặc tải lại trang không còn bị ghi thành lỗi server: luồng SSE của Hộp việc ngắt kết nối thì không có ERROR trong nhật ký và không có bản ghi audit `SERVER_ERROR`.
 - `dxos plan` in kế hoạch bằng chữ: mức rủi ro, mỗi thay đổi một dòng, hồ sơ đang xử lý, tác động lên hành động, dòng vi phạm và lệnh `dxos apply --accept` cần dùng; `--json` in JSON đầy đủ như trước.
 - `stats` của thực thể có quy trình trả `timeInStatus`: mỗi trạng thái có số lượt vào, thời gian trung bình và lâu nhất, sắp theo trung bình giảm dần.

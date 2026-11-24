@@ -1,0 +1,87 @@
+{
+  "uid": "dxos-overview",
+  "title": "DX-OS",
+  "tags": ["dxos"],
+  "timezone": "browser",
+  "schemaVersion": 41,
+  "version": 1,
+  "refresh": "30s",
+  "templating": {
+    "list": [
+      {
+        "name": "model",
+        "label": "M\u00f4 h\u00ecnh",
+        "type": "query",
+        "datasource": {"type": "prometheus", "uid": "dxos-prometheus"},
+        "definition": "label_values(dxos_records, model)",
+        "query": {"query": "label_values(dxos_records, model)", "refId": "Prometheus-model-Variable-Query"},
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".*",
+        "current": {"selected": true, "text": "All", "value": "$__all"}
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "H\u1ed3 s\u01a1 theo tr\u1ea1ng th\u00e1i",
+      "type": "table",
+      "datasource": {"type": "prometheus", "uid": "dxos-prometheus"},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "targets": [{"refId": "A", "expr": "sum by (model, entity, status) (dxos_records{model=~\"$model\"})", "instant": true, "format": "table"}]
+    },
+    {
+      "id": 2,
+      "title": "H\u1ed3 s\u01a1 qu\u00e1 h\u1ea1n",
+      "type": "table",
+      "datasource": {"type": "prometheus", "uid": "dxos-prometheus"},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "targets": [{"refId": "A", "expr": "sum by (model, entity) (dxos_records_overdue{model=~\"$model\"})", "instant": true, "format": "table"}]
+    },
+    {
+      "id": 3,
+      "title": "S\u1ef1 ki\u1ec7n ch\u01b0a chuy\u1ec3n v\u00e0 \u0111ang th\u1eed l\u1ea1i",
+      "type": "table",
+      "datasource": {"type": "prometheus", "uid": "dxos-prometheus"},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+      "targets": [
+        {"refId": "A", "expr": "dxos_outbox_pending", "instant": true, "format": "table"},
+        {"refId": "B", "expr": "dxos_outbox_retrying", "instant": true, "format": "table"}
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Tu\u1ed5i s\u1ef1 ki\u1ec7n ch\u01b0a chuy\u1ec3n c\u0169 nh\u1ea5t",
+      "type": "stat",
+      "datasource": {"type": "prometheus", "uid": "dxos-prometheus"},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+      "fieldConfig": {"defaults": {"unit": "s"}, "overrides": []},
+      "targets": [{"refId": "A", "expr": "dxos_outbox_oldest_age_seconds", "instant": true}]
+    },
+    {
+      "id": 5,
+      "title": "L\u1ea7n \u00e1p d\u1ee5ng th\u1ea5t b\u1ea1i trong 24 gi\u1edd",
+      "type": "stat",
+      "datasource": {"type": "prometheus", "uid": "dxos-prometheus"},
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 16},
+      "targets": [{"refId": "A", "expr": "increase(dxos_model_applies_total{result=\"failed\"}[24h])", "instant": true}]
+    },
+    {
+      "id": 6,
+      "title": "M\u00f4 h\u00ecnh \u0111ang ch\u1ea1y",
+      "type": "stat",
+      "datasource": {"type": "prometheus", "uid": "dxos-prometheus"},
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 16},
+      "targets": [{"refId": "A", "expr": "dxos_models", "instant": true}]
+    },
+    {
+      "id": 7,
+      "title": "M\u00f4 h\u00ecnh b\u1ecb lo\u1ea1i",
+      "type": "stat",
+      "datasource": {"type": "prometheus", "uid": "dxos-prometheus"},
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 16},
+      "targets": [{"refId": "A", "expr": "dxos_models_left_out", "instant": true}]
+    }
+  ]
+}

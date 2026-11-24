@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
+# SPDX-License-Identifier: Apache-2.0
+global:
+  scrape_interval: 30s
+
+scrape_configs:
+  - job_name: dxos
+    metrics_path: /actuator/prometheus
+    basic_auth:
+      username: metrics
+      password_file: /tmp/dxos-metrics-password
+    static_configs:
+      - targets: ["backend:8081"]

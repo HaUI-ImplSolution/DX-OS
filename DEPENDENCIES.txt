@@ -192,6 +192,12 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 | Python 3.13.18 (image python:        | Python-2.0 (PSF), giấy phép của các  | Chạy cầu nối MQTT tùy chọn, chỉ dùng |
 | 3.13.18-alpine3.24) [12]             | gói Alpine của image                 | thư viện chuẩn                       |
 +--------------------------------------+--------------------------------------+--------------------------------------+
+| Prometheus 3.16.0 (image             | Apache-2.0                           | Đọc số đo của overlay giám sát tùy   |
+| prom/prometheus) [13]                |                                      | chọn, dịch vụ riêng, không sửa mã    |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Grafana OSS 13.3.1 (image            | AGPL-3.0                             | Hiển thị dashboard của overlay giám  |
+| grafana/grafana) [13]                |                                      | sát tùy chọn, dịch vụ riêng          |
++--------------------------------------+--------------------------------------+--------------------------------------+
 | Maven Wrapper 3.3.4 [7] (mvnw,       | Apache-2.0                           | Chạy Maven ở phiên bản đã ghim;      |
 | mvnw.cmd, maven-wrapper.properties)  |                                      | chép nguyên từ Apache Maven          |
 +--------------------------------------+--------------------------------------+--------------------------------------+
@@ -340,6 +346,19 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
     Cầu nối chỉ dùng thư viện chuẩn của Python và không gọi các thư viện này; chúng có mặt vì image Python chính thức dựng CPython cùng chúng.
     Các thành phần GPL của hai image chạy như tiến trình riêng, không sửa và không liên kết với mã của dự án.
     Mã của dự án ở deploy/mqtt/ và examples/itot-simulator theo Apache-2.0 và chỉ dùng thư viện chuẩn của Python.
+    Đây là đọc metadata và tài liệu của các dự án, không phải tư vấn pháp lý.
+
+[13] Overlay giám sát tùy chọn chạy hai image nguyên bản, không sửa và không phân phối lại; chúng chỉ được kéo khi bật deploy/docker-compose.monitoring.yml.
+    Giấy phép của dự án nguồn được kiểm ở đúng phiên bản bằng .github/scripts/check_upstream_licenses.py: Prometheus v3.16.0 (Apache-2.0) và Grafana v13.3.1 (AGPL-3.0).
+    Thành phần của image prom/prometheus, đọc ngày 2026-11-24 từ image đã ghim:
+    - Binary Prometheus viết bằng Go, liên kết tĩnh, trên nền BusyBox 1.38.0 (GPL-2.0-only), kèm bộ chứng chỉ CA (`/etc/ssl/certs/ca-certificates.crt`).
+    Thành phần của image grafana/grafana (Alpine 3.24.3), đọc ngày 2026-11-24 từ metadata apk:
+    - musl 1.2.6 (MIT), musl-utils (MIT AND BSD-2-Clause AND GPL-2.0-or-later), OpenSSL libcrypto3 và libssl3 3.5.9 (Apache-2.0), curl và libcurl 8.23.0 (giấy phép curl), c-ares 1.34.9 (MIT), nghttp2-libs 1.70.0 (MIT), brotli-libs 1.2.1 (MIT), zstd-libs 1.5.7 (BSD-3-Clause hoặc GPL-2.0-or-later), zlib 1.3.2 (Zlib), libcap2 2.78 (BSD-3-Clause hoặc GPL-2.0-only), libidn2 2.3.8 và libunistring 1.4.2 (GPL-2.0-or-later hoặc LGPL-3.0-or-later), libpsl 0.21.5 (MIT), bubblewrap 0.12.0 (LGPL-2.1-or-later).
+    - Gói nền Alpine: BusyBox 1.37.0, ssl_client, apk-tools, libapk, alpine-baselayout, scanelf (GPL-2.0-only), alpine-keys, alpine-release (MIT), ca-certificates 20261020 (MPL-2.0 AND MIT), tzdata 2026f (phạm vi công cộng).
+    Giấy phép curl (kiểu MIT) và tzdata ở phạm vi công cộng không nằm trong danh sách OSI; Grafana không gọi chúng như thư viện của dự án, chúng có mặt vì image nền.
+    Binary Grafana kèm các thư viện Go và JavaScript của chính dự án Grafana theo giấy phép ghi trong repository của Grafana ở thẻ `v13.3.1`; repository này không đọc riêng từng thư viện đó.
+    Các thành phần GPL của hai image chạy như tiến trình riêng, không sửa và không liên kết với mã của dự án.
+    Tệp provisioning và dashboard ở deploy/monitoring/ là của dự án theo Apache-2.0.
     Đây là đọc metadata và tài liệu của các dự án, không phải tư vấn pháp lý.
 
 6. TRANG CHỦ VÀ NGUỒN

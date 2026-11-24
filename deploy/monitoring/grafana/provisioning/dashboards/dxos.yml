@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
+# SPDX-License-Identifier: Apache-2.0
+apiVersion: 1
+
+providers:
+  - name: DX-OS
+    orgId: 1
+    folder: DX-OS
+    type: file
+    disableDeletion: true
+    allowUiUpdates: false
+    options:
+      path: /etc/grafana/dashboards

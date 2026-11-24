@@ -1,0 +1,89 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
+# SPDX-License-Identifier: Apache-2.0
+# Optional monitoring overlay, loaded with
+# COMPOSE_FILE=docker-compose.yml:docker-compose.monitoring.yml.
+# deploy/.env must set METRICS_PASSWORD and GRAFANA_ADMIN_PASSWORD.
+# Grafana is published on 127.0.0.1 by default; use an SSH tunnel for remote access.
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "5"
+
+x-hardened: &hardened
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+
+volumes:
+  prometheus_data:
+  grafana_data:
+
+services:
+  prometheus:
+    <<: *hardened
+    logging: *default-logging
+    image: prom/prometheus:v3.16.0@sha256:e04987641b57704f408e31f6373ba4138ecf27cb4a165d24aabb6c38fddd0f06
+    restart: unless-stopped
+    read_only: true
+    mem_limit: 512m
+    cpus: 1.0
+    pids_limit: 128
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      METRICS_PASSWORD: ${METRICS_PASSWORD:-}
+    entrypoint: [sh, -c]
+    command:
+      - |
+        [ -n "$$METRICS_PASSWORD" ] || { echo "METRICS_PASSWORD is empty in deploy/.env" >&2; exit 1; }
+        printf '%s' "$$METRICS_PASSWORD" > /tmp/dxos-metrics-password
+        exec /bin/prometheus --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --storage.tsdb.retention.time=${PROMETHEUS_RETENTION:-15d}
+    volumes:
+      - prometheus_data:/prometheus
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    tmpfs:
+      - /tmp:rw,nosuid,nodev,noexec,size=4m
+    healthcheck:
+      test: [CMD-SHELL, "wget -q --spider http://127.0.0.1:9090/-/ready || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+
+  grafana:
+    <<: *hardened
+    logging: *default-logging
+    image: grafana/grafana:13.3.1@sha256:0615ec4fbd4072004b7d86b46ded63013a74b7d6eb1119273dd89e8fa25c13cf
+    restart: unless-stopped
+    read_only: true
+    mem_limit: 512m
+    cpus: 1.0
+    pids_limit: 128
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD is empty in deploy/.env}
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      GF_NEWS_NEWS_FEED_ENABLED: "false"
+    ports:
+      - "${GRAFANA_BIND:-127.0.0.1}:${GRAFANA_HOST_PORT:-3000}:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./monitoring/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/dashboards:/etc/grafana/dashboards:ro
+    tmpfs:
+      - /tmp:rw,nosuid,nodev,noexec,size=16m
+    healthcheck:
+      test: [CMD-SHELL, "wget -q --spider http://127.0.0.1:3000/api/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+      start_period: 20s

@@ -121,7 +121,7 @@ Chạy lâu thì theo dõi dung lượng bảng.
 ## Số đo cho Prometheus
 
 Dịch vụ lõi xuất số đo vận hành theo định dạng Prometheus ở `GET /actuator/prometheus` của cổng `8081` trong mạng Docker, để Prometheus, Grafana Agent hoặc công cụ tương tự đọc.
-Công cụ giám sát bên ngoài là tùy chọn: stack không kèm Prometheus hay Grafana.
+Overlay giám sát tùy chọn kèm Prometheus và Grafana, còn stack mặc định không khởi động hai dịch vụ này.
 
 Truy cập:
 
@@ -152,6 +152,36 @@ cd deploy
 PASSWORD=$(grep '^METRICS_PASSWORD=' .env | cut -d= -f2)
 docker compose exec backend wget -qO- --header "Authorization: Basic $(printf 'metrics:%s' "$PASSWORD" | base64 -w0)" http://localhost:8081/actuator/prometheus | grep '^dxos_'
 ```
+
+### Prometheus và Grafana kèm theo (tùy chọn)
+
+1. Kiểm `deploy/.env` có `METRICS_PASSWORD` và `GRAFANA_ADMIN_PASSWORD` khác rỗng.
+   Tệp `.env` sinh từ bản cũ có thể thiếu hai biến này; khi đó thêm hai dòng với giá trị ngẫu nhiên, ví dụ `openssl rand -hex 16`, rồi chạy `docker compose up -d backend` để dịch vụ lõi nhận mật khẩu số đo.
+2. Đặt `COMPOSE_FILE=docker-compose.yml:docker-compose.monitoring.yml` trong `deploy/.env`, rồi chạy `dxos start`.
+   Nếu `COMPOSE_FILE` đã có overlay khác, thêm `:docker-compose.monitoring.yml` vào cuối giá trị.
+3. Mở `http://127.0.0.1:3000` và đăng nhập bằng tài khoản `admin` với `GRAFANA_ADMIN_PASSWORD`.
+   Để xem từ xa, tạo đường hầm `ssh -L 3000:127.0.0.1:3000 <người_dùng>@<máy_chủ>` rồi mở cùng địa chỉ cục bộ.
+   Không đổi `GRAFANA_BIND` để mở Grafana trực tiếp ra Internet.
+4. Tắt bằng cách bỏ `docker-compose.monitoring.yml` khỏi `COMPOSE_FILE` rồi chạy `docker compose up -d --remove-orphans`.
+   Muốn xóa cả dữ liệu thì chạy `docker volume rm <dự án>_prometheus_data <dự án>_grafana_data`.
+
+`METRICS_PASSWORD` trống thì container `prometheus` dừng và log ghi `METRICS_PASSWORD is empty in deploy/.env`.
+Dashboard `DX-OS` có sẵn khi Grafana khởi động, nằm trong thư mục `DX-OS`, và không sửa được trên giao diện.
+
+- **Hồ sơ theo trạng thái:** xem số hồ sơ của từng thực thể và trạng thái trong mô hình đã chọn.
+  Cần lo khi một trạng thái chờ tăng bất thường hoặc không giảm theo tiến độ xử lý.
+- **Hồ sơ quá hạn:** xem số hồ sơ quá hạn theo mô hình và thực thể.
+  Cần lo khi giá trị lớn hơn 0 kéo dài.
+- **Sự kiện chưa chuyển và đang thử lại:** xem hàng đợi sự kiện ra ngoài và phần đã lỗi ít nhất một lần.
+  Cần lo khi hàng đợi không giảm hoặc số đang thử lại tăng.
+- **Tuổi sự kiện chưa chuyển cũ nhất:** xem số giây chờ của sự kiện cũ nhất.
+  Cần lo khi tuổi tăng liên tục, nhất là quá thời gian dịch vụ ngoài chấp nhận.
+- **Lần áp dụng thất bại trong 24 giờ:** xem số lần áp dụng tệp mô hình lỗi trong ngày gần nhất.
+  Cần lo khi giá trị khác 0 và xem lịch sử áp dụng để tìm nguyên nhân.
+- **Mô hình đang chạy:** xem số mô hình đang hoạt động.
+  Cần lo khi khác số mô hình vận hành dự kiến.
+- **Mô hình bị loại:** xem số mô hình đã lưu không qua bộ kiểm của bản hiện tại.
+  Cần lo ngay khi giá trị khác 0 và áp dụng tệp mô hình đã sửa.
 
 Cấu hình Prometheus chạy trong cùng mạng Docker của stack (container tham gia mạng `<tên-dự-án>_default`, xem bằng `docker network ls`):
 

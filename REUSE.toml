@@ -11,6 +11,13 @@ precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 HaUI-ImplSolution"
 SPDX-License-Identifier = "Apache-2.0"
 
+# JSON cannot carry SPDX comments.
+[[annotations]]
+path = "deploy/monitoring/grafana/dashboards/dxos.json"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 HaUI-ImplSolution"
+SPDX-License-Identifier = "Apache-2.0"
+
 # Maven Wrapper, copied unchanged from Apache Maven.
 [[annotations]]
 path = ["backend/mvnw", "backend/mvnw.cmd", "backend/.mvn/wrapper/maven-wrapper.properties"]

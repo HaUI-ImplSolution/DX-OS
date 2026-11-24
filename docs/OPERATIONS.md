@@ -448,6 +448,7 @@ Danh sách đầy đủ kèm chú thích từng dòng ở [`deploy/.env.example`
 | `DXOS_MODE` | `full` | `core` để chỉ chạy lõi, không có giao diện web; đổi bằng `dxos start --core` hoặc `--full`, không sửa tay |
 | `KEYCLOAK_ADMIN_CONSOLE` | `false` | `true` để mở trang quản trị Keycloak tại `/admin` |
 | `METRICS_PASSWORD` | ngẫu nhiên | Để trống thì endpoint số đo cho Prometheus đóng; xem [`MONITORING.md`](./MONITORING.md) |
+| `GRAFANA_ADMIN_PASSWORD` | ngẫu nhiên | Mật khẩu `admin` của Grafana khi bật overlay giám sát; xem [`MONITORING.md`](./MONITORING.md) |
 
 ### Biến đã điền sẵn, không cần đổi
 

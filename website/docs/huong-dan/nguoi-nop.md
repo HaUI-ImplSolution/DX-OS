@@ -42,7 +42,7 @@ Gõ một phần của mã vào ô **Tìm theo chữ** của danh sách thì ch�
 ## Theo dõi hồ sơ
 
 - Trạng thái của hồ sơ hiện ở danh sách và ở đầu trang chi tiết.
-- **Lịch sử xử lý** ở trang chi tiết cho biết ai làm gì và lúc nào, kèm lý do khi người xử lý từ chối hoặc trả lại.
+- **Lịch sử xử lý** ở trang chi tiết cho biết ai làm gì và lúc nào, kèm lý do khi người xử lý từ chối hoặc trả lại và tên tệp khi có người thêm hoặc gỡ tệp.
   Lịch sử không sửa được.
 - Trang đang mở tự làm mới khi hồ sơ đổi, bạn không phải tải lại.
 - Nếu hồ sơ có hạn xử lý, hạn hiện ở trang chi tiết.

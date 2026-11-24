@@ -326,8 +326,10 @@ public class DataService {
     values.addValue("event_model", model.name());
     values.addValue("event_entity", entity.name());
     String sql =
-        """
-        WITH visible AS (SELECT id, decided_at%s),
+        "WITH visible AS (SELECT id, decided_at"
+            + from
+            + "),"
+            + """
         visits AS (
           SELECT e.to_status AS status, e.at, v.decided_at,
                  lead(e.at) OVER (PARTITION BY e.record_id ORDER BY e.id) AS left_at
@@ -346,8 +348,7 @@ public class DataService {
         FROM durations
         GROUP BY status
         ORDER BY floor(avg(elapsed) + 0.5) DESC, status
-        """
-            .formatted(from);
+        """;
     return jdbc.query(
         sql,
         values,

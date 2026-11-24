@@ -311,28 +311,44 @@ function userIdsOf(event: RecordEvent, userFields: Set<string>): string[] {
 // What happened to this record, newest first, as a timeline.
 export function HistoryPanel({ model, entity }: Props) {
   const record = useRecordContext();
-  const [events, setEvents] = useState<RecordEvent[]>([]);
+  // null while the first load runs; a failed load says so instead of looking like an empty history.
+  const [events, setEvents] = useState<RecordEvent[] | null>(null);
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   const id = record?.id;
   const version = record?.version;
 
   useEffect(() => {
-    if (id !== undefined) listEvents(model, entity.name, id).then(setEvents, () => setEvents([]));
-  }, [model, entity.name, id, version]);
+    if (id === undefined) return;
+    setFailed(false);
+    listEvents(model, entity.name, id).then(setEvents, () => setFailed(true));
+  }, [model, entity.name, id, version, attempt]);
 
   const process = entity.process;
   const actionLabel = (name: string) =>
     EVENT_LABELS[name] ?? ta(process?.actions.find((action) => action.name === name)?.label ?? name);
   const fieldLabel = (name: string) => entity.fields.find((field) => field.name === name)?.label ?? name;
-  const ordered = [...events].reverse();
+  const ordered = [...(events ?? [])].reverse();
   const userFields = new Set(entity.fields.filter((field) => field.type === "user").map((field) => field.name));
-  const personNames = useNames(events.flatMap((event) => userIdsOf(event, userFields)));
+  const personNames = useNames(ordered.flatMap((event) => userIdsOf(event, userFields)));
 
   return (
     <Section title={t("Lịch sử xử lý")}>
-      {ordered.length === 0 && (
-        <Typography variant="body2" color="text.secondary">
-          {t("Chưa có hoạt động nào.")}
-        </Typography>
+      {failed ? (
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+          <Typography variant="body2" color="error">
+            {t("Không tải được lịch sử xử lý.")}
+          </Typography>
+          <Button size="small" onClick={() => setAttempt(attempt + 1)}>
+            {t("Thử lại")}
+          </Button>
+        </Box>
+      ) : (
+        ordered.length === 0 && (
+          <Typography variant="body2" color="text.secondary">
+            {events === null ? t("Đang tải...") : t("Chưa có hoạt động nào.")}
+          </Typography>
+        )
       )}
       <Box sx={{ position: "relative", pl: 3 }}>
         <Box sx={{ position: "absolute", left: 7, top: 6, bottom: 6, width: 2, bgcolor: "divider" }} />
@@ -345,7 +361,9 @@ export function HistoryPanel({ model, entity }: Props) {
                 ? skippedReason(event.detail, fieldLabel)
                 : event.action === "escalated" && event.detail
                   ? escalatedDetail(event.detail, process?.escalations ?? [])
-                  : null);
+                  : event.action === "file_added" || event.action === "file_removed"
+                    ? event.detail
+                    : null);
           const tone = event.to_status ? TONES[event.to_status] : undefined;
           const color = !tone || tone === "default" ? "text.disabled" : `${tone}.main`;
           return (

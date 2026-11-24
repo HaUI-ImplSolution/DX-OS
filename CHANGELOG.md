@@ -29,6 +29,8 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Ở chế độ form, "Viết được gì trong tệp" nằm dưới khung chính và chỉ nêu phần đang sửa; biểu tượng xóa màu đỏ.
 - Nhãn của form theo nghiệp vụ, ở cả tiếng Việt và tiếng Anh: Trường dữ liệu, Vai trò, Quyền truy cập, Mẫu quy trình, Kế thừa quyền từ hồ sơ liên quan, Kết nối gửi sự kiện, Nhóm người dùng (Keycloak).
 - Bảng kế hoạch có nhãn tiếng Việt và tiếng Anh cho định dạng mã, mẫu chuỗi, điều kiện bắt buộc nhập, cách hiển thị và tài liệu in, và cho các quy tắc bắt buộc có điều kiện, số phần tử, giá trị nhỏ nhất, giá trị lớn nhất và mẫu chuỗi ở dòng vi phạm.
+- Form sửa và form tạo chỉ gửi các trường mô hình khai báo cho thực thể, nên `webUrl` và các khóa khác API thêm vào hồ sơ không còn bị gửi lại và làm lưu hồ sơ bị từ chối.
+  Khi máy chủ trả 400 mà không lỗi nào thuộc trường trên form, form hiện nguyên thông báo của máy chủ.
 
 ## [2.1.0] - 2026-11-26
 

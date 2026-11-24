@@ -159,6 +159,7 @@ Kiểm ít nhất các tình huống sau:
 - Đổi tên hoặc bỏ trường trong bản mô hình thử và để kiểm thử hợp đồng chỉ ra chỗ tích hợp phải đổi.
 
 [`examples/itot-simulator`](../examples/itot-simulator/README.md) minh họa dịch vụ ngoài lấy token máy, tạo hồ sơ, thực hiện hành động và chống gửi trùng; nó chỉ cần Python 3.9 trở lên nên chạy được cả trên Windows.
+Với `--transport mqtt` nó publish số đo lên broker của [cầu nối MQTT](./INTEGRATIONS.md#cầu-nối-mqtt-tùy-chọn), như một thiết bị thật.
 Lệnh `setup` của ví dụ tự gọi Keycloak để ví dụ chạy độc lập; bản triển khai thật dùng `dxos client add` để client xuất hiện trong quản trị và danh mục dữ liệu.
 
 ### 5. Đóng gói và nâng cấp

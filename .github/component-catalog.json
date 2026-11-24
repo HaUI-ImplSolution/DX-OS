@@ -8,6 +8,8 @@
     "chrislusf/seaweedfs": {"license": "Apache-2.0", "use": "Object storage for attachments", "source": "https://github.com/seaweedfs/seaweedfs", "upstream": "seaweedfs/seaweedfs"},
     "apache/apisix": {"license": "Apache-2.0", "use": "API gateway", "source": "https://github.com/apache/apisix"},
     "clamav/clamav": {"license": "GPL-2.0-only", "use": "Optional virus scan of uploaded files, a separate service reached over the network", "source": "https://github.com/Cisco-Talos/clamav", "optional": true, "refs": ["clamav-{version}"]},
+    "eclipse-mosquitto": {"license": "EPL-2.0", "use": "Optional MQTT broker of the MQTT bridge, a separate service reached over the network", "source": "https://github.com/eclipse-mosquitto/mosquitto", "optional": true, "text": {"path": "LICENSE.txt", "contains": ["dual licensed under the Eclipse Public License 2.0", "Eclipse Distribution License 1.0"]}},
+    "python": {"license": "Python-2.0", "use": "Runs the optional MQTT bridge, a script of this repository that uses only the standard library", "source": "https://github.com/python/cpython", "optional": true, "text": {"path": "LICENSE", "contains": ["PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2"]}},
     "aquasec/trivy": {"license": "Apache-2.0", "use": "Vulnerability scan in CI", "source": "https://github.com/aquasecurity/trivy", "optional": true, "upstream": "aquasecurity/trivy"},
     "restic/restic": {"license": "BSD-2-Clause", "use": "Encrypted backup of deploy/backup.sh", "source": "https://github.com/restic/restic", "optional": true},
     "duckdb/duckdb": {"license": "MIT", "use": "dxos archive: exports tables to Parquet and reads archives", "source": "https://github.com/duckdb/duckdb", "optional": true},

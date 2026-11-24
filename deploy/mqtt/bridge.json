@@ -1,0 +1,20 @@
+{
+  "routes": [
+    {
+      "topic": "plant/+/reading",
+      "model": "plant",
+      "entity": "incident",
+      "when": {"field": "reading", "op": ">", "value": 80},
+      "skip_if_open": {"field": "device", "value": "{topic.1}"},
+      "key": "{payload.observation}",
+      "record": {
+        "device": "{topic.1}",
+        "metric": "{payload.metric}",
+        "reading": "{payload.reading}",
+        "threshold": 80,
+        "observation": "{payload.observation}",
+        "detail": "{payload.metric} {payload.reading} vượt ngưỡng 80"
+      }
+    }
+  ]
+}

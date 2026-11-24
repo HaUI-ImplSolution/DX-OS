@@ -31,7 +31,7 @@ Keycloak Admin Console là giao diện của dịch vụ nguồn mở đi kèm c
 | Nguyên lý | Hiện có | Mức |
 |---|---|---|
 | (i) Tách theo vòng đời dữ liệu, đẩy lịch sử xuống hồ dữ liệu | Hồ sơ đã đóng tự ghi ra Parquet trong kho đối tượng theo lịch (kho lạnh; PostgreSQL là kho ấm), kèm manifest và hash; `dxos archive query` truy vấn chỉ đọc từng lần chạy bằng DuckDB; phạm vi là kho hồ sơ, ghi ra tệp Parquet không kèm lớp bảng | Đạt |
-| (ii) Hội tụ IT và OT, bản sao số | Số đo của thiết bị giả lập thành hồ sơ sự cố, đi cùng quy trình và quyền với hồ sơ hành chính | Đạt một phần |
+| (ii) Hội tụ IT và OT, bản sao số | Số đo của thiết bị giả lập thành hồ sơ sự cố qua API chung hoặc qua cầu nối MQTT tùy chọn, đi cùng quy trình và quyền với hồ sơ hành chính; lõi không giữ trạng thái thiết bị nên không có bản sao số | Đạt một phần |
 | (iii) Dòng chảy, phả hệ, chất lượng dữ liệu | Mô hình là danh mục dữ liệu, tab Danh mục dữ liệu kèm phả hệ từng trường, lịch sử nối chuỗi hash | Đạt |
 | (iv) Zero-Trust, GitOps, kiểm dịch mã độc, tự phục hồi | Token kiểm ở cổng và ở lõi; trợ lý chạy trên network nội bộ, chỉ ra được tới endpoint inference qua một proxy; mô hình áp dụng theo kế hoạch, phần lệch được sửa khi áp dụng lại; container bị xóa được chạy lại; hạ tầng và mô hình kéo từ git bằng `dxos gitops`; quét mã độc bật mặc định, và nhóm chế độ lõi của CI kiểm tệp EICAR bị chặn; phạm vi là một máy chạy Compose, GitOps và tự phục hồi chạy trên Compose | Đạt |
 

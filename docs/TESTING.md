@@ -199,7 +199,10 @@ Mỗi mục nêu điều phải thấy; lệnh và biến cấu hình chi tiết
 
 21. **Soạn và áp dụng:** sơ đồ quy trình vẽ lại sau 5 giây không gõ theo `deadline`, `auto_close` và `after`; tệp sai báo lỗi kèm dòng và cột và giữ sơ đồ đúng gần nhất; sơ đồ mở to thành hộp thoại.
     Vai `ADMIN` khai báo trong tệp báo lỗi tiếng Việt kèm dòng và cột và không có nút Áp dụng; vai trùng tên với mô hình khác thì áp dụng được.
-22. **Chế độ Điền form:** cây bên trái gồm Thông tin chung, Vai trò, Đơn vị và từng thực thể với Thông tin chung, Trường dữ liệu, Quyền truy cập, Quy trình (Tổng quan, Trạng thái, Hành động, Thời hạn, Tự động hóa) và Trợ lý nghiệp vụ; đường dẫn phía trên nêu chỗ đang sửa.
+22. **Chế độ Điền form:** cây bên trái gồm Thông tin chung, Vai trò, Đơn vị và từng thực thể với Thông tin chung, Trường dữ liệu, Quyền truy cập, Quy trình (Tổng quan, Trạng thái, Hành động, Thời hạn, Tự động hóa), Giao diện, Mẫu in và Trợ lý nghiệp vụ; đường dẫn phía trên nêu chỗ đang sửa.
+    Trang Giao diện sửa biểu tượng, nhóm và thứ tự menu, cột và cách sắp xếp của danh sách, nhóm trường trên form và gợi ý của trường; ô chọn trường của một nhóm chỉ còn trường chưa nằm trong nhóm khác, và nhóm chưa có trường thì báo đỏ.
+    Trang Mẫu in sửa tên mẫu, nhãn, tên tệp, tiêu đề, trạng thái được in và các khối nội dung, đổi thứ tự được; dòng ký nhận tối đa bốn tiêu đề, và thêm mẫu thứ 11 bị chặn.
+    Một khối để trống làm Core từ chối tệp, và lỗi hiện ở đúng trang Giao diện hoặc Mẫu in.
     Chuyển sang Soạn YAML rồi quay lại thì form vẫn ở chỗ cũ; vai trò, trường và thực thể chọn từ danh sách đã khai báo.
     Trường dữ liệu là bảng, có ô tìm khi hơn 5 trường; bấm một dòng mở phần sửa của trường đó, chỉ với các thuộc tính hợp kiểu.
     Mục Vai trò có ma trận vai trò × thực thể; ô báo đỏ khi vai trò xử lý quy trình mà không xem được hồ sơ.

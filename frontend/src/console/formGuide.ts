@@ -12,7 +12,7 @@ export interface Guide {
   creates: string[];
 }
 
-export type Section = "general" | "roles" | "units" | "entities" | "fields" | "access" | "process";
+export type Section = "general" | "roles" | "units" | "entities" | "fields" | "access" | "process" | "ui" | "documents";
 
 export const GUIDE: Record<Section, Guide> = {
   general: {
@@ -100,6 +100,33 @@ export const GUIDE: Record<Section, Guide> = {
       t("Mẫu Chiếm dụng theo thời gian kèm khối đặt chỗ tạo ra nghiệp vụ đặt phòng, mượn thiết bị."),
       t("Bỏ quy trình thì thực thể chỉ là danh mục để nhập và xem."),
     ],
+  },
+  ui: {
+    summary: t("Giao diện chọn cách thực thể hiện trên màn hình: biểu tượng, chỗ trong menu, cột của danh sách, nhóm trường trên form và dòng gợi ý."),
+    accepts: [
+      t("Biểu tượng chọn trong danh sách có sẵn; nhóm menu dài tối đa 40 ký tự và thứ tự là số từ 0 đến 9999."),
+      t("Cột của danh sách là trường của thực thể, hoặc ngày tạo và ngày sửa; thực thể có quy trình thêm trạng thái và người xử lý."),
+      t("Nhãn nhóm trường dài 1 đến 60 ký tự, mỗi trường nằm trong một nhóm; trường mã do hệ thống cấp không có ô nhập; gợi ý dài 1 đến 200 ký tự."),
+    ],
+    extends: [
+      t("Không khai gì thì giao diện dựng theo thứ tự các trường."),
+      t("Trường không nằm trong nhóm nào xếp vào nhóm cuối."),
+      t("Đổi giao diện không đụng dữ liệu hay quyền và áp dụng được cả khi còn hồ sơ đang xử lý."),
+    ],
+    creates: [t("Gom các thực thể vào một nhóm của menu và đặt thứ tự; chia form dài thành các nhóm có nhãn.")],
+  },
+  documents: {
+    summary: t("Mẫu in biến một hồ sơ thành một tệp PDF."),
+    accepts: [
+      t("Mỗi thực thể có tối đa 10 mẫu; tên mẫu gồm chữ thường, số và dấu gạch dưới, bắt đầu bằng chữ."),
+      t("Nội dung là danh sách khối: tiêu đề, văn bản, bảng trường hoặc dòng ký; tối đa 60 khối, mỗi văn bản tối đa 2000 ký tự."),
+      t("Chỗ trống {{tên}} lấy giá trị của một trường, hoặc id, created_at, updated_at; thực thể có quy trình thêm status và decided_at."),
+    ],
+    extends: [
+      t("Chọn các trạng thái mà hồ sơ phải đang ở thì mới in được; bỏ trống thì in ở mọi trạng thái."),
+      t("Dòng ký có từ một đến bốn tiêu đề đặt cạnh nhau trên một khoảng trống để ký."),
+    ],
+    creates: [t("Thêm mẫu cho bất cứ giấy tờ nào nghiệp vụ cần, như giấy xác nhận hay biên bản; mẫu chỉ đọc hồ sơ đang in, không có điều kiện hay vòng lặp.")],
   },
 };
 
@@ -198,6 +225,29 @@ export const SCHEMA_HELP: Record<string, string> = {
   "entities.process.allow_self_decision": t("true nếu người tạo hồ sơ được tự xử lý hồ sơ của mình."),
   "entities.process.deadline": t("Thời gian vai xử lý có để xử lý, quá hạn thì bị đánh dấu. Số kèm m (phút), h (giờ) hoặc d (ngày), ví dụ 90m, 72h, 3d. Khi quy trình có calendar, m và h đếm giờ làm còn d là số ngày làm."),
   "entities.process.calendar": t("Tên một lịch đã khai ở calendars. Hạn xử lý chỉ đếm trong giờ làm của lịch và bỏ qua ngày nghỉ; không khai thì đếm liên tục. Đổi khi còn hồ sơ đang xử lý bị từ chối."),
+  "entities.ui": t("Cách thực thể hiện trên màn hình: icon, menu, list, form và hints. Không khai thì giao diện dựng theo thứ tự các trường. Chỉ chọn trong những gì giao diện đã có, không đổi quyền."),
+  "entities.ui.icon": t("Biểu tượng của thực thể trong menu, chọn trong danh sách có sẵn."),
+  "entities.ui.menu": t("Chỗ của thực thể trong menu: group gom thực thể thành một nhóm, order là thứ tự."),
+  "entities.ui.menu.group": t("Tên nhóm menu, dài 1 đến 40 ký tự."),
+  "entities.ui.menu.order": t("Thứ tự trong menu, số nguyên từ 0 đến 9999."),
+  "entities.ui.list": t("Danh sách hồ sơ: columns là các cột, sort là cột sắp xếp."),
+  "entities.ui.list.columns": t("Các cột của danh sách, không trùng nhau: trường của thực thể, hoặc created_at, updated_at; thực thể có quy trình thêm status và assignee."),
+  "entities.ui.list.sort": t("Tên một cột, thêm dấu - ở đầu để sắp giảm dần. Không khai thì danh sách mở theo -id, hoặc -updated_at khi thực thể có quy trình."),
+  "entities.ui.form": t("Form nhập hồ sơ: groups chia form thành nhóm có nhãn."),
+  "entities.ui.form.groups": t("Các nhóm trường của form, theo thứ tự. Trường không nằm trong nhóm nào xếp vào nhóm cuối."),
+  "entities.ui.form.groups.label": t("Nhãn của nhóm, dài 1 đến 60 ký tự."),
+  "entities.ui.form.groups.fields": t("Các trường của nhóm; mỗi trường chỉ nằm trong một nhóm, và trường mã do hệ thống cấp không có ô nhập."),
+  "entities.ui.hints": t("Dòng gợi ý dưới ô nhập của một trường: khóa là tên trường, giá trị là câu gợi ý dài 1 đến 200 ký tự."),
+  "entities.documents": t("Các mẫu in của thực thể, tối đa 10; khóa là tên mẫu. Mỗi mẫu biến một hồ sơ thành một tệp PDF."),
+  "entities.documents.label": t("Tên mẫu ở màn hình hồ sơ; không có chỗ trống {{tên}}."),
+  "entities.documents.file": t("Tên tệp tải về, không kèm .pdf, tối đa 80 ký tự; có thể dùng chỗ trống {{tên}}."),
+  "entities.documents.when": t("Một trạng thái hoặc danh sách trạng thái của quy trình mà hồ sơ phải đang ở thì mới in được; bỏ đi thì in ở mọi trạng thái."),
+  "entities.documents.title": t("Dòng tiêu đề ở giữa đầu trang đầu; có thể dùng chỗ trống {{tên}}."),
+  "entities.documents.body": t("Nội dung của mẫu: danh sách từ một đến 60 khối, mỗi khối có đúng một khóa trong heading, text, fields, signatures."),
+  "entities.documents.body.heading": t("Dòng tiêu đề đậm."),
+  "entities.documents.body.text": t("Văn bản; mỗi dòng xuống dòng là một dòng của trang, dòng trống là một khoảng cách. Tối đa 2000 ký tự."),
+  "entities.documents.body.fields": t("Bảng nhãn và giá trị cho từng trường được kể tên; giá trị rỗng in —."),
+  "entities.documents.body.signatures": t("Từ một đến bốn tiêu đề ký, đặt cạnh nhau trên một khoảng trống để ký."),
   calendars: t("Lịch làm việc, mỗi lịch một tên viết thường (chữ, số, gạch dưới). Quy trình gắn lịch bằng calendar."),
   "calendars.days": t("Các ngày làm trong tuần: mon, tue, wed, thu, fri, sat, sun. Cần ít nhất một ngày."),
   "calendars.hours": t("Giờ làm trong một ngày làm: danh sách khoảng HH:MM-HH:MM, ví dụ ['08:00-12:00', '13:30-17:30'] để có nghỉ trưa. Các khoảng không chồng nhau."),

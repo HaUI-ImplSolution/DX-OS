@@ -6,7 +6,7 @@ import { asList, rec, text, type Rec } from "./formParts";
 import { translateBackend } from "../shell/backendMessages";
 import { t } from "../shell/t";
 
-export type EntityPart = "general" | "fields" | "access" | "process" | "ai";
+export type EntityPart = "general" | "fields" | "access" | "process" | "ui" | "documents" | "ai";
 export type ProcessPart = "overview" | "states" | "actions" | "deadline" | "automation";
 
 // A place of the model builder: a part of the model, or a part of one entity.
@@ -28,6 +28,8 @@ export function targetOf(path: string[]): NavTarget {
   if (part === "fields") return { kind: "entity", entity, part: "fields" };
   if (part === "access") return { kind: "entity", entity, part: "access" };
   if (part === "ai") return { kind: "entity", entity, part: "ai" };
+  if (part === "ui") return { kind: "entity", entity, part: "ui" };
+  if (part === "documents") return { kind: "entity", entity, part: "documents" };
   if (part === "process") return { kind: "entity", entity, part: "process", step: STEP_OF[key ?? ""] ?? "overview" };
   return { kind: "entity", entity, part: "general" };
 }

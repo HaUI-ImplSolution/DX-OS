@@ -27,6 +27,7 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import AccessMatrix, { ScopeLegend } from "./AccessMatrix";
 import type { Diagrams } from "./diagramState";
+import DocumentsEditor from "./DocumentsEditor";
 import FieldsEditor from "./FieldsEditor";
 import { FIELD_TYPE_LABEL, SCOPE_LABEL } from "./formGuide";
 import {
@@ -53,6 +54,8 @@ import { entityUses, renameRoleIn, roleUses } from "./modelRefs";
 import { localIssues, navKey, targetOfKey, type Issue, type NavTarget } from "./navModel";
 import ModelNav, { ENTITY_PART_LABEL, PROCESS_PART_LABEL } from "./ModelNav";
 import ProcessEditor from "./ProcessEditor";
+import { processRows } from "./processModel";
+import UiEditor from "./UiEditor";
 import { FAMILY_LABEL } from "./labels";
 import { useFamilies } from "./useFamilies";
 import { t } from "../shell/t";
@@ -141,6 +144,7 @@ export default function ModelForm({ schema, value, onChange, nav, onNav, diagram
 
   const fieldTypes = allowed(schema, ["properties", "entities", "additionalProperties", "properties", "fields", "additionalProperties", "properties", "type"], Object.keys(FIELD_TYPE_LABEL));
   const scopes = allowed(schema, ["properties", "entities", "additionalProperties", "properties", "access", "additionalProperties"], Object.keys(SCOPE_LABEL));
+  const icons = allowed(schema, ["properties", "entities", "additionalProperties", "properties", "ui", "properties", "icon"], []);
   const familyOptions = allowed(schema, ["properties", "entities", "additionalProperties", "properties", "process", "properties", "family"], families.map((item) => item.name));
 
   const issues = useMemo(() => [...problems, ...localIssues(value)], [problems, value]);
@@ -498,6 +502,12 @@ export default function ModelForm({ schema, value, onChange, nav, onNav, diagram
       );
     }
     if (target.part === "access") return accessOfEntity();
+    if (target.part === "ui") return <UiEditor key={entityKey} entity={entity} icons={icons} setEntity={(changes) => setEntity(entityKey, changes)} />;
+    if (target.part === "documents") {
+      const family = families.find((item) => item.name === text(rec(entity.process).family));
+      const states = entity.process === undefined ? [] : processRows(rec(entity.process), family).live;
+      return <DocumentsEditor key={entityKey} entity={entity} states={states} setEntity={(changes) => setEntity(entityKey, changes)} />;
+    }
     if (target.part === "ai") return <AiTaskFields key={entityKey} value={entity.ai} fields={fields} onChange={(ai) => setEntity(entityKey, { ai })} />;
     return (
       <ProcessEditor
@@ -561,6 +571,7 @@ export default function ModelForm({ schema, value, onChange, nav, onNav, diagram
             key,
             label: text(rec(entities[key]).label) || key,
             fields: Object.keys(rec(rec(entities[key]).fields)).length,
+            documents: Object.keys(rec(rec(entities[key]).documents)).length,
             process: rec(entities[key]).process !== undefined,
           }))}
           counts={{ roles: roles.length, units: units.length }}

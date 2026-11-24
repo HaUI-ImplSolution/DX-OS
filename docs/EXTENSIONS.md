@@ -133,6 +133,7 @@ Invoke-RestMethod -Headers @{ Authorization = "Bearer $token" } `
 Khi tạo hồ sơ hoặc gọi hành động, sinh một khóa ổn định cho chính yêu cầu nghiệp vụ và gửi ở header `Idempotency-Key`.
 Gửi lại cùng khóa và cùng nội dung nhận lại kết quả đầu; dùng cùng khóa cho nội dung khác trả `409`.
 Khi sửa hồ sơ, gửi `version` đã đọc và xử lý `ERR_CONCURRENT_MODIFICATION` thay vì ghi đè.
+Có sẵn một tệp CSV cần nạp thì dùng `dxos import` ([`OPERATIONS.md`](./OPERATIONS.md#nhập-hồ-sơ-từ-tệp-csv)) thay vì tự viết script.
 
 Không ghi trực tiếp PostgreSQL và không đổi cột `status` qua API dữ liệu.
 Mọi chuyển trạng thái đi qua `/actions/{action}` để các quy tắc, Flowable, lịch sử và sự kiện cùng được áp dụng.

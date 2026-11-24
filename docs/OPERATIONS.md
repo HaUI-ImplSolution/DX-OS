@@ -151,6 +151,7 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 | `dxos project list`, `dxos project add <tên> [--label NHÃN] [--description MÔ_TẢ]`, `dxos project remove <tên>`, `dxos model project <mô hình> <dự án\|->`, `dxos client project <tên> <dự án\|->` | Gom mô hình và ứng dụng ngoài theo dự án để lọc và xem phạm vi ảnh hưởng (xem phần Dự án ở trên) |
 | `dxos project member list <dự án>`, `dxos project member add <dự án> <tên đăng nhập> [--admin]`, `dxos project member remove <dự án> <tên đăng nhập>` | Thành viên và quản trị viên của một dự án, để quản trị người dùng theo dự án |
 | `dxos client browser add <tên> --redirect-uri URL [...]`, `dxos client browser list`, `dxos client browser remove <tên>` | Đăng ký và quản lý public OIDC client dùng PKCE cho giao diện trình duyệt ở origin khác |
+| `dxos import <mô hình> <thực thể> <tệp.csv> --client TÊN [--dry-run] [--secret-file TỆP] [--offset +HH:MM]` | Tạo mỗi dòng của tệp CSV thành một hồ sơ qua API dữ liệu, bằng ứng dụng ngoài đã đăng ký (xem dưới) |
 | `dxos uninstall [--purge]` | Xóa container và lệnh `dxos`; `--purge` xóa cả dữ liệu và thư mục cài, phải gõ xác nhận |
 
 Cầu nối MQTT là thành phần tùy chọn nằm ngoài stack mặc định; cách bật, cấu hình tuyến và giới hạn ở [`INTEGRATIONS.md`](./INTEGRATIONS.md#cầu-nối-mqtt-tùy-chọn).
@@ -359,6 +360,32 @@ Mỗi lượt có thay đổi ghi một dòng vào `deploy/reconcile.log`; lư�
 `dxos reconcile install` cài `dxos-reconcile.timer` (systemd user timer) chạy lệnh trên mỗi phút, `dxos reconcile uninstall` gỡ.
 Máy không có systemd thì chạy `dxos reconcile` từ cron mỗi phút.
 Timer của user chỉ chạy khi user còn phiên đăng nhập, trừ khi bật `loginctl enable-linger <user>`.
+
+### Nhập hồ sơ từ tệp CSV
+
+`dxos import <mô hình> <thực thể> <tệp.csv> --client TÊN` tạo mỗi dòng của tệp thành một hồ sơ qua API dữ liệu chung, bằng một ứng dụng ngoài đã đăng ký (`dxos client add`).
+Quyền là quyền của vai gắn với ứng dụng đó, nên mỗi dòng đi qua đúng quyền, ràng buộc, quy tắc và quy trình như hồ sơ tạo tay; lõi không có đường ghi riêng cho việc nhập.
+Bí mật của ứng dụng lấy từ `--secret-file`, biến `DXOS_CLIENT_SECRET` hoặc hỏi nhập, giống `dxos client test`.
+Lệnh cần Python 3.9 trở lên và dừng trước khi tạo gì nếu vai của ứng dụng không có quyền ghi.
+
+Tệp CSV:
+
+- Dòng đầu là tiêu đề cột, viết bằng tên trường hoặc nhãn trường.
+  Cột lạ, cột của trường tệp hoặc trường mã, hay thiếu cột của một trường bắt buộc thì lệnh dừng trước khi tạo gì.
+- Dấu phân cách là `,`, `;` hoặc tab, nhận theo dòng đầu; mã hóa UTF-8, có hoặc không có dấu BOM của Excel.
+  Dòng trống bị bỏ qua, ô trống là không có giá trị, tối đa 10.000 dòng mỗi tệp.
+- Số đọc được cả dấu chấm và dấu phẩy thập phân (`12.500.000,5` và `1,5`).
+  Ngày viết `YYYY-MM-DD` hoặc `DD/MM/YYYY`; ngày giờ viết `YYYY-MM-DD HH:MM`, `DD/MM/YYYY HH:MM` hoặc ISO-8601, và ngày giờ không có múi giờ lấy `--offset` (mặc định `+07:00`).
+  Đúng/sai viết `true`, `false`, `1`, `0`, `có` hoặc `không`; nhiều lựa chọn ngăn bằng `|`; trường tham chiếu là id của hồ sơ.
+
+Kết quả:
+
+- Lệnh in mỗi dòng bị từ chối kèm số dòng và lý do (tối đa 50 dòng), rồi số dòng tạo mới, đã nhập trước đó và bị từ chối; các dòng khác vẫn chạy.
+  Mã thoát là 0 khi mọi dòng đạt, và 1 khi có dòng bị từ chối hoặc tệp sai.
+- `--dry-run` kiểm cột, kiểu giá trị, trường bắt buộc và lựa chọn mà không tạo gì; mẫu chuỗi, giới hạn giá trị, giá trị duy nhất và quy tắc quy trình do lõi kiểm khi nhập thật.
+- Mỗi dòng gửi `Idempotency-Key` sinh từ nội dung dòng, nên gửi lại cùng tệp không tạo trùng trong 24 giờ khóa còn được giữ, và sửa một dòng bị từ chối rồi gửi lại chỉ tạo dòng đó.
+  Hai dòng giống hệt nhau trong tệp vẫn tạo hai hồ sơ, và gửi lại tệp sau 24 giờ tạo trùng.
+- Gặp giới hạn tốc độ (429) lệnh chờ rồi gửi tiếp; ba lần liên tiếp bị từ chối quyền thì dừng.
 
 ### Lưu trữ hồ sơ đã đóng
 

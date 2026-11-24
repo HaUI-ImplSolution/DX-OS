@@ -22,6 +22,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Giao diện
 
+- Thông báo lỗi của trợ lý nghiệp vụ hiện bằng tiếng Anh khi giao diện ở tiếng Anh.
 - Danh sách hồ sơ có ô "Tìm theo chữ" ở đầu bộ lọc; nó thay ô lọc riêng của trường mã, vì mã cũng được tìm.
 - Trang Thống kê có thẻ "Thời gian trung bình ở từng trạng thái", đánh dấu trạng thái giữ hồ sơ lâu nhất; bấm một dòng mở danh sách hồ sơ ở trạng thái đó.
 - Duyệt, từ chối, yêu cầu bổ sung, chuyển tiếp, rút lại, nhận việc, giao việc và thao tác hàng loạt gửi kèm phiên bản của hồ sơ và của mô hình mà màn hình đã đọc, nên không ai quyết định trên nội dung đã đổi mà họ chưa thấy.

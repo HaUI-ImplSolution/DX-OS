@@ -76,6 +76,7 @@ Ten templates are ready to pick in the control panel: student one-stop service, 
 | | **Open to outside applications:** each model has its own API document that follows the model; an outside service gets one model role and its own secret, while a browser interface on another domain signs users in with OIDC Authorization Code and PKCE. |
 | | **A control panel for the person deploying:** template library, model editor (write the file or fill a form, with guidance on what can be written and extended) with a process diagram drawn from the file being written, plan preview, apply, history, user management and record statistics. |
 | | **Import records from a spreadsheet:** one command turns the rows of a CSV file into records; each row passes the same permissions, rules and workflow as a record typed by hand, a wrong row is reported with its reason, and sending the same file again creates no duplicates.
+| | **Device readings over MQTT (optional):** a broker and a small bridge turn device messages into records through the permissions and workflow of the core; a message sent twice makes one record, and while the core is down the messages wait.
 | | **Grouping by project:** when several integrations share one installation, models and outside applications are grouped by project to filter them and see whom a change reaches; a project is only a name for administration, it grants no access and keeps no data apart. |
 | | **Administration by project:** each project has a list of members and administrators; the administrators of a project give the roles of its models to its members without administering the whole system. This divides the administration, it does not keep the data of separate organizations apart. |
 | | **Printed documents from a record:** the model file declares a template for a certificate, slip or report; a record becomes a PDF with Vietnamese text for whoever may see that record, only in the states the template allows. |
@@ -243,7 +244,7 @@ The brief also names four technical principles; the steps to show each one are i
 | Principle | What DX-OS does | State |
 |---|---|---|
 | Split data by lifecycle | Records being handled live in the transactional database; closed records are written to an archive on a schedule, with a check and a query | Done |
-| Converge administrative and operational data | A device reading becomes an incident record that follows the same workflow and permissions as an administrative record; the core keeps no device state | Partly |
+| Converge administrative and operational data | A device reading, through the API or through the optional MQTT bridge, becomes an incident record that follows the same workflow and permissions as an administrative record; the core keeps no device state | Partly |
 | Data governance, lineage, quality | A data catalog shows where data lives, where each field comes from and goes to, and how complete and fresh it is; the record history resists tampering | Done |
 | Zero trust and automated operations | Tokens are checked at the gateway and at the core; uploads are scanned for malware; infrastructure and models are pulled from git; a deleted container is recreated | Done |
 

@@ -10,12 +10,15 @@ The simulator lives outside the core: it only signs in with its own service acco
           model and keeps the secret in the state file (needs the Keycloak admin of the .env)
   run     reads the devices every few seconds; a reading over the threshold opens one incident per
           observation, and a resolved incident is confirmed when the reading is back to normal or
-          reopened when it is not
-  replay  sends the last observation again, which the core refuses as a duplicate
+          reopened when it is not; with --transport mqtt every reading is published to the broker
+          of the MQTT bridge (docs/INTEGRATIONS.md), which opens the incidents
+  replay  sends the last observation again, which the core refuses as a duplicate; with
+          --transport mqtt it publishes the last message again, which the bridge turns into no new record
 
 Settings by environment: DXOS_BASE_URL (default http://localhost:9080), DXOS_ENV_FILE (default
 deploy/.env of this repository, read by setup only), DXOS_ITOT_STATE (default
-~/.local/state/dxos-itot-<model>.json).
+~/.local/state/dxos-itot-<model>.json); for MQTT, DXOS_MQTT_USER and DXOS_MQTT_PASSWORD (default the
+MQTT_USER and MQTT_PASSWORD of deploy/mqtt.env, or DXOS_MQTT_ENV).
 """
 import argparse
 import json
@@ -81,8 +84,8 @@ def save_state(model, state):
 
 # --- setup ------------------------------------------------------------------------------------
 
-def read_env():
-    path = os.environ.get("DXOS_ENV_FILE", os.path.join(REPO, "deploy", ".env"))
+def read_env(path=None):
+    path = path or os.environ.get("DXOS_ENV_FILE", os.path.join(REPO, "deploy", ".env"))
     with open(path) as handle:
         return dict(line.split("=", 1) for line in handle.read().splitlines()
                     if "=" in line and not line.startswith("#"))
@@ -196,8 +199,46 @@ def follow_up(api, device, reading, threshold):
             print(f"{device}: reading {reading:.1f} still high, record #{incident['id']} reopened")
 
 
+def mqtt_client(args):
+    sys.path.insert(0, os.path.join(REPO, "deploy", "mqtt"))
+    from minimqtt import Client, MqttError
+    user, password = os.environ.get("DXOS_MQTT_USER"), os.environ.get("DXOS_MQTT_PASSWORD")
+    if user is None or password is None:
+        path = os.environ.get("DXOS_MQTT_ENV", os.path.join(REPO, "deploy", "mqtt.env"))
+        try:
+            env = read_env(path)
+        except OSError:
+            sys.exit(f"No MQTT credentials: set DXOS_MQTT_USER and DXOS_MQTT_PASSWORD, or create {path}")
+        user, password = user or env.get("MQTT_USER", "dxos-mqtt"), password or env.get("MQTT_PASSWORD")
+    client = Client(args.mqtt_host, args.mqtt_port, f"dxos-itot-simulator-{os.getpid()}", user, password, clean=True)
+    try:
+        client.connect()
+    except (MqttError, OSError) as error:
+        sys.exit(f"Cannot connect to the MQTT broker at {args.mqtt_host}:{args.mqtt_port}: {error}")
+    return client
+
+
+def publish(client, topic, message):
+    from minimqtt import MqttError
+    try:
+        client.publish(topic, json.dumps(message, ensure_ascii=False))
+    except (MqttError, OSError) as error:
+        sys.exit(f"Publishing to {topic} failed: {error}")
+
+
+def send_reading(args, client, api, device, reading):
+    message = {"metric": args.metric, "reading": round(reading, 1),
+               "observation": f"{device}-{int(time.time() * 1000)}"}
+    topic = f"{args.topic_prefix}/{device}/reading"
+    publish(client, topic, message)
+    api.state["last_message"] = {"topic": topic, "message": message}
+    save_state(api.model, api.state)
+    print(f"{device}: {args.metric} {reading:.1f} published to {topic}")
+
+
 def run(args):
     api = Api(args.model, load_state(args.model))
+    client = mqtt_client(args) if args.transport == "mqtt" else None
     devices = {f"{args.prefix}-{n + 1:02d}": args.base for n in range(args.devices)}
     tick = 0
     while args.ticks == 0 or tick < args.ticks:
@@ -208,13 +249,23 @@ def run(args):
             reading = max(args.base - 20, min(reading, args.threshold + 40))
             devices[device] = reading if reading <= args.threshold else (args.base + reading) / 2
             follow_up(api, device, reading, args.threshold)
-            if reading > args.threshold and not api.records(device=device, **{"status.in": OPEN}):
+            if client:
+                send_reading(args, client, api, device, reading)
+            elif reading > args.threshold and not api.records(device=device, **{"status.in": OPEN}):
                 observe(api, device, reading, args.threshold, args.metric)
         time.sleep(args.interval)
 
 
 def replay(args):
     api = Api(args.model, load_state(args.model))
+    if args.transport == "mqtt":
+        last = api.state.get("last_message")
+        if not last:
+            sys.exit("No message published yet; run 'run --transport mqtt' first")
+        publish(mqtt_client(args), last["topic"], last["message"])
+        print(f"observation {last['message']['observation']} published again to {last['topic']}; "
+              "the bridge log shows that it made no new record")
+        return
     observation = api.state.get("last_observation")
     if not observation:
         sys.exit("No observation sent yet; run 'run' first")
@@ -222,6 +273,14 @@ def replay(args):
     print(f"observation {observation['observation']} sent again: {outcome}"
           + (f" as record #{record}" if record else ""))
     sys.exit(0 if outcome == "duplicate" else 1)
+
+
+def transport(parser):
+    parser.add_argument("--transport", choices=["http", "mqtt"], default="http",
+                        help="http calls the API; mqtt publishes to the broker of the MQTT bridge")
+    parser.add_argument("--mqtt-host", default="localhost")
+    parser.add_argument("--mqtt-port", type=int, default=1883)
+    parser.add_argument("--topic-prefix", default="plant", help="topic of a reading: <prefix>/<device>/reading")
 
 
 def main():
@@ -241,8 +300,10 @@ def main():
     one.add_argument("--spike", type=float, default=0.15, help="chance of a spike per reading")
     one.add_argument("--interval", type=float, default=5.0, help="seconds between two readings")
     one.add_argument("--ticks", type=int, default=0, help="readings per device, 0 runs until stopped")
+    transport(one)
     one.set_defaults(handler=run)
     one = commands.add_parser("replay", help="send the last observation again")
+    transport(one)
     one.set_defaults(handler=replay)
     args = parser.parse_args()
     args.handler(args)

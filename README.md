@@ -76,6 +76,7 @@ Mười mẫu có sẵn, chọn được ngay ở bảng điều khiển: một 
 | | **Mở cho ứng dụng bên ngoài:** mỗi mô hình có tài liệu API riêng, tự đổi theo mô hình; dịch vụ ngoài đăng ký với đúng một vai và mã bí mật riêng, còn giao diện ở tên miền khác đăng nhập người dùng bằng OIDC Authorization Code với PKCE. |
 | | **Bảng điều khiển cho người triển khai:** thư viện mẫu, trình soạn mô hình (viết tệp hoặc điền form, có hướng dẫn nói rõ viết được và mở rộng được gì) kèm sơ đồ quy trình vẽ theo tệp đang soạn, xem kế hoạch, áp dụng, lịch sử, quản lý người dùng và thống kê hồ sơ. |
 | | **Nhập hồ sơ từ bảng tính:** một lệnh đưa các dòng của tệp CSV vào thành hồ sơ; mỗi dòng đi qua đủ quyền, quy tắc và quy trình như hồ sơ nhập tay, dòng sai được báo kèm lý do, và gửi lại cùng tệp không tạo hồ sơ trùng.
+| | **Nhận số đo thiết bị qua MQTT (tùy chọn):** thêm một broker và một cầu nối nhỏ, bản tin của thiết bị thành hồ sơ qua đúng quyền và quy trình của lõi; bản tin gửi hai lần chỉ tạo một hồ sơ, và lõi ngừng thì bản tin được giữ lại.
 | | **Gom theo dự án:** nhiều hệ thống tích hợp dùng chung một bản cài thì mô hình và ứng dụng ngoài được gom theo dự án để lọc và xem một thay đổi chạm tới ai; dự án chỉ là tên gọi để quản trị, không cấp quyền và không tách dữ liệu. |
 | | **Quản trị theo dự án:** mỗi dự án có danh sách thành viên và quản trị viên; quản trị viên của dự án tự gán vai của các mô hình trong dự án cho thành viên của mình mà không cần quyền quản trị cả hệ thống. Đây là phân chia việc quản trị, không phải tách dữ liệu giữa các tổ chức. |
 | | **In giấy tờ từ hồ sơ:** tệp mô hình khai báo mẫu giấy xác nhận, phiếu hay biên bản; hồ sơ thành tệp PDF tiếng Việt cho đúng người được xem hồ sơ đó, chỉ in được ở những trạng thái mẫu cho phép. |
@@ -242,7 +243,7 @@ DX-OS ở Tầng 1 là lõi không giao diện, ở Tầng 2 là giao diện web
 | Nguyên lý | DX-OS làm gì | Trạng thái |
 |---|---|---|
 | Tách theo vòng đời dữ liệu | Hồ sơ đang xử lý nằm ở cơ sở dữ liệu giao dịch; hồ sơ đã đóng được ghi sang kho lưu trữ theo lịch, kèm bản kiểm lại và truy vấn được | Có |
-| Hội tụ dữ liệu hành chính và dữ liệu vận hành | Số đo của thiết bị thành hồ sơ sự cố, đi cùng quy trình và quyền như hồ sơ hành chính; lõi không giữ trạng thái thiết bị | Một phần |
+| Hội tụ dữ liệu hành chính và dữ liệu vận hành | Số đo của thiết bị, qua API hoặc qua cầu nối MQTT tùy chọn, thành hồ sơ sự cố đi cùng quy trình và quyền như hồ sơ hành chính; lõi không giữ trạng thái thiết bị | Một phần |
 | Quản trị dữ liệu, phả hệ, chất lượng | Danh mục dữ liệu cho biết dữ liệu nằm ở đâu, đi từ đâu tới đâu đến từng trường, đầy đủ và còn mới đến đâu; lịch sử hồ sơ chống sửa | Có |
 | Không tin mặc định, tự động hóa vận hành | Token kiểm ở cổng và ở lõi; tệp tải lên được quét mã độc; hạ tầng và mô hình kéo từ git; container bị xóa được tự dựng lại | Có |
 

@@ -35,6 +35,31 @@ Lệnh `setup` dưới đây gọi thẳng Keycloak để ví dụ tự chạy; 
 
    Lệnh in `duplicate` và thoát với mã 0 khi lõi từ chối.
 
+## Qua MQTT
+
+Với `--transport mqtt`, simulator publish mọi số đo lên broker của [cầu nối MQTT](../../docs/INTEGRATIONS.md#cầu-nối-mqtt-tùy-chọn) như một thiết bị thật, và cầu nối mới là bên tạo sự cố.
+
+1. Bật cầu nối theo [`docs/INTEGRATIONS.md`](../../docs/INTEGRATIONS.md#cầu-nối-mqtt-tùy-chọn): đặt `deploy/mqtt.env`, đăng ký client `itot-mqtt` vai `SENSOR`, đặt `COMPOSE_FILE` rồi `dxos start`.
+2. Chạy `python3 examples/itot-simulator/simulator.py setup` như ở trên: simulator vẫn dùng tài khoản này để xác nhận hoặc mở lại sự cố đã xử lý.
+3. Chạy simulator qua MQTT:
+
+   ```
+   python3 examples/itot-simulator/simulator.py run --transport mqtt --devices 3 --interval 5
+   ```
+
+   Mỗi số đo đi tới chủ đề `plant/<thiết bị>/reading` kèm `metric`, `reading` và mã quan sát `observation`.
+   Tuyến mặc định của cầu nối (`deploy/mqtt/bridge.json`) chỉ tạo sự cố khi `reading` vượt 80 và thiết bị chưa có sự cố đang mở; đổi `--threshold` thì đổi ngưỡng trong tuyến cho khớp.
+4. Gửi lại bản tin cuối:
+
+   ```
+   python3 examples/itot-simulator/simulator.py replay --transport mqtt
+   ```
+
+   Lệnh publish lại đúng bản tin và thoát với mã 0; log của cầu nối (`docker compose logs mqtt-bridge`) cho thấy bản tin không tạo hồ sơ mới.
+
+Broker mặc định ở `localhost:1883` (`--mqtt-host`, `--mqtt-port`); tài khoản lấy từ `DXOS_MQTT_USER` và `DXOS_MQTT_PASSWORD`, hoặc từ `MQTT_USER` và `MQTT_PASSWORD` của `deploy/mqtt.env` (đổi tệp bằng `DXOS_MQTT_ENV`).
+Chủ đề đổi được bằng `--topic-prefix`.
+
 ## Thiết lập
 
 | Biến môi trường | Mặc định | Ý nghĩa |

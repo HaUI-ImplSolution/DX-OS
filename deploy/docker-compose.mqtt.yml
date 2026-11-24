@@ -1,0 +1,90 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
+# SPDX-License-Identifier: Apache-2.0
+# Optional MQTT bridge, loaded only when deploy/.env sets
+# COMPOSE_FILE=docker-compose.yml:docker-compose.mqtt.yml (see docs/INTEGRATIONS.md).
+# Its settings are in deploy/mqtt.env (copy mqtt.env.example), never in deploy/.env.
+# The routes are in mqtt/bridge.json (the incidents of the plant template) or, to change them, MQTT_BRIDGE_ROUTES in deploy/mqtt.env.
+# The broker is published on 127.0.0.1 only; MQTT_BIND=0.0.0.0 in deploy/.env opens it to devices, and then the
+# traffic should run over a VPN or a TLS proxy, because the broker speaks plain MQTT.
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "5"
+
+x-hardened: &hardened
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+
+volumes:
+  mqtt_data:
+
+services:
+  mosquitto:
+    <<: *hardened
+    logging: *default-logging
+    image: eclipse-mosquitto:2.0.23@sha256:6a332cc7a8dbe011cbc076180cbb76b37c6f0f55809682ea08e7980ef0112ad9
+    user: "1883:1883"
+    restart: unless-stopped
+    read_only: true
+    mem_limit: 128m
+    cpus: 0.5
+    pids_limit: 64
+    env_file:
+      - path: ./mqtt.env
+        required: false
+    entrypoint: [sh, -c]
+    command:
+      - |
+        [ -n "$$MQTT_PASSWORD" ] || { echo "MQTT_PASSWORD is empty in deploy/mqtt.env" >&2; exit 1; }
+        mosquitto_passwd -b -c /tmp/passwd "$${MQTT_USER:-dxos-mqtt}" "$$MQTT_PASSWORD"
+        exec mosquitto -c /mosquitto/config/mosquitto.conf
+    ports:
+      - "${MQTT_BIND:-127.0.0.1}:${MQTT_HOST_PORT:-1883}:1883"
+    volumes:
+      - mqtt_data:/mosquitto/data
+      - ./mqtt/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    tmpfs: ["/tmp:rw,nosuid,nodev,noexec,size=4m,uid=1883,gid=1883"]
+    healthcheck:
+      test: [CMD-SHELL, 'mosquitto_sub -h 127.0.0.1 -u "$${MQTT_USER:-dxos-mqtt}" -P "$$MQTT_PASSWORD" -t "\$$SYS/broker/uptime" -C 1 -W 5 >/dev/null']
+      interval: 15s
+      timeout: 8s
+      retries: 4
+
+  mqtt-bridge:
+    <<: *hardened
+    logging: *default-logging
+    image: python:3.13.18-alpine3.24@sha256:9ef1a599f863231c3d91e941389bfdc4a2d6070557243d54df1a4e57015b960e
+    user: "65534:65534"
+    restart: unless-stopped
+    read_only: true
+    mem_limit: 128m
+    cpus: 0.5
+    pids_limit: 64
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+      apisix:
+        condition: service_healthy
+    env_file:
+      - path: ./mqtt.env
+        required: false
+    environment:
+      PYTHONDONTWRITEBYTECODE: "1"
+      MQTT_HOST: mosquitto
+      DXOS_API_URL: http://apisix:9080
+      DXOS_PUBLIC_URL: ${GATEWAY_PUBLIC_URL:?}
+    command: [python, -u, /app/bridge.py]
+    volumes:
+      - ./mqtt:/app:ro
+    tmpfs: ["/tmp:rw,nosuid,nodev,noexec,size=4m,uid=65534,gid=65534"]
+    healthcheck:
+      test: [CMD, python, -c, "import os,sys,time; sys.exit(0 if time.time()-os.path.getmtime('/tmp/alive')<150 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 120s

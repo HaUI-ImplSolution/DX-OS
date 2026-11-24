@@ -163,7 +163,7 @@ Cửa hàng điện máy không liên quan đến dự án thêm hai quy trình 
 | Nguyên lý | Bằng chứng |
 |---|---|
 | (i) Vòng đời dữ liệu | `dxos archive` ghi hồ sơ đã đóng ra Parquet, `dxos archive query` đọc bằng DuckDB |
-| (ii) IT và OT | `examples/itot-simulator`: chỉ số vượt ngưỡng thành hồ sơ sự cố |
+| (ii) IT và OT | `examples/itot-simulator`: chỉ số vượt ngưỡng, qua HTTP hoặc qua cầu nối MQTT, thành hồ sơ sự cố |
 | (iii) Phả hệ và chất lượng | Tab Danh mục dữ liệu ở `/console`, `dxos history verify` |
 | (iv) Zero-Trust, GitOps | Tệp EICAR bị chặn, `dxos gitops status`, `dxos reconcile` dựng lại container |
 

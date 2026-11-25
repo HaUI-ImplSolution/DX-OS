@@ -22,7 +22,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Trợ lý nghiệp vụ (tùy chọn)
 
-- `npm run benchmark` trong `assistant/` (hoặc `docker compose run --rm assistant-control dist/benchmark.js`) đo độ đúng của đề xuất trên bộ mẫu cố định 28 hồ sơ: in số đúng, sai, đoán khi thiếu dữ kiện, từ chối đúng, từ chối nhầm, đầu ra không hợp lệ và độ đúng của đối chiếu, kèm model, revision và mã băm của bộ mẫu.
+- `npm run benchmark` trong `assistant/` (hoặc `docker compose run --rm assistant-control dist/benchmark.js`) đo độ đúng của đề xuất trên bộ mẫu cố định 28 hồ sơ: in số đúng, sai, đoán khi thiếu dữ kiện, từ chối đúng, từ chối nhầm, đầu ra không hợp lệ và độ đúng của đối chiếu, kèm model, revision và mã băm của bộ mẫu; lần đo với Apertus-8B-Instruct-2509 Q4_K_M đạt 7/28 hồ sơ (25%), ghi ở `assistant/README.md`.
   Lệnh chạy mã tạo đề xuất của trợ lý trên một Core giả, in cả hồ sơ làm sai, và khi chưa có model chạy được thì thoát với mã 2 mà không in số.
 
 ### Giao diện

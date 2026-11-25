@@ -338,6 +338,7 @@ Kiểm bằng đúng các lệnh và thao tác trong tài liệu.
     Kiểm nâng cấp giữ liên kết SSO và lịch sử, không thực thi lại đề xuất cũ; sau khôi phục từ sao lưu, người dùng liên kết lại tài khoản.
 54. **Đo độ đúng của đề xuất:** với một model tự host đang chạy, `npm run benchmark` trong `assistant/` (hoặc `docker compose run --rm assistant-control dist/benchmark.js`) in 28 hồ sơ kèm kết quả từng hồ sơ, rồi model, revision, mã băm bộ mẫu, số đúng, sai, đoán khi thiếu dữ kiện, từ chối đúng, từ chối nhầm và số đạt theo từng bộ.
     Không đặt `ASSISTANT_INFERENCE_URL`, hoặc model chưa chạy, thì lệnh thoát với mã 2 và không in số nào; cách đọc kết quả ở [`assistant/README.md`](../assistant/README.md#đo-độ-đúng-của-đề-xuất).
+    Kết quả lần đo với Apertus-8B-Instruct-2509 Q4_K_M ở [`assistant/README.md`](../assistant/README.md#kết-quả-đo-với-apertus-8b).
 
 ## 7. Hồi quy
 

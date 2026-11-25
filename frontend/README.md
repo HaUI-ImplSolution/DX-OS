@@ -29,6 +29,7 @@ npm run dev        # http://localhost:5173
 npm run build      # tsc -b rồi vite build, ra dist/
 npx tsc --noEmit   # kiểm kiểu
 npm run lint       # phân tích tĩnh bằng Biome
+npm test           # test đơn vị bằng Vitest, chạy trên Node
 ```
 
 Dev cần backend và Keycloak chạy qua gateway (`docker compose up -d` trong `deploy/`); client `dxos-web` đã cho phép redirect `http://localhost:5173/*`.

@@ -22,6 +22,7 @@ Mức hoàn thiện của từng tính năng và bài kiểm của nó ở [`web
 | Trợ lý tùy chọn, không cần key | `cd assistant && npm ci && npm test` (Node 24.16) | Workflow `Assistant` |
 | Kiểu của web | `cd frontend && npx tsc --noEmit` | Workflow `Frontend` |
 | Phân tích tĩnh của web | `cd frontend && npm run lint` | Workflow `Frontend` |
+| Test đơn vị của web (Vitest, 58 test: `body()` của nhà cung cấp dữ liệu, điều kiện, xuất CSV, định dạng số và thời gian, điều hướng của bộ dựng mô hình, nơi dùng và đổi tên của trường và vai trò, hàng của quy trình) | `cd frontend && npm test` | Workflow `Frontend` |
 | Giấy phép và header | `python3 .github/scripts/check_licenses.py`; `pipx run --spec reuse==6.3.0 reuse lint` | `Check licenses` của `Compliance` |
 | Giấy phép của phiên bản đang dùng | `GITHUB_TOKEN=... python3 .github/scripts/check_upstream_licenses.py`; `python3 -m unittest discover -s .github/scripts` | `Check upstream licenses` và `Check licenses` của `Compliance` |
 | SBOM khớp tệp khóa | `python3 .github/scripts/check_sbom_fresh.py` | `Check SBOMs against lockfiles` của `Compliance` |

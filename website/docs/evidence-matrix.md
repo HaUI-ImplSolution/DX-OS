@@ -15,11 +15,12 @@ Việc chưa làm và giới hạn chấp nhận ở [Việc tồn đọng](http
 | **Một phần** | Mới có một phần phạm vi đã định |
 | **Chưa làm** | Chưa có mã trong repository |
 
-## Bốn loại bằng chứng
+## Năm loại bằng chứng
 
 | Loại | Chạy ở đâu | Có trong CI |
 |---|---|---|
 | Test đơn vị và tích hợp của backend | `cd backend && ./mvnw verify`: 388 test, trong đó có bộ đọc mô hình, kế hoạch đổi mô hình, hạn theo lịch, chuỗi hash, khuôn mã và `DataService` trên PostgreSQL thật bằng Testcontainers nên cần Docker; các nhóm và độ phủ ở `docs/TESTING.md`, «Test của backend» | Có, job `Build and test the backend` của workflow `Backend` trên mọi pull request |
+| Test đơn vị của web | `cd frontend && npm test`: 58 test của Vitest trên Node, gồm thân yêu cầu ghi hồ sơ không gửi khóa lạ, điều kiện, xuất CSV chống công thức, định dạng, điều hướng và đổi tên của bộ dựng mô hình | Có, workflow `Frontend` trên mọi pull request |
 | Script kiểm trên stack thật | `python3 e2e/api/check_<tên>.py` trên stack rỗng dựng bằng `docker compose up -d --build` | Có, job `API end-to-end` của workflow `Platform` trên mọi pull request |
 | Kiểm bằng trình duyệt | Một kịch bản Playwright của bảng điều khiển ở `e2e/`; các màn hình còn lại kiểm tay theo `docs/TESTING.md`, mục 6 | Kịch bản Playwright có, job `Browser end-to-end` của workflow `Platform`; kiểm tay không |
 | Bản triển khai công khai | VPS của đội | Không; hiện giữ bản `v1.1.1` nên chưa có bằng chứng loại này cho lõi mới |

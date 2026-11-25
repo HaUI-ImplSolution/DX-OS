@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import { fileURLToPath } from "node:url";
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 
 // monaco-yaml imports Monaco files by their path inside the package; Monaco now exposes them
@@ -15,5 +15,10 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+  },
+  test: {
+    include: ["src/**/*.test.ts"],
+    setupFiles: ["./src/test/setup.ts"],
+    server: { deps: { inline: [/@mui/, /react-admin/, /ra-/] } },
   },
 });

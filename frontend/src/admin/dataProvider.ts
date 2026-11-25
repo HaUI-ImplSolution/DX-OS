@@ -37,7 +37,7 @@ function toApiValue(meta: EntityMeta | undefined, name: string, value: unknown) 
 // The values to write: only the fields the model declares for the entity, so a key the API adds to a
 // record, such as webUrl, is never sent back. Without the description of the entity nothing says which
 // keys are fields, so the system columns and webUrl are the only ones left out.
-function body(meta: EntityMeta | undefined, data: Row) {
+export function body(meta: EntityMeta | undefined, data: Row) {
   const payload: Row = {};
   Object.entries(data).forEach(([name, value]) => {
     const field = meta?.fields.find((field) => field.name === name);

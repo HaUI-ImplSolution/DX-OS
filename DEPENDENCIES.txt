@@ -242,6 +242,10 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/dependency-exceptions.json.
 |                                      |                                      | trong CI; devDependency, không đóng  |
 |                                      |                                      | gói vào sản phẩm                     |
 +--------------------------------------+--------------------------------------+--------------------------------------+
+| Vitest (vitest)                      | MIT                                  | Test đơn vị mã web (npm test) trong  |
+|                                      |                                      | CI; devDependency, không đóng gói    |
+|                                      |                                      | vào sản phẩm                         |
++--------------------------------------+--------------------------------------+--------------------------------------+
 | reuse 6.3.0 (pipx run)               | Apache-2.0, GPL-3.0-or-later (mã);   | Kiểm chuẩn REUSE (reuse lint) trong  |
 |                                      | CC0-1.0, CC-BY-SA-4.0 (tài liệu)     | CI; không đóng gói vào sản phẩm      |
 +--------------------------------------+--------------------------------------+--------------------------------------+

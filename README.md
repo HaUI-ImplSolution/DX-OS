@@ -339,7 +339,7 @@ Các tài liệu về viết tệp mô hình, API, vận hành, giám sát, tíc
 ## Giấy phép
 
 Mã nguồn, tài liệu, ảnh chụp màn hình, video và sơ đồ theo Apache License 2.0, xem [`LICENSE`](./LICENSE).
-Mọi giấy phép của dự án và của thành phần dùng đều được OSI công nhận, trừ vài gói dữ liệu chỉ đọc lúc dựng trang tài liệu; tên và lý do ở [`DEPENDENCIES.txt`](./DEPENDENCIES.txt), mục 7.
+Mọi giấy phép của dự án và của thành phần dùng đều được OSI công nhận, trừ các ngoại lệ nêu tên và lý do ở phần "Giấy phép ngoài danh sách OSI" của [`DEPENDENCIES.txt`](./DEPENDENCIES.txt): dữ liệu chỉ đọc lúc dựng trang tài liệu, công cụ dựng và công cụ không phân phối, phông biểu tượng Codicons (CC-BY-4.0) trong bản build web, một mô-đun Go (phạm vi công cộng) trong tệp chạy pgschema, và vài thành phần nằm sẵn trong image bên thứ ba mà dự án kéo nguyên bản (ví dụ gói hệ điều hành của image Debian).
 Giấy phép của từng thành phần bên thứ ba ở [`DEPENDENCIES.txt`](./DEPENDENCIES.txt).
 
 Tham khảo: [chủ đề cuộc thi](https://vfossa.vn/tin-tuc/gioi-thieu-mo-hinh-dx-os-va-chu-de-cuoc-thi-phan-mem-nguon-mo-olp-2026-761.html) · [giáo trình DX-OS](https://opendigitransform.gitbook.io/dx-os)

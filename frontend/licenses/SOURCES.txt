@@ -1,0 +1,9 @@
+Sources of the software in the dxos-frontend image
+
+The image is built from DX-OS (Apache-2.0, https://github.com/HaUI-ImplSolution/DX-OS, the Dockerfile is frontend/Dockerfile) on the base image nginx:1.30-alpine-slim.
+The image holds the built web app (its libraries' notices are in third-party-licenses.txt next to it) and nginx (BSD-2-Clause, source at https://github.com/nginx/nginx).
+The base image holds Alpine Linux v3.24, whose package sources are in the aports tree at https://git.alpinelinux.org/aports (branch 3.24-stable) and in the source packages next to the binary packages at https://dl-cdn.alpinelinux.org/alpine/v3.24/.
+Some of these packages are under the GNU General Public License, the GNU Lesser General Public License and similar licenses.
+Their names, versions and licenses are listed for every image in docs/IMAGE_PACKAGES.md of DX-OS (https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/IMAGE_PACKAGES.md).
+For any component of this image under such a license, the maintainers give the source to anyone who asks for it, for three years after the release of the image:
+open an issue at https://github.com/HaUI-ImplSolution/DX-OS/issues naming the image, its tag and the component.

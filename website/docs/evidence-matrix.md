@@ -107,8 +107,8 @@ Mỗi script in `N/M passed` và thoát với mã 1 khi có kiểm hỏng; số 
 
 | Tính năng | Kiểm | Lệnh | Mức | Giới hạn |
 |---|---|---|---|---|
-| Header SPDX ở mọi tệp mã, giấy phép của mọi gói trong SBOM, danh mục image và mô hình | Job `Check licenses` của workflow `Compliance` | `python3 .github/scripts/check_licenses.py` | Hoàn thiện | Ngoại lệ có lý do ở `.github/dependency-exceptions.json` |
-| Giấy phép của image, bản tải về, gói Maven và npm ở đúng phiên bản đang dùng hoặc được đề xuất (Dependabot) | Jobs `Check upstream licenses`, `Check SBOMs against lockfiles` và `Scan the backend SBOM`; `python3 -m unittest discover -s .github/scripts` | `GITHUB_TOKEN=... python3 .github/scripts/check_upstream_licenses.py` | Hoàn thiện | Giấy phép GitHub không nhận ra phải có `text` hoặc `unverified` trong danh mục; Eclipse Temurin và Alpine chỉ được ghi chú |
+| Header SPDX ở mọi tệp mã, giấy phép của mọi gói trong SBOM, danh mục image và mô hình, và `docs/DEPENDENCY_INVENTORY.md` liệt kê mọi gói kể cả dev, test và plugin; `docs/IMAGE_PACKAGES.md` liệt kê gói bên trong image bên thứ ba, và mỗi image phát hành kèm giấy phép ở `/licenses` | Job `Check licenses` của workflow `Compliance`; Maven ở job `Scan the backend SBOM` của `Dependencies` | `python3 .github/scripts/check_licenses.py`; `python3 .github/scripts/check_license_inventory.py check` | Hoàn thiện | Ngoại lệ có lý do ở `.github/licenses/dependency-exceptions.json` |
+| Giấy phép của image, bản tải về, gói Maven và npm ở đúng phiên bản đang dùng hoặc được đề xuất (Dependabot) | Jobs `Check upstream licenses`, `Check SBOMs against lockfiles` và `Scan the backend SBOM`; `python3 -m unittest discover -s .github/scripts/tests` | `GITHUB_TOKEN=... python3 .github/scripts/check_upstream_licenses.py` | Hoàn thiện | Giấy phép GitHub không nhận ra phải có `text` hoặc `unverified` trong danh mục; Eclipse Temurin và Alpine chỉ được ghi chú |
 | Quét bí mật trong cây mã và lịch sử | Job `Scan for secrets` của workflow `Compliance` (gitleaks) | | Hoàn thiện | |
 | Lỗ hổng của dependency và image | workflow `Dependencies` (Trivy, SBOM của Maven), chạy theo lịch | | Hoàn thiện | Image bên thứ ba chỉ báo cáo, không chặn |
 | Gói phát hành `.tar.gz`, `.sha256`, SBOM CycloneDX | Job `Install from the release archive` của workflow `Platform` dựng gói của commit và chạy `check_archive.sh` ở mọi pull request; workflow `Release Package` chạy lại kiểm đó rồi mới đăng khi đẩy tag `v*` | `.github/scripts/check_archive.sh <gói> <phiên bản>` | Dùng được | Bản đã phát hành gần nhất là `v2.0.0`; việc gộp vào `Khuong/main` sau đó chưa có trong tag nào, cần một bản phát hành mới trước khi nộp |
@@ -148,6 +148,7 @@ Kiểm tĩnh:
 cd backend && ./mvnw verify
 cd frontend && npx tsc --noEmit
 python3 .github/scripts/check_licenses.py
+python3 .github/scripts/check_license_inventory.py check
 python3 e2e/api/check_routes.py
 ```
 

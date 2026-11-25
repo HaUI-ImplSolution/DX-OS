@@ -44,9 +44,9 @@ cd ../frontend && npm install && npm run dev
 | Backend | `./mvnw spotless:check` rồi `./mvnw verify` trong `backend/`; các nhóm test và cách đo độ phủ ở [`docs/TESTING.md`](./docs/TESTING.md), «Test của backend» |
 | Frontend | `npx tsc --noEmit` rồi `npm run lint` trong `frontend/` |
 | Toàn stack | Các script `e2e/api/check_*.py` theo thứ tự ở [`docs/TESTING.md`](./docs/TESTING.md), mục 4, trên stack mới dựng |
-| Giấy phép | `python3 .github/scripts/check_licenses.py` |
+| Giấy phép | `python3 .github/scripts/check_licenses.py`; `python3 .github/scripts/check_license_inventory.py check` |
 | Header giấy phép | `pipx run --spec reuse==6.3.0 reuse lint` |
-| Giấy phép của phiên bản đang dùng | `GITHUB_TOKEN=... python3 .github/scripts/check_upstream_licenses.py` và `python3 -m unittest discover -s .github/scripts` |
+| Giấy phép của phiên bản đang dùng | `GITHUB_TOKEN=... python3 .github/scripts/check_upstream_licenses.py` và `python3 -m unittest discover -s .github/scripts/tests` |
 | Trích dẫn giữa các tài liệu | `python3 .github/scripts/check_doc_refs.py` |
 | Trang docs | `npm run build` trong `website/` |
 | Giao diện trên trình duyệt | Xem [`e2e/README.md`](./e2e/README.md) |
@@ -77,11 +77,13 @@ cd ../frontend && npm install && npm run dev
 
 ## Dependency và dữ liệu
 
-- Chỉ dùng thành phần theo giấy phép được OSI công nhận; `check_licenses.py` chặn giấy phép ngoài danh sách, trừ vài gói có lý do ở `.github/dependency-exceptions.json`.
+- Chỉ dùng thành phần theo giấy phép được OSI công nhận; `check_licenses.py` chặn giấy phép ngoài danh sách, trừ vài gói có lý do ở `.github/licenses/dependency-exceptions.json`.
 - Không fork, vá hay đóng gói mã nguồn của dự án khác vào repository; dùng bản gốc và cấu hình nó.
-- Đổi dependency thì sinh lại SBOM theo [`sbom/README.md`](./sbom/README.md) và cập nhật [`DEPENDENCIES.txt`](./DEPENDENCIES.txt).
+- Đổi dependency thì sinh lại SBOM theo [`sbom/README.md`](./sbom/README.md) và chạy `python3 .github/scripts/check_license_inventory.py generate` (thêm `--maven` khi đổi Maven) để cập nhật [`docs/DEPENDENCY_INVENTORY.md`](./docs/DEPENDENCY_INVENTORY.md), nơi mọi gói, kể cả gói dev, test và plugin build, có phiên bản và giấy phép; vai trò của thành phần cấp cao ghi ở các bảng của [`DEPENDENCIES.txt`](./DEPENDENCIES.txt).
+- Mỗi image do dự án phát hành chép `LICENSE`, `NOTICE` và văn bản giấy phép của thư viện nó chứa vào `/licenses`; bản sao `LICENSE` và `NOTICE` nằm ở thư mục `licenses/` cạnh mỗi Dockerfile (build context không thấy thư mục gốc) và `check_licenses.py` chặn khi lệch tệp gốc.
+  Đổi thư viện Java thì chạy `python3 .github/scripts/check_third_party_notices.py generate`; đổi image bên thứ ba thì chạy `python3 .github/scripts/check_image_packages.py generate`.
 - Dependabot chỉ mở pull request cho bản vá và bản phụ; bản chính, dòng hỗ trợ dài hạn khác và image gốc khác nâng bằng tay, sau khi kiểm giấy phép OSI, thời hạn hỗ trợ và tương thích (xem [`.github/dependabot.yml`](.github/dependabot.yml)).
-- Image (kể cả image chép vào bằng `COPY --from`), bản phát hành tải bằng `ADD`, mô hình và tệp trọng số, tài liệu, nén phải khai báo ở [`.github/component-catalog.json`](.github/component-catalog.json) với giấy phép được phép; `check_licenses.py` kiểm danh mục này.
+- Image (kể cả image chép vào bằng `COPY --from`), bản phát hành tải bằng `ADD`, mô hình và tệp trọng số, tài liệu, nén phải khai báo ở [`.github/licenses/component-catalog.json`](.github/licenses/component-catalog.json) với giấy phép được phép; `check_licenses.py` kiểm danh mục này.
   `check_upstream_licenses.py` đọc giấy phép của dự án gốc ở đúng phiên bản đang dùng của từng image và bản tải về, ở mỗi pull request và mỗi tuần: giấy phép khác bản đã khai, ngoài danh sách OSI, không xác định được hoặc không đọc được đều làm job đỏ, nên một pull request của Dependabot đổi tag image bị kiểm ở chính phiên bản nó đề xuất.
   Câu trả lời của GitHub được giữ trong cache của CI nên mỗi lần chạy chỉ hỏi về phiên bản chưa gặp, và lượt chạy hằng tuần không dùng cache.
   Hết hạn mức thì script chờ nếu hạn mức reset trong một phút, hoặc thử lại không token một lần, rồi báo giờ reset; mỗi lần bị từ chối được in ra log.

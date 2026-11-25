@@ -12,6 +12,7 @@
 	<artifactId>dx-monitor</artifactId>
 	<name>dx-monitor</name>
 	<description>Runnable monitoring service: gateway events, service probes, audit and login trails for administrators</description>
+	<url>https://github.com/HaUI-ImplSolution/DX-OS/tree/main/backend/dx-monitor</url>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

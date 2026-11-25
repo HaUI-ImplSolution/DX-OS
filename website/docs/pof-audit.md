@@ -33,7 +33,7 @@ Không có lỗi loại trừ: repository công khai, có `LICENSE`, đã có re
 | 2 | Giấy phép OSI, có `LICENSE` toàn văn, có thông báo | ✅ | `LICENSE` Apache-2.0, GitHub nhận đúng `Apache-2.0`; `NOTICE`; `DEPENDENCIES.txt` |
 | 3 | Có release hoặc tag trước hạn nộp, không dùng định dạng độc quyền | ✅ | 10 release `v1.0.0` đến `v2.1.0`, mỗi release có `.tar.gz` |
 | 4 | Có hướng dẫn build và cài, chạy lại được | ⚠️ | `README.md` mục Chạy thử; `dxos-install.sh` của `v2.0.0` đã chạy được trên máy sạch, còn bài dựng từ bản clone (`docker compose up -d --build`) chưa chạy lại trên máy sạch |
-| 5 | Khai báo thư viện, phiên bản, nguồn, giấy phép | ✅ | `DEPENDENCIES.txt`, `sbom/`, `.github/component-catalog.json` |
+| 5 | Khai báo thư viện, phiên bản, nguồn, giấy phép | ✅ | `DEPENDENCIES.txt`, `sbom/`, `.github/licenses/component-catalog.json` |
 | 6 | README, CHANGELOG, bug tracker, tài liệu đúng trạng thái | ✅ | Xem tiêu chí 6 |
 | 7 | Không lộ bí mật hay dữ liệu cá nhân | ✅ | Xem mục 9 |
 | 8 | Lịch sử Git liên tục, commit hợp lý | ✅ | Xem tiêu chí 1 |
@@ -60,15 +60,16 @@ git shortlog -sn                                             # đóng góp có n
 | Trạng thái | Yêu cầu | Bằng chứng | Mức trừ nếu thiếu |
 |---|---|---|---|
 | ✅ | Giấy phép được OSI công nhận | `LICENSE` Apache-2.0 | điều kiện loại trừ |
-| ✅ | Ghi giấy phép trong từng tệp mã | Dòng `SPDX-License-Identifier` ở đầu mọi tệp Java, TypeScript, JavaScript, Python, shell, YAML: `Apache-2.0`; `check_licenses.py` báo 0 vấn đề | −5 |
-| ✅ | Không xung đột giấy phép giữa các thành phần | `DEPENDENCIES.txt`; mã, tài liệu, ảnh, video và sơ đồ theo Apache-2.0, hai tệp phông theo OFL-1.1, đều được OSI công nhận và tương thích nhau; job `Check licenses` của workflow `Compliance` kiểm giấy phép của từng gói trong `sbom/`, ngoại lệ có lý do ở `.github/dependency-exceptions.json` | −5 |
+| ✅ | Ghi giấy phép trong từng tệp mã | Dòng `SPDX-License-Identifier` ở đầu mọi tệp Java, TypeScript, JavaScript, Python, shell, YAML: `Apache-2.0`; `check_licenses.py` báo 0 vấn đề; `pom.xml`, các `package.json`, `CITATION.cff` và chân trang trang docs cùng khai Apache-2.0, và `LICENSE`, `NOTICE` đi kèm cả GitHub Release | −5 |
+| ✅ | Không xung đột giấy phép giữa các thành phần | `DEPENDENCIES.txt`; mã, tài liệu, ảnh, video và sơ đồ theo Apache-2.0, hai tệp phông theo OFL-1.1, đều được OSI công nhận và tương thích nhau; job `Check licenses` của workflow `Compliance` kiểm giấy phép của từng gói trong `sbom/`, ngoại lệ có lý do ở `.github/licenses/dependency-exceptions.json` | −5 |
 | ✅ | Có thông báo về mục đích của giấy phép | `NOTICE`, mục "Mục đích của giấy phép": vì sao chọn Apache-2.0, bốn quyền tự do, quyền sáng chế, và cách khai giấy phép của từng tệp | −5 |
 | ✅ | Có bản sao toàn văn giấy phép | `LICENSE` | −5 |
-| ✅ | Mọi giấy phép được OSI công nhận | `check_licenses.py` chỉ cho phép giấy phép OSI; hai gói ngoại lệ (dữ liệu CC-BY-4.0 và CC0-1.0 chỉ dùng lúc dựng trang docs) nêu tên kèm lý do ở `.github/dependency-exceptions.json` | |
-| ✅ | GitHub nhận một giấy phép | `LICENSE` là Apache-2.0 và là tệp duy nhất mà tab License liệt kê; các tệp thành phần tên `DEPENDENCIES.txt`, `component-catalog.json`, `dependency-exceptions.json` không chứa chữ license hay copyright để GitHub không coi là giấy phép thứ hai | |
+| ✅ | Mọi giấy phép được OSI công nhận | `check_licenses.py` chỉ cho phép giấy phép OSI; các gói ngoại lệ (dữ liệu CC-BY-4.0 và CC0-1.0 chỉ dùng lúc dựng trang docs, phông Codicons CC-BY-4.0 kèm ghi công trong bản build web, mô-đun Go phạm vi công cộng trong `pgschema`, hai thư viện của plugin build) nêu tên kèm lý do ở `.github/licenses/dependency-exceptions.json`; vài thành phần nằm sẵn trong image bên thứ ba (như thư viện giải nén RAR của image ClamAV) nêu ở phần "Giấy phép ngoài danh sách OSI" của `DEPENDENCIES.txt` | |
+| ✅ | GitHub nhận một giấy phép | `LICENSE` là Apache-2.0 và là tệp duy nhất mà tab License liệt kê; danh mục thành phần nằm ở `DEPENDENCIES.txt`, `docs/DEPENDENCY_INVENTORY.md` và `.github/licenses/`, không đặt tên như tệp giấy phép ở thư mục gốc nên GitHub không coi là giấy phép thứ hai | |
 
 ```bash
 python3 .github/scripts/check_licenses.py      # header, giấy phép của SBOM, danh mục image và mô hình
+python3 .github/scripts/check_license_inventory.py check   # docs/DEPENDENCY_INVENTORY.md: mọi gói, kể cả dev, test và plugin
 head -3 LICENSE                                # toàn văn, không phải liên kết
 ```
 
@@ -115,9 +116,9 @@ dxos start
 
 | Trạng thái | Yêu cầu | Bằng chứng | Mức trừ nếu thiếu |
 |---|---|---|---|
-| ✅ | Tài liệu làm rõ thư viện và gói đã dùng | `DEPENDENCIES.txt` (tên, phiên bản, giấy phép, vai trò); `sbom/*.cdx.json` kể cả gói gián tiếp, đính kèm mỗi release; lý do chọn ở [Thành phần được chọn và không chọn](./dependencies.md) | |
+| ✅ | Tài liệu làm rõ thư viện và gói đã dùng | `DEPENDENCIES.txt` (vai trò của thành phần cấp cao) và `docs/DEPENDENCY_INVENTORY.md` (từng gói kể cả gói dev, test, plugin build và gói gián tiếp, mỗi gói có phiên bản và giấy phép, do máy sinh và kiểm), `docs/IMAGE_PACKAGES.md` (gói bên trong các image bên thứ ba); mỗi image phát hành kèm `LICENSE`, `NOTICE` và giấy phép của thư viện ở `/licenses`; `sbom/*.cdx.json` của phần chạy thật, đính kèm mỗi release; lý do chọn ở [Thành phần được chọn và không chọn](./dependencies.md) | |
 | ✅ | Ưu tiên thư viện sẵn có | Dùng image chính thức, ghim tag và digest trong `deploy/docker-compose.yml`; Keycloak dựng từ bản phát hành chính thức kiểm SHA-1; binary `pgschema` lấy từ image chính thức ghim digest | −5 |
-| ✅ | Không phát hành kèm gói của dự án phụ thuộc | `git ls-files` không có `vendor/`, `node_modules/`, `third_party/` | −5 |
+| ✅ | Không phát hành kèm gói của dự án phụ thuộc | Gói mã nguồn `.tar.gz` là `git archive` của cây mã, và `git ls-files` không có `vendor/`, `node_modules/`, `third_party/`; thư viện của image và của `dxos-lint.jar` (chỉ SnakeYAML) lấy từ Maven Central và npm theo tệp khóa, không sửa, kèm giấy phép ở `/licenses` hoặc `META-INF`; image `sso` chứa bản Keycloak chính thức kiểm SHA-1, image `backend` chứa tệp chạy `pgschema` ghim digest, và image `clamav` dựng trên image ClamAV chính thức chỉ xóa tệp `libclamunrar`; không có mã nào bị sửa | −5 |
 | ✅ | Không chỉnh sửa mã nguồn gói đính kèm | Không có tệp `.patch`; tùy biến bằng cấu hình (route APISIX, realm Keycloak, biến môi trường) | −5 |
 | ✅ | Phụ thuộc được cập nhật và quét | Dependabot; workflow `Dependencies` chặn khi có lỗ hổng HIGH hoặc CRITICAL đã có bản vá | |
 | ✅ | SBOM khớp với tệp khóa | Job `Check SBOMs against lockfiles` dựng lại SBOM của web và trang docs rồi so với `sbom/` ở mọi pull request; SBOM của backend so với kết quả của `cyclonedx-maven-plugin` (221 gói, 0 khác biệt) | |

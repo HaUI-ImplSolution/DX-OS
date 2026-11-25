@@ -12,6 +12,7 @@ COPY dx-model/pom.xml dx-model/pom.xml
 COPY dx-core/pom.xml dx-core/pom.xml
 COPY dx-engine/pom.xml dx-engine/pom.xml
 COPY dx-monitor/pom.xml dx-monitor/pom.xml
+COPY licenses/ licenses/
 # Make sure to run with linux line endings
 RUN sed -i 's/\r$//' mvnw
 RUN chmod +x ./mvnw
@@ -33,6 +34,7 @@ FROM eclipse-temurin:21-jre-alpine@sha256:ac05c3c42b7c2f1a52c9bd52f01041fa195823
 WORKDIR /app
 ENV TZ=Asia/Ho_Chi_Minh
 COPY --from=build-monitor /app/dx-monitor/target/dx-monitor.jar app.jar
+COPY licenses/LICENSE licenses/NOTICE licenses/THIRD-PARTY-LICENSES-monitor.txt /licenses/
 # The service writes nothing outside /tmp, so it needs no privileges.
 RUN addgroup -S -g 10001 app && adduser -S -u 10001 -G app app
 USER app
@@ -48,6 +50,7 @@ COPY --from=build-engine /app/dx-engine/target/dx-engine.jar app.jar
 COPY --from=build-engine /app/dx-model/target/dx-model-*-cli.jar /opt/dxos/dxos-lint.jar
 # pgschema compares the tables with what a model declares and changes them.
 COPY --from=pgplex/pgschema:1.13.4@sha256:4e77c22878120b38f8548d6ea62b3b1564438a5fbe84fcde3019684a638f60b7 /usr/local/bin/pgschema /usr/local/bin/pgschema
+COPY licenses/LICENSE licenses/NOTICE licenses/THIRD-PARTY-LICENSES-backend.txt licenses/THIRD-PARTY-LICENSES-pgschema.txt /licenses/
 # The service writes nothing outside /tmp, so it needs no privileges.
 RUN addgroup -S -g 10001 app && adduser -S -u 10001 -G app app
 USER app

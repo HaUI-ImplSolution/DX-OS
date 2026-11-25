@@ -22,7 +22,7 @@ set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
 ENV_FILE="${ENV_FILE:-.env}"
-RESTIC_IMAGE="restic/restic:0.17.3"
+RESTIC_IMAGE="restic/restic:0.17.3@sha256:8f5a62b422a2cb1277ea0dd6e826fe1acf649e5b9f02d60e5268d5fd1976255a"
 SEAWEEDFS_IMAGE="$(sed -n 's/^ *image: \(chrislusf\/seaweedfs:.*\)$/\1/p' docker-compose.yml | head -1)"
 POSTGRES_IMAGE="postgres:16-bookworm@sha256:5264710be20f409750ac6dc4e5706dcef929c87e241605463f0f9aefa932a8d9"
 

@@ -16,6 +16,14 @@
 	<packaging>pom</packaging>
 	<name>dx-os-parent</name>
 	<description>DX-OS: a model-driven core for record-and-workflow systems</description>
+	<url>https://github.com/HaUI-ImplSolution/DX-OS</url>
+	<licenses>
+		<license>
+			<name>Apache-2.0</name>
+			<url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 	<modules>
 		<module>dx-model</module>
 		<module>dx-core</module>

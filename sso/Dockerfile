@@ -15,6 +15,7 @@ RUN echo "${KEYCLOAK_SHA1}  /tmp/keycloak.tar.gz" | sha1sum -c - \
 FROM eclipse-temurin:21-jre-jammy@sha256:dff6eb46527bd293a3c06bbbe9e64e8c9f91f01905b5abbdad31761c03059d2c
 RUN useradd --uid 1000 --gid 0 --home-dir /opt/keycloak --no-create-home --shell /usr/sbin/nologin keycloak
 COPY --from=dist --chown=1000:0 /opt/keycloak /opt/keycloak
+COPY licenses/ /licenses/
 USER 1000
 EXPOSE 8080 8443 9000
 ENTRYPOINT ["/opt/keycloak/bin/kc.sh"]

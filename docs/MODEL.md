@@ -378,6 +378,7 @@ Cả hai chỉ cho người đọc được hồ sơ, như màn hình hồ sơ; 
 
 Trường `type: file`; tải lên bằng `POST /api/v1/data/{model}/{entity}/{id}/files`, quyền theo quyền của bản ghi.
 Loại tệp nhận được đặt bằng `engine.files.allowed-extensions`, và tệp luôn tải về dạng đính kèm.
+Tệp RAR luôn bị từ chối, kể cả khi đổi đuôi hay khi danh sách loại tệp để trống, vì ClamAV của dự án không mở được RAR.
 Mỗi hồ sơ giữ tối đa 20 tệp, đặt bằng `engine.files.max-per-record`.
 
 ## Webhook

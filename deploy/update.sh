@@ -50,6 +50,9 @@ fi
 PROJECT_SERVICES="$(docker compose config --services)"
 if grep -qx assistant-control <<<"$PROJECT_SERVICES"; then SERVICES+=(assistant-control); fi
 BEHIND_GATEWAY=("${SERVICES[@]}")
+# The virus scan is pulled with the others when it is part of the project (the av profile).
+PULLED=("${SERVICES[@]}")
+if grep -qx clamav <<<"$PROJECT_SERVICES"; then PULLED+=(clamav); fi
 declare -A BEFORE
 for service in "${BEHIND_GATEWAY[@]}"; do
   BEFORE[$service]="$(docker compose ps -q "$service")"
@@ -59,7 +62,7 @@ echo "==> Checking the gateway routes"
 docker compose run --rm --no-deps apisix-config --check
 
 echo "==> Pulling images"
-for service in "${SERVICES[@]}"; do
+for service in "${PULLED[@]}"; do
   docker compose pull "$service"
 done
 

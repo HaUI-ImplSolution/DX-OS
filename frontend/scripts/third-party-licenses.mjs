@@ -68,6 +68,10 @@ for (const entry of entries) {
   parts.push("", entry.texts.length ? entry.texts.join("\n\n") : "(the package has no license file; its license field is shown above)", "");
 }
 
+// A project may keep a licenses/THIRD-PARTY-ASSETS.txt for the files that a package ships under another license than its own.
+const assets = join(project, "licenses", "THIRD-PARTY-ASSETS.txt");
+if (existsSync(assets)) parts.push(rule, "Assets that the packages above ship under their own licenses", "", readFileSync(assets, "utf8").trim(), "");
+
 mkdirSync(dirname(output), { recursive: true });
 writeFileSync(output, parts.join("\n"));
 console.log(`${entries.length} packages written to ${output}`);

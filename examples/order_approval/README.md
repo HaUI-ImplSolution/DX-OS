@@ -29,3 +29,7 @@ approved order 1, status approved
 
 Tệp `.env` giữ hai secret của client; `.gitignore` của repository đã bỏ qua nó.
 Dọn dẹp: `dxos client remove requester` và `dxos client remove approver`.
+
+## Giấy phép
+
+Apache-2.0, như cả dự án DX-OS; toàn văn ở `LICENSE` ở gốc repository.

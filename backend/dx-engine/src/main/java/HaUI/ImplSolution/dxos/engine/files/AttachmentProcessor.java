@@ -5,6 +5,7 @@ package HaUI.ImplSolution.dxos.engine.files;
 import HaUI.ImplSolution.dxos.core.api.storage.FileProcessor;
 import HaUI.ImplSolution.dxos.core.api.storage.ProcessedFile;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -21,6 +22,10 @@ public class AttachmentProcessor implements FileProcessor {
   public static final String PURPOSE = "attachment";
 
   private static final Pattern EXTENSION = Pattern.compile("[a-z0-9]{1,8}");
+
+  // The signature that opens every RAR archive. The virus scan cannot open one, so it is refused
+  // whatever its name says.
+  private static final String RAR_SIGNATURE = "Rar!\u001a\u0007";
 
   private final Set<String> allowed;
 
@@ -51,7 +56,7 @@ public class AttachmentProcessor implements FileProcessor {
     }
     int dot = filename.lastIndexOf('.');
     String extension = dot < 0 ? "" : filename.substring(dot + 1).toLowerCase(Locale.ROOT);
-    if (!allowed.isEmpty() && !allowed.contains(extension)) {
+    if ((!allowed.isEmpty() && !allowed.contains(extension)) || isRar(original)) {
       throw new IllegalArgumentException("Files of this type are not accepted");
     }
     String contentType = URLConnection.guessContentTypeFromName(filename);
@@ -59,5 +64,11 @@ public class AttachmentProcessor implements FileProcessor {
         original,
         contentType == null ? "application/octet-stream" : contentType,
         EXTENSION.matcher(extension).matches() ? extension : "bin");
+  }
+
+  private static boolean isRar(byte[] content) {
+    return content.length >= RAR_SIGNATURE.length()
+        && new String(content, 0, RAR_SIGNATURE.length(), StandardCharsets.ISO_8859_1)
+            .equals(RAR_SIGNATURE);
   }
 }

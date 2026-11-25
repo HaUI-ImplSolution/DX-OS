@@ -44,3 +44,7 @@ Lịch sử các commit đã xét nằm ở `deploy/gitops/history.log`.
 Đổi `GITOPS_MODE` thành `report` nếu chỉ muốn báo lệch, hoặc `approve` nếu mọi thay đổi đều phải duyệt.
 
 Cách cấu hình đầy đủ, kể cả bắt buộc chữ ký commit, ở [`docs/OPERATIONS.md`](../../docs/OPERATIONS.md).
+
+## Giấy phép
+
+Apache-2.0, như cả dự án DX-OS; toàn văn ở `LICENSE` ở gốc repository.

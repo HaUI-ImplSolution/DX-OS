@@ -1,13 +1,13 @@
 # SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
-"""Tests of the license checks that need no network: python3 -m unittest discover -s .github/scripts"""
+"""Tests of the license checks that need no network: python3 -m unittest discover -s .github/scripts/tests"""
 import json
 import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import check_licenses  # noqa: E402
 import check_upstream_licenses as upstream  # noqa: E402
 
@@ -119,6 +119,14 @@ class GithubAccessTest(unittest.TestCase):
             upstream.github("repos/o/p/license")
         self.assertIn("HTTP 403", str(raised.exception))
         self.assertIn("IP allow list", str(raised.exception))
+
+
+class OwnLicenseTest(unittest.TestCase):
+    def test_every_place_the_project_declares_its_license_says_apache_2_0(self):
+        self.assertEqual(check_licenses.check_declared_licenses(), [])
+
+    def test_the_license_files_that_the_images_copy_are_the_originals(self):
+        self.assertEqual(check_licenses.check_legal_copies(), [])
 
 
 class SbomLicenseTest(unittest.TestCase):

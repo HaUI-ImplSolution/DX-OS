@@ -12,6 +12,7 @@
 	<artifactId>dx-engine</artifactId>
 	<name>dx-engine</name>
 	<description>Runnable service: the model-driven API, the control plane and the embedded workflow engine</description>
+	<url>https://github.com/HaUI-ImplSolution/DX-OS/tree/main/backend/dx-engine</url>
 	<dependencies>
 		<dependency>
 			<groupId>HaUI.ImplSolution</groupId>

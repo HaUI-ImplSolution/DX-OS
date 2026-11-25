@@ -65,7 +65,8 @@
       "licenses" : [
         {
           "license" : {
-            "id" : "Apache-2.0"
+            "id" : "Apache-2.0",
+            "url" : "https://www.apache.org/licenses/LICENSE-2.0"
           }
         }
       ],
@@ -73,7 +74,7 @@
       "externalReferences" : [
         {
           "type" : "website",
-          "url" : "https://spring.io/projects/spring-boot/dx-os-parent"
+          "url" : "https://github.com/HaUI-ImplSolution/DX-OS"
         },
         {
           "type" : "vcs",
@@ -5718,7 +5719,8 @@
       "licenses" : [
         {
           "license" : {
-            "id" : "Apache-2.0"
+            "id" : "Apache-2.0",
+            "url" : "https://www.apache.org/licenses/LICENSE-2.0"
           }
         }
       ],
@@ -5726,7 +5728,7 @@
       "externalReferences" : [
         {
           "type" : "website",
-          "url" : "https://spring.io/projects/spring-boot/dx-os-parent/dx-model"
+          "url" : "https://github.com/HaUI-ImplSolution/DX-OS/tree/main/backend/dx-model"
         },
         {
           "type" : "vcs",
@@ -5744,7 +5746,8 @@
       "licenses" : [
         {
           "license" : {
-            "id" : "Apache-2.0"
+            "id" : "Apache-2.0",
+            "url" : "https://www.apache.org/licenses/LICENSE-2.0"
           }
         }
       ],
@@ -5752,7 +5755,7 @@
       "externalReferences" : [
         {
           "type" : "website",
-          "url" : "https://spring.io/projects/spring-boot/dx-os-parent/dx-core"
+          "url" : "https://github.com/HaUI-ImplSolution/DX-OS/tree/main/backend/dx-core"
         },
         {
           "type" : "vcs",
@@ -10104,7 +10107,8 @@
       "licenses" : [
         {
           "license" : {
-            "id" : "Apache-2.0"
+            "id" : "Apache-2.0",
+            "url" : "https://www.apache.org/licenses/LICENSE-2.0"
           }
         }
       ],
@@ -10112,7 +10116,7 @@
       "externalReferences" : [
         {
           "type" : "website",
-          "url" : "https://spring.io/projects/spring-boot/dx-os-parent/dx-engine"
+          "url" : "https://github.com/HaUI-ImplSolution/DX-OS/tree/main/backend/dx-engine"
         },
         {
           "type" : "vcs",
@@ -14152,7 +14156,8 @@
       "licenses" : [
         {
           "license" : {
-            "id" : "Apache-2.0"
+            "id" : "Apache-2.0",
+            "url" : "https://www.apache.org/licenses/LICENSE-2.0"
           }
         }
       ],
@@ -14160,7 +14165,7 @@
       "externalReferences" : [
         {
           "type" : "website",
-          "url" : "https://spring.io/projects/spring-boot/dx-os-parent/dx-monitor"
+          "url" : "https://github.com/HaUI-ImplSolution/DX-OS/tree/main/backend/dx-monitor"
         },
         {
           "type" : "vcs",

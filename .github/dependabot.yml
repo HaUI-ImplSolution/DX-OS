@@ -5,7 +5,7 @@ version: 2
 # Dependabot knows version numbers and nothing else: not the license of a new version, not whether a line is
 # still supported, not whether the project still works with it. So it opens pull requests for minor and patch
 # updates only, and a new major version, a new runtime line or a change of base image is decided by hand
-# (license in .github/component-catalog.json, support line, compatibility, then the checks in docs/TESTING.md).
+# (license in .github/licenses/component-catalog.json, support line, compatibility, then the checks in docs/TESTING.md).
 # A new release must also be a week old before it is proposed (except for the Compose images), so that a yanked or
 # hijacked release is gone before it arrives.
 # Every pull request still has to pass Check licenses, Check SBOMs against lockfiles and Check upstream licenses.

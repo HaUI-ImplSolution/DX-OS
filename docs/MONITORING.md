@@ -242,7 +242,7 @@ Bộ lọc **Mô hình** ở đầu trang giới hạn các bảng theo mô hìn
 
 - Một Prometheus và một Grafana, không chạy nhiều bản sao; số đo chỉ có từ lúc bật overlay.
 - Không có Alertmanager; các quy tắc cảnh báo gợi ý ở trên cần người vận hành tự đưa vào Prometheus của mình.
-- Grafana theo giấy phép AGPL-3.0-only và chạy nguyên bản ở dịch vụ riêng; giấy phép của hai image và các thành phần đi kèm ở [`DEPENDENCIES.txt`](../DEPENDENCIES.txt), ghi chú 13.
+- Grafana theo giấy phép AGPL-3.0-only và chạy nguyên bản ở dịch vụ riêng; giấy phép của hai image và các thành phần đi kèm ở ghi chú về Prometheus và Grafana của [`DEPENDENCIES.txt`](../DEPENDENCIES.txt).
 
 ## Màn hình giám sát
 

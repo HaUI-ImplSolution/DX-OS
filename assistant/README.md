@@ -30,8 +30,8 @@ Image chỉ chứa Node.js và mã của trợ lý, không có npm, corepack và
 
 Trợ lý hỗ trợ mọi endpoint suy luận tương thích OpenAI Chat Completions hoặc llama.cpp `/completion`.
 DX-OS không áp đặt hay đóng gói model mặc định; người vận hành tự chọn model, cấp endpoint và tự chịu trách nhiệm với điều khoản upstream.
-Bản cài có thể tham khảo dùng Apertus-8B-Instruct-2509 (Apache-2.0 kèm AUP) hoặc OLMo (Apache-2.0) qua llama.cpp (MIT).
-Giấy phép và ghi chú nằm ở [`DEPENDENCIES.txt`](../DEPENDENCIES.txt), mục [9] và [10].
+DX-OS không chọn model nào vì mỗi model có điều khoản sử dụng riêng của bên phát hành.
+Ghi chú về model suy luận và llama.cpp (MIT) nằm ở [`DEPENDENCIES.txt`](../DEPENDENCIES.txt).
 Repository không đóng gói trọng số và không tải trọng số trong request hay lúc Core khởi động.
 
 Endpoint do người vận hành cố định trong bản cài, người dùng không nhập endpoint, key hay model trên giao diện.
@@ -149,7 +149,7 @@ Gỡ hẳn khỏi mã nguồn thì làm theo ba nhóm sau.
 - `frontend/src/admin/AdminApp.tsx`: import, `useAssistantEnabled`, mục menu, route và `lazy`.
 - `frontend/src/admin/resources.tsx`: `RecordAssistant`.
 - `frontend/src/shell/en/index.ts`: `assistantEn`.
-- Giấy phép: `DEPENDENCIES.txt`, `NOTICE`, `.github/component-catalog.json` (mô tả của `node`), `sbom/README.md`, `website/docs/dependencies.md`.
+- Giấy phép: `DEPENDENCIES.txt`, `NOTICE`, `.github/licenses/component-catalog.json` (mô tả của `node`), `sbom/README.md`, `website/docs/dependencies.md`.
 - Tài liệu: hai `README`, `ARCHITECTURE.md`, `CHANGELOG.md`, `ROADMAP.md`, `docs/OPERATIONS.md`, `docs/TESTING.md`, `docs/DEMO.md`, `docs/README.md`, `docs/DX_OS_TEXTBOOK.md`, `docs/dynamic-core/README.md`, `docs/dynamic-core/BACKLOG.md`, `docs/dynamic-core/DANH_GIA.md`, `website/docs/council-qa.md` và `website/docs/evidence-matrix.md`.
 - Dữ liệu còn lại: `deploy/data/assistant` và client `dxos-assistant` trong Keycloak.
 

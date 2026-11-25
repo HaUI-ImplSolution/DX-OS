@@ -194,7 +194,7 @@ gh attestation verify oci://ghcr.io/haui-implsolution/dxos-backend:vX.Y.Z --repo
 
 Lệnh in lỗi và thoát với mã 1 khi image không do workflow của repo này dựng.
 
-Tệp trên GitHub Release (`.tar.gz`, `dxos-install.sh`, `dxos-lint.jar`, `.sha256`, SBOM) được workflow `Release Package` ký theo cách đó:
+Tệp trên GitHub Release (`.tar.gz`, `dxos-install.sh`, `dxos-lint.jar`, `LICENSE`, `NOTICE`, `.sha256`, SBOM) được workflow `Release Package` ký theo cách đó:
 
 ```bash
 gh attestation verify dx-os-X.Y.Z.tar.gz --repo HaUI-ImplSolution/DX-OS

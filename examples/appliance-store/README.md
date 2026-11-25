@@ -341,3 +341,7 @@ Muốn giữ DX-OS và chỉ xóa phía ứng dụng thì thêm `--keep-dxos`; h
 - Tự dựng màn hình duyệt trong ứng dụng.
 - Đăng nhập một lần và đồng bộ danh mục sản phẩm sang DX-OS.
 - Chức năng ngoài sổ bán hàng, đổi trả và bảo hành.
+
+## Giấy phép
+
+Apache-2.0, như cả dự án DX-OS; toàn văn ở `LICENSE` ở gốc repository.

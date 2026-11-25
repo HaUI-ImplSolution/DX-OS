@@ -55,8 +55,15 @@ jobs:
       - name: Every source file has its license header and every dependency in the SBOMs has an allowed license
         run: python3 .github/scripts/check_licenses.py
 
+      # Section 8 of DEPENDENCIES.txt lists every npm package (development ones too), action, image and tool.
+      - name: DEPENDENCIES.txt lists every package of the lockfiles, each with a license the OSI approves
+        run: python3 .github/scripts/check_license_inventory.py check
+
+      - name: Every image the stack runs has its table of packages
+        run: python3 .github/scripts/check_image_packages.py check
+
       - name: The license checks themselves
-        run: python3 -m unittest discover -s .github/scripts
+        run: python3 -m unittest discover -s .github/scripts/tests
 
       # reuse is a tool of this job only: Apache-2.0 and GPL-3.0-or-later code, CC0-1.0 and CC-BY-SA-4.0 documentation.
       - name: Every file has its copyright and license under the REUSE rules
@@ -137,7 +144,7 @@ jobs:
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ runner.temp }}/upstream-licenses.json
-          key: upstream-licenses-${{ hashFiles('.github/component-catalog.json', '**/Dockerfile', 'deploy/docker-compose.yml') }}
+          key: upstream-licenses-${{ hashFiles('.github/licenses/component-catalog.json', '**/Dockerfile', 'deploy/docker-compose.yml') }}
           restore-keys: upstream-licenses-
 
       - name: The version of each image and download in use has the license the catalog declares
@@ -151,5 +158,17 @@ jobs:
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ runner.temp }}/upstream-licenses.json
-          key: upstream-licenses-${{ hashFiles('.github/component-catalog.json', '**/Dockerfile', 'deploy/docker-compose.yml') }}
+          key: upstream-licenses-${{ hashFiles('.github/licenses/component-catalog.json', '**/Dockerfile', 'deploy/docker-compose.yml') }}
 
+  # The images are pulled and read again, so this runs every week and on request, not on every pull request.
+  image-packages:
+    name: Check the packages inside the images
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: The packages of every image are those that docs/IMAGE_PACKAGES.md lists
+        run: python3 .github/scripts/check_image_packages.py check --full

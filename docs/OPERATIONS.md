@@ -529,6 +529,7 @@ Nó kiểm Docker và Compose, RAM, ổ đĩa, `deploy/.env` (kể cả `DXOS_MO
 Biến có trong `.env` mà `.env.example` không liệt kê bị báo `WARN`.
 Với mỗi cổng `APISIX_HOST_PORT` và `POSTGRES_HOST_PORT`, nó phân biệt cổng do container của chính stack giữ (ổn, kể cả khi stack mới lên một phần và `dxos start` sẽ dựng nốt) với cổng bị chương trình khác ngoài stack giữ (FAIL).
 Cổng bị chương trình ngoài giữ thì `dxos stop` không giải phóng được: đổi giá trị của khóa đó trong `deploy/.env` hoặc dừng chương trình đó.
+Khi Docker không trả lời, `doctor` không kết luận cổng đang bị chương trình ngoài giữ: cổng đang dùng chỉ bị báo `WARN`, vì không biết container của stack có giữ nó không.
 Trên Windows, `doctor` chạy trong WSL nên không thấy chương trình giữ cổng ở phía Windows; khi đó `dxos start` dừng ở lỗi của Docker và nêu khóa `*_HOST_PORT` cần đổi.
 Quét mã độc được báo là bật hay tắt; `STORAGE_SCAN_HOST=clamav` mà `COMPOSE_PROFILES` không có `av` bị báo `FAIL`, vì ClamAV sẽ không chạy và mọi tệp tải lên bị từ chối.
 Thoát với mã 1 khi có `FAIL`, nên chạy trước `./update.sh` và `docker compose up -d` trên máy chủ.

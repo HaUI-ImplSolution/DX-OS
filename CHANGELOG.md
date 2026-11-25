@@ -63,6 +63,7 @@ Nâng cấp từ `2.0.2` giữ nguyên dữ liệu; hai migration mới thêm b�
 - `dxos uninstall --purge` xóa cả kho sao lưu trong `deploy/backups`; kho ở `BACKUP_DIR` hoặc `BACKUP_REPOSITORY` ngoài thư mục cài được giữ nguyên.
 - `dxos connect` cảnh báo khi `.env` của ứng dụng cho tài khoản khác đọc được, như trên ổ Windows gắn vào WSL (`/mnt/c`), nơi `chmod` không có tác dụng.
 - `dxos start` nêu khóa `APISIX_HOST_PORT` hoặc `POSTGRES_HOST_PORT` cần đổi khi Docker không mở được cổng.
+- `dxos doctor` báo `WARN`, không báo `FAIL`, cho cổng đang dùng khi Docker không trả lời, vì không biết container của stack có giữ cổng đó không.
 - Realm `dxos` không bắt buộc `lastName`, nên người dùng có tên một từ không bị hỏi thêm hồ sơ ở lần đăng nhập đầu; realm đã import từ trước chỉnh tay theo `sso/README.md`.
 
 ### Giao diện

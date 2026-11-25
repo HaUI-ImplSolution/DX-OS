@@ -10,6 +10,7 @@ Bài kiểm Playwright của bảng điều khiển, chạy trên một stack đ
 `web/tests/console.spec.ts` đăng nhập bằng tài khoản `ui_admin`, dùng một mẫu trong thư viện mẫu, xem kế hoạch, áp dụng, thấy mô hình chạy và đi qua các tab của bảng điều khiển.
 `web/tests/edit-record.spec.ts` áp dụng mẫu Ghi chú, cấp cho `ui_admin` vai `notes/EDITOR` qua `kc.py`, tạo một hồ sơ rồi sửa nó trên form; yêu cầu lưu phải trả 200 và không mang `webUrl` hay khóa nào khác ngoài các trường của mô hình.
 Bài này cần `python3` và `deploy/.env` ở thư mục gốc repository, cùng `KEYCLOAK_ADMIN_CONSOLE=true` như bước tạo tài khoản ở dưới.
+`web/tests/console-draft.spec.ts` viết một bản nháp ở tab Soạn và áp dụng rồi bấm Dùng mẫu: hộp thoại "Thay bản đang soạn?" hiện ra, Hủy giữ nguyên bản nháp và tab hiện tại, Thay thế mở mẫu; chưa viết gì thì mở ngay, không hỏi.
 `web/tests/phone.spec.ts` chạy ở cỡ điện thoại 390 px và kiểm bảng điều khiển cùng hộp việc không rộng hơn màn hình.
 `web/tests/stale-decision.spec.ts` có bốn ca: cán bộ mở một hồ sơ Một cửa với luồng sự kiện bị chặn, rồi hồ sơ (hoặc mô hình) bị đổi ở nơi khác, rồi cán bộ bấm Duyệt, Nhận việc hoặc Duyệt hàng loạt.
 Mỗi ca kiểm hồ sơ không bị duyệt hay giao, màn hình báo hồ sơ vừa đổi (hoặc mô hình vừa đổi thì báo tải lại trang) và hồ sơ hiện nội dung mới.

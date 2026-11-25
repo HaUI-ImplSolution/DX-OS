@@ -112,7 +112,7 @@ docker run --rm -u "$(id -u):$(id -g)" -v "$PWD:/local" \
 `-g` chọn ngôn ngữ, ví dụ `typescript-fetch`, `python` hoặc `java`; `docker run ... openapi-generator-cli:v7.27.0 list` in đủ danh sách.
 Token lấy như trên và đặt vào header `Authorization` của client sinh ra.
 Sinh lại client sau mỗi lần mô hình đổi, và kiểm lại mã gọi nó.
-Công cụ này do ứng dụng ngoài tự chạy; DX-OS không đóng gói nó, giấy phép ở `DEPENDENCIES.txt`, ghi chú [11].
+Công cụ này do ứng dụng ngoài tự chạy; DX-OS không đóng gói nó, giấy phép ở ghi chú về OpenAPI Generator của `DEPENDENCIES.txt`.
 
 ### 3. Gọi dữ liệu và quy trình
 

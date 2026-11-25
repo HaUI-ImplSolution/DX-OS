@@ -69,3 +69,7 @@ Chủ đề đổi được bằng `--topic-prefix`.
 | `DXOS_ITOT_STATE` | `~/.local/state/dxos-itot-<mô hình>.json` | Nơi giữ secret và lần đo cuối |
 
 `python3 examples/itot-simulator/simulator.py run --help` liệt kê các tùy chọn của lần chạy: số thiết bị, ngưỡng, khả năng vọt chỉ số và khoảng cách giữa hai lần đo.
+
+## Giấy phép
+
+Apache-2.0, như cả dự án DX-OS; toàn văn ở `LICENSE` ở gốc repository.

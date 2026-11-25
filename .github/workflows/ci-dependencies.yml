@@ -14,6 +14,16 @@ on:
       - 'website/package-lock.json'
       - 'e2e/web/package-lock.json'
       - 'sbom/*.cdx.json'
+      - 'DEPENDENCIES.txt'
+      - 'docs/DEPENDENCY_INVENTORY.md'
+      - '.github/licenses/license-inventory.json'
+      - '.github/licenses/osi-approved.json'
+      - '.github/licenses/dependency-exceptions.json'
+      - '.github/scripts/check_license_inventory.py'
+      - '.github/scripts/check_third_party_notices.py'
+      - 'backend/licenses/**'
+      - 'sso/licenses/**'
+      - 'clamav/licenses/**'
       - 'deploy/docker-compose.yml'
       - '.trivyignore'
       - '.github/workflows/ci-dependencies.yml'
@@ -30,6 +40,16 @@ on:
       - 'website/package-lock.json'
       - 'e2e/web/package-lock.json'
       - 'sbom/*.cdx.json'
+      - 'DEPENDENCIES.txt'
+      - 'docs/DEPENDENCY_INVENTORY.md'
+      - '.github/licenses/license-inventory.json'
+      - '.github/licenses/osi-approved.json'
+      - '.github/licenses/dependency-exceptions.json'
+      - '.github/scripts/check_license_inventory.py'
+      - '.github/scripts/check_third_party_notices.py'
+      - 'backend/licenses/**'
+      - 'sso/licenses/**'
+      - 'clamav/licenses/**'
       - 'deploy/docker-compose.yml'
       - '.trivyignore'
       - '.github/workflows/ci-dependencies.yml'
@@ -115,6 +135,14 @@ jobs:
       # The SBOM the pull request would have, which a bot has not generated again, so a new version is read.
       - name: The resolved packages have open licenses
         run: python3 .github/scripts/check_licenses.py sbom backend/target/backend.cdx.json
+
+      # Section 8 of DEPENDENCIES.txt lists the Maven packages of every scope, the plugins and their libraries.
+      - name: DEPENDENCIES.txt lists the Maven packages as they resolve, each with a license the OSI approves
+        run: python3 .github/scripts/check_license_inventory.py check --maven
+
+      # backend/licenses/ holds the license and notice texts that the backend and monitor images copy to /licenses.
+      - name: The license and notice texts of the Java images are those of the resolved libraries
+        run: python3 .github/scripts/check_third_party_notices.py check
 
       - name: Fail on a fixable HIGH or CRITICAL vulnerability in the resolved dependencies
         run: >

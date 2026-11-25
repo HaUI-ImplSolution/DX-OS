@@ -11,12 +11,12 @@
    or the model that examples/effort-benchmark/results.json pins by its sha256.
    `reuse lint` checks the rest of the tree.
 2. Every package in sbom/*.cdx.json has a license that is allowed below or
-   an entry in .github/dependency-exceptions.json that gives the reason.
+   an entry in .github/licenses/dependency-exceptions.json that gives the reason.
 3. No vendor/, third_party/ or node_modules/ directory is committed.
 4. Every container image the repository builds from, copies from or runs (in a Dockerfile, a compose file, a
    `docker run` command of a workflow or a script, or a script variable such as DUCKDB="duckdb/duckdb:1.4.1"), every release downloaded with ADD
    and every tracked weight, archive or document file is declared
-   in .github/component-catalog.json with an allowed license, and DEPENDENCIES.txt names each entry.
+   in .github/licenses/component-catalog.json with an allowed license, and DEPENDENCIES.txt names each entry.
 5. Every license that REUSE.toml gives to a file of the repository, and every text in LICENSES/, is an allowed one
    (or OFL-1.1, the license of the Noto Sans files), so no file of the project is under a license outside the OSI list.
 
@@ -48,7 +48,7 @@ PINNED_FILES = {"examples/effort-benchmark/support.yaml"}
 # REUSE-IgnoreEnd
 
 # Licenses approved by the OSI. Data under CC-BY-4.0 or CC0-1.0 is not on that list,
-# so the few packages that carry it are named, with the reason, in .github/dependency-exceptions.json.
+# so the few packages that carry it are named, with the reason, in .github/licenses/dependency-exceptions.json.
 ALLOWED = {
     "Apache-2.0", "MIT", "MIT-0", "BSD-2-Clause", "BSD-3-Clause", "ISC", "0BSD", "Unlicense",
     "BlueOak-1.0.0", "Python-2.0", "CNRI-Python", "Zlib",
@@ -195,7 +195,7 @@ def expression_allowed(expression: str, allowed: set[str]) -> bool:
 
 def check_sboms(files: list[Path] | None = None) -> list[str]:
     """The licenses of the packages of the SBOMs given, or of the committed ones in sbom/."""
-    exceptions = json.loads((ROOT / ".github/dependency-exceptions.json").read_text(encoding="utf-8"))
+    exceptions = json.loads((ROOT / ".github/licenses/dependency-exceptions.json").read_text(encoding="utf-8"))
     problems = []
     for sbom in sorted(files if files is not None else (ROOT / "sbom").glob("*.cdx.json")):
         allowed = ALLOWED
@@ -265,7 +265,7 @@ def referenced_downloads() -> dict[str, str]:
 
 
 def check_catalog() -> list[str]:
-    catalog = json.loads((ROOT / ".github/component-catalog.json").read_text(encoding="utf-8"))
+    catalog = json.loads((ROOT / ".github/licenses/component-catalog.json").read_text(encoding="utf-8"))
     copyright_text = (ROOT / "DEPENDENCIES.txt").read_text(encoding="utf-8")
     problems = []
     for kind, allowed in (("images", ALLOWED_IMAGES), ("downloads", ALLOWED)):
@@ -301,6 +301,56 @@ def check_bundled() -> list[str]:
             if re.search(r"(^|/)(vendor|third_party|node_modules)/", rel)]
 
 
+def check_declared_licenses() -> list[str]:
+    """The project is Apache-2.0 everywhere it declares a license: package.json, the POM, CITATION.cff and the footer of the docs site."""
+    problems = []
+    for project in ("frontend", "website", "assistant", "e2e/web"):
+        declared = json.loads((ROOT / project / "package.json").read_text(encoding="utf-8")).get("license")
+        if declared != "Apache-2.0":
+            problems.append(f"{project}/package.json declares license {declared}, expected Apache-2.0")
+    if "<name>Apache-2.0</name>" not in (ROOT / "backend/pom.xml").read_text(encoding="utf-8"):
+        problems.append("backend/pom.xml does not declare Apache-2.0")
+    if not re.search(r"^license:\s*Apache-2\.0\s*$", (ROOT / "CITATION.cff").read_text(encoding="utf-8"), re.MULTILINE):
+        problems.append("CITATION.cff does not declare Apache-2.0")
+    if "Apache-2.0" not in (ROOT / "website/docusaurus.config.js").read_text(encoding="utf-8"):
+        problems.append("the footer of the docs site does not name Apache-2.0")
+    return problems
+
+
+# The folders the Dockerfiles copy from: each image carries the LICENSE and NOTICE of the project, and the Node image the
+# script that writes its third-party notices, as the build context holds nothing outside its folder.
+LEGAL_CONTEXTS = ["backend", "frontend", "portal", "sso", "assistant", "clamav"]
+# The base image that each image ships, which the SOURCES.txt of its licenses folder names with the way to get the source of its packages.
+SHIPPED_BASES = {
+    "backend": "eclipse-temurin:21-jre-alpine",
+    "frontend": "nginx:1.30-alpine-slim",
+    "portal": "nginx:1.30-alpine-slim",
+    "sso": "eclipse-temurin:21-jre-jammy",
+    "assistant": "node:24.16.0-alpine",
+    "clamav": "clamav/clamav:1.5.4",
+}
+COPIED_SCRIPTS = [("frontend/scripts/third-party-licenses.mjs", "assistant/scripts/third-party-licenses.mjs")]
+
+
+def check_legal_copies() -> list[str]:
+    problems = []
+    for context in LEGAL_CONTEXTS:
+        for name in ("LICENSE", "NOTICE"):
+            copy = ROOT / context / "licenses" / name
+            if not copy.exists() or copy.read_bytes() != (ROOT / name).read_bytes():
+                problems.append(f"{context}/licenses/{name} is not the same as {name}: copy it again")
+    for context, base in SHIPPED_BASES.items():
+        sources = ROOT / context / "licenses" / "SOURCES.txt"
+        if base not in (ROOT / context / "Dockerfile").read_text(encoding="utf-8"):
+            problems.append(f"{context}/Dockerfile no longer builds on {base}: update SHIPPED_BASES and {context}/licenses/SOURCES.txt")
+        elif not sources.exists() or base not in sources.read_text(encoding="utf-8"):
+            problems.append(f"{context}/licenses/SOURCES.txt does not name the base image {base}")
+    for source, copy in COPIED_SCRIPTS:
+        if not (ROOT / copy).exists() or (ROOT / copy).read_bytes() != (ROOT / source).read_bytes():
+            problems.append(f"{copy} is not the same as {source}: copy it again")
+    return problems
+
+
 def main() -> int:
     # `sbom FILE...` checks the licenses of SBOMs generated from the pull request, which can differ from
     # the committed ones until they are generated again.
@@ -310,7 +360,7 @@ def main() -> int:
             print(problem)
         print(f"{len(problems)} problem(s)")
         return 1 if problems else 0
-    problems = check_headers() + check_own_licenses() + check_sboms() + check_catalog() + check_bundled()
+    problems = check_headers() + check_own_licenses() + check_sboms() + check_catalog() + check_bundled() + check_legal_copies() + check_declared_licenses()
     for problem in problems:
         print(problem)
     print(f"{len(problems)} problem(s)")

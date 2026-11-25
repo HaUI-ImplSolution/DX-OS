@@ -406,7 +406,8 @@ cmd_av() {
       [[ ",$profiles," == *,av,* ]] || set_env COMPOSE_PROFILES "${profiles:+$profiles,}av"
       set_env STORAGE_SCAN_HOST clamav
       if $running; then
-        compose up -d --no-build --pull missing clamav
+        # The scan image is pulled when it is published and built from clamav/ when it is not, as in a source checkout.
+        compose up -d --pull missing clamav
         compose up -d --no-build --no-deps --force-recreate backend
         wait_ready
       fi ;;

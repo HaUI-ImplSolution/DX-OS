@@ -247,4 +247,4 @@ docker compose exec mosquitto sh -c 'mosquitto_pub -h 127.0.0.1 -u "$MQTT_USER" 
 - Cầu nối chỉ tạo hồ sơ; việc xác nhận hay mở lại một sự cố là việc của người xử lý hoặc của hệ thống giám sát qua API.
 - Điều kiện `when` so một trường của payload với một giá trị; công thức phức tạp hơn nằm ở thiết bị hoặc ở hệ thống giám sát.
 - Lõi không giữ trạng thái thời gian thực của thiết bị, nên cầu nối không tạo bản sao số.
-- Giấy phép các thành phần của hai image (Mosquitto, Python) và thành phần đi kèm ở [`DEPENDENCIES.txt`](../DEPENDENCIES.txt), ghi chú 12.
+- Giấy phép các thành phần của hai image (Mosquitto, Python) và thành phần đi kèm ở ghi chú về cầu nối MQTT của [`DEPENDENCIES.txt`](../DEPENDENCIES.txt).

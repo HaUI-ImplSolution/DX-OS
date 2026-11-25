@@ -20,8 +20,21 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Tệp mô hình có khóa viết hai lần trong cùng một khối bị `dxos lint`, `dxos plan` và áp dụng từ chối, kèm dòng của lần viết thứ hai; mô hình đã lưu có khóa trùng vẫn chạy và hiện cảnh báo.
 - `dxos import <mô hình> <thực thể> <tệp.csv> --client TÊN` tạo mỗi dòng của tệp CSV thành một hồ sơ qua API dữ liệu chung, nên mỗi dòng đi qua quyền, ràng buộc, quy tắc và quy trình của thực thể; dòng bị từ chối được báo kèm số dòng và lý do, gửi lại cùng tệp không tạo trùng trong 24 giờ, và `--dry-run` kiểm tệp mà không tạo gì.
 
+### Giấy phép
+
+- `docs/DEPENDENCY_INVENTORY.md` liệt kê từng gói dự án dùng ở bất kỳ bước nào (npm kể cả gói dev, Maven kể cả test và plugin build, GitHub Actions, image, công cụ, phông, model), mỗi gói có phiên bản và giấy phép của đúng phiên bản đó; `.github/scripts/check_license_inventory.py` sinh mục này và `check` báo đỏ ở mỗi pull request khi thiếu gói hoặc có giấy phép ngoài danh sách OSI (`.github/licenses/osi-approved.json`) mà chưa có lý do.
+- Mỗi image do dự án phát hành (`backend`, `monitor`, `frontend`, `portal`, `sso`, `assistant`, `clamav`) kèm `LICENSE`, `NOTICE` và văn bản giấy phép của thư viện nó chứa ở `/licenses`; image `backend` có thêm giấy phép của `pgschema` và các mô-đun Go của nó.
+- Image `sso` kèm danh sách và văn bản giấy phép của 438 thư viện trong bản Keycloak (`THIRD-PARTY-LICENSES-keycloak.txt`), image `clamav` kèm giấy phép GPL-2.0 của ClamAV và của các phần bên thứ ba dựng sẵn trong nó, và mỗi image kèm `SOURCES.txt` nêu nơi lấy nguồn của gói hệ điều hành và thành phần GPL của image nền; các thư viện đó đều có trong `docs/DEPENDENCY_INVENTORY.md`.
+- Quét mã độc chạy bằng image `clamav` của dự án, dựng trên image ClamAV chính thức và bỏ `libclamunrar` (giấy phép UnRAR, không phải OSI); backend từ chối tệp tải lên có chữ ký RAR dù tên tệp đổi đuôi, vì ClamAV không mở được RAR.
+- Image `frontend`, `portal` dùng `nginx:1.30-alpine-slim`, image `assistant` và ứng dụng ví dụ `appliance-store` dùng `node:24.16.0-alpine`, ví dụ `order_approval` dùng `python:3.12-alpine`; số gói ngoài OSI trong các image này giảm rõ (xem `docs/IMAGE_PACKAGES.md`).
+- `docs/IMAGE_PACKAGES.md` liệt kê gói bên trong các image bên thứ ba mà stack chạy, kèm giấy phép từng gói và cột Ngoài OSI; `check_image_packages.py` kiểm đủ bảng ở mỗi pull request và đọc lại image hằng tuần.
+- `LICENSE` và `NOTICE` đi kèm GitHub Release cùng `dxos-install.sh` và `dxos-lint.jar`; SBOM của web và trang docs khai Apache-2.0 cho gói gốc; README của mỗi ví dụ nêu giấy phép; `check_licenses.py` kiểm mọi nơi dự án khai giấy phép (`package.json`, `pom.xml`, `CITATION.cff`, chân trang trang docs) đều là Apache-2.0.
+- `dxos-lint.jar` kèm `LICENSE`, `NOTICE` và giấy phép của SnakeYAML ở `META-INF`; `pom.xml` và `package.json` khai Apache-2.0; phông Codicons (CC-BY-4.0) trong bản build web có ghi công ở `third-party-licenses.txt`.
+- Mọi câu về giấy phép ở README, NOTICE, `DEPENDENCIES.txt` và trang docs nêu cùng danh sách ngoại lệ ngoài OSI.
+
 ### Giao diện
 
+- Bản build web không còn kèm các dịch vụ ngôn ngữ TypeScript, HTML, CSS và JSON của Monaco mà trình soạn YAML không dùng, nên nhỏ đi hơn một nửa (từ 18 MB còn 8,4 MB).
 - Web có test đơn vị bằng Vitest (`npm test` trong `frontend/`), chạy ở workflow `Frontend`.
 - Trình dựng mô hình có thêm hai trang cho mỗi thực thể: Giao diện và Mẫu in.
   Giao diện sửa biểu tượng, nhóm và thứ tự trong menu, cột và cách sắp xếp của danh sách, nhóm trường trên form và gợi ý của từng trường.
@@ -155,7 +168,7 @@ Bổ sung và sửa sau bản `2.0.0`, nâng cấp từ `2.0.0` giữ nguyên d�
 - Mọi tệp mã và cấu hình (CSS, HTML, `Dockerfile`, `pom.xml`, `nginx.conf`, `.env.example`, `.gitleaks.toml`) có dòng `SPDX-License-Identifier`; `REUSE.toml` và `LICENSES/` khai giấy phép và bản quyền cho tệp không chèn được chú thích, và job `Check licenses` chạy `reuse lint`.
 - Mã Java của backend định dạng bằng google-java-format (Apache-2.0) qua Spotless, chạy `./mvnw spotless:apply`; mã của kho theo Apache-2.0.
 - `check_upstream_licenses.py` đọc giấy phép của dự án gốc ở đúng phiên bản đang dùng của từng image và bản tải về (tag của image, hoặc `ARG` của Dockerfile), và làm job đỏ khi giấy phép khác bản đã khai, ngoài danh sách OSI, không xác định được hoặc không đọc được; mục không đọc được theo cách đó khai `refs`, `text` hoặc `unverified` trong `component-catalog.json`.
-- `check_licenses.py sbom <tệp>` kiểm giấy phép của SBOM sinh lại từ pull request ở job SBOM của Compliance và của Dependencies, nên bản mới của một thư viện được kiểm trước khi `sbom/` được sinh lại; `python3 -m unittest discover -s .github/scripts` chạy các ca kiểm của hai script.
+- `check_licenses.py sbom <tệp>` kiểm giấy phép của SBOM sinh lại từ pull request ở job SBOM của Compliance và của Dependencies, nên bản mới của một thư viện được kiểm trước khi `sbom/` được sinh lại; `python3 -m unittest discover -s .github/scripts/tests` chạy các ca kiểm của hai script.
 
 ### Lõi chạy ngầm
 
@@ -394,7 +407,7 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
   Portal chỉ còn ứng dụng chính, Keycloak Admin, màn hình giám sát và Swagger; biến `PORTAL_BI_URL` và `PORTAL_CHAT_URL` không còn dùng.
 - Mã của dự án chỉ có một giấy phép, Apache-2.0.
 - Mỗi bản build của ứng dụng web và của trang tài liệu kèm `third-party-licenses.txt` ở gốc, chép thông báo bản quyền của từng thư viện npm đóng gói trong đó (`frontend/scripts/third-party-licenses.mjs`).
-- `.github/component-catalog.json` khai báo image và tệp tải về; `check_licenses.py` chỉ cho giấy phép OSI và chặn mục thiếu.
+- `.github/licenses/component-catalog.json` khai báo image và tệp tải về; `check_licenses.py` chỉ cho giấy phép OSI và chặn mục thiếu.
   `DEPENDENCIES.txt`, `NOTICE` và các tệp SBOM ghi đúng thành phần của bản phát hành; số phiên bản của backend, web và SBOM là `2.0.0`.
 
 ## [1.1.1] - 2026-10-30

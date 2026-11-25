@@ -25,7 +25,7 @@ Hồ sơ vào trạng thái đầu của quy trình, thường là **Chờ xử 
 ## Đính kèm tệp
 
 Mở hồ sơ rồi thêm tệp vào phần tệp đính kèm.
-Một số loại tệp bị từ chối, ví dụ tệp HTML.
+Một số loại tệp bị từ chối, ví dụ tệp HTML và tệp RAR (kể cả tệp RAR đổi đuôi).
 Chỉ người đã thêm một tệp mới gỡ được tệp đó.
 
 ## In giấy tờ

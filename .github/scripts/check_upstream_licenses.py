@@ -252,7 +252,7 @@ def versions_in_use() -> dict[str, dict[str, set[str]]]:
 
 
 def main() -> int:
-    catalog = json.loads((ROOT / ".github/component-catalog.json").read_text(encoding="utf-8"))
+    catalog = json.loads((ROOT / ".github/licenses/component-catalog.json").read_text(encoding="utf-8"))
     used = versions_in_use()
     failures: list[str] = []
     notes: list[str] = []

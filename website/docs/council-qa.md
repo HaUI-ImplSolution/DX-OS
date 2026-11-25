@@ -194,10 +194,10 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - Mã của đội theo Apache-2.0, có `LICENSE` toàn văn, `NOTICE` và dòng SPDX ở đầu mỗi tệp mã.
 - Mã, tài liệu và ảnh của repository theo Apache-2.0, hai tệp phông theo OFL-1.1; không có thành phần AGPL nào trong cây mã; Grafana (AGPL-3.0) chỉ là image tùy chọn, chạy nguyên bản ở dịch vụ riêng.
 - Mỗi bản phát hành có gói `.tar.gz` kèm `.sha256` và SBOM CycloneDX; không dùng định dạng đóng.
-- Job `Check licenses` của workflow `Compliance` chạy ở mọi pull request: kiểm header, giấy phép của từng gói trong SBOM, danh mục image.
+- Job `Check licenses` của workflow `Compliance` chạy ở mọi pull request: kiểm header, giấy phép của từng gói trong SBOM, danh mục image, và `docs/DEPENDENCY_INVENTORY.md` liệt kê mọi gói kể cả gói dev, test và plugin build; mỗi image phát hành kèm `LICENSE`, `NOTICE` và giấy phép của thư viện ở `/licenses`, và `docs/IMAGE_PACKAGES.md` liệt kê gói bên trong các image bên thứ ba.
 - Cam kết của đội chặt hơn thể lệ: cả công cụ, mô hình AI (khi có) và dữ liệu đều phải mở; thành phần không đạt đã gỡ khỏi bản phát hành.
-- Hai gói dữ liệu (CC-BY-4.0, CC0-1.0) chỉ dùng lúc dựng trang docs được nêu tên kèm lý do; ClamAV có image kèm `libclamunrar` theo giấy phép UnRAR, ghi rõ ở `DEPENDENCIES.txt`.
-- **Bằng chứng:** `LICENSE`, `NOTICE`, `DEPENDENCIES.txt`; `python3 .github/scripts/check_licenses.py`; [Thành phần được chọn và không chọn](./dependencies.md); [Rà soát PoF](./pof-audit.md).
+- Mọi ngoại lệ ngoài danh sách OSI nêu tên kèm lý do ở phần "Giấy phép ngoài danh sách OSI" của `DEPENDENCIES.txt` và ở `docs/DEPENDENCY_INVENTORY.md`: dữ liệu chỉ đọc lúc dựng trang tài liệu, công cụ dựng và công cụ không phân phối, phông biểu tượng Codicons (CC-BY-4.0) trong bản build web, một mô-đun Go (phạm vi công cộng) trong tệp chạy pgschema, và vài thành phần nằm sẵn trong image bên thứ ba mà dự án kéo nguyên bản, như gói hệ điều hành của image Debian; image ClamAV của dự án đã bỏ `libclamunrar` (giấy phép UnRAR).
+- **Bằng chứng:** `LICENSE`, `NOTICE`, `DEPENDENCIES.txt`; `python3 .github/scripts/check_licenses.py`; `python3 .github/scripts/check_license_inventory.py check`; [Thành phần được chọn và không chọn](./dependencies.md); [Rà soát PoF](./pof-audit.md).
 
 ## 19. Mã có phần do công cụ AI viết, đội kiểm soát thế nào?
 
@@ -217,5 +217,5 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - Repository chỉ chứa tệp cấu hình và dashboard của đội, theo Apache-2.0; không chứa mã của Grafana.
 - Lõi đã phát số đo theo chuẩn Prometheus nên Grafana đọc thẳng, đội không phải tự viết trang biểu đồ.
 - Dashboard là một tệp JSON chuẩn; ai không muốn dùng Grafana của đội thì nạp tệp đó vào Grafana của mình, hoặc chỉ dùng Prometheus (Apache-2.0).
-- Phiên bản và kết quả rà từng thành phần của image ghi ở mục [13] của `DEPENDENCIES.txt`.
-- **Bằng chứng:** `deploy/docker-compose.grafana.yml`, `deploy/grafana/dashboards/dxos.json`, `DEPENDENCIES.txt` mục [13]; `python3 .github/scripts/check_licenses.py`; mục "Prometheus và Grafana kèm theo" của `docs/MONITORING.md`.
+- Phiên bản và kết quả rà từng thành phần của image ghi ở ghi chú về Prometheus và Grafana của `DEPENDENCIES.txt`.
+- **Bằng chứng:** `deploy/docker-compose.grafana.yml`, `deploy/grafana/dashboards/dxos.json`, ghi chú về Prometheus và Grafana của `DEPENDENCIES.txt`; `python3 .github/scripts/check_licenses.py`; mục "Prometheus và Grafana kèm theo" của `docs/MONITORING.md`.

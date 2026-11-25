@@ -32,3 +32,7 @@ Thay `DXOS_WITNESS_TOKEN` bằng `DXOS_WITNESS_CLIENT_ID` và `DXOS_WITNESS_CLIE
 - Hash của dòng phiên bản 1 tính cả `note` và `detail`, mà tin webhook và `GET /events` không mang hai trường đó, nên bên ngoài không tính lại được hash; chỉ so được hash đã giữ.
 - Công cụ chỉ có giá trị khi tệp nằm ở nơi người sửa hệ thống không với tới; chạy nó và giữ tệp ngay trên máy chủ thì không chứng minh được gì.
 - Dòng thêm vào sau lần `save` cuối không có trong tệp nên không được kiểm.
+
+## Giấy phép
+
+Apache-2.0, như cả dự án DX-OS; toàn văn ở `LICENSE` ở gốc repository.

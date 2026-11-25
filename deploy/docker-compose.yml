@@ -210,7 +210,10 @@ services:
     profiles:
       - av
     logging: *default-logging
-    image: clamav/clamav:1.5.4@sha256:638d90201ee7ee6a82d249a2fc23b132e578673b5f1f2766852b127676ca1ef6
+    image: ${DXOS_IMAGE_PREFIX:-dxos}-clamav:${DXOS_IMAGE_TAG:-local}
+    build:
+      context: ../clamav
+      dockerfile: Dockerfile
     restart: unless-stopped
     environment:
       CLAMD_CONF_ConcurrentDatabaseReload: "no"

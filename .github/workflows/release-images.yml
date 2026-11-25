@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       services:
-        description: "Images to build: all, or a comma list of backend,monitor,frontend,portal,sso, or an optional image such as assistant"
+        description: "Images to build: all, or a comma list of backend,monitor,frontend,portal,sso,clamav, or an optional image such as assistant"
         required: true
         default: all
 
@@ -31,7 +31,7 @@ jobs:
         env:
           REQUESTED: ${{ inputs.services }}
         run: |
-          ALL="backend monitor frontend portal sso"
+          ALL="backend monitor frontend portal sso clamav"
           # Optional images are built only when named.
           OPTIONAL="assistant"
           if [[ "$REQUESTED" == "all" ]]; then
@@ -76,6 +76,8 @@ jobs:
           else
             echo "version=sha-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
           fi
+          # The scan image carries ClamAV, which is GPL-2.0-only; the others are DX-OS.
+          if [[ "${{ matrix.name }}" == "clamav" ]]; then echo "license=GPL-2.0-only" >> "$GITHUB_OUTPUT"; else echo "license=Apache-2.0" >> "$GITHUB_OUTPUT"; fi
           # The monitor is built from the backend sources, with its own target of the same Dockerfile.
           if [[ "${{ matrix.name }}" == "monitor" ]]; then
             echo "context=backend" >> "$GITHUB_OUTPUT"
@@ -153,7 +155,7 @@ jobs:
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
-            org.opencontainers.image.licenses=Apache-2.0
+            org.opencontainers.image.licenses=${{ steps.image.outputs.license }}
           cache-from: type=registry,ref=${{ steps.image.outputs.repo }}:buildcache
           cache-to: type=registry,ref=${{ steps.image.outputs.repo }}:buildcache,mode=max,image-manifest=true,oci-mediatypes=true
 

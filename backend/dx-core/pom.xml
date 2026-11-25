@@ -12,6 +12,7 @@
 	<artifactId>dx-core</artifactId>
 	<name>dx-core</name>
 	<description>Shared services: identity, workflow, storage, security, platform</description>
+	<url>https://github.com/HaUI-ImplSolution/DX-OS/tree/main/backend/dx-core</url>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

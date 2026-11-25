@@ -38,7 +38,7 @@ Hai nơi đó được máy kiểm ở mỗi pull request, tài liệu này ch�
 | React Flow, Dagre, Smart Edge | MIT | Sơ đồ quy trình vẽ từ tệp đang soạn | Chỉ để xem quy trình, không để thiết kế | `frontend/src/console/` |
 | FullCalendar | MIT | Lịch đặt chỗ | Kéo thả để đổi giờ | |
 | Fastify, @fastify/swagger, jose | MIT | Dịch vụ trợ lý tùy chọn | Tách khỏi API lõi, chỉ chạy khi bật | `assistant/`, không đưa vào module Java Core |
-| Apertus-8B-Instruct-2509, llama.cpp | Apache-2.0, MIT | Model tham khảo và runtime suy luận self-host của trợ lý | Endpoint do người vận hành cố định, người dùng không nhập | Do người vận hành cấp, không đóng gói trong repository; xem `assistant/README.md` |
+| Model suy luận (không đóng gói), llama.cpp | Theo model đã chọn, MIT | Model và runtime suy luận self-host của trợ lý | Endpoint do người vận hành cố định, người dùng không nhập | Do người vận hành cấp, không đóng gói trong repository; xem `assistant/README.md` |
 | restic | BSD-2-Clause | Sao lưu có mã hóa | Chạy trong container nên chỉ cần Docker | `deploy/backup.sh` |
 | Trivy, gitleaks, CycloneDX | Apache-2.0, MIT | Quét lỗ hổng, bí mật và lập SBOM trong CI | Công cụ nguồn mở, chạy ở mọi pull request | `.github/workflows/` |
 | reuse | Apache-2.0, GPL-3.0-or-later (mã); CC0-1.0, CC-BY-SA-4.0 (tài liệu) | Kiểm giấy phép và bản quyền của từng tệp theo chuẩn REUSE trong CI | Công cụ nguồn mở, chạy bằng `pipx run`, không đóng gói vào sản phẩm | `.github/workflows/ci-compliance.yml` |

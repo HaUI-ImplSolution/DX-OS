@@ -24,7 +24,7 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 | Công cụ CI và dựng | 12 |
 | Công cụ của máy chạy | 8 |
 | Thư viện Python | 1 |
-| Phông và model | 4 |
+| Phông và model | 3 |
 
 ## npm: frontend
 
@@ -2807,7 +2807,6 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 
 | Tên | Phiên bản | Giấy phép | Phạm vi | Ngoại lệ |
 |---|---|---|---|---|
-| `Apertus-8B-Instruct-2509` | 2509 | Apache-2.0 | optional |  |
 | `Codicons (codicon.ttf in monaco-editor)` | 0.57.0 | CC-BY-4.0 | prod | Icon font of Microsoft vscode-codicons under CC-BY-4.0 (its code is MIT), shipped as codicon.ttf inside monaco-editor. It is an asset, not code; the web bundle carries its attribution in third-party-licenses.txt. |
 | `Noto Sans` | 2022 | OFL-1.1 | prod |  |
 | `llama.cpp` | b12387 | MIT | optional |  |

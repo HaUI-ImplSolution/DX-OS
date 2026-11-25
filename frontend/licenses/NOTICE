@@ -33,9 +33,8 @@ Sản phẩm này sử dụng phần mềm của bên thứ ba, giữ nguyên gi
 - PostgreSQL (PostgreSQL License).
 - React, react-admin, Material UI (MIT).
 - Fastify, jose và Node.js (MIT).
-- Apertus-8B-Instruct-2509 (Apache-2.0; Copyright 2025 - The Swiss AI team), model tham khảo do người vận hành tự cấp; điều khoản upstream ở ghi chú về Apertus của DEPENDENCIES.txt.
 - llama.cpp b12387 (MIT; Copyright (c) 2023-2026 The ggml authors), runtime inference do người vận hành cấp riêng.
-  Nguồn giấy phép và phạm vi kiểm model/runtime ở các ghi chú về Apertus và llama.cpp của DEPENDENCIES.txt.
+  Nguồn giấy phép và phạm vi kiểm runtime ở ghi chú về llama.cpp của DEPENDENCIES.txt.
 - OpenAPI Generator 7.27.0 (Apache-2.0), công cụ sinh client do người dùng tự chạy, không đóng gói trong sản phẩm; ghi chú về OpenAPI Generator của DEPENDENCIES.txt.
 - caniuse-lite, dữ liệu của Can I Use (CC-BY-4.0), chỉ dùng lúc dựng trang tài liệu.
 - ClamAV (GPL-2.0), chạy thành dịch vụ riêng để quét mã độc, trong image của dự án dựng trên image chính thức; image đã bỏ libclamunrar (giấy phép UnRAR, không phải OSI) và kèm giấy phép của ClamAV ở /licenses.

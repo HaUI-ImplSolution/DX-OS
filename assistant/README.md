@@ -30,8 +30,8 @@ Image chỉ chứa Node.js và mã của trợ lý, không có npm, corepack và
 
 Trợ lý hỗ trợ mọi endpoint suy luận tương thích OpenAI Chat Completions hoặc llama.cpp `/completion`.
 DX-OS không áp đặt hay đóng gói model mặc định; người vận hành tự chọn model, cấp endpoint và tự chịu trách nhiệm với điều khoản upstream.
-Bản cài có thể tham khảo dùng Apertus-8B-Instruct-2509 (Apache-2.0 kèm AUP) hoặc OLMo (Apache-2.0) qua llama.cpp (MIT).
-Giấy phép và ghi chú nằm ở [`DEPENDENCIES.txt`](../DEPENDENCIES.txt), các ghi chú về Apertus và llama.cpp.
+DX-OS không chọn model nào vì mỗi model có điều khoản sử dụng riêng của bên phát hành.
+Ghi chú về model suy luận và llama.cpp (MIT) nằm ở [`DEPENDENCIES.txt`](../DEPENDENCIES.txt).
 Repository không đóng gói trọng số và không tải trọng số trong request hay lúc Core khởi động.
 
 Endpoint do người vận hành cố định trong bản cài, người dùng không nhập endpoint, key hay model trên giao diện.

@@ -280,8 +280,8 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/licenses/dependency-excepti
 | GitHub Actions (actions/*, docker/*, | MIT, Apache-2.0, ISC, 0BSD,          | Chỉ trong CI, ghim theo SHA          |
 | github/*, ossf/*)                    | BlueOak-1.0.0                        |                                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| Apertus-8B-Instruct-2509 [9]         | Apache-2.0                           | LLM tham khảo; người vận hành tự     |
-|                                      |                                      | cấp trọng số cho inference self-host |
+| Model suy luận [9]                   | Do người vận hành chọn               | Không đóng gói, không chọn model;    |
+|                                      |                                      | người vận hành tự cấp                |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | llama.cpp b12387 [10]                | MIT                                  | Runtime inference self-host do       |
 |                                      |                                      | người vận hành cấp riêng             |
@@ -338,12 +338,8 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/licenses/dependency-excepti
     Docker Desktop là sản phẩm riêng theo điều khoản thương mại của Docker, không thuộc OSI; DX-OS không cần nó, và trên Linux dùng Docker Engine.
     Các công cụ ở dòng này là phần mềm cài sẵn trên máy chạy, DX-OS không đóng gói hay phân phối lại chúng.
 
-[9] Apertus-8B-Instruct-2509: Apache-2.0, Copyright 2025 - The Swiss AI team.
-    Giấy phép upstream: https://huggingface.co/swiss-ai/Apertus-8B-Instruct-2509/blob/main/LICENSE.txt.
-    Model tham khảo phục vụ qua endpoint self-host; repository không đóng gói trọng số và không chọn model mặc định.
-    Khi tải từ Hugging Face, tác giả áp dụng Acceptable Use Policy (AUP 1.0) kèm nghĩa vụ bồi thường thiệt hại cho ETH Zurich và EPFL.
-    Model card tự mô tả "fully open" nhưng chưa nằm trong danh mục chứng nhận Open Source AI (OSAID 1.0) của OSI, dữ liệu huấn luyện là script tái dựng.
-    Người vận hành tự chọn model, tự tải trọng số và tự chịu trách nhiệm pháp lý với các điều khoản của upstream.
+[9] Model suy luận: repository không đóng gói trọng số và không chọn model nào.
+    Model có điều khoản sử dụng riêng của bên phát hành, nên người vận hành tự chọn, tự tải và tự chịu trách nhiệm với các điều khoản đó.
 
 [10] llama.cpp b12387: MIT, Copyright (c) 2023-2026 The ggml authors.
      Giấy phép đúng tag: https://github.com/ggml-org/llama.cpp/blob/b12387/LICENSE.
@@ -387,7 +383,6 @@ Trang chủ và mã nguồn của các thành phần không nằm trong SBOM (im
 Gói Maven và npm: trang chủ và mã nguồn của từng gói nằm trong sbom/*.cdx.json (mục externalReferences).
 
 Thành phần       Trang chủ | Mã nguồn
-Apertus          https://huggingface.co/swiss-ai/Apertus-8B-Instruct-2509 | https://github.com/swiss-ai
 llama.cpp        https://github.com/ggml-org/llama.cpp | https://github.com/ggml-org/llama.cpp/tree/b12387
 OpenAPI Generator https://openapi-generator.tech | https://github.com/OpenAPITools/openapi-generator/tree/v7.27.0
 PostgreSQL       https://www.postgresql.org/ | https://github.com/postgres/postgres

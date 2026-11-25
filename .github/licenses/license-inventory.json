@@ -161,13 +161,6 @@
       "note": "font embedded in the PDF of the print templates"
     },
     {
-      "name": "Apertus-8B-Instruct-2509",
-      "version": "2509",
-      "license": "Apache-2.0",
-      "scope": "optional",
-      "note": "reference model of the optional assistant, not in the repository; the weights come with an acceptable use policy"
-    },
-    {
       "name": "llama.cpp",
       "version": "b12387",
       "license": "MIT",

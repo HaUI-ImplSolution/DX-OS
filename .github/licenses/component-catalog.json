@@ -21,5 +21,12 @@
   },
   "downloads": {
     "keycloak/keycloak": {"license": "Apache-2.0", "use": "Identity and single sign-on; the release archive is unpacked into the sso image", "source": "https://github.com/keycloak/keycloak"}
-  }
+  },
+  "files": [
+    {"path": "tools/classifier/model/onestop.json", "license": "Apache-2.0", "note": "DX-OS classifier weights for one-stop requests, packaged in the assistant image"},
+    {"path": "tools/classifier/model/support.json", "license": "Apache-2.0", "note": "DX-OS classifier weights for support tickets, packaged in the assistant image"},
+    {"path": "tools/classifier/model/clinic.json", "license": "Apache-2.0", "note": "DX-OS classifier weights for appointments, packaged in the assistant image"},
+    {"path": "tools/classifier/model/itaccess.json", "license": "Apache-2.0", "note": "DX-OS classifier weights for IT access requests, used in parity tests"},
+    {"path": "tools/classifier/model/retail.json", "license": "Apache-2.0", "note": "DX-OS classifier weights for returns, used in parity tests"}
+  ]
 }

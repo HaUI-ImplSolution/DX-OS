@@ -13,8 +13,11 @@ export type Entity = { name: string; label: string; canRead: boolean; canWrite?:
     effects?: Record<string, Effect[]> } };
 export type Model = { name: string; modelVersion?: number; held: boolean; entities: Entity[] };
 type RecordData = Record<string, unknown> & { version: number; status: string };
-export type AiTask = { label: string; inputFields: string[]; outputField: string; instruction: string;
-  sources: string[]; maxLength: number };
+type TaskFields = { label: string; inputFields: string[]; outputField: string };
+export type AiTask = TaskFields & (
+  { engine?: 'llm'; classifier?: null; instruction: string; sources: string[]; maxLength: number } |
+  { engine: 'classifier'; classifier: string; instruction?: string; sources?: []; maxLength?: null }
+);
 
 export class Records {
   constructor(private readonly core: CoreClient, private readonly store: Store) {}

@@ -569,12 +569,35 @@ public final class ModelParser {
           mapping(
               task,
               Set.of(
-                  "label", "input_fields", "output_field", "instruction", "sources", "max_length"));
+                  "label",
+                  "input_fields",
+                  "output_field",
+                  "instruction",
+                  "sources",
+                  "max_length",
+                  "engine",
+                  "classifier"));
+      String engine = keys.containsKey("engine") ? scalar(keys.get("engine")) : "llm";
+      boolean usesClassifier = engine.equals("classifier");
+      String classifier = null;
+      if (usesClassifier) {
+        classifier = readName(task, keys.get("classifier"), "classifier");
+        if (classifier != null && !Tag.STR.equals(keys.get("classifier").getTag()))
+          problem(task, "classifier must be a name in a string");
+        if (keys.containsKey("sources")) problem(task, "classifier tasks must not declare sources");
+      } else {
+        if (!engine.equals("llm")) problem(task, "engine must be llm or classifier");
+        if (keys.containsKey("classifier")) problem(task, "llm tasks must not declare classifier");
+      }
       List<String> input = aiNames(task, keys.get("input_fields"), "input_fields");
-      List<String> sources = aiNames(task, keys.get("sources"), "sources");
+      List<String> sources =
+          usesClassifier ? List.of() : aiNames(task, keys.get("sources"), "sources");
       for (String field : input) {
         Field f = fields.get(field);
-        if (f == null
+        if (usesClassifier) {
+          if (f == null || f.type() != FieldType.TEXT)
+            problem(task, "classifier input_fields must name text fields of this entity");
+        } else if (f == null
             || Set.of(FieldType.FILE, FieldType.USER, FieldType.REFERENCE).contains(f.type())) {
           problem(task, "input_fields must name supported fields of this entity");
         }
@@ -583,8 +606,13 @@ public final class ModelParser {
       Field target = fields.get(output);
       if (target == null
           || target.multiple()
-          || (target.type() != FieldType.TEXT && target.type() != FieldType.CHOICE)) {
-        problem(task, "output_field must name a text or single choice field");
+          || (target.type() != FieldType.CHOICE
+              && (usesClassifier || target.type() != FieldType.TEXT))) {
+        problem(
+            task,
+            usesClassifier
+                ? "classifier output_field must name a single choice field"
+                : "output_field must name a text or single choice field");
       }
       if (process != null
           && process.after() != null
@@ -597,9 +625,16 @@ public final class ModelParser {
       String instruction = keys.get("instruction") == null ? "" : scalar(keys.get("instruction"));
       if (label.isBlank()
           || label.length() > 200
-          || instruction.isBlank()
+          || ((!usesClassifier || keys.containsKey("instruction")) && instruction.isBlank())
+          || (usesClassifier
+              && keys.containsKey("instruction")
+              && !Tag.STR.equals(keys.get("instruction").getTag()))
           || instruction.length() > 2000) {
-        problem(task, "a task needs a label up to 200 and instruction up to 2000 characters");
+        problem(
+            task,
+            usesClassifier
+                ? "a classifier task needs a label up to 200 and optional instruction up to 2000 characters"
+                : "a task needs a label up to 200 and instruction up to 2000 characters");
       }
       int maxLength = 500;
       try {
@@ -611,7 +646,17 @@ public final class ModelParser {
       }
       if (result.containsKey(name))
         problem(tuple.getKeyNode(), "task " + name + " is declared twice");
-      result.put(name, new Model.AiTask(label, input, output, instruction, sources, maxLength));
+      result.put(
+          name,
+          new Model.AiTask(
+              label,
+              input,
+              output,
+              instruction,
+              sources,
+              usesClassifier ? null : maxLength,
+              engine,
+              classifier));
     }
     return result;
   }

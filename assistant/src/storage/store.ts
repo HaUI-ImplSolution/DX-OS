@@ -12,6 +12,7 @@ export type Proposal = {
   warnings?: { field: string; expected: string; actual: string | null }[];
   task?: string; field?: string; value?: string; previousValue?: unknown; taskRevision?: string;
   sources?: { id: string; title: string; revision: string; text: string; license: string }[];
+  evidence?: string[];
   action?: string; assignee?: string | null; note?: string;
   version: number; modelVersion: number; summary: string; webOnly: boolean;
   effects?: { operation: string; userSource: string; group: string; asynchronous: boolean }[];

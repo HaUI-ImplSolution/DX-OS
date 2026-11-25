@@ -399,10 +399,38 @@ Tin của dòng `escalated` có thêm `level` (mức, từ 1) và `round` (lần
 
 ## Nhiệm vụ trợ lý nghiệp vụ
 
-Mỗi thực thể có thể khai báo `ai.tasks`, là ánh xạ tên nhiệm vụ tới `label`, `input_fields`, `output_field`, `instruction`, `sources` và `max_length`.
-Trường đầu vào lấy từ hồ sơ, gồm trường đơn vị ở dạng chỉ đọc; đầu ra là một trường text hoặc choice đơn trị và không được dùng làm nguồn cấp membership.
-`sources` là danh sách mã nguồn tham khảo do dịch vụ trợ lý quản lý, không phải URL hoặc đường dẫn tệp.
+Mỗi thực thể có thể khai báo từ một đến tám nhiệm vụ dưới `ai.tasks`, với khóa là tên nhiệm vụ.
+Mỗi nhiệm vụ cần `input_fields` và `output_field`.
+`label` mặc định là tên nhiệm vụ.
+`engine` nhận `llm` (mặc định) hoặc `classifier`.
+
+Với `llm`, `instruction` và `sources` là bắt buộc.
+`sources` gồm các mã nguồn tham khảo do dịch vụ trợ lý quản lý.
+Đầu vào có thể gồm trường đơn vị ở dạng chỉ đọc và đầu ra là trường `text` hoặc `choice` đơn trị.
+`max_length` giới hạn độ dài đề xuất từ 1 đến 2000 ký tự, mặc định là 500.
+Nhiệm vụ `llm` không được khai `classifier`.
+
+Với `classifier`, tên bộ phân loại phải khớp `^[a-z][a-z0-9_]{0,39}$` và tương ứng với tên tệp trọng số đã nạp.
+`input_fields` chỉ gồm các trường `text`, theo thứ tự dùng khi huấn luyện.
+Đầu ra phải là một trường `choice` đơn trị có tập lựa chọn trùng với tập nhãn nghiệp vụ của bộ phân loại.
+`instruction` là tùy chọn, `sources` không được khai và `max_length` chỉ áp dụng cho LLM.
+
+```yaml
+ai:
+  tasks:
+    classify_kind:
+      label: Gợi ý loại hồ sơ
+      engine: classifier
+      classifier: onestop
+      input_fields: [reason]
+      output_field: kind
+```
+
+Trường đầu ra của nhiệm vụ không được dùng để cấp nhóm thành viên.
 Khai báo nhiệm vụ không cấp thêm quyền; người xác nhận vẫn phải có quyền sửa hồ sơ.
 `instruction` và `sources` nằm trong metadata của thực thể nên mọi người đọc được thực thể đều thấy; không đặt thông tin nhạy cảm vào đó.
 Thêm, sửa hoặc bỏ nhiệm vụ hiện trong kế hoạch với loại `CHANGE_AI_TASKS`.
+Khi bật trợ lý và đã nạp trọng số cho nhiệm vụ, nút **Rà loại hồ sơ** ở Hộp việc rà tối đa 25 hồ sơ đủ điều kiện trên trang mỗi lượt qua `POST /assistant-api/v1/me/reviews`.
+Hồ sơ có giá trị khác gợi ý được đánh dấu **Cần rà**, kèm giá trị đề xuất và cụm chữ căn cứ.
+Bấm dấu **Cần rà** mở khối trợ lý trên trang chi tiết và tạo đề xuất cho nhiệm vụ tương ứng để người dùng kiểm tra và xác nhận.
 Dịch vụ trợ lý là thành phần tùy chọn, xem [`assistant/README.md`](../assistant/README.md).

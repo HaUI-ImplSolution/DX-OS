@@ -96,7 +96,9 @@ public record Model(
       String outputField,
       String instruction,
       List<String> sources,
-      int maxLength) {
+      Integer maxLength,
+      String engine,
+      String classifier) {
     public AiTask {
       inputFields = List.copyOf(inputFields);
       sources = List.copyOf(sources);

@@ -25,5 +25,11 @@ entities:
           instruction: "Chọn mức ưu tiên theo ảnh hưởng được nêu trong hồ sơ. Trả null nếu không đủ căn cứ."
           sources: [demo_support_v1]
           max_length: 100
+        classify_priority:
+          label: Gợi ý mức ưu tiên
+          engine: classifier
+          classifier: support
+          input_fields: [title, detail]
+          output_field: priority
     access: {REQUESTER: own, AGENT: all}
     process: {family: work_item, handler: AGENT, deadline: 8h}

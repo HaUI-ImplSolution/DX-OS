@@ -98,11 +98,30 @@
                   "additionalProperties": false,
                   "required": [
                     "input_fields",
-                    "output_field",
-                    "instruction",
-                    "sources"
+                    "output_field"
                   ],
+                  "if": {
+                    "required": ["engine"],
+                    "properties": { "engine": { "const": "classifier" } }
+                  },
+                  "then": {
+                    "required": ["classifier"],
+                    "properties": { "sources": false }
+                  },
+                  "else": {
+                    "required": ["instruction", "sources"],
+                    "properties": { "classifier": false }
+                  },
                   "properties": {
+                    "engine": {
+                      "type": "string",
+                      "enum": ["llm", "classifier"],
+                      "default": "llm"
+                    },
+                    "classifier": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]{0,39}$"
+                    },
                     "label": {
                       "type": "string",
                       "minLength": 1,

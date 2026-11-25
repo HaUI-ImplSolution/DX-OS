@@ -11,6 +11,7 @@ on:
       - Khuong/main
     paths:
       - 'assistant/**'
+      - 'tools/classifier/**'
       - 'deploy/docker-compose.assistant.yml'
       - 'deploy/assistant-sso.sh'
       - 'deploy/assistant.env.example'
@@ -25,6 +26,7 @@ on:
       - Khuong/main
     paths:
       - 'assistant/**'
+      - 'tools/classifier/**'
       - 'deploy/docker-compose.assistant.yml'
       - 'deploy/assistant-sso.sh'
       - 'deploy/assistant.env.example'

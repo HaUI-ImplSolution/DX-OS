@@ -18,6 +18,8 @@ registerErrorMessages({
   ERR_LINK_INVALID: t("Hãy hoàn tất liên kết trong cùng trình duyệt đã bắt đầu."),
   ERR_IDENTITY_UNAVAILABLE: t("Chưa kết nối được dịch vụ đăng nhập. Hãy thử lại sau."),
   ERR_INFERENCE_REQUIRED: t("Bản cài chưa cấu hình model self-host. Liên hệ người vận hành."),
+  ERR_CLASSIFIER_UNAVAILABLE: t("Bộ phân loại của nhiệm vụ chưa sẵn sàng."),
+  ERR_CLASSIFIER_LABELS: t("Các lựa chọn của trường đề xuất phải khớp đúng với nhãn của bộ phân loại."),
   ERR_INFERENCE_BUSY: t("Model đang bận. Hãy thử lại sau."),
   ERR_INFERENCE_CONTEXT: t("Hồ sơ và nguồn vượt giới hạn ngữ cảnh của model."),
   ERR_INFERENCE_REJECTED: t("Model chưa sẵn sàng hoặc không nhận được yêu cầu."),
@@ -26,7 +28,7 @@ registerErrorMessages({
   ERR_TASK_UNAVAILABLE: t("Nhiệm vụ không còn khả dụng hoặc bạn không có quyền sửa hồ sơ."),
   ERR_SOURCE_UNAVAILABLE: t("Nguồn tri thức của nhiệm vụ chưa được cấu hình đầy đủ."),
   ERR_PROPOSAL_NO_CHANGE: t("Giá trị đề xuất đã trùng với hồ sơ. Không có thay đổi để lưu."),
-  ERR_PROPOSAL_STALE: t("Hồ sơ, mô hình hoặc nguồn đã đổi. Hãy tạo đề xuất mới."),
+  ERR_PROPOSAL_STALE: t("Hồ sơ, mô hình, nguồn hoặc trọng số đã đổi. Hãy tạo đề xuất mới."),
   ERR_PROPOSAL_RETIRED: t("Đề xuất của phiên bản cũ chỉ dùng để xem lịch sử."),
   ERR_PROPOSAL_CLOSED: t("Đề xuất đã hết hạn hoặc đã được xử lý. Hãy tải lại."),
   ERR_EXECUTION_UNCERTAIN: t("Chưa rõ kết quả. Kiểm tra lịch sử hồ sơ trước khi thử lại."),
@@ -67,8 +69,27 @@ export function useAssistantEnabled(models: ModelMeta[] | null): boolean {
   return useAvailability(declared);
 }
 
-export function useEntityAssistant(entity: EntityMeta): boolean {
-  return useAvailability(declares(entity));
+export type AssistantAccount = {
+  linked: boolean;
+  model: { configured: boolean; llmConfigured?: boolean; classifiers?: string[] };
+};
+
+export function useEntityAssistant(entity: EntityMeta): AssistantAccount["model"] | undefined {
+  return useAssistantModel(declares(entity));
+}
+
+export function useAssistantModel(declared: boolean): AssistantAccount["model"] | undefined {
+  const enabled = useAvailability(declared);
+  const [status, setStatus] = useState<AssistantAccount["model"]>();
+  useEffect(() => {
+    if (!declared || !enabled) return;
+    const controller = new AbortController();
+    void assistantRequest<AssistantAccount>("/me", "GET", undefined, controller.signal)
+      .then(account => { if (!controller.signal.aborted) setStatus(account.model); })
+      .catch(() => { if (!controller.signal.aborted) setStatus(undefined); });
+    return () => controller.abort();
+  }, [declared, enabled]);
+  return declared && enabled ? status : undefined;
 }
 
 export async function assistantRequest<T>(path: string, method = "GET", payload?: unknown, signal?: AbortSignal): Promise<T> {
@@ -84,12 +105,39 @@ export async function assistantRequest<T>(path: string, method = "GET", payload?
   return body.data;
 }
 
+export type RecordTarget = { model: string; entity: string; id: number };
+export type ClassifierReview = RecordTarget & {
+  task: string;
+  field: string;
+  current: string | null;
+  suggested: string | null;
+  evidence: string[];
+  mismatch: boolean;
+};
+
+export const reviewRecords = (items: RecordTarget[], signal: AbortSignal) =>
+  assistantRequest<{ items: ClassifierReview[] }>("/me/reviews", "POST", { items }, signal);
+
+// Consume the selection once so restoring a browser history entry cannot create another proposal.
+let inboxReview: (RecordTarget & { task: string }) | undefined;
+
+export function selectInboxReview({ model, entity, id, task }: RecordTarget & { task: string }) {
+  inboxReview = { model, entity, id, task };
+}
+
+export function takeInboxReview(model: string, entity: string, id: number | string) {
+  const review = inboxReview;
+  inboxReview = undefined;
+  if (review?.model === model && review.entity === entity && String(review.id) === String(id)) return review.task;
+}
+
 // expires and now are both server clock readings, so a browser clock that is off does not matter.
 export type Proposal = { id: string; state: string; expires: number; now: number; receipt?: { version?: number } | null; snapshot: {
   version?: number;
   warnings?: { field: string; expected: string; actual: string | null }[];
   value?: string; previousValue?: unknown; field?: string;
   sources?: { id: string; title: string; text: string; revision: string; license: string }[];
+  evidence?: string[];
   summary: string; operation: string; note?: string; webOnly: boolean;
   effects?: { operation: string; userSource: string; group: string; asynchronous: boolean }[];
 } };

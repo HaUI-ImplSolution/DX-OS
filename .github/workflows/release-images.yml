@@ -81,9 +81,13 @@ jobs:
           # The monitor is built from the backend sources, with its own target of the same Dockerfile.
           if [[ "${{ matrix.name }}" == "monitor" ]]; then
             echo "context=backend" >> "$GITHUB_OUTPUT"
+            echo "dockerfile=backend/Dockerfile" >> "$GITHUB_OUTPUT"
             echo "target=monitor" >> "$GITHUB_OUTPUT"
           else
-            echo "context=${{ matrix.name }}" >> "$GITHUB_OUTPUT"
+            context="${{ matrix.name }}"
+            if [[ "$context" == "assistant" ]]; then context="."; fi
+            echo "context=$context" >> "$GITHUB_OUTPUT"
+            echo "dockerfile=${{ matrix.name }}/Dockerfile" >> "$GITHUB_OUTPUT"
             echo "target=" >> "$GITHUB_OUTPUT"
           fi
           {
@@ -116,7 +120,7 @@ jobs:
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: ${{ steps.image.outputs.context }}
-          file: ${{ steps.image.outputs.context }}/Dockerfile
+          file: ${{ steps.image.outputs.dockerfile }}
           target: ${{ steps.image.outputs.target }}
           load: true
           push: false
@@ -141,7 +145,7 @@ jobs:
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: ${{ steps.image.outputs.context }}
-          file: ${{ steps.image.outputs.context }}/Dockerfile
+          file: ${{ steps.image.outputs.dockerfile }}
           target: ${{ steps.image.outputs.target }}
           push: true
           sbom: true

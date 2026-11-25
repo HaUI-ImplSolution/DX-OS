@@ -78,6 +78,21 @@ class ModelDiffTest {
   }
 
   @Test
+  void changingTheTaskEngineOrClassifierMakesASafeTaskChange() {
+    String body =
+        fields(FIELDS + "      kind: {type: choice, options: [A, B]}\n")
+            + "    ai:\n      tasks:\n        classify:\n          input_fields: [a]\n          output_field: kind\n";
+    String llm = body + "          instruction: Choose a kind\n          sources: [guide]\n";
+    String local = body + "          engine: classifier\n          classifier: onestop\n";
+
+    assertEquals(List.of(), kinds(diff(llm, llm + "          engine: llm\n")));
+    assertEquals(Level.SAFE, change(diff(llm, local), "CHANGE_AI_TASKS").level());
+    assertEquals(
+        Level.SAFE,
+        change(diff(local, local.replace("onestop", "support")), "CHANGE_AI_TASKS").level());
+  }
+
+  @Test
   void aFirstModelAddsItsRolesAndEntities() {
     ModelDiff diff = diff(null, fields(FIELDS));
 

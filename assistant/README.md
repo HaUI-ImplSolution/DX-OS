@@ -1,20 +1,20 @@
 # Trợ lý nghiệp vụ (tùy chọn)
 
-Dịch vụ độc lập đề xuất một giá trị cho một trường của hồ sơ, dựa trên các trường đầu vào của hồ sơ và nguồn tham khảo.
+Dịch vụ độc lập đề xuất một giá trị cho một trường của hồ sơ.
+Nhiệm vụ `classifier` chạy suy luận trực tiếp trong trợ lý trên các trường đầu vào.
+Nhiệm vụ `llm` dùng nguồn tham khảo và dịch vụ suy luận do người vận hành cấu hình.
 Người dùng xem căn cứ, sửa hoặc xác nhận trên giao diện hồ sơ.
 Core kiểm quyền, quy tắc và phiên bản trước khi ghi, nên model không có đường ghi trực tiếp.
-Inference do người vận hành cấu hình và chạy tại máy chủ của bản cài.
 
 ## Bật, cấu hình và tắt
 
 Trợ lý tắt mặc định: chưa bật thì stack không có container hay route của trợ lý.
 
 1. Đặt `COMPOSE_FILE=docker-compose.yml:docker-compose.assistant.yml` trong `deploy/.env`, rồi chạy `dxos start`.
-2. Chép [`deploy/assistant.env.example`](../deploy/assistant.env.example) thành `deploy/assistant.env` (ngoài Git) và đặt inference, nguồn tham khảo trong đó.
-   Tối thiểu cần `ASSISTANT_INFERENCE_URL`, `ASSISTANT_MODEL`, `ASSISTANT_MODEL_REVISION` và `ASSISTANT_SOURCES_FILE`.
+2. Với nhiệm vụ LLM, chép [`deploy/assistant.env.example`](../deploy/assistant.env.example) thành `deploy/assistant.env` (ngoài Git) và cấu hình `ASSISTANT_INFERENCE_URL`, `ASSISTANT_MODEL`, `ASSISTANT_MODEL_REVISION` và `ASSISTANT_SOURCES_FILE`.
    Giới hạn RAM và CPU của container nằm trong `deploy/docker-compose.assistant.yml`.
 3. Khai báo `ai.tasks` cho thực thể trong tệp mô hình (hoặc tab trợ lý của bảng điều khiển) rồi áp dụng; cú pháp ở [MODEL](../docs/MODEL.md#nhiệm-vụ-trợ-lý-nghiệp-vụ).
-   Hai mẫu `onestop` và `support_desk` có sẵn nhiệm vụ.
+   Các mẫu `onestop`, `support_desk` và `clinic_appointment` có sẵn nhiệm vụ phân loại dùng ngay khi bật trợ lý.
 4. Người dùng mở **Trợ lý nghiệp vụ**, liên kết tài khoản DX-OS, rồi mở một hồ sơ đã lưu, chọn nhiệm vụ và tạo đề xuất.
    Sửa giá trị thì đề xuất được tạo lại để xem lại, sau đó xác nhận lưu bằng một thao tác riêng.
 5. Tắt bằng cách bỏ dòng `COMPOSE_FILE` rồi chạy `docker compose up -d --remove-orphans`.
@@ -24,15 +24,34 @@ Xem `docker compose logs assistant-sso`, sửa `deploy/.env` rồi chạy lại 
 
 Khi đã bật, `dxos update` kéo cả image trợ lý.
 Image có sau khi chạy workflow `Release Images` với `services=assistant`.
-Image chỉ chứa Node.js và mã của trợ lý, không có npm, corepack và yarn.
+Image chạy bằng Node.js và chứa mã trợ lý cùng các trọng số phân loại.
+Dựng image từ thư mục gốc của repo bằng `docker build -f assistant/Dockerfile .`.
 
-## Inference và nguồn tham khảo
+## Bộ phân loại
+
+Image nạp trọng số đã đóng gói từ `/app/classifiers` khi khởi động.
+Đặt `ASSISTANT_CLASSIFIERS_DIR` để nạp từ thư mục khác bên trong container, ví dụ `/run/secrets/classifiers` nếu đặt tệp dưới `deploy/data/assistant/private/classifiers`.
+Mỗi tệp theo định dạng trong [`tools/classifier/`](../tools/classifier/) và có tên `<classifier>.json`, với `<classifier>` khớp tên nhiệm vụ trong tệp trọng số.
+Trợ lý báo `configured` khi nạp được ít nhất một bộ phân loại hoặc khi có LLM tự host.
+`GET /me` trả `model.classifiers` gồm các tên đã nạp và `model.llmConfigured` cho biết LLM đã được cấu hình.
+
+Nhiệm vụ phân loại đọc các trường chữ theo thứ tự `input_fields`.
+Mẫu hỗ trợ kỹ thuật khai `title` rồi `detail` theo thứ tự huấn luyện.
+Kết quả từ chối trả `insufficient: true` và `proposal: null`.
+Đề xuất lưu `sources: []` và `evidence` gồm một đến ba cụm chữ trích từ các trường đầu vào.
+Giao diện hiển thị các cụm chữ trong mục **Căn cứ trong hồ sơ**.
+
+Thiếu hoặc không đọc được trọng số của nhiệm vụ thì API trả 409 `ERR_CLASSIFIER_UNAVAILABLE` cho nhiệm vụ đó.
+Các lựa chọn của trường đầu ra phải khớp tập nhãn nghiệp vụ của tệp trọng số, nếu sai thì API trả 409 `ERR_CLASSIFIER_LABELS`.
+Revision của nhiệm vụ bao gồm SHA-256 của tệp trọng số.
+Thay tệp và khởi động lại trợ lý làm các đề xuất dùng trọng số cũ hết hiệu lực.
+
+## Inference LLM và nguồn tham khảo
 
 Trợ lý hỗ trợ mọi endpoint suy luận tương thích OpenAI Chat Completions hoặc llama.cpp `/completion`.
-DX-OS không áp đặt hay đóng gói model mặc định; người vận hành tự chọn model, cấp endpoint và tự chịu trách nhiệm với điều khoản upstream.
-DX-OS không chọn model nào vì mỗi model có điều khoản sử dụng riêng của bên phát hành.
+Người vận hành tự chọn LLM, cấp endpoint và tự chịu trách nhiệm với điều khoản upstream.
+Nhiệm vụ LLM trả 409 `ERR_INFERENCE_REQUIRED` khi bản cài chưa cấu hình endpoint.
 Ghi chú về model suy luận và llama.cpp (MIT) nằm ở [`DEPENDENCIES.txt`](../DEPENDENCIES.txt).
-Repository không đóng gói trọng số và không tải trọng số trong request hay lúc Core khởi động.
 
 Endpoint do người vận hành cố định trong bản cài, người dùng không nhập endpoint, key hay model trên giao diện.
 Dịch vụ dùng endpoint chat có structured output, hoặc native completion với khung prompt lấy từ template của đúng model (`ASSISTANT_PROMPT_FRAMING_FILE`, tệp JSON gồm `bos`, `systemPrefix`, `systemSuffix`, `userPrefix`, `userSuffix`, `assistantPrefix` và `stop`).
@@ -59,7 +78,7 @@ Bản cài tự chuẩn bị nguồn có giấy phép hợp lệ vì dữ liệu
 
 ## Đề xuất và xác nhận
 
-Model trả `status`, `value`, `sources` và `checks`.
+LLM trả `status`, `value`, `sources` và `checks`.
 Server chỉ tạo đề xuất khi `status` là `proposed`, giá trị đúng kiểu của trường, và mọi nguồn nằm trong danh mục của nhiệm vụ.
 Thiếu căn cứ thì không có đề xuất; JSON hỏng, lựa chọn ngoài danh sách hoặc nguồn bịa bị từ chối.
 `checks` là giá trị mà nguồn cho là đúng cho từng trường đối chiếu (choice hoặc unit đơn trị).
@@ -67,10 +86,10 @@ Chỗ khác với hồ sơ hiện tại thành `warnings` (`{field, expected, ac
 Căn cứ hiển thị là văn bản nguồn đã cung cấp, không phải lời tự đánh giá của model, và người dùng vẫn phải đối chiếu nội dung trước khi xác nhận.
 
 Đề xuất thuộc về một chủ, hết hạn sau 120 giây và được xóa sau 30 ngày.
-Nó ghi lại hồ sơ, nhiệm vụ, giá trị, nguồn, phiên bản hồ sơ và mô hình, và revision của nguồn và model.
+Đề xuất ghi lại hồ sơ, nhiệm vụ, giá trị, căn cứ, phiên bản hồ sơ, phiên bản mô hình và revision của nhiệm vụ.
 Sửa nội dung tạo đề xuất mới và vô hiệu đề xuất cũ.
 Khi xác nhận, trợ lý đọc lại hồ sơ và cấu hình, rồi chỉ gửi `PATCH` một trường kèm `version` và `modelVersion`.
-Hồ sơ, mô hình, nhiệm vụ hay nguồn đã đổi thì trả 409 `ERR_PROPOSAL_STALE`.
+Hồ sơ, mô hình, nhiệm vụ, nguồn hoặc trọng số đã đổi thì API trả 409 `ERR_PROPOSAL_STALE`.
 Giá trị trùng hồ sơ trả 409 `ERR_PROPOSAL_NO_CHANGE` và không gọi Core.
 Timeout hoặc dừng tiến trình khi ghi giữ kết quả `uncertain` và không tự gửi lại; người dùng đối chiếu lịch sử hồ sơ.
 
@@ -78,13 +97,30 @@ Trạng thái đi từ `pending` qua `executing` tới `succeeded`, `failed` ho�
 Danh tính lấy từ JWT đã kiểm issuer và audience, không nhận từ body hay model.
 Liên kết với Core dùng PKCE và state dùng một lần.
 
+### Rà loại hồ sơ ở Hộp việc
+
+Khi trợ lý có trọng số cho một nhiệm vụ phân loại đã khai báo, nút **Rà loại hồ sơ** rà 25 hồ sơ đủ điều kiện đầu tiên chưa rà trên trang Hộp việc đang xem.
+Bấm lại để rà lượt tiếp theo.
+Hồ sơ có giá trị khác gợi ý hiện **Cần rà** cùng giá trị đề xuất và cụm chữ căn cứ.
+Bấm dấu **Cần rà** mở khối trợ lý trên trang chi tiết và gọi `POST /me/proposals` để tạo đề xuất cần xác nhận.
+Giao diện giữ kết quả rà trong bộ nhớ tối đa 120 giây mỗi lượt.
+
+`POST /assistant-api/v1/me/reviews` nhận `{"items":[{"model":"onestop","entity":"request","id":1}]}` với từ 1 đến 25 hồ sơ.
+Trợ lý đọc lại hồ sơ và metadata thực thể bằng phiên Core của người gọi và chỉ rà hồ sơ còn mở thuộc thực thể người gọi được sửa.
+API bỏ qua hồ sơ không đọc được và nhiệm vụ thiếu trọng số hoặc có tập lựa chọn khác tập nhãn.
+`data.items` có một kết quả cho mỗi nhiệm vụ đủ điều kiện, gồm `model`, `entity`, `id`, `task`, `field`, `current`, `suggested`, `evidence` và `mismatch`.
+Khi bộ phân loại từ chối, `suggested` là `null` và `mismatch` là `false`.
+Lượt rà chỉ đọc, không tạo đề xuất và không ghi nội dung hồ sơ vào nhật ký.
+API dùng cùng giới hạn 120 yêu cầu mỗi phút theo địa chỉ IP tại cổng của trợ lý.
+
 | Endpoint dưới `/assistant-api/v1` | Chức năng |
 |---|---|
 | `GET /features` | Trạng thái bật dịch vụ |
 | `GET /openapi.json` | OpenAPI, cần đăng nhập |
-| `GET /me` | Trạng thái liên kết và cấu hình model |
+| `GET /me` | Trạng thái liên kết và cấu hình LLM cùng danh sách bộ phân loại đã nạp |
 | `POST /me/core/link`, `GET /oauth/callback` | Liên kết Core bằng SSO |
 | `DELETE /me/core/link` | Hủy liên kết: thu hồi refresh token ở Keycloak, xóa token đã lưu, hủy các đề xuất đang chờ; trả `revoked` cho biết Keycloak có xác nhận không, kiểm Origin và danh tính |
+| `POST /me/reviews` | Rà tối đa 25 hồ sơ bằng các nhiệm vụ phân loại đủ điều kiện |
 | `POST /me/proposals` | Tạo đề xuất từ model, entity, id và nhiệm vụ |
 | `GET /me/proposals`, `GET /me/proposals/{id}` | Lịch sử và chi tiết của chủ còn quyền đọc hồ sơ |
 | `POST /me/proposals/{id}/revise` | Sửa giá trị, tạo đề xuất mới |
@@ -120,9 +156,12 @@ Model tự host và trọng số Apache-2.0 chưa chứng minh model đạt đ�
 
 ## Kiểm tra
 
-Workflow `Assistant` (`.github/workflows/ci-assistant.yml`) chạy khi đổi `assistant/`, tệp compose, tệp SSO hay SBOM của trợ lý.
+Workflow `Assistant` (`.github/workflows/ci-assistant.yml`) chạy khi đổi `assistant/`, `tools/classifier/`, tệp compose, tệp SSO hay SBOM của trợ lý.
 Nó build và test dịch vụ không cần key, so SBOM với tệp khóa, kiểm tệp compose có và không có `assistant.env`, và kiểm route cổng ở mọi chế độ.
 Các workflow khác không chạy và không phụ thuộc trợ lý.
+Chạy `PYTHONDONTWRITEBYTECODE=1 python3 tools/classifier/make_parity_fixture.py` từ gốc repo để sinh lại bộ đối chiếu khi đổi trọng số hoặc dữ liệu huấn luyện.
+Tệp đối chiếu `assistant/test/fixtures/classifier.json` lấy câu gốc và biến thể đã dùng để huấn luyện do HaUI-ImplSolution biên soạn theo CC-BY-4.0.
+Lệnh `npm test` trong thư mục `assistant` kiểm nhãn, xác suất và cụm chữ của Node với Python.
 Hai bài kiểm trình duyệt ở `e2e/web/tests/assistant.spec.ts` tự bỏ qua khi không đặt `E2E_ASSISTANT_RECORD_PATH` (hồ sơ mà đề xuất khác giá trị hiện tại) hoặc `E2E_ASSISTANT_UNCHANGED_RECORD_PATH` (hồ sơ mà đề xuất trùng giá trị hiện tại).
 
 ## Gỡ trợ lý
@@ -133,6 +172,7 @@ Gỡ hẳn khỏi mã nguồn thì làm theo ba nhóm sau.
 **Xóa cả tệp hoặc thư mục**
 
 - `assistant/`, `sbom/assistant.cdx.json`
+- `tools/classifier/` (dữ liệu, huấn luyện và trọng số của bộ phân loại) và `LICENSES/CC-BY-4.0.txt`
 - `deploy/docker-compose.assistant.yml`, `deploy/assistant-sso.sh`, `deploy/assistant.env.example`
 - `.github/workflows/ci-assistant.yml`
 - `frontend/src/assistant/`
@@ -141,15 +181,16 @@ Gỡ hẳn khỏi mã nguồn thì làm theo ba nhóm sau.
 **Xóa một khối hoặc một dòng trong tệp chung**
 
 - `.github/dependabot.yml`: mục "The optional assistant".
-- `.github/workflows/release-images.yml`: biến `OPTIONAL` và chữ `assistant` ở phần mô tả.
+- `.github/workflows/release-images.yml`: biến `OPTIONAL`, chữ `assistant` ở phần mô tả và nhánh đặt build context gốc repo cho `assistant`.
 - `deploy/apisix/common.yaml`: khối giữa `# assistant:begin` và `# assistant:end`.
 - `deploy/apisix/render.lua`: mục `assistant-api` trong `public` và mục `assistant` trong `excluded`.
 - `deploy/dxos`: đoạn bỏ qua `assistant-*` trong `pending_services`.
 - `deploy/update.sh`: các dòng thêm `assistant-control`.
 - `frontend/src/admin/AdminApp.tsx`: import, `useAssistantEnabled`, mục menu, route và `lazy`.
 - `frontend/src/admin/resources.tsx`: `RecordAssistant`.
+- `frontend/src/admin/InboxPage.tsx`: nút "Rà loại hồ sơ" và phần làm nổi hồ sơ cần rà.
 - `frontend/src/shell/en/index.ts`: `assistantEn`.
-- Giấy phép: `DEPENDENCIES.txt`, `NOTICE`, `.github/licenses/component-catalog.json` (mô tả của `node`), `sbom/README.md`, `website/docs/dependencies.md`.
+- Giấy phép: `DEPENDENCIES.txt`, `NOTICE` (cả bản trong `*/licenses/`), hai khối bộ phân loại trong `REUSE.toml`, `CLASSIFIER_DATA_PATHS` trong `.github/scripts/check_licenses.py`, `.github/licenses/component-catalog.json` (mô tả của `node` và các tệp trọng số), `sbom/README.md`, `website/docs/dependencies.md`.
 - Tài liệu: hai `README`, `ARCHITECTURE.md`, `CHANGELOG.md`, `ROADMAP.md`, `docs/OPERATIONS.md`, `docs/TESTING.md`, `docs/DEMO.md`, `docs/README.md`, `docs/DX_OS_TEXTBOOK.md`, `docs/dynamic-core/README.md`, `docs/dynamic-core/BACKLOG.md`, `docs/dynamic-core/DANH_GIA.md`, `website/docs/council-qa.md` và `website/docs/evidence-matrix.md`.
 - Dữ liệu còn lại: `deploy/data/assistant` và client `dxos-assistant` trong Keycloak.
 
@@ -159,7 +200,7 @@ Khối `ai.tasks` là một phần của định dạng mô hình; không có tr
 Muốn gỡ luôn thì xóa:
 
 - `dx-model`: `Model.AiTask`, `ModelParser.readAiTasks`, lược đồ `ai` và phần `ai` trong `ModelUpgraderTest`.
-- `dx-engine`: `CHANGE_AI_TASKS` ở `ModelDiff`, `aiTasks` ở `MetaController`, khối `ai:` của hai mẫu `onestop` và `support_desk`.
+- `dx-engine`: `CHANGE_AI_TASKS` ở `ModelDiff`, `aiTasks` ở `MetaController`, khối `ai:` của ba mẫu `onestop`, `support_desk` và `clinic_appointment`.
 - `frontend`: tab trợ lý trong `ModelForm`, các mục `ai` trong `formGuide`, `labels` và `backendMessages`, `AiTask` trong `admin/types.ts`.
 - `e2e`: `ai_task_changes` ở `check_process.py` và dòng `input_fields` ở `check_demo.py`.
 - Docs: mục "Nhiệm vụ trợ lý nghiệp vụ" của `docs/MODEL.md`.

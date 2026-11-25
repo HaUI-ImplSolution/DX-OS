@@ -3,20 +3,24 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Store } from '../dist/storage/store.js';
 import { Records } from '../dist/tools/records.js';
 import { FieldProposals } from '../dist/tools/fields.js';
 import { ApiError } from '../dist/errors.js';
+import { loadClassifiers } from '../dist/classifier/index.js';
+import { createServer } from '../dist/server.js';
 const a = { issuer: 'https://identity.invalid', subject: 'A' }, b = { ...a, subject: 'B' };
 const target = { model: 'demo', entity: 'request', id: 1 };
 const source = { id: 'guide_v1', title: 'Synthetic guide', revision: '1', text: 'Synthetic network incidents use network.', license: 'CC0-1.0' };
 function setup(t) {
   const dir = mkdtempSync(join(tmpdir(), 'dxos-fields-'));
   const store = new Store(join(dir, 'private/state.sqlite'), randomBytes(32));
-  t.after(() => { store.close(); rmSync(dir, { recursive: true, force: true }); });
+  let close = () => store.close();
+  t.after(async () => { await close(); rmSync(dir, { recursive: true, force: true }); });
   const entity = { name: 'request', label: 'Request', canRead: true, canWrite: true, canAssign: false,
     modelVersion: 1, fields: [{ name: 'detail', label: 'Detail', type: 'text' },
       { name: 'category', label: 'Category', type: 'choice', options: ['network','device','other'] }],
@@ -45,7 +49,8 @@ function setup(t) {
   } };
   const records = new Records(core, store);
   const fields = new FieldProposals(records, core, store, inference, [source]);
-  return { store, entity, record, core, records, fields, inference,
+  return { dir, store, entity, record, core, records, fields, inference,
+    useServer: app => { close = () => app.close(); },
     writes: () => writes, setFailure: value => { failure = value; }, setResponse: value => { response = value; },
     onInfer: value => { infer = value; } };
 }
@@ -132,5 +137,181 @@ test('a Core receipt without an advanced version is uncertain rather than report
   await assert.rejects(f.fields.execute(a, p.id), { errorCode: 'ERR_EXECUTION_UNCERTAIN' });
   assert.equal(f.store.proposal(a, p.id).state, 'uncertain');
   await assert.rejects(f.fields.execute(a, p.id)); assert.equal(calls, 1);
+});
+
+const supportWeights = new URL('../../tools/classifier/model/support.json', import.meta.url);
+const parityFixture = JSON.parse(readFileSync(new URL('./fixtures/classifier.json', import.meta.url), 'utf8'));
+
+function setupClassifier(t) {
+  const f = setup(t);
+  const classifiers = loadClassifiers(fileURLToPath(new URL('../../tools/classifier/model/', import.meta.url)));
+  const model = classifiers.get('support');
+  const support = new Map([['support', model]]);
+  const example = parityFixture.support.cases.find(row => row.label && row.inputs.every(Boolean));
+  f.entity.fields.push({ name: 'title', label: 'Title', type: 'text' });
+  f.entity.fields[1].options = [...model.labels].reverse();
+  f.entity.aiTasks.local = { label: 'Classify locally', engine: 'classifier', classifier: 'support',
+    inputFields: ['title', 'detail'], outputField: 'category' };
+  Object.assign(f.record, { title: example.inputs[0], detail: example.inputs[1],
+    category: model.labels.find(label => label !== example.label) });
+  const fields = new FieldProposals(f.records, f.core, f.store, undefined, [], support);
+  return { ...f, fields, example, support };
+}
+
+async function setupReviews(t) {
+  const f = setupClassifier(t);
+  const publicUrl = new URL('http://dxos.invalid');
+  const app = await createServer(f.store, async authorization => {
+    if (authorization !== 'Bearer owner') throw new ApiError(401, 'ERR_UNAUTHORIZED', 'Unauthorized');
+    return { ...a, admin: false };
+  }, { publicUrl, session: {}, fields: f.fields, records: f.records });
+  f.useServer(app);
+  const headers = { origin: publicUrl.origin, authorization: 'Bearer owner' };
+  const review = items => app.inject({ method: 'POST', url: '/assistant-api/v1/me/reviews', headers, payload: { items } });
+  return { ...f, app, headers, review };
+}
+
+test('batch review uses the caller and omits forbidden, missing, read-only and closed records', async t => {
+  const f = await setupReviews(t);
+  const read = f.core.read.bind(f.core);
+  f.entity.process = { states: [{ name: 'closed', terminal: true }] };
+  f.core.read = async (owner, path) => {
+    assert.equal(owner.subject, a.subject);
+    assert.equal(owner.issuer, a.issuer);
+    if (path.endsWith('/readonly')) return { ...f.entity, canWrite: false };
+    if (path.endsWith('/2')) throw new ApiError(403, 'ERR_ACTION_NOT_ALLOWED', 'Denied');
+    if (path.endsWith('/3')) throw new ApiError(404, 'ERR_NOT_FOUND', 'Missing');
+    if (path.endsWith('/4')) return { ...f.record, status: 'closed' };
+    return read(owner, path);
+  };
+  const response = await f.review([target, ...[2, 3, 4].map(id => ({ ...target, id })), { ...target, entity: 'readonly' }]);
+  assert.equal(response.statusCode, 200, response.body);
+  assert.equal(response.headers['cache-control'], 'no-store');
+  assert.deepEqual(response.json().data.items, [{ ...target, task: 'local', field: 'category', current: f.record.category,
+    suggested: f.example.label, evidence: f.example.evidence, mismatch: true }]);
+  assert.equal(f.writes(), 0);
+  assert.equal(f.store.proposals(a, 0, 5).length, 0);
+});
+
+test('batch review accepts at most 25 records and publishes its schemas', async t => {
+  const f = await setupReviews(t);
+  const items = Array.from({ length: 26 }, (_, i) => ({ ...target, id: i + 1 }));
+  let coreReads = 0;
+  const read = f.core.read.bind(f.core);
+  f.core.read = async (...args) => { coreReads++; return read(...args); };
+  assert.equal((await f.review(items)).statusCode, 400);
+  assert.equal(coreReads, 0);
+  const accepted = await f.review(items.slice(0, 25));
+  assert.equal(accepted.statusCode, 200, accepted.body);
+  assert.equal(accepted.json().data.items.length, 25);
+  const api = await f.app.inject({ method: 'GET', url: '/assistant-api/v1/openapi.json', headers: f.headers });
+  const operation = api.json().paths['/assistant-api/v1/me/reviews'].post;
+  assert.equal(operation.requestBody.content['application/json'].schema.properties.items.maxItems, 25);
+  assert.equal(operation.responses[200].content['application/json'].schema.properties.data.properties.items.items.properties.suggested.nullable, true);
+});
+
+test('batch review omits incompatible tasks and reports matches and abstentions without flags', async t => {
+  const f = await setupReviews(t);
+  f.entity.fields.push({ name: 'other', type: 'choice', options: ['unrelated'] });
+  f.entity.aiTasks.incompatible = { ...f.entity.aiTasks.local, outputField: 'other' };
+  f.entity.aiTasks.unloaded = { ...f.entity.aiTasks.local, classifier: 'missing' };
+  f.record.category = f.example.label;
+  const match = await f.review([target]);
+  assert.equal(match.statusCode, 200, match.body);
+  assert.deepEqual(match.json().data.items, [{ ...target, task: 'local', field: 'category', current: f.example.label,
+    suggested: f.example.label, evidence: f.example.evidence, mismatch: false }]);
+  Object.assign(f.record, { title: '', detail: '' });
+  delete f.record.category;
+  const abstention = await f.review([target]);
+  assert.equal(abstention.statusCode, 200, abstention.body);
+  assert.deepEqual(abstention.json().data.items, [{ ...target, task: 'local', field: 'category', current: null,
+    suggested: null, evidence: [], mismatch: false }]);
+});
+
+test('a classifier can propose and confirm through the API without LLM or a source catalog', async t => {
+  const f = setupClassifier(t);
+  const publicUrl = new URL('http://dxos.invalid');
+  const app = await createServer(f.store, async () => ({ ...a, admin: false }),
+    { publicUrl, session: {}, fields: f.fields, records: f.records });
+  f.useServer(app);
+  const me = await app.inject({ method: 'GET', url: '/assistant-api/v1/me' });
+  assert.deepEqual(me.json().data.model, { configured: true, llmConfigured: false, classifiers: ['support'] });
+  const api = await app.inject({ method: 'GET', url: '/assistant-api/v1/openapi.json' });
+  assert.match(api.json().info.description, /ASSISTANT_CLASSIFIERS_DIR/);
+  assert.match(api.json().paths['/assistant-api/v1/me/proposals'].post.responses[409].description, /ERR_CLASSIFIER_LABELS/);
+  const headers = { origin: publicUrl.origin };
+  const llm = await app.inject({ method: 'POST', url: '/assistant-api/v1/me/proposals',
+    headers, payload: { ...target, task: 'classify' } });
+  assert.equal(llm.statusCode, 409, llm.body);
+  assert.equal(llm.json().errorCode, 'ERR_INFERENCE_REQUIRED');
+  const created = await app.inject({ method: 'POST', url: '/assistant-api/v1/me/proposals',
+    headers, payload: { ...target, task: 'local' } });
+  assert.equal(created.statusCode, 200, created.body);
+  const p = created.json().data.proposal;
+  assert.equal(p.snapshot.value, f.example.label);
+  assert.deepEqual(p.snapshot.evidence, f.example.evidence);
+  assert.deepEqual(p.snapshot.sources, []);
+  assert.equal(f.writes(), 0);
+  const confirmed = await app.inject({ method: 'POST', url: `/assistant-api/v1/me/proposals/${p.id}/confirm`,
+    headers, payload: {} });
+  assert.equal(confirmed.statusCode, 200, confirmed.body);
+  assert.equal(confirmed.json().data.record.category, f.example.label);
+  assert.equal(f.writes(), 1);
+});
+
+test('missing or invalid weights, mismatched labels and abstentions affect only their task', async t => {
+  const f = setupClassifier(t);
+  await assert.rejects(f.fields.create(a, target, 'classify'), { status: 409, errorCode: 'ERR_INFERENCE_REQUIRED' });
+  f.entity.aiTasks.missing = { ...f.entity.aiTasks.local, classifier: 'missing' };
+  await assert.rejects(f.fields.create(a, target, 'missing'), { status: 409, errorCode: 'ERR_CLASSIFIER_UNAVAILABLE' });
+  const options = f.entity.fields[1].options;
+  for (const invalid of [options.slice(1), [...options, 'other'], [...options.slice(1), 'wrong']]) {
+    f.entity.fields[1].options = invalid;
+    await assert.rejects(f.fields.create(a, target, 'local'), { status: 409, errorCode: 'ERR_CLASSIFIER_LABELS' });
+  }
+  f.entity.fields[1].options = options;
+  const path = join(f.dir, 'support.json');
+  writeFileSync(path, readFileSync(supportWeights));
+  writeFileSync(join(f.dir, 'broken.json'), '{}');
+  const fromDisk = loadClassifiers(f.dir);
+  assert.deepEqual([...fromDisk.keys()], ['support']);
+  const fields = new FieldProposals(f.records, f.core, f.store, undefined, [], fromDisk);
+  await assert.rejects(fields.create(a, target, 'missing'), { status: 409, errorCode: 'ERR_CLASSIFIER_UNAVAILABLE' });
+  assert.equal((await fields.create(a, target, 'local')).proposal.snapshot.value, f.example.label);
+  Object.assign(f.record, { title: '', detail: null });
+  assert.deepEqual(await fields.create(a, target, 'local'), { insufficient: true, proposal: null });
+  assert.equal(f.writes(), 0);
+});
+
+test('evidence from another field is rejected', async t => {
+  const f = setupClassifier(t);
+  f.record.private_note = 'undeclared source';
+  const model = f.support.get('support');
+  const stub = { labels: model.labels, revision: model.revision,
+    predict: () => ({ label: f.example.label, evidence: [f.record.private_note] }) };
+  const fields = new FieldProposals(f.records, f.core, f.store, undefined, [], new Map([['support', stub]]));
+  await assert.rejects(fields.create(a, target, 'local'), { errorCode: 'ERR_INFERENCE_OUTPUT' });
+  assert.equal(f.store.proposals(a, 0, 5).length, 0);
+});
+
+test('a different weights SHA-256 makes a classifier proposal stale on revise and confirm', async t => {
+  const f = setupClassifier(t);
+  const p = (await f.fields.create(a, target, 'local')).proposal;
+  const path = join(f.dir, 'support.json');
+  writeFileSync(path, readFileSync(supportWeights, 'utf8') + '\n');
+  const replaced = loadClassifiers(f.dir);
+  assert.notEqual(replaced.get('support').revision, f.support.get('support').revision);
+  const fields = new FieldProposals(f.records, f.core, f.store, undefined, [], replaced);
+  await assert.rejects(fields.revise(a, p.id, f.example.label), { status: 409, errorCode: 'ERR_PROPOSAL_STALE' });
+  await assert.rejects(fields.execute(a, p.id), { status: 409, errorCode: 'ERR_PROPOSAL_STALE' });
+  assert.equal(f.writes(), 0);
+});
+
+test('explicit LLM metadata retains the revision of a proposal created without engine metadata', async t => {
+  const f = setup(t);
+  const p = (await f.fields.create(a, target, 'classify')).proposal;
+  Object.assign(f.entity.aiTasks.classify, { engine: 'llm', classifier: null });
+  await f.fields.execute(a, p.id);
+  assert.equal(f.writes(), 1);
 });
 

@@ -426,12 +426,20 @@ find-sec-bugs    https://find-sec-bugs.github.io/ | https://github.com/find-sec-
 ================================
 
 Mọi giấy phép của dự án và của thành phần dùng đều thuộc danh sách của OSI (https://opensource.org/licenses), trừ các trường hợp dưới đây.
-.github/scripts/check_licenses.py chỉ nhận một giấy phép ngoài danh sách khi gói được nêu tên kèm lý do ở .github/licenses/dependency-exceptions.json, và chặn mọi giấy phép ngoài danh sách trong REUSE.toml.
+.github/scripts/check_licenses.py kiểm ngoại lệ của gói theo .github/licenses/dependency-exceptions.json và kiểm phạm vi dữ liệu CC-BY-4.0 trong REUSE.toml.
 .github/scripts/check_license_inventory.py áp cùng luật cho mọi gói ở docs/DEPENDENCY_INVENTORY.md, kể cả gói dev, gói test và plugin build.
 
 Dữ liệu chỉ đọc lúc dựng trang tài liệu, không có trong trang đã dựng:
   - caniuse-lite: CC-BY-4.0.
   - mdn-data: CC0-1.0.
+
+Dữ liệu ngoài dùng lúc huấn luyện bộ phân loại tiếng Việt, lưu ở cache ngoài repo và không đóng gói:
+  - MASSIVE 1.0, tập train vi-VN (CC-BY-4.0), Amazon: https://github.com/alexa/massive.
+
+Dữ liệu đội biên soạn và định nghĩa nhãn của bộ phân loại dùng CC-BY-4.0 theo phạm vi khai trong REUSE.toml.
+Tệp kiểm đối chiếu Python–Node trích từ dữ liệu đội biên soạn và dùng cùng giấy phép CC-BY-4.0.
+Trọng số do đội huấn luyện dùng Apache-2.0.
+Image trợ lý chứa ba tệp trọng số onestop.json, support.json và clinic.json.
 
 Phông biểu tượng nằm trong gói thư viện, phát hành cùng bản build web:
   - Codicons (codicon.ttf trong monaco-editor 0.57.0): CC-BY-4.0, phông của Microsoft; ghi công và liên kết giấy phép ở third-party-licenses.txt của bản build web và ở /licenses của image frontend.

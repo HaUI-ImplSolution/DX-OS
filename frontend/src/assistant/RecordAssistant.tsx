@@ -1,9 +1,10 @@
 // SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Box, Button, Card, CircularProgress, MenuItem, Stack, TextField, Typography } from "@mui/material";
 import { EditButton, useRecordContext, useRefresh } from "react-admin";
-import { assistantRequest, useEntityAssistant, type Proposal } from "./api";
+import { useLocation } from "react-router-dom";
+import { assistantRequest, takeInboxReview, useEntityAssistant, type Proposal } from "./api";
 import { resourceName, type EntityMeta } from "../admin/types";
 import { t } from "../shell/t";
 
@@ -24,10 +25,13 @@ function sourceText(text: string, entity: EntityMeta, units: Record<string, stri
 
 export default function RecordAssistant({ model, entity, units }: { model: string; entity: EntityMeta; units: Record<string, string> }) {
   const record = useRecordContext(); const refresh = useRefresh();
-  const available = useEntityAssistant(entity);
+  const status = useEntityAssistant(entity);
+  const { state } = useLocation();
+  const fromInboxReview = state?.fromInboxReview === true;
+  const panel = useRef<HTMLDivElement>(null);
   const active = useRef<AbortController | null>(null);
   useEffect(() => () => active.current?.abort(), []);
-  const [task, setTask] = useState(Object.keys(entity.aiTasks ?? {})[0] ?? "");
+  const [selectedTask, setTask] = useState("");
   const [proposal, setProposal] = useState<Proposal | null>(null);
   const [value, setValue] = useState(""); const [busy, setBusy] = useState(false);
   const [error, setError] = useState(""); const [message, setMessage] = useState("");
@@ -40,34 +44,56 @@ export default function RecordAssistant({ model, entity, units }: { model: strin
     const timer = window.setTimeout(() => setProposal(current => current?.id === id ? { ...current, state: "expired" } : current), Math.max(0, deadline - Date.now()));
     return () => window.clearTimeout(timer);
   }, [proposal?.id, proposal?.state, deadline]);
+  const tasks = Object.entries(entity.aiTasks ?? {});
+  const readyClassifier = status?.llmConfigured === false ? tasks.find(([, item]) =>
+    item.engine === "classifier" && item.classifier && status.classifiers?.includes(item.classifier)) : undefined;
+  const task = (entity.aiTasks?.[selectedTask] && selectedTask) || readyClassifier?.[0] || tasks[0]?.[0] || "";
   const current = entity.aiTasks?.[task];
   const field = entity.fields.find(f => f.name === current?.outputField);
-  const run = async (work: () => Promise<void>) => {
+  const run = useCallback(async (work: () => Promise<void>) => {
     setBusy(true); setError(""); setMessage("");
     try { await work(); } catch (e) {
       if (e instanceof Error && e.name === "AbortError") setMessage(t("Đã hủy lượt tạo đề xuất."));
       else setError(e instanceof Error ? e.message : t("Không thể hoàn tất yêu cầu."));
     }
     finally { setBusy(false); }
-  };
-  if (!available || !record || !entity.aiTasks || !Object.keys(entity.aiTasks).length) return null;
+  }, []);
+  const recordId = record?.id;
+  const createProposal = useCallback(async (name: string) => {
+    if (recordId == null || active.current) return;
+    const controller = new AbortController();
+    active.current = controller;
+    setProposal(null);
+    try {
+      const result = await assistantRequest<Result>("/me/proposals", "POST", { model, entity: entity.name, id: recordId, task: name }, controller.signal);
+      if (result.insufficient) { setMessage(t("Chưa đủ căn cứ để đưa ra đề xuất. Hãy kiểm tra thông tin hồ sơ.")); return; }
+      setProposal(result.proposal); setValue(result.proposal?.snapshot.value ?? "");
+    } finally { active.current = null; }
+  }, [model, entity.name, recordId]);
+  useEffect(() => {
+    if (!fromInboxReview || recordId == null || !status?.configured || !panel.current) return;
+    const reviewTask = takeInboxReview(model, entity.name, recordId);
+    if (!reviewTask) return;
+    panel.current.focus({ preventScroll: true });
+    panel.current.scrollIntoView({ block: "start" });
+    if (!entity.canWrite || !Object.keys(entity.aiTasks ?? {}).includes(reviewTask) || entity.aiTasks?.[reviewTask]?.engine !== "classifier") {
+      setError(t("Nhiệm vụ không còn khả dụng hoặc bạn không có quyền sửa hồ sơ."));
+      return;
+    }
+    setTask(reviewTask);
+    void run(() => createProposal(reviewTask));
+  }, [fromInboxReview, model, entity.name, recordId, status?.configured, entity.canWrite, entity.aiTasks, run, createProposal]);
+  if (!status?.configured || !record || !tasks.length) return null;
   const unchanged = !!proposal && value === proposal.snapshot.previousValue;
   const pending = proposal?.state === "pending" && deadline > Date.now();
-  return <Card sx={{ p: 2 }}>
-    <Typography variant="h6" gutterBottom>{t("Trợ lý nghiệp vụ")}</Typography>
+  return <Card ref={panel} tabIndex={-1} aria-labelledby="record-assistant-heading" sx={{ p: 2, scrollMarginTop: 80 }}>
+    <Typography id="record-assistant-heading" variant="h6" gutterBottom>{t("Trợ lý nghiệp vụ")}</Typography>
     <Stack spacing={2}>
       <Typography variant="body2" color="text.secondary">{t("Xem căn cứ và xác nhận trước khi lưu đề xuất vào hồ sơ.")}</Typography>
       <TextField select label={t("Nhiệm vụ")} value={current ? task : ""} disabled={busy} onChange={e => { setTask(e.target.value); setProposal(null); setMessage(""); }}>
-        {Object.entries(entity.aiTasks).map(([name, item]) => <MenuItem key={name} value={name}>{item.label}</MenuItem>)}
+        {tasks.map(([name, item]) => <MenuItem key={name} value={name}>{item.label}</MenuItem>)}
       </TextField>
-      <Button disabled={busy || !current || !entity.canWrite} variant="outlined" onClick={() => void run(async () => {
-        setProposal(null);
-        active.current = new AbortController();
-        const result = await assistantRequest<Result>("/me/proposals", "POST", { model, entity: entity.name, id: record.id, task }, active.current.signal);
-        active.current = null;
-        if (result.insufficient) { setMessage(t("Chưa đủ căn cứ để đưa ra đề xuất. Hãy kiểm tra thông tin hồ sơ.")); return; }
-        setProposal(result.proposal); setValue(result.proposal?.snapshot.value ?? "");
-      })}>{t("Tạo đề xuất")}</Button>
+      <Button disabled={busy || !current || !entity.canWrite} variant="outlined" onClick={() => void run(() => createProposal(task))}>{t("Tạo đề xuất")}</Button>
       {busy && active.current && <Button onClick={() => active.current?.abort()}>{t("Dừng tạo đề xuất")}</Button>}
       {busy && <Box role="status"><CircularProgress size={20} /><Typography component="span" sx={{ ml: 1 }}>{t("Đang xử lý…")}</Typography></Box>}
       {error && <Alert severity="error">{error}</Alert>}
@@ -90,7 +116,13 @@ export default function RecordAssistant({ model, entity, units }: { model: strin
           <Typography variant="caption" color="text.secondary">{t("Xác nhận chỉ lưu trường đề xuất; các lưu ý không tự thay đổi hồ sơ.")}</Typography>
           {entity.canWrite && <EditButton resource={resourceName(model, entity.name)} record={record} label={t("Sửa hồ sơ theo lưu ý")} />}
         </>}
-        {!!proposal.snapshot.sources?.length && <Box component="details">
+        {proposal.snapshot.evidence?.length ? <Box>
+          <Typography variant="subtitle2">{t("Căn cứ trong hồ sơ")}</Typography>
+          <Box component="ul" sx={{ my: 0.5, pl: 3 }}>
+            {proposal.snapshot.evidence.map(phrase => <Typography component="li" variant="body2" key={phrase}
+              sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{phrase}</Typography>)}
+          </Box>
+        </Box> : !!proposal.snapshot.sources?.length && <Box component="details">
           <Typography component="summary" sx={{ cursor: "pointer", color: "primary.main" }}>{t("Nguồn tham khảo")}</Typography>
           <Stack spacing={1} sx={{ mt: 1 }}>
             {proposal.snapshot.sources.map(source => <Box key={source.id}>

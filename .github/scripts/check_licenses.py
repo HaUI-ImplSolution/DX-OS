@@ -18,7 +18,7 @@
    and every tracked weight, archive or document file is declared
    in .github/licenses/component-catalog.json with an allowed license, and DEPENDENCIES.txt names each entry.
 5. Every license that REUSE.toml gives to a file of the repository, and every text in LICENSES/, is an allowed one
-   (or OFL-1.1, the license of the Noto Sans files), so no file of the project is under a license outside the OSI list.
+   (or OFL-1.1 for Noto Sans or CC-BY-4.0 for the declared classifier data paths).
 
 Several license entries on one package are alternatives, as in an SPDX OR expression.
 The exit status is 1 when anything fails.
@@ -141,6 +141,13 @@ def check_headers() -> list[str]:
 
 # The licenses a file of the repository may carry: the allowed ones and the license of the Noto Sans files.
 OWN_LICENSES = ALLOWED | {"OFL-1.1"}
+# The classifier data files may also carry CC-BY-4.0.
+CLASSIFIER_DATA_PATHS = {
+    "tools/classifier/labels.json",
+    "tools/classifier/data/seeds/*.jsonl",
+    "tools/classifier/data/negatives.jsonl",
+    "assistant/test/fixtures/classifier.json",
+}
 
 
 def check_own_licenses() -> list[str]:
@@ -148,10 +155,14 @@ def check_own_licenses() -> list[str]:
     annotations = tomllib.loads((ROOT / "REUSE.toml").read_text(encoding="utf-8")).get("annotations", [])
     for annotation in annotations:
         expression = annotation.get("SPDX-License-Identifier", "")
+        patterns = annotation.get("path", [])
+        paths = {patterns} if isinstance(patterns, str) else set(patterns)
+        if expression == "CC-BY-4.0" and paths and paths <= CLASSIFIER_DATA_PATHS:
+            continue
         if not expression_allowed(expression, OWN_LICENSES):
             problems.append(f"REUSE.toml: {annotation.get('path')} is under {expression}, which is not an allowed license")
     for text in sorted((ROOT / "LICENSES").glob("*.txt")):
-        if text.stem not in OWN_LICENSES:
+        if text.stem not in OWN_LICENSES | {"CC-BY-4.0"}:
             problems.append(f"LICENSES/{text.name}: {text.stem} is not an allowed license")
     return problems
 

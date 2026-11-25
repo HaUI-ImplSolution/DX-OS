@@ -12,6 +12,7 @@ import { CoreSession } from './auth/core-session.js';
 import { CoreClient } from './tools/core-client.js';
 import { Records } from './tools/records.js';
 import { LocalInference, type Framing } from './inference/local.js';
+import { loadClassifiers } from './classifier/index.js';
 import { FieldProposals, type Source } from './tools/fields.js';
 import { fieldRoutes } from './accounts/routes.js';
 
@@ -19,7 +20,9 @@ export async function createServer(store: Store, verify: ReturnType<typeof ident
   options?: { session: CoreSession; publicUrl: URL; core?: CoreClient; fields?: FieldProposals; records?: Records }) {
   const app = Fastify({ bodyLimit: 32768, requestTimeout: 180000, logger: false });
   await app.register(swagger, { openapi: {
-    info: { title: 'DX-OS Assistant API', version: '0.1.0' },
+    info: { title: 'DX-OS Assistant API', version: '0.1.0',
+      description: 'Tasks run through self-hosted LLM inference or local classifier weights. ASSISTANT_CLASSIFIERS_DIR selects the weights directory at startup (default: /app/classifiers in the assistant image).',
+    },
     components: { securitySchemes: { bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' } } },
     security: [{ bearerAuth: [] }],
   }, transform: ({ schema, url }) => ({ schema: { ...schema, hide: url.startsWith('/internal/') }, url }) });
@@ -43,11 +46,21 @@ export async function createServer(store: Store, verify: ReturnType<typeof ident
     await verify(request.headers.authorization);
     return app.swagger();
   });
-  app.get('/assistant-api/v1/me', async request => {
+  app.get('/assistant-api/v1/me', { schema: {
+    description: 'Account link and task engine status. The assistant is configured when a self-hosted LLM or at least one local classifier is available.',
+    response: { 200: { type: 'object', properties: {
+      success: { type: 'boolean' }, message: { type: 'string' }, data: { type: 'object', properties: {
+        linked: { type: 'boolean' }, admin: { type: 'boolean' }, model: { type: 'object', properties: {
+          configured: { type: 'boolean' }, llmConfigured: { type: 'boolean' },
+          classifiers: { type: 'array', items: { type: 'string' }, description: 'Names of the loaded classifier weights' },
+        } },
+      } },
+    } } },
+  } }, async request => {
     const owner = await verify(request.headers.authorization);
     return { success: true, message: 'OK', data: {
       linked: !!store.getSecret(owner, 'core'),
-      model: options?.fields?.status() ?? { configured: false },
+      model: options?.fields?.status() ?? { configured: false, llmConfigured: false, classifiers: [] },
       admin: owner.admin,
     } };
   });
@@ -132,7 +145,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     maxInputBytes: Number(process.env.ASSISTANT_MAX_INPUT_BYTES ?? '6000'),
     maxOutputTokens: Number(process.env.ASSISTANT_MAX_OUTPUT_TOKENS ?? '256'),
   }) : undefined;
-  const fields = new FieldProposals(records, core, store, inference, readJson<Source[]>('ASSISTANT_SOURCES_FILE', []));
+  const classifiers = loadClassifiers(process.env.ASSISTANT_CLASSIFIERS_DIR);
+  const fields = new FieldProposals(records, core, store, inference, readJson<Source[]>('ASSISTANT_SOURCES_FILE', []), classifiers);
   const app = await createServer(store, verify, { session, publicUrl, core, fields, records });
   const port = Number(required('ASSISTANT_PORT'));
   if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Invalid assistant port');

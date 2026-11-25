@@ -5,6 +5,7 @@ package HaUI.ImplSolution.dxos.model;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -19,7 +20,9 @@ class ModelParserSectionsTest {
 
   private static final String FIELDS =
       "      title: {type: text, label: Tên}\n      note: {type: text}\n"
-          + "      amount: {type: number}\n      scan: {type: file}\n";
+          + "      amount: {type: number}\n      scan: {type: file}\n"
+          + "      kind: {type: choice, options: [A, B]}\n"
+          + "      kinds: {type: choice, multiple: true, options: [A, B]}\n";
 
   // An entity with the fields above and `rest` written under it at the indent of an entity key.
   private static String entity(String rest) {
@@ -52,6 +55,9 @@ class ModelParserSectionsTest {
   private static final String GOOD_TASK =
       "          label: Gợi ý\n          input_fields: [title, note]\n"
           + "          output_field: note\n          instruction: Hãy tóm tắt\n          sources: [kb_v1]\n";
+  private static final String CLASSIFIER_TASK =
+      "          engine: classifier\n          classifier: support\n"
+          + "          input_fields: [title, note]\n          output_field: kind\n";
 
   // --- the assistant ------------------------------------------------------------------------
 
@@ -68,6 +74,61 @@ class ModelParserSectionsTest {
     assertEquals(List.of("title", "note"), task.inputFields());
     assertEquals("note", task.outputField());
     assertEquals(300, task.maxLength());
+    assertEquals("llm", task.engine());
+    assertNull(task.classifier());
+  }
+
+  @Test
+  void aClassifierTaskUsesTextInputsAndASingleChoiceOutput() {
+    var task =
+        ok(task(CLASSIFIER_TASK + "          max_length: 1\n"))
+            .entities()
+            .get("item")
+            .aiTasks()
+            .get("t1");
+
+    assertEquals("classifier", task.engine());
+    assertEquals("support", task.classifier());
+    assertEquals(List.of("title", "note"), task.inputFields());
+    assertEquals("kind", task.outputField());
+    assertEquals(List.of(), task.sources());
+    assertNull(task.maxLength());
+    assertEquals(
+        "Metadata only",
+        ok(task(CLASSIFIER_TASK + "          instruction: Metadata only\n"))
+            .entities()
+            .get("item")
+            .aiTasks()
+            .get("t1")
+            .instruction());
+  }
+
+  @Test
+  void classifierAndLlmTasksEnforceTheirOwnSettings() {
+    refused(task(GOOD_TASK + "          engine: unknown\n"), "engine must be llm or classifier");
+    refused(
+        task(GOOD_TASK + "          classifier: support\n"),
+        "llm tasks must not declare classifier");
+    refused(
+        task(CLASSIFIER_TASK.replace("          classifier: support\n", "")),
+        "classifier is required");
+    refused(
+        task(CLASSIFIER_TASK.replace("classifier: support", "classifier: support-desk")),
+        "classifier must match");
+    refused(
+        task(CLASSIFIER_TASK.replace("classifier: support", "classifier: null")),
+        "classifier must be a name");
+    refused(
+        task(CLASSIFIER_TASK + "          sources: []\n"),
+        "classifier tasks must not declare sources");
+    refused(
+        task(CLASSIFIER_TASK.replace("[title, note]", "[title, amount]")),
+        "classifier input_fields must name text fields");
+    for (String field : List.of("note", "kinds")) {
+      refused(
+          task(CLASSIFIER_TASK.replace("output_field: kind", "output_field: " + field)),
+          "classifier output_field must name a single choice field");
+    }
   }
 
   @Test

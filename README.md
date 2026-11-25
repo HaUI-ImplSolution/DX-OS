@@ -237,7 +237,7 @@ DX-OS ở Tầng 1 là lõi không giao diện, ở Tầng 2 là giao diện web
 | H, môi trường số chung | Một lần đăng nhập; vai và đơn vị khai trong mô hình; mỗi người chỉ thấy phần việc của mình trong hộp việc, bảng theo trạng thái và lịch | Có |
 | P, rào chắn và luồng tự động | Trạng thái chỉ đổi qua quy trình; từ chối và trả lại bắt buộc có lý do; người tạo không tự duyệt hồ sơ của mình; hạn xử lý, quá hạn và leo thang lên vai khác; việc sau khi duyệt chạy qua hàng đợi và được thử lại | Có |
 | D, một nguồn sự thật | Dữ liệu, lịch sử và hàng đợi cùng nằm ở một cơ sở dữ liệu; lịch sử nối thành chuỗi chống sửa; mọi thay đổi báo ra ngoài bằng webhook có chữ ký; thống kê và danh mục dữ liệu | Có |
-| I, trí tuệ nhân tạo | Trợ lý nghiệp vụ tùy chọn đề xuất giá trị một trường từ hồ sơ và nguồn tham khảo, người dùng xác nhận trước khi lưu; chạy self-host với endpoint suy luận do người vận hành cấu hình | Có, một thành phần |
+| I, trí tuệ nhân tạo | Trợ lý nghiệp vụ tùy chọn đề xuất giá trị một trường để người dùng xác nhận trước khi lưu, với nguồn tham khảo và endpoint suy luận do người vận hành cấu hình cho nhiệm vụ LLM. DX-OS công bố mã, trọng số, dữ liệu đội biên soạn và cách tải dữ liệu ngoài của bộ phân loại hồ sơ tiếng Việt do đội tự huấn luyện, chạy trên CPU mà không cần model ngoài. | Có, một thành phần |
 
 Đề cũng nêu bốn nguyên lý kỹ thuật; cách chạy từng việc ở [`docs/DEMO.md`](./docs/DEMO.md#8-bốn-nguyên-lý-của-đề-tùy-chọn).
 

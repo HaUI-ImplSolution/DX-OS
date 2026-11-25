@@ -41,7 +41,8 @@ services:
     logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-assistant:${DXOS_IMAGE_TAG:-local}
     build:
-      context: ../assistant
+      context: ..
+      dockerfile: assistant/Dockerfile
     user: "0:0"
     cap_add: [CHOWN, DAC_OVERRIDE, FOWNER]
     network_mode: none

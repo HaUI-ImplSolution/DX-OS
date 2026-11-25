@@ -689,7 +689,7 @@ cmd_lint() {
 # Runs the barrier checks of the core (e2e/api/check_conformance.py) for a model that is applied on this stack.
 # They sign in as test users of the model, so the command creates the client dxos-check and those users in Keycloak.
 cmd_conformance() {
-  local model="" allow=false host
+  local model="" allow=false host port
   while (( $# )); do
     case "$1" in
       --allow-test-users) allow=true; shift ;;
@@ -706,7 +706,8 @@ cmd_conformance() {
   esac
   [[ "$(env_value KEYCLOAK_ADMIN_CONSOLE)" == true ]] \
     || die "conformance reaches the Keycloak Admin API through the gateway: set KEYCLOAK_ADMIN_CONSOLE=true in deploy/.env, then run docker compose up -d apisix-config and docker compose restart apisix"
-  DXOS_ENV_FILE="$DEPLOY_DIR/.env" DXOS_BASE_URL="http://localhost:$(env_value APISIX_HOST_PORT)" \
+  port="$(env_value APISIX_HOST_PORT)"
+  DXOS_ENV_FILE="$DEPLOY_DIR/.env" DXOS_BASE_URL="http://localhost:${port##*:}" \
     python3 "$DEPLOY_DIR/../e2e/api/check_conformance.py" "$model"
 }
 

@@ -572,13 +572,13 @@ Thể lệ chỉ bắt buộc giấy phép OSI cho sản phẩm; cam kết của
 | Dữ liệu                      | CC0, CC BY, ODbL, hoặc không thuộc diện bảo hộ quyền tác giả                                                                                                     | "Công khai trên mạng" nhưng giữ toàn quyền                       |
 | Dịch vụ ngoài               | Không bắt buộc khi chạy                                                                                                                                               | Sản phẩm phụ thuộc dịch vụ đóng                                 |
 
-Nơi lưu mã và máy chủ demo như GitHub, VPS, Cloudflare không thuộc sản phẩm; được dùng nhưng phải tùy chọn và công bố rõ.
+Nơi lưu mã và máy chủ demo như GitHub, máy chủ EC2, dịch vụ DNS không thuộc sản phẩm; được dùng nhưng phải tùy chọn và công bố rõ.
 
 ### Giấy phép của các thành phần
 
 Mọi thành phần của bản phát hành đạt tiêu chuẩn trên; danh mục và giấy phép từng thành phần ở [`DEPENDENCIES.txt`](../../DEPENDENCIES.txt), kiểm tự động bằng `.github/scripts/check_licenses.py`.
 ClamAV (GPL-2.0) chạy thành dịch vụ riêng qua mạng, và react-admin chỉ dùng phần MIT, không dùng gói Enterprise.
-cloudflared (Apache-2.0) chỉ chạy ở máy chủ công khai của đội, còn Cloudflare Tunnel và Access là dịch vụ đóng, nên cấu hình giữ ngoài repository và hệ thống chạy được mà không cần chúng.
+Caddy (Apache-2.0) chỉ chạy ở máy chủ công khai của đội để lấy chứng chỉ HTTPS, còn Cloudflare giữ bản ghi DNS của tên miền và là dịch vụ đóng, nên cấu hình giữ ngoài repository và hệ thống chạy được mà không cần chúng.
 
 ## Công cụ
 

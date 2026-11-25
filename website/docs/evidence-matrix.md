@@ -23,7 +23,7 @@ Việc chưa làm và giới hạn chấp nhận ở [Việc tồn đọng](http
 | Test đơn vị của web | `cd frontend && npm test`: 58 test của Vitest trên Node, gồm thân yêu cầu ghi hồ sơ không gửi khóa lạ, điều kiện, xuất CSV chống công thức, định dạng, điều hướng và đổi tên của bộ dựng mô hình | Có, workflow `Frontend` trên mọi pull request |
 | Script kiểm trên stack thật | `python3 e2e/api/check_<tên>.py` trên stack rỗng dựng bằng `docker compose up -d --build` | Có, job `API end-to-end` của workflow `Platform` trên mọi pull request |
 | Kiểm bằng trình duyệt | Sáu kịch bản Playwright ở `e2e/web/tests/` (bảng điều khiển, trợ lý, bản nháp của trình dựng mô hình, sửa hồ sơ, quyết định trên hồ sơ đã đổi, cỡ điện thoại); các màn hình còn lại kiểm tay theo `docs/TESTING.md`, mục 6 | Kịch bản Playwright có, job `Browser end-to-end` của workflow `Platform`; kiểm tay không |
-| Bản triển khai công khai | VPS của đội | Không; hiện giữ bản `v1.1.1` nên chưa có bằng chứng loại này cho lõi mới |
+| Bản triển khai công khai | EC2 của đội, bản `v2.1.0` sau Caddy (HTTPS) | Không; `deploy/online-check.sh` kiểm từ chính máy chủ, chưa có bước CI |
 
 Dữ liệu của hai loại đầu do chính các script tạo ra trên stack rỗng; chưa có tổ chức nào dùng lõi với dữ liệu thật.
 Job `API end-to-end` của workflow `Platform` chia hai nhóm, mỗi nhóm một stack rỗng: `model and process` và `events and bootstrap`; script của từng nhóm khai ở `.github/workflows/ci-platform.yml`.
@@ -115,7 +115,7 @@ Mỗi script in `N/M passed` và thoát với mã 1 khi có kiểm hỏng; số 
 | SBOM khớp với tệp khóa | Job `Check SBOMs against lockfiles` của workflow `Compliance` dựng lại SBOM của `frontend` và `website` rồi so với `sbom/` | `python3 .github/scripts/check_sbom_fresh.py` | Hoàn thiện | SBOM của backend so bằng `check_sbom_fresh.py` với kết quả của `cyclonedx-maven-plugin`, chạy tay ngày 06/11/2026: 221 gói, 0 khác biệt |
 | Tệp bắt buộc có đủ, shell script đúng cú pháp và chạy được | Job `Check required files and scripts` của workflow `Compliance` | | Hoàn thiện | |
 | Workflow đúng cú pháp | Job `Lint workflows` của workflow `Compliance` | | Hoàn thiện | |
-| Image theo phiên bản trên GHCR | Workflow `Release Images` | | Dùng được | Image `v2.1.0` của cả năm dịch vụ đã đăng, mỗi tag kèm SBOM (SPDX), thông tin dựng ghi commit của tag và chữ ký Sigstore |
+| Image theo phiên bản trên GHCR | Workflow `Release Images` | | Dùng được | Image `v2.1.0` của cả sáu image (`backend`, `monitor`, `frontend`, `portal`, `sso`, `clamav`) đã đăng, mỗi tag kèm SBOM (SPDX), thông tin dựng ghi commit của tag và chữ ký Sigstore |
 | Compose dừng khi thiếu bí mật, tệp mẫu hợp lệ | Job `Validate the Compose file` của workflow `Platform` | `docker compose config` | Hoàn thiện | |
 
 ## 4. Chưa làm

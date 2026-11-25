@@ -148,6 +148,7 @@ Mỗi kiểm in một dòng `PASS` hoặc `FAIL` kèm nhãn, cuối script in `N
 
 Bài Playwright của bảng điều khiển nằm ở `e2e/web/`; cách chạy, biến cấu hình và nơi có ảnh chụp ở [`e2e/README.md`](../e2e/README.md).
 Bài `phone.spec.ts` chạy ở cỡ điện thoại 390 px và kiểm bảng điều khiển cùng hộp việc không rộng hơn màn hình.
+Bài `console-draft.spec.ts` kiểm bảng điều khiển hỏi trước khi bản đang soạn có thay đổi chưa áp dụng bị thay bằng một mẫu: Hủy giữ bản nháp, Thay thế mở mẫu.
 CI chạy bài này ở job `Browser end-to-end` của workflow `Platform`.
 
 ## 6. Kiểm tay trước khi phát hành
@@ -216,6 +217,7 @@ Mỗi mục nêu điều phải thấy; lệnh và biến cấu hình chi tiết
     Ở Quy trình → Tổng quan, bấm một trạng thái trên sơ đồ mở Trạng thái với dòng đó được chọn, bấm một mũi tên mở hành động đó, bấm mũi tên tự đóng mở Thời hạn.
     Thêm vai trò xử lý chưa có quyền xem hồ sơ thì cây và trang hiện cảnh báo màu cam; cho quyền thì hết.
     Tệp có lỗi kèm dòng và cột thì cây đánh dấu đỏ đúng mục, và bấm lỗi trong danh sách đầu form thì đi tới mục đó.
+    Sửa một trường ở tab Soạn và áp dụng rồi bấm Dùng mẫu ở Thư viện mẫu (hoặc mở một mô hình ở Mô hình đang chạy): hộp thoại "Thay bản đang soạn?" hiện ra; Hủy giữ nguyên bản đang soạn, Thay thế mở mẫu; chưa sửa gì thì mở ngay, không hỏi.
     Sửa một chữ thì cạnh tên tệp hiện "Có thay đổi chưa áp dụng"; áp dụng xong mở lại thì hiện "Chưa sửa gì".
     Thêm hành động, đổi mã trạng thái, bỏ hoặc khôi phục một hành động của mẫu, chọn "Tự khai báo, không dùng mẫu": sơ đồ vẽ lại và YAML giữ nguyên dòng chú thích.
 23. **Hướng dẫn trong trình soạn:** nút "Phạm vi có thể làm" ở mỗi phần của form và bảng "Viết được gì trong tệp" (ở chế độ form chỉ nêu phần đang sửa) nêu hệ thống chấp nhận gì, mở rộng được gì, tự tạo được gì, tên trạng thái và hành động của từng mẫu quy trình; rê chuột lên một khóa trong YAML hiện giải thích tiếng Việt; trình soạn không gạch chân `when`.

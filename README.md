@@ -221,6 +221,7 @@ Các lệnh hay dùng của `dxos`:
 |---|---|
 | Một thành phần ngừng | `dxos status`, rồi `dxos reconcile`; mọi service chạy lâu tự khởi động lại khi tiến trình thoát |
 | Máy không chạy được stack | `dxos doctor` chỉ đọc, báo thiếu biến trong `.env`, cổng bị chiếm, thiếu RAM hay ổ đĩa |
+| `dxos start` báo cổng không dùng được | Một chương trình khác giữ cổng; trên Windows, `dxos doctor` không thấy chương trình ở phía Windows. `dxos start` nêu khóa `APISIX_HOST_PORT` hoặc `POSTGRES_HOST_PORT` cần đổi trong `deploy/.env` |
 | Mọi tệp tải lên bị từ chối | Quét mã độc bật mà ClamAV không chạy; `dxos doctor` báo `FAIL`, chạy `dxos av on` hoặc `dxos av off` |
 | Không đăng nhập được tài khoản thử | `dxos demo` đặt lại mật khẩu và in mật khẩu mới |
 | Sau lần áp dụng, một bản `backend` trả 404 | Chỉ chạy một bản `backend`, hoặc khởi động lại cả hai |

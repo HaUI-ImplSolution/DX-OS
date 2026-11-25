@@ -153,7 +153,7 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 | `dxos client browser add <tên> --redirect-uri URL [...]`, `dxos client browser list`, `dxos client browser remove <tên>` | Đăng ký và quản lý public OIDC client dùng PKCE cho giao diện trình duyệt ở origin khác |
 | `dxos import <mô hình> <thực thể> <tệp.csv> --client TÊN [--dry-run] [--secret-file TỆP] [--offset +HH:MM]` | Tạo mỗi dòng của tệp CSV thành một hồ sơ qua API dữ liệu, bằng ứng dụng ngoài đã đăng ký (xem dưới) |
 | `dxos version` | In bản đang cài (thẻ image) và thư mục cài |
-| `dxos uninstall [--purge]` | Xóa container và lệnh `dxos`; `--purge` xóa cả dữ liệu và thư mục cài, phải gõ xác nhận |
+| `dxos uninstall [--purge]` | Xóa container và lệnh `dxos`; `--purge` xóa cả dữ liệu, kho sao lưu trong `deploy/backups` và thư mục cài, phải gõ xác nhận; kho ở `BACKUP_DIR` hoặc `BACKUP_REPOSITORY` ngoài thư mục cài được giữ nguyên |
 
 Prometheus và Grafana là thành phần tùy chọn nằm ngoài stack mặc định; cách bật và đọc dashboard ở [`MONITORING.md`](./MONITORING.md#prometheus-và-grafana-kèm-theo-tùy-chọn).
 Cầu nối MQTT là thành phần tùy chọn nằm ngoài stack mặc định; cách bật, cấu hình tuyến và giới hạn ở [`INTEGRATIONS.md`](./INTEGRATIONS.md#cầu-nối-mqtt-tùy-chọn).
@@ -529,6 +529,7 @@ Nó kiểm Docker và Compose, RAM, ổ đĩa, `deploy/.env` (kể cả `DXOS_MO
 Biến có trong `.env` mà `.env.example` không liệt kê bị báo `WARN`.
 Với mỗi cổng `APISIX_HOST_PORT` và `POSTGRES_HOST_PORT`, nó phân biệt cổng do container của chính stack giữ (ổn, kể cả khi stack mới lên một phần và `dxos start` sẽ dựng nốt) với cổng bị chương trình khác ngoài stack giữ (FAIL).
 Cổng bị chương trình ngoài giữ thì `dxos stop` không giải phóng được: đổi giá trị của khóa đó trong `deploy/.env` hoặc dừng chương trình đó.
+Trên Windows, `doctor` chạy trong WSL nên không thấy chương trình giữ cổng ở phía Windows; khi đó `dxos start` dừng ở lỗi của Docker và nêu khóa `*_HOST_PORT` cần đổi.
 Quét mã độc được báo là bật hay tắt; `STORAGE_SCAN_HOST=clamav` mà `COMPOSE_PROFILES` không có `av` bị báo `FAIL`, vì ClamAV sẽ không chạy và mọi tệp tải lên bị từ chối.
 Thoát với mã 1 khi có `FAIL`, nên chạy trước `./update.sh` và `docker compose up -d` trên máy chủ.
 
@@ -656,7 +657,7 @@ Mọi tệp đính kèm được ClamAV quét trước khi xử lý và lưu.
 Tệp nhiễm bị từ chối với HTTP 422 `ERR_FILE_INFECTED` và lần chặn được ghi vào `audit_log` (`FILE_INFECTED`, kèm tên mẫu mã độc).
 ClamAV không trả lời thì tệp không được lưu và người dùng nhận HTTP 503 `ERR_SCAN_UNAVAILABLE`, vì tệp chưa quét không được coi là sạch (fail-closed).
 `deploy/.env` sinh từ `.env.example` có sẵn `av` trong `COMPOSE_PROFILES` và `STORAGE_SCAN_HOST=clamav`, nên quét bật ngay từ lần cài đầu; ClamAV cần khoảng 1 GB RAM.
-`dxos av off` tắt quét và `dxos av on` bật lại: lệnh sửa `COMPOSE_PROFILES` và `STORAGE_SCAN_HOST` trong `.env`, rồi khởi động hoặc gỡ ClamAV và tạo lại backend nếu stack đang chạy.
+`dxos av off` tắt quét và `dxos av on` bật lại: lệnh sửa `COMPOSE_PROFILES` và `STORAGE_SCAN_HOST` trong `.env`, rồi khởi động hoặc gỡ ClamAV, tạo lại backend và khởi động lại APISIX nếu stack đang chạy.
 Không dùng `dxos` thì sửa hai biến đó bằng tay (`COMPOSE_PROFILES` bỏ hoặc có `av`, `STORAGE_SCAN_HOST` để trống hoặc `clamav`) rồi `docker compose up -d`.
 Quét tắt thì tệp nhiễm được lưu bình thường, và `dxos doctor` báo `WARN`.
 `install.sh --upgrade` giữ nguyên lựa chọn của bản đã cài: bản chưa từng bật quét vẫn tắt, bật bằng `dxos av on`.

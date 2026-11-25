@@ -24,6 +24,8 @@ Cơ sở dữ liệu `keycloak` và vai `keycloak_app` do [`deploy/postgres/init
   Realm đã import từ trước chưa có ba quyền client: cấp tay ở Admin Console (Clients, `dxos-backend-admin`, Service accounts roles, Assign role, lọc theo client `realm-management`), nếu không áp dụng mô hình báo lỗi 403 ở bước `ENSURE_CLIENT`.
 - Realm chỉ import lần đầu; Keycloak đã có dữ liệu thì thêm client hoặc vai qua Admin Console (cấu hình như `realm-dxos.json`, secret của `dxos-monitor` là `MONITOR_OIDC_CLIENT_SECRET`) hoặc dựng lại bằng `deploy/reset.sh`.
 - Realm import lấy `GATEWAY_PUBLIC_URL` làm redirect URI của `dxos-web` (cùng `localhost` cho dev), nên đổi `PUBLIC_HOST` trước lần khởi động đầu tiên của Keycloak.
+- Hồ sơ người dùng của realm không bắt buộc `lastName`, nên người dùng có tên một từ không bị hỏi thêm hồ sơ ở lần đăng nhập đầu.
+  Realm đã import từ trước: **Realm settings → User profile → lastName**, tắt **Required field** (cần `KEYCLOAK_ADMIN_CONSOLE=true`).
 
 ## Xác thực hai bước và mật khẩu
 

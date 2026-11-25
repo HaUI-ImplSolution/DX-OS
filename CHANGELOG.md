@@ -59,6 +59,11 @@ Nâng cấp từ `2.0.2` giữ nguyên dữ liệu; hai migration mới thêm b�
   Mỗi lần vào lại tính một lượt, lượt đang mở tính đến `computedAt`, trạng thái cuối không tính; cùng quyền theo dòng, bộ lọc và mức cắt 10 giây như các số khác.
 - Tệp mô hình có khóa viết hai lần trong cùng một khối bị `dxos lint`, `dxos plan` và áp dụng từ chối, kèm dòng của lần viết thứ hai; mô hình đã lưu có khóa trùng vẫn chạy và hiện cảnh báo.
 - `dxos import <mô hình> <thực thể> <tệp.csv> --client TÊN` tạo mỗi dòng của tệp CSV thành một hồ sơ qua API dữ liệu chung, nên mỗi dòng đi qua quyền, ràng buộc, quy tắc và quy trình của thực thể; dòng bị từ chối được báo kèm số dòng và lý do, gửi lại cùng tệp không tạo trùng trong 24 giờ, và `--dry-run` kiểm tệp mà không tạo gì.
+- `dxos av on`, `dxos av off` và các lệnh khác tạo lại backend khởi động lại APISIX sau đó, nên gateway không trả 502 vì giữ địa chỉ của container cũ.
+- `dxos uninstall --purge` xóa cả kho sao lưu trong `deploy/backups`; kho ở `BACKUP_DIR` hoặc `BACKUP_REPOSITORY` ngoài thư mục cài được giữ nguyên.
+- `dxos connect` cảnh báo khi `.env` của ứng dụng cho tài khoản khác đọc được, như trên ổ Windows gắn vào WSL (`/mnt/c`), nơi `chmod` không có tác dụng.
+- `dxos start` nêu khóa `APISIX_HOST_PORT` hoặc `POSTGRES_HOST_PORT` cần đổi khi Docker không mở được cổng.
+- Realm `dxos` không bắt buộc `lastName`, nên người dùng có tên một từ không bị hỏi thêm hồ sơ ở lần đăng nhập đầu; realm đã import từ trước chỉnh tay theo `sso/README.md`.
 
 ### Giao diện
 

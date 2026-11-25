@@ -5,7 +5,7 @@ package HaUI.ImplSolution.dxos.engine.files;
 import HaUI.ImplSolution.dxos.core.api.storage.FileProcessor;
 import HaUI.ImplSolution.dxos.core.api.storage.ProcessedFile;
 import java.net.URLConnection;
-import java.util.Arrays;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -25,7 +25,7 @@ public class AttachmentProcessor implements FileProcessor {
 
   // The signature that opens every RAR archive. The virus scan cannot open one, so it is refused
   // whatever its name says.
-  private static final byte[] RAR_SIGNATURE = {'R', 'a', 'r', '!', 0x1A, 0x07};
+  private static final String RAR_SIGNATURE = "Rar!\u001a\u0007";
 
   private final Set<String> allowed;
 
@@ -67,7 +67,8 @@ public class AttachmentProcessor implements FileProcessor {
   }
 
   private static boolean isRar(byte[] content) {
-    return content.length >= RAR_SIGNATURE.length
-        && Arrays.equals(Arrays.copyOf(content, RAR_SIGNATURE.length), RAR_SIGNATURE);
+    return content.length >= RAR_SIGNATURE.length()
+        && new String(content, 0, RAR_SIGNATURE.length(), StandardCharsets.ISO_8859_1)
+            .equals(RAR_SIGNATURE);
   }
 }

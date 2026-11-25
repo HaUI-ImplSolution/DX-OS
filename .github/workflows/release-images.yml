@@ -80,15 +80,11 @@ jobs:
           if [[ "${{ matrix.name }}" == "clamav" ]]; then echo "license=GPL-2.0-only" >> "$GITHUB_OUTPUT"; else echo "license=Apache-2.0" >> "$GITHUB_OUTPUT"; fi
           # The monitor is built from the backend sources, with its own target of the same Dockerfile.
           if [[ "${{ matrix.name }}" == "monitor" ]]; then
-            echo "context=backend" >> "$GITHUB_OUTPUT"
-            echo "dockerfile=backend/Dockerfile" >> "$GITHUB_OUTPUT"
-            echo "target=monitor" >> "$GITHUB_OUTPUT"
+            { echo "context=backend"; echo "dockerfile=backend/Dockerfile"; echo "target=monitor"; } >> "$GITHUB_OUTPUT"
           else
             context="${{ matrix.name }}"
             if [[ "$context" == "assistant" ]]; then context="."; fi
-            echo "context=$context" >> "$GITHUB_OUTPUT"
-            echo "dockerfile=${{ matrix.name }}/Dockerfile" >> "$GITHUB_OUTPUT"
-            echo "target=" >> "$GITHUB_OUTPUT"
+            { echo "context=$context"; echo "dockerfile=${{ matrix.name }}/Dockerfile"; echo "target="; } >> "$GITHUB_OUTPUT"
           fi
           {
             echo "args<<EOF"

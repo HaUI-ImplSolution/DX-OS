@@ -22,6 +22,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Giao diện
 
+- Web có test đơn vị bằng Vitest (`npm test` trong `frontend/`), chạy ở workflow `Frontend`.
 - Trình dựng mô hình có thêm hai trang cho mỗi thực thể: Giao diện và Mẫu in.
   Giao diện sửa biểu tượng, nhóm và thứ tự trong menu, cột và cách sắp xếp của danh sách, nhóm trường trên form và gợi ý của từng trường.
   Mẫu in sửa tên mẫu, nhãn, tên tệp, tiêu đề, các trạng thái được in và các khối nội dung (tiêu đề, văn bản, bảng trường, dòng ký, đổi được thứ tự).

@@ -118,6 +118,7 @@ export const app: Record<string, string> = {
   "Trong hạn": "On time",
   "Không có việc nào đang chờ bạn": "Nothing is waiting for you",
   "Hồ sơ mới giao cho bạn sẽ hiện ở đây.": "New records assigned to you will show up here.",
+  "Tạo {name}": "New {name}",
   "Loại": "Kind",
   "Hồ sơ": "Record",
   "Trạng thái": "Status",

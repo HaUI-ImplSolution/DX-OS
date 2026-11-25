@@ -202,8 +202,8 @@ Stack mặc định không chạy chúng và lõi không đổi.
 
 ### Bật
 
-1. Đặt `METRICS_PASSWORD` trong `deploy/.env` (`make_env.sh` sinh sẵn cho bản cài mới; bản cài cũ thì tự đặt, ví dụ bằng `openssl rand -hex 24`) rồi khởi động lại dịch vụ lõi; để trống thì endpoint đóng và Prometheus không khởi động.
-2. Chép `deploy/grafana.env.example` thành `deploy/grafana.env` (ngoài Git) và điền `GF_SECURITY_ADMIN_PASSWORD`, sinh bằng `openssl rand -hex 24`; để trống thì Grafana không khởi động.
+1. Đặt `METRICS_PASSWORD` trong `deploy/.env` (`make_env.sh` sinh sẵn cho bản cài mới; bản cài cũ thì tự đặt, ví dụ bằng `openssl rand -hex 24`) rồi khởi động lại dịch vụ lõi; để trống thì endpoint đóng, và `dxos start` dừng ở bước kiểm máy với dòng FAIL nêu biến còn thiếu.
+2. Chép `deploy/grafana.env.example` thành `deploy/grafana.env` (ngoài Git) và điền `GF_SECURITY_ADMIN_PASSWORD`, sinh bằng `openssl rand -hex 24`; để trống thì `dxos start` dừng ở bước kiểm máy như trên.
 3. Đặt `COMPOSE_FILE=docker-compose.yml:docker-compose.grafana.yml` trong `deploy/.env`, rồi chạy `dxos start`.
 4. Mở `http://127.0.0.1:3000`, đăng nhập bằng `admin` và mật khẩu ở bước 2; dashboard "DX-OS" nằm ở mục Dashboards.
 5. Tắt bằng cách bỏ dòng `COMPOSE_FILE` rồi chạy `docker compose up -d --remove-orphans`; muốn xóa cả số đo đã lưu thì `docker volume rm <dự án>_prometheus_data <dự án>_grafana_data`.

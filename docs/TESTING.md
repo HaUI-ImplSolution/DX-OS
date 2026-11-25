@@ -163,6 +163,7 @@ Mỗi mục nêu điều phải thấy; lệnh và biến cấu hình chi tiết
 4. **Chế độ tối và điện thoại 390 px:** chế độ tối hiện đủ hộp việc, danh sách, chi tiết và bảng điều khiển; ở điện thoại mỗi hồ sơ là một thẻ, không trang nào tràn ngang, tên trang không bị công tắc ngôn ngữ che.
 5. **Hộp việc thời gian thực:** số "Việc đang chờ" của cán bộ tăng trong khoảng hai giây khi sinh viên nộp hồ sơ, ở mọi tab, không tải lại trang; chi tiết đang mở đổi trạng thái khi người khác duyệt và form đang gõ dở không bị làm mới.
    Khởi động lại `backend` thì tab đang mở nhận lại thay đổi sau vài giây.
+   Hộp việc trống của người nộp có một nút "Tạo <tên thực thể>" cho mỗi thực thể được ghi, bấm vào mở đúng biểu mẫu tạo; tài khoản chỉ đọc không thấy nút nào.
    `GET /api/v1/inbox/stream` không token thì 401, có token thì 200 `text/event-stream` kèm `: ping` mỗi 20 giây và đóng sau 600 giây.
 6. **Hàng đợi sự kiện:** ba danh sách Lỗi, Chờ gửi, Đã gửi; thông điệp lỗi hiện lỗi gần nhất và nút Thử lại ngay.
 7. **Tệp đính kèm:** tải `.html` lên bị từ chối (400); tải `.pdf` rồi mở link thì trình duyệt lưu thành tệp; gỡ tệp rồi mở link cũ thì 404.

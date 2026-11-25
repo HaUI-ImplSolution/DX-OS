@@ -22,6 +22,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ### Giao diện
 
+- Mở một mẫu hoặc một mô hình ở bảng điều khiển khi bản đang soạn có thay đổi chưa áp dụng thì hỏi trước khi thay; chọn Hủy giữ nguyên bản đang soạn.
 - Web có test đơn vị bằng Vitest (`npm test` trong `frontend/`), chạy ở workflow `Frontend`.
 - Trình dựng mô hình có thêm hai trang cho mỗi thực thể: Giao diện và Mẫu in.
   Giao diện sửa biểu tượng, nhóm và thứ tự trong menu, cột và cách sắp xếp của danh sách, nhóm trường trên form và gợi ý của từng trường.

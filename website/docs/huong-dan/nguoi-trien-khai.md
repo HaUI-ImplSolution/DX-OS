@@ -25,6 +25,7 @@ Vào `/console` bằng tài khoản `ADMIN`.
 - **Thư viện mẫu:** chọn một trong các mẫu có sẵn (một cửa sinh viên, hỗ trợ kỹ thuật, đặt phòng, mượn thiết bị và các mẫu khác) rồi áp dụng.
 - **Soạn và áp dụng:** viết tệp mô hình, hoặc dựng bằng form: cây bên trái cho thấy cả mô hình, bấm một trạng thái hay mũi tên trên sơ đồ quy trình là tới chỗ sửa nó, và lỗi được chỉ đúng mục cần sửa.
   Mỗi phần có hướng dẫn nói rõ viết được những gì.
+  Mở một mẫu hoặc một mô hình khác khi bản đang soạn có thay đổi chưa áp dụng thì bảng điều khiển hỏi trước; chọn Hủy giữ nguyên bản đang soạn.
 
 Thêm một nghiệp vụ mới là thêm một tệp mô hình; cách viết ở [`docs/MODEL.md`](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/MODEL.md).
 

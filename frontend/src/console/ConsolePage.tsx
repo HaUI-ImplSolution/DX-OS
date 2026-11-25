@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import { useEffect, useRef, useState } from "react";
-import { Alert, Box, MenuItem, Skeleton, Snackbar, Tab, Tabs, TextField } from "@mui/material";
+import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, MenuItem, Skeleton, Snackbar, Tab, Tabs, TextField } from "@mui/material";
 import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined";
 import AutoAwesomeMosaicOutlinedIcon from "@mui/icons-material/AutoAwesomeMosaicOutlined";
 import EditNoteOutlinedIcon from "@mui/icons-material/EditNoteOutlined";
@@ -117,11 +117,20 @@ function FullConsole() {
     );
   }, []);
 
-  const edit = (content: string, label: string) => {
+  // What waits for an answer while the editor holds changes that are not applied.
+  const [pending, setPending] = useState<{ content: string; label: string } | null>(null);
+
+  const open = (content: string, label: string) => {
     baselineRef.current = content;
     setText(content);
     setSource(label);
     setTab(2);
+  };
+
+  // Opening a model or a template replaces the text; the editor asks first when that would lose changes.
+  const edit = (content: string, label: string) => {
+    if (textRef.current === baselineRef.current) open(content, label);
+    else setPending({ content, label });
   };
 
   if (error) return <Alert severity="error">{error}</Alert>;
@@ -191,6 +200,25 @@ function FullConsole() {
       {schema && tab === 5 && <AppsTab />}
       {schema && tab === 6 && <DataCatalogTab />}
       {schema && tab === 7 && <ProjectsTab />}
+      <Dialog open={pending !== null} onClose={() => setPending(null)} maxWidth="xs" fullWidth>
+        <DialogTitle>{t("Thay bản đang soạn?")}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>{t("Bản đang soạn có thay đổi chưa áp dụng. Mở “{source}” sẽ thay nó và các thay đổi đó sẽ mất.", { source: pending?.label ?? "" })}</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPending(null)}>{t("Hủy")}</Button>
+          <Button
+            color="warning"
+            variant="contained"
+            onClick={() => {
+              if (pending) open(pending.content, pending.label);
+              setPending(null);
+            }}
+          >
+            {t("Thay thế")}
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Snackbar open={note !== null} autoHideDuration={6000} onClose={() => setNote(null)} message={note ?? ""} />
     </Box>
   );

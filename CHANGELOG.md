@@ -7,66 +7,14 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ## [Unreleased]
 
-### Lõi chạy ngầm
-
-- API danh sách, `stats`, `report` và `quality` nhận `q`: mỗi từ phải có, không phân biệt hoa thường và dấu, trong ít nhất một trường chữ, mã hoặc lựa chọn đơn của hồ sơ; điều kiện nằm cùng câu SQL với quyền theo dòng nên không trả hồ sơ ngoài quyền, và truy vấn có `q` bị cắt sau 10 giây.
-- Cầu nối MQTT tùy chọn (`deploy/docker-compose.mqtt.yml`, bật bằng `COMPOSE_FILE`): một broker Mosquitto có mật khẩu và một cầu nối nhận bản tin theo chủ đề khai báo rồi tạo hồ sơ qua API dữ liệu chung bằng client máy; bản tin giao hai lần chỉ tạo một hồ sơ, bản tin bị từ chối hoặc sai khuôn được ghi log và bỏ qua, và lõi ngừng thì bản tin được giữ ở broker đến khi xử lý. `examples/itot-simulator` có `--transport mqtt`.
-- Prometheus và Grafana tùy chọn (`deploy/docker-compose.grafana.yml`, bật bằng `COMPOSE_FILE`): Prometheus đọc số đo `dxos_*` của lõi bằng `METRICS_PASSWORD`, Grafana có sẵn nguồn dữ liệu và dashboard "DX-OS" về hồ sơ, hạn xử lý, hàng đợi sự kiện, lần áp dụng mô hình và dịch vụ lõi; Grafana mở ở `127.0.0.1`, đòi mật khẩu quản trị và không tải plugin.
-- Người dùng đóng hoặc tải lại trang không còn bị ghi thành lỗi server: luồng SSE của Hộp việc ngắt kết nối thì không có ERROR trong nhật ký và không có bản ghi audit `SERVER_ERROR`.
-- `dxos plan` in kế hoạch bằng chữ: mức rủi ro, mỗi thay đổi một dòng, hồ sơ đang xử lý, tác động lên hành động, dòng vi phạm và lệnh `dxos apply --accept` cần dùng; `--json` in JSON đầy đủ như trước.
-- `dxos apply` in tên mô hình, phiên bản và từng bước đã chạy bằng chữ, in thông báo máy chủ khi áp dụng lỗi và in phản hồi JSON đầy đủ với `--json`.
-- `stats` của thực thể có quy trình trả `timeInStatus`: mỗi trạng thái có số lượt vào, thời gian trung bình và lâu nhất, sắp theo trung bình giảm dần.
-  Mỗi lần vào lại tính một lượt, lượt đang mở tính đến `computedAt`, trạng thái cuối không tính; cùng quyền theo dòng, bộ lọc và mức cắt 10 giây như các số khác.
-- Tệp mô hình có khóa viết hai lần trong cùng một khối bị `dxos lint`, `dxos plan` và áp dụng từ chối, kèm dòng của lần viết thứ hai; mô hình đã lưu có khóa trùng vẫn chạy và hiện cảnh báo.
-- `dxos import <mô hình> <thực thể> <tệp.csv> --client TÊN` tạo mỗi dòng của tệp CSV thành một hồ sơ qua API dữ liệu chung, nên mỗi dòng đi qua quyền, ràng buộc, quy tắc và quy trình của thực thể; dòng bị từ chối được báo kèm số dòng và lý do, gửi lại cùng tệp không tạo trùng trong 24 giờ, và `--dry-run` kiểm tệp mà không tạo gì.
-
-### Giấy phép
-
-- `docs/DEPENDENCY_INVENTORY.md` liệt kê từng gói dự án dùng ở bất kỳ bước nào (npm kể cả gói dev, Maven kể cả test và plugin build, GitHub Actions, image, công cụ, phông, model), mỗi gói có phiên bản và giấy phép của đúng phiên bản đó; `.github/scripts/check_license_inventory.py` sinh mục này và `check` báo đỏ ở mỗi pull request khi thiếu gói hoặc có giấy phép ngoài danh sách OSI (`.github/licenses/osi-approved.json`) mà chưa có lý do.
-- Mỗi image do dự án phát hành (`backend`, `monitor`, `frontend`, `portal`, `sso`, `assistant`, `clamav`) kèm `LICENSE`, `NOTICE` và văn bản giấy phép của thư viện nó chứa ở `/licenses`; image `backend` có thêm giấy phép của `pgschema` và các mô-đun Go của nó.
-- Image `sso` kèm danh sách và văn bản giấy phép của 438 thư viện trong bản Keycloak (`THIRD-PARTY-LICENSES-keycloak.txt`), image `clamav` kèm giấy phép GPL-2.0 của ClamAV và của các phần bên thứ ba dựng sẵn trong nó, và mỗi image kèm `SOURCES.txt` nêu nơi lấy nguồn của gói hệ điều hành và thành phần GPL của image nền; các thư viện đó đều có trong `docs/DEPENDENCY_INVENTORY.md`.
-- Quét mã độc chạy bằng image `clamav` của dự án, dựng trên image ClamAV chính thức và bỏ `libclamunrar` (giấy phép UnRAR, không phải OSI); backend từ chối tệp tải lên có chữ ký RAR dù tên tệp đổi đuôi, vì ClamAV không mở được RAR.
-- Image `frontend`, `portal` dùng `nginx:1.30-alpine-slim`, image `assistant` và ứng dụng ví dụ `appliance-store` dùng `node:24.16.0-alpine`, ví dụ `order_approval` dùng `python:3.12-alpine`; số gói ngoài OSI trong các image này giảm rõ (xem `docs/IMAGE_PACKAGES.md`).
-- `docs/IMAGE_PACKAGES.md` liệt kê gói bên trong các image bên thứ ba mà stack chạy, kèm giấy phép từng gói và cột Ngoài OSI; `check_image_packages.py` kiểm đủ bảng ở mỗi pull request và đọc lại image hằng tuần.
-- `LICENSE` và `NOTICE` đi kèm GitHub Release cùng `dxos-install.sh` và `dxos-lint.jar`; SBOM của web và trang docs khai Apache-2.0 cho gói gốc; README của mỗi ví dụ nêu giấy phép; `check_licenses.py` kiểm mọi nơi dự án khai giấy phép (`package.json`, `pom.xml`, `CITATION.cff`, chân trang trang docs) đều là Apache-2.0.
-- `dxos-lint.jar` kèm `LICENSE`, `NOTICE` và giấy phép của SnakeYAML ở `META-INF`; `pom.xml` và `package.json` khai Apache-2.0; phông Codicons (CC-BY-4.0) trong bản build web có ghi công ở `third-party-licenses.txt`.
-- Mọi câu về giấy phép ở README, NOTICE, `DEPENDENCIES.txt` và trang docs nêu cùng danh sách ngoại lệ ngoài OSI.
-
 ### Giao diện
 
-- Bản build web không còn kèm các dịch vụ ngôn ngữ TypeScript, HTML, CSS và JSON của Monaco mà trình soạn YAML không dùng, nên nhỏ đi hơn một nửa (từ 18 MB còn 8,4 MB).
-- Mở một mẫu hoặc một mô hình ở bảng điều khiển khi bản đang soạn có thay đổi chưa áp dụng thì hỏi trước khi thay; chọn Hủy giữ nguyên bản đang soạn.
-- Web có test đơn vị bằng Vitest (`npm test` trong `frontend/`), chạy ở workflow `Frontend`.
-- Trình dựng mô hình có thêm hai trang cho mỗi thực thể: Giao diện và Mẫu in.
-  Giao diện sửa biểu tượng, nhóm và thứ tự trong menu, cột và cách sắp xếp của danh sách, nhóm trường trên form và gợi ý của từng trường.
-  Mẫu in sửa tên mẫu, nhãn, tên tệp, tiêu đề, các trạng thái được in và các khối nội dung (tiêu đề, văn bản, bảng trường, dòng ký, đổi được thứ tự).
-  Lỗi của Core thuộc `ui` hoặc `documents` hiện ở đúng trang đó, và mỗi trang có hướng dẫn về những gì khối nhận.
-  Lỗi của Core về hai khối này hiện bằng tiếng Việt khi giao diện ở tiếng Việt.
-- Đổi tên một trường hay một vai trò trong trình dựng mô hình đổi theo mọi chỗ đang dùng tên đó, đúng các chỗ hộp xác nhận khi xóa liệt kê, nên Xem kế hoạch không còn báo tham chiếu tới tên cũ.
-  Với trường: `required_when` của trường khác, `require` và `when` của hành động, cột, cách sắp xếp, nhóm trường và gợi ý trong `ui`, và `file`, `title`, `text`, `fields` và `signatures` của mẫu in; với vai trò: `role` của hành động và `escalate.to`.
-- Thông báo lỗi của trợ lý nghiệp vụ hiện bằng tiếng Anh khi giao diện ở tiếng Anh.
 - Trợ lý dùng bộ phân loại tiếng Việt tự huấn luyện để gợi ý loại hồ sơ, mức ưu tiên hoặc dịch vụ trong các mẫu `onestop`, `support_desk` và `clinic_appointment`.
 - Hộp việc có nút **Rà loại hồ sơ** để rà tối đa 25 hồ sơ mỗi lượt và mở đề xuất từng hồ sơ được đánh dấu **Cần rà**, kèm độ tự tin của từng gợi ý.
-- Danh sách hồ sơ có ô "Tìm theo chữ" ở đầu bộ lọc; nó thay ô lọc riêng của trường mã, vì mã cũng được tìm.
-- Trang Thống kê có thẻ "Thời gian trung bình ở từng trạng thái", đánh dấu trạng thái giữ hồ sơ lâu nhất; bấm một dòng mở danh sách hồ sơ ở trạng thái đó.
-- Hộp việc trống có nút tạo hồ sơ cho từng loại hồ sơ người dùng được tạo.
-- Duyệt, từ chối, yêu cầu bổ sung, chuyển tiếp, rút lại, nhận việc, giao việc và thao tác hàng loạt gửi kèm phiên bản của hồ sơ và của mô hình mà màn hình đã đọc, nên không ai quyết định trên nội dung đã đổi mà họ chưa thấy.
-  Khi hồ sơ đã đổi, màn hình báo "Hồ sơ vừa được thay đổi, hãy xem lại." và đọc lại hồ sơ; khi mô hình đã đổi, màn hình báo hãy tải lại trang.
-- Kế hoạch đổi mô hình hiện "Hồ sơ hiện có được cấp mã" bằng tiếng Việt khi thêm một trường kiểu `code`.
-- Hủy hộp thoại nhập lý do, của một hồ sơ hay của thao tác hàng loạt, thì ghi chú vừa gõ bị xóa, nên không lọt sang thao tác khác; gửi lỗi thì ghi chú được giữ để gửi lại.
-- Thẻ danh sách trên điện thoại hiện số và ngày theo ngôn ngữ đang chọn như trang chi tiết, ví dụ `1.500.000` và `20/11/2026`; trang chi tiết cũng định dạng số theo ngôn ngữ đang chọn.
-- Chế độ Điền form của trình soạn mô hình là một trình dựng mô hình: cây cấu trúc của mô hình, trường dữ liệu dạng bảng có ô tìm, ma trận quyền vai trò × thực thể, quy trình chia Tổng quan, Trạng thái, Hành động, Thời hạn và Tự động hóa, và bấm trạng thái hay mũi tên trên sơ đồ thì mở chỗ sửa nó.
-- Trình dựng mô hình hỏi lại trước khi xóa trường, vai trò hay thực thể đang được dùng; lỗi Core chặn áp dụng và cảnh báo của form được tách màu, đánh dấu trên cây và liệt kê kèm liên kết tới chỗ sửa; cạnh tên tệp có nhãn khi còn thay đổi chưa áp dụng.
-- Ở chế độ form, "Viết được gì trong tệp" nằm dưới khung chính và chỉ nêu phần đang sửa; biểu tượng xóa màu đỏ.
-- Nhãn của form theo nghiệp vụ, ở cả tiếng Việt và tiếng Anh: Trường dữ liệu, Vai trò, Quyền truy cập, Mẫu quy trình, Kế thừa quyền từ hồ sơ liên quan, Kết nối gửi sự kiện, Nhóm người dùng (Keycloak).
-- Bảng kế hoạch có nhãn tiếng Việt và tiếng Anh cho định dạng mã, mẫu chuỗi, điều kiện bắt buộc nhập, cách hiển thị và tài liệu in, và cho các quy tắc bắt buộc có điều kiện, số phần tử, giá trị nhỏ nhất, giá trị lớn nhất và mẫu chuỗi ở dòng vi phạm.
-- Form sửa và form tạo chỉ gửi các trường mô hình khai báo cho thực thể, nên `webUrl` và các khóa khác API thêm vào hồ sơ không còn bị gửi lại và làm lưu hồ sơ bị từ chối.
-  Khi máy chủ trả 400 mà không lỗi nào thuộc trường trên form, form hiện nguyên thông báo của máy chủ.
-- Lịch sử xử lý của hồ sơ tách đang tải, chưa có hoạt động và tải lỗi kèm nút "Thử lại"; dòng thêm tệp và gỡ tệp hiện tên tệp.
 
 ## [2.1.0] - 2026-11-26
 
-Thêm và sửa sau bản `2.0.2`: dự án gom mô hình và ứng dụng ngoài kèm quản trị theo dự án, `dxos connect` và `webUrl` để nối ứng dụng ngoài, ứng dụng mẫu `appliance-store`, kế hoạch đổi mô hình báo tác động lên hồ sơ đang chờ, ghi có điều kiện theo phiên bản, và trợ lý nghiệp vụ tùy chọn.
+Thêm và sửa sau bản `2.0.2`: dự án gom mô hình và ứng dụng ngoài kèm quản trị theo dự án, `dxos connect` và `webUrl` để nối ứng dụng ngoài, ứng dụng mẫu `appliance-store`, kế hoạch đổi mô hình báo tác động lên hồ sơ đang chờ, ghi có điều kiện theo phiên bản, tìm hồ sơ theo chữ, `dxos import` nhập hồ sơ từ tệp CSV, thời gian ở từng trạng thái, cầu nối MQTT và bộ Prometheus với Grafana tùy chọn, trình dựng mô hình ở bảng điều khiển, văn bản giấy phép đi kèm mọi image, và trợ lý nghiệp vụ tùy chọn.
 Nâng cấp từ `2.0.2` giữ nguyên dữ liệu; hai migration mới thêm bảng dự án và thành viên dự án.
 
 ### Lõi chạy ngầm
@@ -106,6 +54,46 @@ Nâng cấp từ `2.0.2` giữ nguyên dữ liệu; hai migration mới thêm b�
 - Phiên bản đã lưu vi phạm một luật kiểm được siết thêm thì mô hình vẫn chạy khi bỏ phần vi phạm được an toàn: hiện là `auto_close` gọi hành động cần ghi chú, `auto_close` đó bị bỏ và có cảnh báo, áp dụng tệp đã sửa là xóa cảnh báo.
   Không bỏ được thì mô hình bị loại khỏi hoạt động, yêu cầu dữ liệu của nó trả 409 kèm lý do và số đo `dxos_models_left_out` đếm nó.
   `GET /api/v1/models` ghi `leftOut`, `problems` và `warnings`, bảng điều khiển hiện cả hai trường hợp trên thẻ của mô hình, và tệp mới vi phạm luật vẫn bị từ chối.
+- API danh sách, `stats`, `report` và `quality` nhận `q`: mỗi từ phải có, không phân biệt hoa thường và dấu, trong ít nhất một trường chữ, mã hoặc lựa chọn đơn của hồ sơ; điều kiện nằm cùng câu SQL với quyền theo dòng nên không trả hồ sơ ngoài quyền, và truy vấn có `q` bị cắt sau 10 giây.
+- Cầu nối MQTT tùy chọn (`deploy/docker-compose.mqtt.yml`, bật bằng `COMPOSE_FILE`): một broker Mosquitto có mật khẩu và một cầu nối nhận bản tin theo chủ đề khai báo rồi tạo hồ sơ qua API dữ liệu chung bằng client máy; bản tin giao hai lần chỉ tạo một hồ sơ, bản tin bị từ chối hoặc sai khuôn được ghi log và bỏ qua, và lõi ngừng thì bản tin được giữ ở broker đến khi xử lý. `examples/itot-simulator` có `--transport mqtt`.
+- Prometheus và Grafana tùy chọn (`deploy/docker-compose.grafana.yml`, bật bằng `COMPOSE_FILE`): Prometheus đọc số đo `dxos_*` của lõi bằng `METRICS_PASSWORD`, Grafana có sẵn nguồn dữ liệu và dashboard "DX-OS" về hồ sơ, hạn xử lý, hàng đợi sự kiện, lần áp dụng mô hình và dịch vụ lõi; Grafana mở ở `127.0.0.1`, đòi mật khẩu quản trị và không tải plugin.
+- Người dùng đóng hoặc tải lại trang không còn bị ghi thành lỗi server: luồng SSE của Hộp việc ngắt kết nối thì không có ERROR trong nhật ký và không có bản ghi audit `SERVER_ERROR`.
+- `dxos plan` in kế hoạch bằng chữ: mức rủi ro, mỗi thay đổi một dòng, hồ sơ đang xử lý, tác động lên hành động, dòng vi phạm và lệnh `dxos apply --accept` cần dùng; `--json` in JSON đầy đủ như trước.
+- `dxos apply` in tên mô hình, phiên bản và từng bước đã chạy bằng chữ, in thông báo máy chủ khi áp dụng lỗi và in phản hồi JSON đầy đủ với `--json`.
+- `stats` của thực thể có quy trình trả `timeInStatus`: mỗi trạng thái có số lượt vào, thời gian trung bình và lâu nhất, sắp theo trung bình giảm dần.
+  Mỗi lần vào lại tính một lượt, lượt đang mở tính đến `computedAt`, trạng thái cuối không tính; cùng quyền theo dòng, bộ lọc và mức cắt 10 giây như các số khác.
+- Tệp mô hình có khóa viết hai lần trong cùng một khối bị `dxos lint`, `dxos plan` và áp dụng từ chối, kèm dòng của lần viết thứ hai; mô hình đã lưu có khóa trùng vẫn chạy và hiện cảnh báo.
+- `dxos import <mô hình> <thực thể> <tệp.csv> --client TÊN` tạo mỗi dòng của tệp CSV thành một hồ sơ qua API dữ liệu chung, nên mỗi dòng đi qua quyền, ràng buộc, quy tắc và quy trình của thực thể; dòng bị từ chối được báo kèm số dòng và lý do, gửi lại cùng tệp không tạo trùng trong 24 giờ, và `--dry-run` kiểm tệp mà không tạo gì.
+
+### Giao diện
+
+- Bản build web không còn kèm các dịch vụ ngôn ngữ TypeScript, HTML, CSS và JSON của Monaco mà trình soạn YAML không dùng, nên nhỏ đi hơn một nửa (từ 18 MB còn 8,4 MB).
+- Mở một mẫu hoặc một mô hình ở bảng điều khiển khi bản đang soạn có thay đổi chưa áp dụng thì hỏi trước khi thay; chọn Hủy giữ nguyên bản đang soạn.
+- Web có test đơn vị bằng Vitest (`npm test` trong `frontend/`), chạy ở workflow `Frontend`.
+- Trình dựng mô hình có thêm hai trang cho mỗi thực thể: Giao diện và Mẫu in.
+  Giao diện sửa biểu tượng, nhóm và thứ tự trong menu, cột và cách sắp xếp của danh sách, nhóm trường trên form và gợi ý của từng trường.
+  Mẫu in sửa tên mẫu, nhãn, tên tệp, tiêu đề, các trạng thái được in và các khối nội dung (tiêu đề, văn bản, bảng trường, dòng ký, đổi được thứ tự).
+  Lỗi của Core thuộc `ui` hoặc `documents` hiện ở đúng trang đó, và mỗi trang có hướng dẫn về những gì khối nhận.
+  Lỗi của Core về hai khối này hiện bằng tiếng Việt khi giao diện ở tiếng Việt.
+- Đổi tên một trường hay một vai trò trong trình dựng mô hình đổi theo mọi chỗ đang dùng tên đó, đúng các chỗ hộp xác nhận khi xóa liệt kê, nên Xem kế hoạch không còn báo tham chiếu tới tên cũ.
+  Với trường: `required_when` của trường khác, `require` và `when` của hành động, cột, cách sắp xếp, nhóm trường và gợi ý trong `ui`, và `file`, `title`, `text`, `fields` và `signatures` của mẫu in; với vai trò: `role` của hành động và `escalate.to`.
+- Thông báo lỗi của trợ lý nghiệp vụ hiện bằng tiếng Anh khi giao diện ở tiếng Anh.
+- Danh sách hồ sơ có ô "Tìm theo chữ" ở đầu bộ lọc; nó thay ô lọc riêng của trường mã, vì mã cũng được tìm.
+- Trang Thống kê có thẻ "Thời gian trung bình ở từng trạng thái", đánh dấu trạng thái giữ hồ sơ lâu nhất; bấm một dòng mở danh sách hồ sơ ở trạng thái đó.
+- Hộp việc trống có nút tạo hồ sơ cho từng loại hồ sơ người dùng được tạo.
+- Duyệt, từ chối, yêu cầu bổ sung, chuyển tiếp, rút lại, nhận việc, giao việc và thao tác hàng loạt gửi kèm phiên bản của hồ sơ và của mô hình mà màn hình đã đọc, nên không ai quyết định trên nội dung đã đổi mà họ chưa thấy.
+  Khi hồ sơ đã đổi, màn hình báo "Hồ sơ vừa được thay đổi, hãy xem lại." và đọc lại hồ sơ; khi mô hình đã đổi, màn hình báo hãy tải lại trang.
+- Kế hoạch đổi mô hình hiện "Hồ sơ hiện có được cấp mã" bằng tiếng Việt khi thêm một trường kiểu `code`.
+- Hủy hộp thoại nhập lý do, của một hồ sơ hay của thao tác hàng loạt, thì ghi chú vừa gõ bị xóa, nên không lọt sang thao tác khác; gửi lỗi thì ghi chú được giữ để gửi lại.
+- Thẻ danh sách trên điện thoại hiện số và ngày theo ngôn ngữ đang chọn như trang chi tiết, ví dụ `1.500.000` và `20/11/2026`; trang chi tiết cũng định dạng số theo ngôn ngữ đang chọn.
+- Chế độ Điền form của trình soạn mô hình là một trình dựng mô hình: cây cấu trúc của mô hình, trường dữ liệu dạng bảng có ô tìm, ma trận quyền vai trò × thực thể, quy trình chia Tổng quan, Trạng thái, Hành động, Thời hạn và Tự động hóa, và bấm trạng thái hay mũi tên trên sơ đồ thì mở chỗ sửa nó.
+- Trình dựng mô hình hỏi lại trước khi xóa trường, vai trò hay thực thể đang được dùng; lỗi Core chặn áp dụng và cảnh báo của form được tách màu, đánh dấu trên cây và liệt kê kèm liên kết tới chỗ sửa; cạnh tên tệp có nhãn khi còn thay đổi chưa áp dụng.
+- Ở chế độ form, "Viết được gì trong tệp" nằm dưới khung chính và chỉ nêu phần đang sửa; biểu tượng xóa màu đỏ.
+- Nhãn của form theo nghiệp vụ, ở cả tiếng Việt và tiếng Anh: Trường dữ liệu, Vai trò, Quyền truy cập, Mẫu quy trình, Kế thừa quyền từ hồ sơ liên quan, Kết nối gửi sự kiện, Nhóm người dùng (Keycloak).
+- Bảng kế hoạch có nhãn tiếng Việt và tiếng Anh cho định dạng mã, mẫu chuỗi, điều kiện bắt buộc nhập, cách hiển thị và tài liệu in, và cho các quy tắc bắt buộc có điều kiện, số phần tử, giá trị nhỏ nhất, giá trị lớn nhất và mẫu chuỗi ở dòng vi phạm.
+- Form sửa và form tạo chỉ gửi các trường mô hình khai báo cho thực thể, nên `webUrl` và các khóa khác API thêm vào hồ sơ không còn bị gửi lại và làm lưu hồ sơ bị từ chối.
+  Khi máy chủ trả 400 mà không lỗi nào thuộc trường trên form, form hiện nguyên thông báo của máy chủ.
+- Lịch sử xử lý của hồ sơ tách đang tải, chưa có hoạt động và tải lỗi kèm nút "Thử lại"; dòng thêm tệp và gỡ tệp hiện tên tệp.
 
 ### Tệp mô hình
 
@@ -122,9 +110,22 @@ Nâng cấp từ `2.0.2` giữ nguyên dữ liệu; hai migration mới thêm b�
 - Người dùng hủy liên kết ở trang Trợ lý nghiệp vụ (`DELETE /assistant-api/v1/me/core/link`): refresh token bị thu hồi ở Keycloak, token đã lưu bị xóa và các đề xuất đang chờ bị hủy.
 - `docker compose run --rm assistant-init dist/rotate.js /bootstrap` thay master key và mã hóa lại state; cách thay khóa gọi inference ở `assistant/README.md`.
 
+### Giấy phép
+
+- `docs/DEPENDENCY_INVENTORY.md` liệt kê từng gói dự án dùng ở bất kỳ bước nào (npm kể cả gói dev, Maven kể cả test và plugin build, GitHub Actions, image, công cụ, phông, model), mỗi gói có phiên bản và giấy phép của đúng phiên bản đó; `.github/scripts/check_license_inventory.py` sinh mục này và `check` báo đỏ ở mỗi pull request khi thiếu gói hoặc có giấy phép ngoài danh sách OSI (`.github/licenses/osi-approved.json`) mà chưa có lý do.
+- Mỗi image do dự án phát hành (`backend`, `monitor`, `frontend`, `portal`, `sso`, `assistant`, `clamav`) kèm `LICENSE`, `NOTICE` và văn bản giấy phép của thư viện nó chứa ở `/licenses`; image `backend` có thêm giấy phép của `pgschema` và các mô-đun Go của nó.
+- Image `sso` kèm danh sách và văn bản giấy phép của 438 thư viện trong bản Keycloak (`THIRD-PARTY-LICENSES-keycloak.txt`), image `clamav` kèm giấy phép GPL-2.0 của ClamAV và của các phần bên thứ ba dựng sẵn trong nó, và mỗi image kèm `SOURCES.txt` nêu nơi lấy nguồn của gói hệ điều hành và thành phần GPL của image nền; các thư viện đó đều có trong `docs/DEPENDENCY_INVENTORY.md`.
+- Quét mã độc chạy bằng image `clamav` của dự án, dựng trên image ClamAV chính thức và bỏ `libclamunrar` (giấy phép UnRAR, không phải OSI); backend từ chối tệp tải lên có chữ ký RAR dù tên tệp đổi đuôi, vì ClamAV không mở được RAR.
+- Image `frontend`, `portal` dùng `nginx:1.30-alpine-slim`, image `assistant` và ứng dụng ví dụ `appliance-store` dùng `node:24.16.0-alpine`, ví dụ `order_approval` dùng `python:3.12-alpine`; số gói ngoài OSI trong các image này giảm rõ (xem `docs/IMAGE_PACKAGES.md`).
+- `docs/IMAGE_PACKAGES.md` liệt kê gói bên trong các image bên thứ ba mà stack chạy, kèm giấy phép từng gói và cột Ngoài OSI; `check_image_packages.py` kiểm đủ bảng ở mỗi pull request và đọc lại image hằng tuần.
+- `LICENSE` và `NOTICE` đi kèm GitHub Release cùng `dxos-install.sh` và `dxos-lint.jar`; SBOM của web và trang docs khai Apache-2.0 cho gói gốc; README của mỗi ví dụ nêu giấy phép; `check_licenses.py` kiểm mọi nơi dự án khai giấy phép (`package.json`, `pom.xml`, `CITATION.cff`, chân trang trang docs) đều là Apache-2.0.
+- `dxos-lint.jar` kèm `LICENSE`, `NOTICE` và giấy phép của SnakeYAML ở `META-INF`; `pom.xml` và `package.json` khai Apache-2.0; phông Codicons (CC-BY-4.0) trong bản build web có ghi công ở `third-party-licenses.txt`.
+- Mọi câu về giấy phép ở README, NOTICE, `DEPENDENCIES.txt` và trang docs nêu cùng danh sách ngoại lệ ngoài OSI.
+
 ### Phát hành
 
 - Image phát hành có nhãn `org.opencontainers.image.licenses=Apache-2.0`.
+- Script sao lưu ghim image `restic` theo digest.
 
 ## [2.0.2] - 2026-11-19
 

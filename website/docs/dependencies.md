@@ -64,7 +64,8 @@ ClamAV không mở được tệp RAR nên backend từ chối tệp có chữ k
 | Reranker mMARCO | Đã gỡ | Thẻ mô hình ghi Apache-2.0 nhưng MS MARCO, bộ dữ liệu nó dựa trên, chỉ cho nghiên cứu phi thương mại |
 | Redis, Langfuse | Đã gỡ | Redis theo RSALv2 hoặc SSPLv1; Langfuse có phần EE riêng; cả hai chỉ phục vụ bộ đánh giá RAG đã bỏ |
 | Refine | Dự phòng, không dùng | Chỉ dùng nếu react-admin không dựng được giao diện theo metadata đổi lúc chạy; điều đó đã kiểm và không xảy ra |
-| Cloudflare Tunnel và Access | Ngoài repository | Hai dịch vụ là đóng. Máy chủ công khai của đội dùng chúng, cấu hình giữ ngoài repository; hệ thống chạy được không cần chúng |
+| Caddy | Ngoài repository | Apache-2.0. Chạy ở máy chủ công khai của đội để lấy chứng chỉ HTTPS; cấu hình mẫu ở `docs/OPERATIONS.md`, hệ thống chạy được không cần nó |
+| Cloudflare DNS | Ngoài repository | Dịch vụ đóng. Máy chủ công khai của đội giữ bản ghi DNS của tên miền ở đó, không chạy tunnel hay proxy; đổi sang DNS khác thì chỉ đổi bản ghi |
 
 Mã của bản trước (hai ứng dụng nghiệp vụ viết tay, Superset, Mattermost) nằm ở tag `v1.1.1`.
 

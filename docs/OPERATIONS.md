@@ -152,6 +152,7 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 | `dxos project member list <dự án>`, `dxos project member add <dự án> <tên đăng nhập> [--admin]`, `dxos project member remove <dự án> <tên đăng nhập>` | Thành viên và quản trị viên của một dự án, để quản trị người dùng theo dự án |
 | `dxos client browser add <tên> --redirect-uri URL [...]`, `dxos client browser list`, `dxos client browser remove <tên>` | Đăng ký và quản lý public OIDC client dùng PKCE cho giao diện trình duyệt ở origin khác |
 | `dxos import <mô hình> <thực thể> <tệp.csv> --client TÊN [--dry-run] [--secret-file TỆP] [--offset +HH:MM]` | Tạo mỗi dòng của tệp CSV thành một hồ sơ qua API dữ liệu, bằng ứng dụng ngoài đã đăng ký (xem dưới) |
+| `dxos version` | In bản đang cài (thẻ image) và thư mục cài |
 | `dxos uninstall [--purge]` | Xóa container và lệnh `dxos`; `--purge` xóa cả dữ liệu và thư mục cài, phải gõ xác nhận |
 
 Prometheus và Grafana là thành phần tùy chọn nằm ngoài stack mặc định; cách bật và đọc dashboard ở [`MONITORING.md`](./MONITORING.md#prometheus-và-grafana-kèm-theo-tùy-chọn).
@@ -168,6 +169,45 @@ Mở terminal của bản phân phối WSL rồi chạy lệnh cài và `dxos st
 Thư mục cài mặc định `~/.dxos` nằm trong ổ của WSL; không đặt nó dưới `/mnt/c`.
 `dxos doctor` báo FAIL khi `docker info` không chạy được trong WSL, tức là WSL integration chưa bật hoặc Docker Desktop chưa chạy.
 Gateway ở cổng `APISIX_HOST_PORT` (mặc định 9080); từ trình duyệt Windows mở `http://localhost:9080/console`.
+
+### Máy chủ có tên miền và HTTPS
+
+Muốn người dùng vào bằng `https://tên-miền` thay vì `http://IP:9080`, đặt một reverse proxy trước gateway.
+Ví dụ dưới dùng Caddy: nó tự lấy và gia hạn chứng chỉ Let's Encrypt, và chạy trên chính máy chủ, ngoài Docker.
+
+1. Tạo bản ghi DNS loại A của tên miền, trỏ tới IP công khai của máy chủ.
+   Nếu DNS đặt ở Cloudflare thì để chế độ DNS only, để Let's Encrypt nối thẳng tới Caddy.
+2. Mở TCP 80 và 443 từ mọi nơi ở tường lửa của máy chủ (Security Group của AWS, hoặc `ufw`).
+   Không mở cổng 9080; chỉ Caddy gọi gateway.
+3. Đặt trong `deploy/.env` trước lần `dxos start` đầu tiên (realm Keycloak chỉ import một lần nên các địa chỉ phải đúng từ đầu):
+
+   ```bash
+   PUBLIC_HOST=tên-miền
+   GATEWAY_PUBLIC_URL=https://tên-miền
+   KEYCLOAK_HOSTNAME=${GATEWAY_PUBLIC_URL}
+   APISIX_HOST_PORT=127.0.0.1:9080
+   CORS_ALLOWED_ORIGINS=https://tên-miền
+   ```
+
+   `APISIX_HOST_PORT=127.0.0.1:9080` chỉ cho tiến trình trên chính máy chủ gọi gateway.
+   Trình duyệt gửi origin HTTPS còn backend chỉ thấy HTTP từ proxy, nên thiếu `CORS_ALLOWED_ORIGINS` thì các thao tác ghi từ giao diện web bị trả `403 Invalid CORS request`.
+4. Cài Caddy rồi đặt `/etc/caddy/Caddyfile`:
+
+   ```text
+   tên-miền {
+       encode zstd gzip
+       reverse_proxy 127.0.0.1:9080 {
+           header_up X-Forwarded-Port 443
+       }
+   }
+   ```
+
+   `X-Forwarded-Port 443` giữ cho các địa chỉ chuyển hướng của Keycloak không mang cổng 9080.
+   Chạy `sudo systemctl enable --now caddy` sau khi DNS đã trỏ đúng, vì Let's Encrypt kiểm tên miền ngay lúc Caddy khởi động.
+5. Chạy `dxos start`, rồi mở `https://tên-miền/console`.
+
+`dxos status` in địa chỉ HTTPS; `deploy/online-check.sh` kiểm địa chỉ đó từ chính máy chủ và gửi tin khi trang ngừng hoặc chạy lại (xem đầu tệp).
+Cấu hình Caddy nằm ngoài repository; DX-OS không kèm và không cần nó khi chạy ở `localhost`.
 
 ### Kiểm image phát hành theo digest
 

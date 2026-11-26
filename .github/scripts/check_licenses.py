@@ -23,6 +23,7 @@
 Several license entries on one package are alternatives, as in an SPDX OR expression.
 The exit status is 1 when anything fails.
 """
+import fnmatch
 import json
 import re
 import subprocess
@@ -298,7 +299,9 @@ def check_catalog() -> list[str]:
             problems.append(f"{rel}: download from {name} is not in component-catalog.json")
     declared = {entry["path"]: entry for entry in catalog.get("files", [])}
     for entry in declared.values():
-        if entry.get("license") not in ALLOWED or not entry.get("note"):
+        classifier_data = entry.get("license") == "CC-BY-4.0" and any(
+            fnmatch.fnmatch(entry["path"], pattern) for pattern in CLASSIFIER_DATA_PATHS)
+        if (entry.get("license") not in ALLOWED and not classifier_data) or not entry.get("note"):
             problems.append(f"component-catalog file {entry['path']}: license and note are required")
         if not (ROOT / entry["path"]).is_file():
             problems.append(f"component-catalog file {entry['path']} does not exist")

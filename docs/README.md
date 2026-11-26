@@ -25,18 +25,25 @@ Tự cài và nối vào ứng dụng của bạn thì theo [`QUICKSTART.md`](./
 | [`MODEL.md`](./MODEL.md) | Cách viết tệp mô hình: trường, ràng buộc, quyền, quy trình, tài liệu in |
 | [`API.md`](./API.md) | Bảng đường dẫn của API chung; đặc tả đầy đủ là OpenAPI của backend đang chạy |
 | [`EXTENSIONS.md`](./EXTENSIONS.md) | Viết dịch vụ riêng, bên nhận webhook, giao diện ngoài và route riêng ở ngoài lõi |
+| [`OPERATIONS.md`](./OPERATIONS.md) | Cài đặt, các lệnh `dxos`, tên miền và HTTPS, biến `.env`, sao lưu, ứng phó sự cố, quản trị người dùng và dự án |
+| [`MONITORING.md`](./MONITORING.md) | Số đo, nhật ký, màn hình giám sát, Prometheus và Grafana tùy chọn |
+| [`INTEGRATIONS.md`](./INTEGRATIONS.md) | Webhook có chữ ký, dòng sự kiện, lịch sử chống sửa và cầu nối MQTT tùy chọn |
+| [`REPORTING.md`](./REPORTING.md) | Nối công cụ báo cáo vào dữ liệu chỉ đọc |
+| [`STORAGE.md`](./STORAGE.md) | Kho tệp đính kèm SeaweedFS: cách hoạt động và cấu hình |
 | [`TESTING.md`](./TESTING.md) | Các loại kiểm, cách dựng stack, các script kiểm API và danh sách kiểm tay trước khi phát hành |
 | [`DEMO.md`](./DEMO.md) | Kịch bản trình diễn 15 phút và cách xử lý khi sự cố |
 | [`TRINH_BAY.md`](./TRINH_BAY.md) | Bài trình bày chung kết 15 phút dạng slide Markdown (Marp), theo bốn phần của đề |
 | [`SIZING.md`](./SIZING.md) | Số người dùng đồng thời và cấu hình nhỏ nhất, kèm cách đo lại |
 | [`TARGETS.md`](./TARGETS.md) | Kiểm chứng các chỉ số mục tiêu: mã tự viết, thời gian dựng, chi phí tự cài |
 | [`COMPATIBILITY.md`](./COMPATIBILITY.md) | Những gì giữ nguyên giữa các bản: API, số đo, tệp mô hình, webhook, cơ sở dữ liệu |
+| [`DEPENDENCY_INVENTORY.md`](./DEPENDENCY_INVENTORY.md) | Từng gói dự án dùng ở mọi bước, kèm phiên bản và giấy phép (tệp sinh tự động) |
+| [`IMAGE_PACKAGES.md`](./IMAGE_PACKAGES.md) | Gói bên trong các image bên thứ ba mà stack chạy, kèm giấy phép (tệp sinh tự động) |
 | [`GLOSSARY.md`](./GLOSSARY.md) | Thuật ngữ dùng trong tài liệu và giao diện |
 | [`DX_OS_TEXTBOOK.md`](./DX_OS_TEXTBOOK.md) | Đối chiếu giáo trình DX-OS, H-P-D-I và dự án DX-Ticket với lõi hiện tại |
 | [`dynamic-core/`](./dynamic-core/README.md) | Hướng thiết kế của lõi, [đối chiếu với đề thi](./dynamic-core/DANH_GIA.md) và [việc còn lại](./dynamic-core/BACKLOG.md) |
 | [`diagrams/`](./diagrams) | Nguồn draw.io của sơ đồ kiến trúc |
 
-Kiến trúc ở [`ARCHITECTURE.md`](../ARCHITECTURE.md), cài đặt và vận hành ở [`docs/OPERATIONS.md`](OPERATIONS.md), và mục lục đầy đủ ở [`README.md`](../README.md#tài-liệu), mục Tài liệu.
+Kiến trúc ở [`ARCHITECTURE.md`](../ARCHITECTURE.md) và mục lục đầy đủ ở [`README.md`](../README.md#tài-liệu), mục Tài liệu.
 Các tài liệu sản phẩm cũng đọc được trên [trang docs](https://haui-implsolution.github.io/DX-OS/), có mục lục và liên kết giữa các trang.
 
 ## Giới hạn đã biết

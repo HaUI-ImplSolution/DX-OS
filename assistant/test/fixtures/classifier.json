@@ -1,6 +1,6 @@
 {
   "onestop": {
-    "sha256": "091e7c8b1c429d882e3efa8911a625bbeb4897b02d80b60874ae8756be2e45f5",
+    "sha256": "8817b7fc0a8f1a1a62ac2f4a5a3a2850f8cdc540a759d1e2e668accfe76b4272",
     "cases": [
       {"id": "onestop-p1-17", "kind": "original", "inputs": ["Bảo tàng cần giấy chứng nhận sinh viên để em đăng ký chương trình tình nguyện."], "label": "Giấy xác nhận", "probability": 0.9788978564594598, "evidence": ["nhận sinh viên", "cần giấy chứng", "chương trình tình"]},
       {"id": "onestop-b-124", "kind": "original", "inputs": ["Cho em xin chấm lại mục trọng âm, hình như cột mã đề của em bị nhập lệch."], "label": "Phúc khảo", "probability": 0.914402179716751, "evidence": ["xin chấm lại", "em bị nhập", "hình như cột"]},
@@ -57,7 +57,7 @@
     ]
   },
   "itaccess": {
-    "sha256": "3e3000c41ebeddea95f757e42456a24d9e0333afcd9d7c727aed035cf88dcd03",
+    "sha256": "2be8f5e596f697f62cee0cfd19fa4602494bac73c718ea3c7f1f2537036ce8bc",
     "cases": [
       {"id": "itaccess-b-037", "kind": "original", "inputs": ["Xin mở quyền gửi merge request chỉnh bảng giá vận chuyển."], "label": "GIT_USERS", "probability": 0.9461175435382121, "evidence": ["gửi merge request", "giá vận"]},
       {"id": "itaccess-b-040", "kind": "original", "inputs": ["Nhờ cho quyền xem source của bộ chuyển font nội bộ."], "label": "GIT_USERS", "probability": 0.9449921456882474, "evidence": ["quyền xem source", "bộ chuyển font", "nội bộ"]},
@@ -114,7 +114,7 @@
     ]
   },
   "retail": {
-    "sha256": "7570ebe06f337befea5260e1af6e98f83cb93da3e24e2823985dd02c65fbdcdd",
+    "sha256": "a797892555406239b0d91ece2f3c6cc95b1589b48ef664a89b92dcd99a8f8a80",
     "cases": [
       {"id": "retail-b-207", "kind": "original", "inputs": ["Lấy lại tiền cho đôi dép trắng, đôi xanh thì chuyển xuống một số."], "label": null, "probability": 0.8444570208687671, "evidence": []},
       {"id": "retail-b-185", "kind": "original", "inputs": ["Em vừa mở hộp thấy mặt bàn lấm tấm vài chấm, bên nhà em chưa thống nhất cách xử lý nên em báo trước để shop biết ạ."], "label": null, "probability": 0.973441260054858, "evidence": []},
@@ -171,7 +171,7 @@
     ]
   },
   "support": {
-    "sha256": "4e85f871feb58d62e969b624cd78f3c64993fa2700d6042f0b1e1bc22b98310e",
+    "sha256": "f203d2444a47266a141578622a3aff5cd84f0d72f8aced76c9c0a96173dce771",
     "cases": [
       {"id": "support-b-183", "kind": "original", "inputs": ["Cầu nối giữa kho và xe không hoạt động ở đâu", "Cả các trạm lẫn tài xế đều không nhận thông tin mới trên ứng dụng, các chuyến giao đang phải ngừng cho tới khi có lại lịch."], "label": "Cao", "probability": 0.9494835110018915, "evidence": ["đều không nhận", "không hoạt động", "trên ứng dụng"]},
       {"id": "support-mo_ho-03", "kind": "original", "inputs": ["Vấn đề tài khoản", "Em được bảo gửi thông tin vào đây, chưa rõ phần nào đang lỗi."], "label": null, "probability": 0.8922113196685274, "evidence": []},
@@ -228,7 +228,7 @@
     ]
   },
   "clinic": {
-    "sha256": "0d938d2ca277e646875d2eb3848b9f38638c7b9d19d398e608564654bebf0cc8",
+    "sha256": "96a48d3ebb8e06d8ddf3afadedf9d4a154c7f0cc681936389984688d44bb51cc",
     "cases": [
       {"id": "clinic-b-292", "kind": "original", "inputs": ["Tôi vừa cần kiểm tra lại sau trị liệu, vừa cần khám tổng quát đầu năm."], "label": null, "probability": 0.7848157733433128, "evidence": []},
       {"id": "clinic-b-114", "kind": "original", "inputs": ["Muốn hỏi cách cân đối món trong căng tin, đặt lịch bên dinh dưỡng hộ mình."], "label": "Tư vấn", "probability": 0.9753314103942616, "evidence": ["đặt lịch bên", "Muốn hỏi cách", "đối món trong"]},

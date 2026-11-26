@@ -2821,10 +2821,10 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 | `Adobe Core 14 font metrics (AFM files in pdfbox)` | 3.0.8 | APAFML | prod | Adobe's own permission notice for the 14 AFM files (SPDX APAFML): use, copying and distribution for any purpose without charge, keeping the notices; not an OSI license. Data inside the pdfbox jar of the backend image, with its text in /licenses of that image. |
 | `CMYK ICC profile (in pdfbox)` | 3.0.8 | CC0-1.0 | prod | Color profile released under CC0-1.0, not an OSI license. Data inside the pdfbox jar of the backend image. |
 | `Codicons (codicon.ttf in monaco-editor)` | 0.57.0 | CC-BY-4.0 | prod | Icon font of Microsoft vscode-codicons under CC-BY-4.0 (its code is MIT), shipped as codicon.ttf inside monaco-editor. It is an asset, not code; the web bundle carries its attribution in third-party-licenses.txt. |
-| `DX-OS record classifier data` | vi-2026-11-25-v1 | CC-BY-4.0 | build | CC-BY-4.0 data of the team (sentences and label definitions), not code. In the repository at the paths that check_licenses.py names; in no image. |
+| `DX-OS record classifier data` | vi-2026-11-25-v1 | CC-BY-4.0 | build | CC-BY-4.0 data (sentences and label definitions), not code, released to the extent HaUI-ImplSolution holds rights: part is written by the team and part is drafted by Claude. In the repository at the paths that check_licenses.py names; in no image. |
 | `DX-OS record classifier weights` | vi-2026-11-25-v1 | Apache-2.0 | prod |  |
 | `Font Awesome shapes (in pdfbox)` | 3.0.8 | CC-BY-4.0 | prod | Glyph shapes of Font Awesome under CC-BY-4.0, not an OSI license. Data inside the pdfbox jar of the backend image, with its attribution in /licenses of that image. |
 | `Liberation, Lohit and Noto Sans Devanagari fonts (in pdfbox and fontbox)` | 3.0.8 | OFL-1.1 | prod |  |
 | `MASSIVE vi-VN` | 1.0 | CC-BY-4.0 | build | CC-BY-4.0 data of Amazon, not code. Downloaded when the classifier is trained; in no image or release. |
 | `Noto Sans` | 2022 | OFL-1.1 | prod |  |
-| `SLURP` | as included in MASSIVE 1.0 | CC-BY-4.0 | build | CC-BY-4.0 data that MASSIVE is built from, not code. Downloaded only inside MASSIVE; in no image or release. |
+| `SLURP` | as included in MASSIVE 1.0 | CC-BY-4.0 | build | CC-BY-4.0 data that MASSIVE is built from, not code. Downloaded only inside MASSIVE; in no image or release. Its audio part (CC-BY-NC-4.0) is not part of MASSIVE and is not downloaded or used. |

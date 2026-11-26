@@ -462,7 +462,7 @@ Người dùng xem căn cứ, sửa hoặc xác nhận; Core kiểm quyền, quy
 Đây là bước từ P tới I với Human-in-the-loop của đề.
 
 Mô hình của trợ lý là bộ phân loại hồ sơ tiếng Việt do đội tự huấn luyện: nó chạy trên CPU ngay trong trợ lý, đề xuất kèm cụm chữ trích từ hồ sơ làm căn cứ và từ chối khi không đủ căn cứ.
-Trọng số theo Apache-2.0; mã huấn luyện, dữ liệu đội biên soạn và cách lấy dữ liệu ngoài công bố theo [cam kết nguồn mở](#cam-kết-nguồn-mở), xem [`tools/classifier/`](../../tools/classifier/README.md).
+Trọng số theo Apache-2.0; mã huấn luyện, dữ liệu huấn luyện và cách lấy dữ liệu ngoài công bố theo [cam kết nguồn mở](#cam-kết-nguồn-mở), xem [`tools/classifier/`](../../tools/classifier/README.md).
 Hộp việc rà được hồ sơ đang chờ và đánh dấu hồ sơ có giá trị khác gợi ý.
 
 Trợ lý là dịch vụ của tầng ứng dụng, chạy cùng stack ở chế độ full, nối vào lõi qua API; lõi và mọi nghiệp vụ chạy đủ khi không có nó.

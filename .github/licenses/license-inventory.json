@@ -284,7 +284,7 @@
       "version": "vi-2026-11-25-v1",
       "license": "CC-BY-4.0",
       "scope": "build",
-      "note": "sentences and label definitions written by the team, used to train and test the classifier"
+      "note": "sentences and label definitions, written by the team or drafted by Claude (see tools/classifier/data/DATA_CARD.md), used to train and test the classifier"
     },
     {
       "name": "MASSIVE vi-VN",
@@ -298,7 +298,7 @@
       "version": "as included in MASSIVE 1.0",
       "license": "CC-BY-4.0",
       "scope": "build",
-      "note": "English source text that MASSIVE localizes; downloaded only as part of MASSIVE"
+      "note": "English source text that MASSIVE localizes; downloaded only as part of MASSIVE; the SLURP audio (CC-BY-NC-4.0) is not part of MASSIVE and is not used"
     }
   ],
   "actions": {

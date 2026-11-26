@@ -96,7 +96,7 @@ cd ../frontend && npm install && npm run dev
 
 Một phần mã, tài liệu và dữ liệu của dự án được viết với sự hỗ trợ của công cụ AI (Claude của Anthropic và Codex của OpenAI).
 Nhiều commit mang dòng `Co-Authored-By` của công cụ, nhưng không phải commit nào có dùng công cụ cũng mang dòng đó.
-Dữ liệu có phần do công cụ AI soạn được ghi ở thẻ dữ liệu của nó.
+Dữ liệu của bộ phân loại do Claude soạn và không có phần nào do Codex soạn; nguồn gốc và điều khoản ghi ở thẻ dữ liệu của nó.
 Công cụ chỉ là người viết nháp: người gửi pull request đọc, chạy và chịu trách nhiệm về từng dòng như mã tự viết.
 Mọi thay đổi vào `Khuong/main` và `main` đi qua pull request và các kiểm tra của CI, kể cả thay đổi do công cụ viết.
 Người đóng góp bên ngoài được dùng công cụ AI với cùng điều kiện, và phải bảo đảm phần gửi lên không sao chép mã hay tài liệu có giấy phép ngoài danh sách OSI (xem mục dưới).

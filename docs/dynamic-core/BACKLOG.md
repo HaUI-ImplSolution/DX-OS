@@ -38,8 +38,8 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 | Cảnh báo Scorecard và huy hiệu | Tab Security có 8 cảnh báo của Scorecard chưa duyệt (Maintained, CodeReview, Vulnerabilities, Fuzzing, SAST, TokenPermissions hai cảnh báo, BranchProtection); huy hiệu OpenSSF Best Practices mức passing còn ba tiêu chí khuyến nghị chưa đạt (`test_most`, `warnings_strict`, `dynamic_analysis`), và lời giải thích từng tiêu chí trỏ về tệp trên `main` nên chỉ khớp khi nhánh tích hợp vào `main` |
 | Bản chạy công khai | Chưa được CI kiểm hằng ngày (`deploy/online-check.sh` chạy tay hoặc theo cron), và chưa có phương án chạy tại chỗ nếu mạng ở buổi thi có sự cố vì bản công khai chạy trên một máy chủ EC2 qua Internet |
 | Cài trên Windows | Chưa có người dùng Windows thử cài và làm theo `docs/QUICKSTART.md` trong WSL2 với Docker Desktop |
-| Dữ liệu bộ phân loại viết bằng công cụ AI | Câu huấn luyện là bản nháp viết với công cụ AI chưa nêu tên công cụ; tập chỉnh 420 câu do Claude viết chưa có người duyệt, và 68 dòng thiếu một cột nên ghi chú nằm ở cột người duyệt; Anthropic cho phép dùng kết quả để huấn luyện bộ phân loại chuyên biệt, còn điều khoản của OpenAI cấm dùng cho mô hình thay thế dịch vụ của họ; còn phải xác nhận công cụ, duyệt hoặc viết lại dữ liệu rồi huấn luyện lại |
-| Bản dữ liệu trên Kaggle | Câu huấn luyện (2.280 câu, repository có 2.490) và bảng số đo trên Kaggle là bản cũ; còn phải cập nhật bản Kaggle hoặc bỏ liên kết ở thẻ dữ liệu và `tools/classifier/README.md` |
+| Dữ liệu bộ phân loại do Claude soạn | Tập chỉnh 420 câu chưa có người duyệt; chưa có bằng chứng đội đã duyệt các câu gốc huấn luyện; còn phải duyệt hoặc viết lại dữ liệu rồi huấn luyện lại |
+| Bản dữ liệu trên Kaggle | Câu huấn luyện (2.280 câu, repository có 2.490), bảng số đo và tập chỉnh (70 dòng lệch cột, repository đã sửa) trên Kaggle là bản cũ; còn phải cập nhật bản Kaggle hoặc bỏ liên kết ở thẻ dữ liệu và `tools/classifier/README.md` |
 | Video MP4 mã hóa H.264 | Hai video ở `website/docs/images/video` dùng H.264, định dạng có bằng sáng chế; đã có bản GIF; còn phải chuyển sang WebM (VP9 hoặc AV1) hoặc bỏ tệp MP4 |
 
 ## 4. Giới hạn chấp nhận

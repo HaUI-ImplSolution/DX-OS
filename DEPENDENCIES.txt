@@ -435,9 +435,11 @@ Dữ liệu chỉ đọc lúc dựng trang tài liệu, không có trong trang �
 Dữ liệu ngoài dùng lúc huấn luyện bộ phân loại tiếng Việt, lưu ở cache ngoài repo và không đóng gói:
   - MASSIVE 1.0, tập train vi-VN (CC-BY-4.0), Amazon: https://github.com/alexa/massive.
     MASSIVE chứa một phần dữ liệu SLURP (CC-BY-4.0), Bastianelli, Vanzo, Swietojanski và Rieser: https://github.com/pswietojanski/slurp.
+    Phần âm thanh của SLURP (CC-BY-NC-4.0) không nằm trong MASSIVE, không được tải hay dùng.
 
-Dữ liệu đội biên soạn và định nghĩa nhãn của bộ phân loại, kể cả tập chỉnh và bộ nghiệm thu ở tools/classifier/eval, dùng CC-BY-4.0 theo phạm vi khai trong REUSE.toml.
-Tệp kiểm đối chiếu Python–Node trích từ dữ liệu đội biên soạn và dùng cùng giấy phép CC-BY-4.0.
+Dữ liệu của bộ phân loại, kể cả định nghĩa nhãn, tập chỉnh và bộ nghiệm thu ở tools/classifier/eval, được phát hành theo CC-BY-4.0 trong phạm vi HaUI-ImplSolution có quyền, theo phạm vi khai trong REUSE.toml.
+Bộ nghiệm thu và định nghĩa nhãn do thành viên đội viết; câu huấn luyện và tập chỉnh do Claude soạn, nên đội không khẳng định bản quyền đối với từng câu đó.
+Tệp kiểm đối chiếu Python–Node trích từ dữ liệu này và dùng cùng giấy phép CC-BY-4.0.
 
 Phông biểu tượng nằm trong gói thư viện, phát hành cùng bản build web:
   - Codicons (codicon.ttf trong monaco-editor 0.57.0): CC-BY-4.0, phông của Microsoft; ghi công và liên kết giấy phép ở third-party-licenses.txt của bản build web và ở /licenses của image frontend.

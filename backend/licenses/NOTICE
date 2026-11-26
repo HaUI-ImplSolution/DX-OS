@@ -6,7 +6,7 @@ phát triển tại Trường Công nghệ Thông tin và Truyền thông, Đạ
 
 Mã nguồn do nhóm tự viết được cấp phép theo Apache License 2.0 (xem LICENSE).
 Tài liệu, ảnh chụp màn hình, video và sơ đồ do nhóm tạo cũng được cấp phép theo Apache License 2.0.
-Dữ liệu do nhóm biên soạn cho bộ phân loại hồ sơ tiếng Việt (câu huấn luyện, định nghĩa nhãn, tệp kiểm trong tools/classifier và assistant/test/fixtures) được cấp phép theo CC-BY-4.0.
+Dữ liệu của bộ phân loại hồ sơ tiếng Việt (tools/classifier và assistant/test/fixtures) được HaUI-ImplSolution phát hành theo CC-BY-4.0 trong phạm vi đội có quyền: bộ nghiệm thu và định nghĩa nhãn do thành viên đội viết; câu huấn luyện và tập chỉnh do Claude (Anthropic) soạn nên đội không khẳng định bản quyền đối với từng câu đó và chỉ phát hành phần quyền mình có (nhãn, cách chọn và sắp xếp, mã sinh biến thể).
 
 MỤC ĐÍCH CỦA GIẤY PHÉP
 ----------------------

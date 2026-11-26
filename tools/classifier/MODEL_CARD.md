@@ -27,7 +27,7 @@ Mỗi nhiệm vụ có thêm lớp `TU_CHOI` theo [định nghĩa nhãn](labels.
 | Kích thước tệp | 222–300 KB mỗi mô hình, ba mô hình trong image trợ lý tổng cộng 865 KB |
 | Ngưỡng | onestop 0,891, support 0,918, clinic 0,862, itaccess 0,743, retail 0,799 |
 | Huấn luyện | Python 3.12 thư viện chuẩn, seed 210, 28 vòng, chỉ CPU, chạy lại cho cùng từng byte |
-| Dữ liệu | Dữ liệu đội (CC BY 4.0), tập chỉnh ở `eval/tuning/`, bộ nghiệm thu ở `eval/acceptance/` và câu lạc đề từ MASSIVE vi-VN 1.0 |
+| Dữ liệu | Dữ liệu của bộ phân loại (CC BY 4.0, phạm vi quyền ở thẻ dữ liệu), tập chỉnh ở `eval/tuning/`, bộ nghiệm thu ở `eval/acceptance/` và câu lạc đề từ MASSIVE vi-VN 1.0 |
 
 ## Huấn luyện
 
@@ -99,6 +99,7 @@ Mẫu `itaccess` đạt điều kiện nhưng không có nhiệm vụ, vì trư�
 ## Giấy phép
 
 Mã và trọng số theo Apache-2.0.
-Dữ liệu đội biên soạn theo CC-BY-4.0, ghi công HaUI-ImplSolution.
+Dữ liệu phát hành theo CC-BY-4.0 trong phạm vi HaUI-ImplSolution có quyền; phạm vi đó ghi ở [thẻ dữ liệu](data/DATA_CARD.md).
+Câu gốc huấn luyện và tập chỉnh do Claude soạn; điều khoản của Anthropic và mục đích sử dụng của mô hình ghi ở [thẻ dữ liệu](data/DATA_CARD.md).
 Câu lạc đề nguồn ngoài lấy từ MASSIVE vi-VN 1.0 của Amazon.com Inc. hoặc các đơn vị liên kết theo CC-BY-4.0.
 Thông tin ghi công và phiên bản nguồn nằm trong [manifest dữ liệu](data/sources.json).

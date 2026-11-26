@@ -143,7 +143,7 @@ Workflow `Assistant` (`.github/workflows/ci-assistant.yml`) chạy khi đổi `a
 Nó build và test dịch vụ, so SBOM với tệp khóa, kiểm tệp compose có và không có `assistant.env`, và kiểm route cổng ở mọi chế độ.
 Workflow `Platform` dựng image trợ lý cùng các image khác.
 Chạy `PYTHONDONTWRITEBYTECODE=1 python3 tools/classifier/make_parity_fixture.py` từ gốc repo để sinh lại bộ đối chiếu khi đổi trọng số hoặc dữ liệu huấn luyện.
-Tệp đối chiếu `assistant/test/fixtures/classifier.json` lấy câu gốc và biến thể đã dùng để huấn luyện do HaUI-ImplSolution biên soạn theo CC-BY-4.0.
+Tệp đối chiếu `assistant/test/fixtures/classifier.json` lấy câu gốc và biến thể đã dùng để huấn luyện, phát hành theo CC-BY-4.0 như thẻ dữ liệu nêu.
 Lệnh `npm test` trong thư mục `assistant` kiểm nhãn, xác suất và cụm chữ của Node với Python.
 Hai bài kiểm trình duyệt ở `e2e/web/tests/assistant.spec.ts` tự bỏ qua khi không đặt `E2E_ASSISTANT_RECORD_PATH` (hồ sơ mà đề xuất khác giá trị hiện tại) hoặc `E2E_ASSISTANT_UNCHANGED_RECORD_PATH` (hồ sơ mà đề xuất trùng giá trị hiện tại).
 

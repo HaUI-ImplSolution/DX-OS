@@ -238,7 +238,7 @@ DX-OS is, in Tier 1, a headless core, in Tier 2 a web interface and a control pa
 | H, shared digital environment | One sign-in; roles and units declared in the model; each person sees only their own work in the inbox, the board by state and the calendar | Done |
 | P, guard rails and automatic flows | A state changes only through the workflow; rejecting and returning need a reason; the creator cannot approve their own record; due and overdue dates and escalation to other roles; work after an approval runs through a queue and is retried | Done |
 | D, one source of truth | Data, history and queue live in one database; the history is chained so tampering shows; every change is reported outside by a signed webhook; statistics and a data catalog | Done |
-| I, artificial intelligence | A business assistant uses a Vietnamese record classifier trained by the team, running on CPU without an external model, to suggest the value of one field with evidence from the record; the user confirms before saving; the code, the weights, the team-written data and the way to fetch the external data are published | Done, one component |
+| I, artificial intelligence | A business assistant uses a Vietnamese record classifier trained by the team, running on CPU without an external model, to suggest the value of one field with evidence from the record; the user confirms before saving; the code, the weights, the training data and the way to fetch the external data are published | Done, one component |
 
 The brief also names four technical principles; the steps to show each one are in [`docs/DEMO.md`](./docs/DEMO.md#8-bốn-nguyên-lý-của-đề-tùy-chọn), in Vietnamese.
 

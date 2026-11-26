@@ -11,7 +11,7 @@ precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 HaUI-ImplSolution"
 SPDX-License-Identifier = "Apache-2.0"
 
-# Classifier examples and label definitions carry the team's data license.
+# Classifier data is released under CC-BY-4.0 to the extent HaUI-ImplSolution holds rights; see tools/classifier/data/DATA_CARD.md.
 [[annotations]]
 path = [
     "tools/classifier/labels.json",

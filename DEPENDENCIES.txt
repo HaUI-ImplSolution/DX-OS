@@ -41,7 +41,8 @@ Danh sách giấy phép được OSI công nhận: https://opensource.org/licens
 | (tools/classifier/model)                    |                       | onestop.json, support.json và clinic.json    |
 +---------------------------------------------+-----------------------+----------------------------------------------+
 | dữ liệu bộ phân loại: câu gốc, định nghĩa   | CC-BY-4.0             | Giấy phép dữ liệu, khai ở REUSE.toml; xem    |
-| nhãn, tệp đối chiếu Python-Node             |                       | mục 7                                        |
+| nhãn, tập chỉnh, bộ nghiệm thu, tệp đối     |                       | mục 7                                        |
+| chiếu Python-Node                           |                       |                                              |
 +---------------------------------------------+-----------------------+----------------------------------------------+
 
 Header của file mã nguồn gồm dòng SPDX-FileCopyrightText với chủ bản quyền và dòng SPDX-License-Identifier với giá trị Apache-2.0; `reuse lint` kiểm toàn bộ cây theo chuẩn REUSE.
@@ -449,7 +450,7 @@ Dữ liệu chỉ đọc lúc dựng trang tài liệu, không có trong trang �
 Dữ liệu ngoài dùng lúc huấn luyện bộ phân loại tiếng Việt, lưu ở cache ngoài repo và không đóng gói:
   - MASSIVE 1.0, tập train vi-VN (CC-BY-4.0), Amazon: https://github.com/alexa/massive.
 
-Dữ liệu đội biên soạn và định nghĩa nhãn của bộ phân loại dùng CC-BY-4.0 theo phạm vi khai trong REUSE.toml.
+Dữ liệu đội biên soạn và định nghĩa nhãn của bộ phân loại, kể cả tập chỉnh và bộ nghiệm thu ở tools/classifier/eval, dùng CC-BY-4.0 theo phạm vi khai trong REUSE.toml.
 Tệp kiểm đối chiếu Python–Node trích từ dữ liệu đội biên soạn và dùng cùng giấy phép CC-BY-4.0.
 
 Phông biểu tượng nằm trong gói thư viện, phát hành cùng bản build web:

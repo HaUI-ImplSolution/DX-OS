@@ -19,9 +19,9 @@ const alphanumeric = String.raw`[\p{L}\p{N}_]`;
 const boundary = `(?:(?<!${alphanumeric})(?=${alphanumeric})|(?<=${alphanumeric})(?!${alphanumeric}))`;
 const pattern = (source: string) => new RegExp(source.replaceAll('\\b', boundary), 'u');
 const command = (
-  /\b(?:bo qua (?:moi |tat ca )?(?:huong dan|tieu chi|quy tac)|ignore (?:(?:all |previous )?(?:instructions|rules?)|huong dan|quy tac)|bot (?:set|chon|skip|tra)|nhan phai la|luon chon)\b/.source
+  /\b(?:bo qua (?:moi |tat ca )?(?:huong dan|tieu chi|quy tac)|ignore (?:(?:all|any|the|previous|prior|above) )*(?:instructions?|rules?)|ignore (?:huong dan|quy tac)|bot (?:set|chon|skip|tra)|nhan phai la|hay luon chon)\b/.source
   + '|'
-  + /^\s*(?:xin |vui long )?chi (?:in|can go|in ra)\b/.source
+  + /^\s*(?:luon chon|(?:xin |vui long )?chi (?:in|can go|in ra))\b/.source
 );
 
 function unaccent(text: string) {
@@ -41,7 +41,7 @@ export function normalized(text: string) {
 export function commandPattern(labels: readonly string[]): RegExp {
   const names = labels.map(normalized).filter(Boolean).join('|');
   const labeled = names ? (
-    String.raw`|(?:^\s*(?:chon|(?:nhan )?output)|`
+    String.raw`|(?:^\s*(?:chon|(?:nhan )?output)|\bluon chon|`
     + String.raw`\b(?:he thong|chuong trinh|may) (?:hay |luon )?(?:chon|dien|gan|tra ve))`
     + String.raw` (?:muc |nhan )?(?:${names})\b`
   ) : '';

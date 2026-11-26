@@ -409,7 +409,7 @@ Với `classifier`, khóa `classifier` là bắt buộc, khớp `^[a-z][a-z0-9_]
 Trợ lý có sẵn `onestop`, `support` và `clinic`; nghiệp vụ khác cần dữ liệu và huấn luyện riêng bằng [`tools/classifier/`](../tools/classifier/README.md).
 `input_fields` chỉ gồm các trường `text`, theo thứ tự dùng khi huấn luyện.
 Đầu ra phải là một trường `choice` đơn trị có tập lựa chọn trùng với tập nhãn nghiệp vụ của bộ phân loại.
-`instruction` là tùy chọn, `sources` không được khai và `max_length` chỉ áp dụng cho LLM.
+`instruction` là tùy chọn; `sources` và `max_length` không được khai.
 
 ```yaml
 ai:

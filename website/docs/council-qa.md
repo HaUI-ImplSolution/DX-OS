@@ -83,9 +83,9 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 
 - Trợ lý nghiệp vụ tùy chọn đề xuất giá trị một trường của hồ sơ và rà hồ sơ ở Hộp việc; người dùng sửa, hủy hoặc xác nhận trước khi ghi qua API Core.
 - Mô hình do đội tự huấn luyện: bộ phân loại hồ sơ tiếng Việt chạy trên CPU ngay trong trợ lý, không cần mô hình ngoài; đề xuất kèm cụm chữ của hồ sơ làm căn cứ, và từ chối khi không đủ căn cứ.
-- Dữ liệu: câu huấn luyện là bản nháp viết với công cụ AI, đội biên soạn và duyệt, theo CC-BY-4.0; câu lạc đề lấy từ MASSIVE; bộ nghiệm thu do đội viết tay.
-  Mã, trọng số và dữ liệu được công bố.
-- Giới hạn: số đo lấy trên câu do đội viết, chưa trên hồ sơ thật; bộ phân loại mới bật cho ba mẫu đạt nghiệm thu; hỏi đáp có trích nguồn, tìm kiếm tri thức và tác tử nghe sự kiện nằm ngoài phạm vi.
+- Dữ liệu: câu huấn luyện là bản nháp viết với công cụ AI, đội biên soạn và duyệt, theo CC-BY-4.0; tập chỉnh ngưỡng viết với công cụ AI; câu lạc đề lấy từ MASSIVE; bộ nghiệm thu do đội viết tay.
+  Mã, trọng số, tập chỉnh và bộ nghiệm thu nằm trong repository.
+- Giới hạn: số đo lấy trên câu do đội viết, chưa trên hồ sơ thật, và bộ nghiệm thu đã được đo ba lần; bộ phân loại mới bật cho ba mẫu; hỏi đáp có trích nguồn, tìm kiếm tri thức và tác tử nghe sự kiện nằm ngoài phạm vi.
 - Lõi đã có sẵn chỗ để nối: hàng đợi sự kiện, webhook có chữ ký và `GET /api/v1/events` cho tác tử đọc việc mới, còn ghi lại vẫn đi qua API chung nên quyền, quy tắc và quy trình vẫn áp dụng.
 - **Bằng chứng:** `tools/classifier/MODEL_CARD.md`; `tools/classifier/data/DATA_CARD.md`; [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md), dòng "Phạm vi AI"; `docs/dynamic-core/README.md`, mục "Cam kết nguồn mở".
 

@@ -82,6 +82,7 @@ Hàm `predict` nhận phần văn bản ở `text` và thêm `title` cho nhiệm
 Trước khi mô hình phân loại, `features.py` tách văn bản thành các đoạn câu và lọc trên bản chuyển chữ thường và bỏ dấu.
 Bộ lọc nhận lệnh rõ ràng như “Bỏ qua mọi hướng dẫn” hoặc “Ignore previous instructions”.
 Các mẫu đầu đoạn “Chọn”, “Output” và mẫu “Hệ thống”, “Chương trình” hoặc “Máy” yêu cầu tên nhãn đã chuẩn hóa từ trọng số ngay sau từ chỉ thao tác, có thể kèm “mức” hoặc “nhãn”.
+Cụm “luôn chọn” chỉ khớp khi đứng đầu đoạn, đi sau “hãy” hoặc đi trước tên nhãn.
 `output` và `ignore` đứng một mình được giữ lại.
 Đoạn khớp lệnh được bỏ khỏi đầu vào trích đặc trưng và căn cứ.
 Mô hình suy luận từ các đoạn còn lại và có thể từ chối khi thiếu căn cứ.

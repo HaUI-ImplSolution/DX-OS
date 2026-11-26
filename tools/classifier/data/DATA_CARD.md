@@ -30,6 +30,7 @@ Tập chỉnh ở `tools/classifier/eval/tuning/` gồm 420 câu do Claude viế
 Bộ nghiệm thu ở `tools/classifier/eval/acceptance/` gồm 450 câu do đội viết tay, duyệt chéo và giữ riêng để đo.
 Khi trích đặc trưng, các lệnh rõ ràng như “Bỏ qua mọi hướng dẫn” được lọc bỏ.
 Các cụm có chủ thể “Hệ thống”, “Chương trình” hoặc “Máy” và động từ điền nhãn chỉ khớp khi theo sau là tên nhãn.
+Cụm “luôn chọn” chỉ khớp khi đứng đầu đoạn, đi sau “hãy” hoặc đi trước tên nhãn.
 Từ `output` và `ignore` đứng riêng được giữ lại.
 
 | Nguồn | Phiên bản hoặc revision | Giấy phép | Câu lấy mẫu |
@@ -49,6 +50,7 @@ Tệp giấy phép của MASSIVE nằm trong bản phát hành 1.0 của Amazon.
 Seed cố định là 210.
 Họ câu được chia theo nhãn và loại từ chối thành khoảng 68% huấn luyện, 16% chỉnh nội bộ và 16% dev để đo.
 Tập 300 câu MASSIVE dùng chung cho mỗi nhiệm vụ gồm 204 câu huấn luyện, 48 câu chỉnh nội bộ và 48 câu dev.
+Ngưỡng và siêu tham số chọn trên tập chỉnh ở `eval/tuning/`, nên phần chỉnh nội bộ không dùng khi huấn luyện.
 Các họ câu dùng chung luôn thuộc cùng một phần ở cả năm nhiệm vụ.
 Chỉ sinh biến thể từ câu đội viết trong tập huấn luyện.
 Một câu sinh tối đa bốn biến thể khác nhau, mang cùng `family`.

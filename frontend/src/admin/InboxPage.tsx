@@ -129,6 +129,7 @@ export default function InboxPage({ models }: { models: ModelMeta[] }) {
   const classifiers = new Set(assistantModel?.classifiers);
   const canReview = declared.some((name) => !!name && classifiers.has(name));
   const checked = new Set(batches.flatMap((batch) => batch.checked));
+  const sent = new Set(batches.flatMap((batch) => batch.sent));
   const flagsByItem = new Map(canReview ? batches.flatMap((batch) => [...batch.flagged]) : []);
   const orderedItems = (items ?? []).map((item) => ({ item, flags: flagsByItem.get(reviewKey(item)) }))
     .sort((a, b) => Number(!!b.flags) - Number(!!a.flags));
@@ -139,7 +140,7 @@ export default function InboxPage({ models }: { models: ModelMeta[] }) {
     return entity?.canWrite && !checked.has(reviewKey(item)) &&
       !entity.process?.states.some((state) => state.name === item.status && state.terminal) &&
       Object.values(entity.aiTasks ?? {}).some((task) => task.engine === "classifier" && !!task.classifier && classifiers.has(task.classifier));
-  }).slice(0, REVIEW_SIZE) : [];
+  }).sort((a, b) => Number(sent.has(reviewKey(a))) - Number(sent.has(reviewKey(b)))).slice(0, REVIEW_SIZE) : [];
 
   const reviewNextBatch = async () => {
     if (!nextBatch.length || reviewRequest.current) return;
@@ -161,7 +162,9 @@ export default function InboxPage({ models }: { models: ModelMeta[] }) {
         reviewed.add(key);
         if (review.mismatch) flagged.set(key, [...(flagged.get(key) ?? []), review]);
       }
-      saveInboxReview({ page, checked: [...keys.values()], reviewed: reviewed.size, skipped: result.skipped, flagged });
+      // With skipped records, only the answered ones count as checked; the rest queue behind records not sent yet.
+      const sent = [...keys.values()];
+      saveInboxReview({ page, sent, checked: result.skipped > 0 ? [...reviewed] : sent, reviewed: reviewed.size, skipped: result.skipped, flagged });
     } catch (e) {
       if (!signal.aborted) setReviewError(e instanceof Error ? e.message : t("Không thể rà loại hồ sơ."));
     } finally {

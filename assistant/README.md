@@ -31,7 +31,7 @@ Dựng thẳng bằng `docker build -f assistant/Dockerfile .` ở gốc repo th
 
 ## Bộ phân loại
 
-Image đóng gói ba bộ phân loại đạt điều kiện nghiệm thu:
+Image đóng gói ba bộ phân loại mà các mẫu dùng, đều đạt điều kiện phát hành:
 
 | Bộ phân loại | Mẫu | Đọc trường | Gợi ý cho trường |
 |---|---|---|---|
@@ -52,8 +52,9 @@ Trợ lý báo `configured` khi nạp được ít nhất một bộ phân loạ
 Nhiệm vụ phân loại đọc các trường chữ theo thứ tự `input_fields`.
 Mẫu hỗ trợ kỹ thuật khai `title` rồi `detail` theo thứ tự huấn luyện.
 Kết quả từ chối trả `insufficient: true` và `proposal: null`.
-Đề xuất lưu `sources: []` và `evidence` gồm một đến ba cụm chữ trích từ các trường đầu vào.
-Giao diện hiển thị các cụm chữ trong mục **Căn cứ trong hồ sơ**.
+Đề xuất lưu `sources: []`, `evidence` gồm một đến ba cụm chữ trích từ các trường đầu vào và `confidence` là xác suất của nhãn gợi ý.
+Giao diện hiển thị các cụm chữ trong mục **Căn cứ trong hồ sơ** kèm độ tự tin theo phần trăm.
+Sửa giá trị khác gợi ý thì đề xuất mới không còn `confidence`.
 
 Thiếu hoặc không đọc được trọng số của nhiệm vụ thì API trả 409 `ERR_CLASSIFIER_UNAVAILABLE` cho nhiệm vụ đó.
 Các lựa chọn của trường đầu ra phải khớp tập nhãn nghiệp vụ của tệp trọng số, nếu sai thì API trả 409 `ERR_CLASSIFIER_LABELS`.
@@ -78,14 +79,17 @@ Liên kết với Core dùng PKCE và state dùng một lần.
 
 Khi trợ lý có trọng số cho một nhiệm vụ phân loại đã khai báo, nút **Rà loại hồ sơ** rà 25 hồ sơ đủ điều kiện đầu tiên chưa rà trên trang Hộp việc đang xem.
 Bấm lại để rà lượt tiếp theo.
-Hồ sơ có giá trị khác gợi ý hiện **Cần rà** cùng giá trị đề xuất và cụm chữ căn cứ.
+Hồ sơ có giá trị khác gợi ý hiện **Cần rà** cùng giá trị đề xuất, độ tự tin và cụm chữ căn cứ.
 Bấm dấu **Cần rà** mở khối trợ lý trên trang chi tiết và gọi `POST /me/proposals` để tạo đề xuất cần xác nhận.
-Giao diện giữ kết quả rà trong bộ nhớ tối đa 120 giây mỗi lượt.
+Giao diện giữ kết quả rà trong bộ nhớ tối đa 120 giây mỗi lượt, còn nguyên khi chuyển trang trong ứng dụng, và xóa khi đăng xuất hoặc hết phiên.
+Hồ sơ không đọc được được đếm riêng và rà lại được ở lượt sau.
 
 `POST /assistant-api/v1/me/reviews` nhận `{"items":[{"model":"onestop","entity":"request","id":1}]}` với từ 1 đến 25 hồ sơ.
-Trợ lý đọc lại hồ sơ và metadata thực thể bằng phiên Core của người gọi và chỉ rà hồ sơ còn mở thuộc thực thể người gọi được sửa.
-API bỏ qua hồ sơ không đọc được và nhiệm vụ thiếu trọng số hoặc có tập lựa chọn khác tập nhãn.
-`data.items` có một kết quả cho mỗi nhiệm vụ đủ điều kiện, gồm `model`, `entity`, `id`, `task`, `field`, `current`, `suggested`, `evidence` và `mismatch`.
+Trợ lý đọc hồ sơ bằng phiên Core của người gọi, đọc metadata một lần cho mỗi thực thể, gửi tối đa 5 yêu cầu đồng thời và chỉ rà hồ sơ còn mở thuộc thực thể người gọi được sửa.
+Hồ sơ gặp lỗi riêng (không có quyền, không tồn tại, bị giới hạn tốc độ, lỗi máy chủ hoặc quá thời gian chờ) được đếm ở `data.skipped`.
+Lỗi phiên (chưa liên kết, liên kết hết hạn, Core trả 401) làm cả lượt trả lỗi.
+API bỏ qua nhiệm vụ thiếu trọng số hoặc có tập lựa chọn khác tập nhãn.
+`data.items` có một kết quả cho mỗi nhiệm vụ đủ điều kiện, gồm `model`, `entity`, `id`, `task`, `field`, `current`, `suggested`, `evidence`, `mismatch` và `confidence` khi có gợi ý.
 Khi bộ phân loại từ chối, `suggested` là `null` và `mismatch` là `false`.
 Lượt rà chỉ đọc, không tạo đề xuất và không ghi nội dung hồ sơ vào nhật ký.
 API dùng cùng giới hạn 120 yêu cầu mỗi phút theo địa chỉ IP tại cổng của trợ lý.
@@ -212,6 +216,7 @@ Gỡ hẳn khỏi mã nguồn thì làm theo ba nhóm sau.
 - `frontend/src/admin/resources.tsx`: `RecordAssistant`.
 - `frontend/src/admin/InboxPage.tsx`: nút "Rà loại hồ sơ" và phần làm nổi hồ sơ cần rà.
 - `frontend/src/shell/en/index.ts`: `assistantEn`.
+- `frontend/src/shell/auth.ts`: `clearInboxReviews` và dòng import của nó.
 - Giấy phép, văn bản: `DEPENDENCIES.txt`, `NOTICE` (cả bản trong `*/licenses/`), hai khối bộ phân loại trong `REUSE.toml`, `sbom/README.md`, `website/docs/dependencies.md`, `website/docs/pof-audit.md`, `CONTRIBUTING.md` và `.github/PULL_REQUEST_TEMPLATE.md`.
 - Giấy phép, dữ liệu máy đọc trong `.github/licenses/`: `component-catalog.json` (mô tả của `node` và các tệp trọng số), `license-inventory.json` (các mục `llama.cpp`, `DX-OS record classifier weights`, `DX-OS record classifier data` và `MASSIVE vi-VN`) và `dependency-exceptions.json` (hai mục `DX-OS record classifier data` và `MASSIVE vi-VN`).
 - `.github/scripts/check_licenses.py`: `CLASSIFIER_DATA_PATHS`, và `assistant` trong danh sách dự án của `check_declared_licenses`, `LEGAL_CONTEXTS`, `SHIPPED_BASES` và `COPIED_SCRIPTS`.

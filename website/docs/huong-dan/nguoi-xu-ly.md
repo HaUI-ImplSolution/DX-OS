@@ -57,12 +57,13 @@ Không có nút hoàn tác; hồ sơ xử lý nhầm thì xử lý tiếp theo �
 
 Bản cài bật trợ lý thì trang chi tiết của những loại hồ sơ có khai nhiệm vụ hiện khối **Trợ lý nghiệp vụ**.
 Lần đầu, mở mục **Trợ lý nghiệp vụ** trên menu và bấm **Liên kết DX-OS**.
-Chọn nhiệm vụ rồi bấm **Tạo đề xuất**: trợ lý đưa giá trị gợi ý kèm căn cứ, hoặc báo chưa đủ căn cứ.
+Chọn nhiệm vụ rồi bấm **Tạo đề xuất**: trợ lý đưa giá trị gợi ý kèm căn cứ và độ tự tin, hoặc báo chưa đủ căn cứ.
 Giá trị chỉ được lưu khi bạn xác nhận.
 
 Ở Hộp việc, nút **Rà loại hồ sơ** rà tối đa 25 hồ sơ mỗi lượt.
 Hồ sơ có giá trị khác gợi ý được tô màu, gắn **Cần rà** và đưa lên đầu trang.
 Bấm dấu **Cần rà** để mở hồ sơ và xem đề xuất.
+Đánh dấu giữ được khoảng hai phút; hồ sơ không đọc được thì được báo số lượng và rà lại được.
 Gợi ý có thể sai, nên đối chiếu nội dung hồ sơ trước khi xác nhận.
 
 ## Các cách xem khác

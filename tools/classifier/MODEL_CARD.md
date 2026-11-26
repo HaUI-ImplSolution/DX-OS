@@ -46,7 +46,9 @@ Nguồn và số lượng dữ liệu nằm trong [thẻ dữ liệu](data/DATA_
 Trước khi trích đặc trưng cho mô hình, `features.py` tách văn bản thành các đoạn câu theo dấu chấm, chấm hỏi, chấm than, chấm phẩy và xuống dòng.
 Bộ lọc dò lệnh rõ ràng như “Bỏ qua mọi hướng dẫn” và “Ignore previous instructions” trên đoạn đã chuyển chữ thường và bỏ dấu.
 Mẫu “Hệ thống”, “Chương trình” hoặc “Máy” đi với “chọn”, “điền”, “gán” hoặc “trả về” chỉ khớp khi đi tiếp với tên nhãn trong trọng số, có thể kèm “mức” hoặc “nhãn”.
-Mẫu đầu đoạn “Chọn” hoặc “Output” cũng yêu cầu tên nhãn theo sau. `output` và `ignore` đứng một mình được giữ lại.
+Mẫu đầu đoạn “Chọn” hoặc “Output” cũng yêu cầu tên nhãn theo sau.
+Cụm “luôn chọn” chỉ khớp khi đứng đầu đoạn, đi sau “hãy” hoặc đi trước tên nhãn.
+`output` và `ignore` đứng một mình được giữ lại.
 Đoạn khớp lệnh được bỏ khỏi đầu vào trích đặc trưng và căn cứ.
 Các đoạn còn lại được dùng để suy luận và mô hình có thể từ chối khi thiếu căn cứ.
 

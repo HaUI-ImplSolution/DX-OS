@@ -3,7 +3,7 @@
 import type { ClassifierReview, RecordTarget } from "./api";
 
 const REVIEW_TTL = 120_000;
-type ReviewBatch = { page: number; checked: string[]; reviewed: number; skipped: number; flagged: Map<string, ClassifierReview[]>; expires: number };
+type ReviewBatch = { page: number; sent: string[]; checked: string[]; reviewed: number; skipped: number; flagged: Map<string, ClassifierReview[]>; expires: number };
 
 let batches: ReviewBatch[] = [];
 let timer: ReturnType<typeof setTimeout> | undefined;

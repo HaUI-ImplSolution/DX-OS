@@ -114,6 +114,7 @@ CALLER_DIR="$PWD"
 ALPINE="alpine:3.24@sha256:3f4d6b32e26703c6082839234f43769d5046b3ac7c910033911d1e71d8cd630a"
 source "$DEPLOY_DIR/lib/web-url.sh"
 source "$DEPLOY_DIR/lib/gitops.sh"
+source "$DEPLOY_DIR/lib/windows-ports.sh"
 
 die() { echo "dxos: $*" >&2; exit 1; }
 # The usage text: the comment block at the top of this file.
@@ -123,7 +124,7 @@ from_caller() { if [[ "$1" == /* ]]; then printf '%s\n' "$1"; else printf '%s\n'
 env_value() { grep -E "^$1=" "$DEPLOY_DIR/.env" | tail -n1 | cut -d= -f2- || true; }
 compose() { docker compose "$@"; }
 # Names the .env key to change when compose could not publish a port; the log is the output of docker compose up.
-# A program on the Windows side of WSL is invisible to dxos doctor, and only this message shows it.
+# Docker reports this only when it cannot publish the port; a Windows program that holds it exclusively is found by windows_ports_check.
 port_conflict_hint() {
   local key value port found=false
   grep -qE 'ports are not available|port is already allocated|address already in use' "$1" || return 0
@@ -393,6 +394,7 @@ cmd_start() {
     started="$since_epoch"
   fi
   wait_ready
+  windows_ports_check || die "the stack runs, but a program on Windows holds one of its ports"
   set +e
   admin_account ensure
   # The backend reads the model file only when it starts, so a backend that kept running has no result.

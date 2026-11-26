@@ -222,7 +222,7 @@ The `dxos` commands used most:
 |---|---|
 | A component has stopped | `dxos status`, then `dxos reconcile`; every long-running service restarts on its own when its process exits |
 | The machine cannot run the stack | `dxos doctor` is read-only and reports missing variables in `.env`, ports in use, too little RAM or disk |
-| `dxos start` says a port is not available | Another program holds the port; on Windows, `dxos doctor` cannot see a program on the Windows side. `dxos start` names the key `APISIX_HOST_PORT` or `POSTGRES_HOST_PORT` to change in `deploy/.env` |
+| `dxos start` says a port is not available | Another program holds the port, including a program on the Windows side. `dxos doctor` and `dxos start` name the key `APISIX_HOST_PORT` or `POSTGRES_HOST_PORT` to change in `deploy/.env` |
 | Every upload is refused | The virus scan is on but ClamAV is not running; `dxos doctor` reports `FAIL`, run `dxos av on` or `dxos av off` |
 | Cannot sign in with a trial account | `dxos demo` resets the password and prints the new one |
 | After an apply, one `backend` copy answers 404 | Run a single `backend` copy, or restart both |

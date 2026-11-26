@@ -37,7 +37,7 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 | Đóng góp tập trung | Một thành viên giữ khoảng hai phần ba commit; `CODEOWNERS` nêu ba thành viên cho mọi đường dẫn, chưa chia người phụ trách theo vùng; chia hay không là quyết định của nhóm |
 | Cảnh báo Scorecard và huy hiệu | Tab Security có 8 cảnh báo của Scorecard chưa duyệt (Maintained, CodeReview, Vulnerabilities, Fuzzing, SAST, TokenPermissions hai cảnh báo, BranchProtection); huy hiệu OpenSSF Best Practices mức passing còn ba tiêu chí khuyến nghị chưa đạt (`test_most`, `warnings_strict`, `dynamic_analysis`), và lời giải thích từng tiêu chí trỏ về tệp trên `main` nên chỉ khớp khi nhánh tích hợp vào `main` |
 | Bản chạy công khai | Chưa được CI kiểm hằng ngày (`deploy/online-check.sh` chạy tay hoặc theo cron), và chưa có phương án chạy tại chỗ nếu mạng ở buổi thi có sự cố vì bản công khai chạy trên một máy chủ EC2 qua Internet |
-| Cài trên Windows | Chưa thử lại trên WSL2 với Docker Desktop bằng `dxos-install.sh` của `v2.1.0`, và chưa chạy `examples/appliance-store` trên giao diện web cùng `./reset.sh` ở đó |
+| Cài trên Windows | Chưa thử lại trên WSL2 với Docker Desktop bằng `dxos-install.sh` của `v2.1.0`, và chưa chạy `examples/appliance-store` trên giao diện web cùng `./reset.sh` ở đó; phép kiểm cổng phía Windows của `dxos start` và `dxos doctor` (#420, `docs/TESTING.md` mục 11) mới thử bằng giả lập, chưa có người chạy trên Windows với `TcpListener` giữ độc quyền cho cả `APISIX_HOST_PORT` và `POSTGRES_HOST_PORT` |
 
 ## 4. Giới hạn chấp nhận
 

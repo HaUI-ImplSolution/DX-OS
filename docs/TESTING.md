@@ -176,6 +176,10 @@ Mỗi mục nêu điều phải thấy; lệnh và biến cấu hình chi tiết
 11. **Lần chạy đầu trên máy sạch:** `admin` đăng nhập bằng mật khẩu tạm, bị buộc đổi mật khẩu, vào bảng điều khiển, áp dụng mẫu đầu tiên.
     Stack chạy dở: chỉ chạy `docker compose up -d postgres` rồi `dxos start` thì `doctor` ghi cổng PostgreSQL do chính stack giữ, không `FAIL`, và lệnh dựng nốt các dịch vụ còn lại.
     Một chương trình ngoài giữ cổng (ví dụ `nc -l 127.0.0.1 <cổng>` khi stack chưa chạy) thì `dxos start` dừng ở `FAIL` nêu chương trình ngoài giữ cổng và khóa trong `deploy/.env` cần đổi.
+    Trên Windows với WSL2 và Docker Desktop, làm riêng cho `APISIX_HOST_PORT` và `POSTGRES_HOST_PORT`; một chương trình Windows giữ cổng bằng PowerShell: `$l = New-Object Net.Sockets.TcpListener([Net.IPAddress]::Loopback, <cổng>); $l.ExclusiveAddressUse = $true; $l.Start()`.
+    Giữ cổng khi stack chưa chạy: `dxos doctor` và `dxos start` thoát mã 1 ở `FAIL` nêu đúng khóa của cổng đó, và `dxos start` không dựng container nào.
+    Giữ cổng sau khi `docker compose up -d` đã dựng stack: `dxos doctor` và `dxos start` thoát mã 1 nêu đúng khóa; từ Windows, `Invoke-WebRequest http://127.0.0.1:<cổng gateway>/api/v1/system/status` hoặc một kết nối tới cổng PostgreSQL chạm chương trình giữ cổng, không chạm stack.
+    Đóng chương trình giữ cổng, hoặc khi không có chương trình nào: `dxos start` và `dxos doctor` thoát mã 0, kể cả khi stack đang chạy, và Windows vào được gateway cùng PostgreSQL của stack.
 12. **Hành động theo vai:** người chỉ giữ vai `AGENT` không thấy nút của hành động dành cho `LEAD`; hồ sơ đã giao thì chỉ người được giao thấy nút, "Bỏ giao" trả lại cho vai khác.
     Hành động có `require` khi trường còn trống báo "Bắt buộc nhập trước khi thực hiện" kèm tên trường và giữ nguyên trạng thái.
     Hồ sơ có quy trình không có nút Xóa; nút hành động không đặt nhãn hiện mã hành động.

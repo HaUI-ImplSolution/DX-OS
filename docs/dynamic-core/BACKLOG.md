@@ -26,7 +26,6 @@ Việc còn lại trước hạn nằm ở mục 2.
 | Tài liệu tiếng Anh | Phần lớn tài liệu chỉ có tiếng Việt; `README_EN.md` đã có, các tài liệu còn lại chưa |
 | Cảnh báo Scorecard và huy hiệu | Tab Security có 5 cảnh báo của Scorecard chưa duyệt (Maintained, CodeReview, Vulnerabilities, TokenPermissions hai cảnh báo); huy hiệu OpenSSF Best Practices mức passing còn ba tiêu chí khuyến nghị chưa đạt (`test_most`, `warnings_strict`, `dynamic_analysis`), và lời giải thích từng tiêu chí trỏ về tệp trên `main` nên chỉ khớp khi nhánh tích hợp vào `main` |
 | Bản chạy công khai | Chưa được CI kiểm hằng ngày (`deploy/online-check.sh` chạy tay hoặc theo cron), và chưa có phương án chạy tại chỗ nếu mạng ở buổi thi có sự cố vì bản công khai chạy trên một máy chủ EC2 qua Internet |
-| Dữ liệu bộ phân loại do Claude soạn | Tập chỉnh 420 câu chưa có người duyệt; chưa có bằng chứng đội đã duyệt các câu gốc huấn luyện; còn phải duyệt hoặc viết lại dữ liệu rồi huấn luyện lại |
 
 ## 4. Giới hạn chấp nhận
 
@@ -36,7 +35,7 @@ Việc còn lại trước hạn nằm ở mục 2.
 |---|---|
 | Đóng góp tập trung | Một thành viên giữ khoảng hai phần ba commit; lịch sử commit không sửa được, và `CODEOWNERS` đã nêu ba thành viên cho mọi đường dẫn |
 | Phỏng vấn khách hàng | Không làm; mục Khách hàng và giá trị của `docs/dynamic-core/README.md` là giả thuyết, chưa kiểm chứng với khách hàng thật |
-| Bên thứ ba dùng dữ liệu Claude soạn | Phần do Claude soạn công bố công khai theo CC-BY-4.0, giấy phép này không cho đội cấm bên thứ ba huấn luyện chatbot hoặc mô hình sinh văn bản, điều mà điều khoản của Anthropic cấm; thẻ dữ liệu nêu rõ rủi ro, và mô hình của đội là bộ phân loại nên không vi phạm; chỉ hết khi thay phần do Claude soạn bằng câu đội viết (xem dòng "Dữ liệu bộ phân loại do Claude soạn" ở mục 3) |
+| Bên thứ ba dùng dữ liệu Claude soạn | Phần do Claude soạn công bố công khai theo CC-BY-4.0, giấy phép này không cho đội cấm bên thứ ba huấn luyện chatbot hoặc mô hình sinh văn bản, điều mà điều khoản của Anthropic cấm; thẻ dữ liệu nêu rõ rủi ro, và mô hình của đội là bộ phân loại nên không vi phạm; chỉ hết khi thay phần do Claude soạn bằng câu đội viết |
 | Phạm vi AI | Chỉ có trợ lý đề xuất giá trị một trường có người duyệt, bằng bộ phân loại tự huấn luyện; không có hỏi đáp RAG, tác tử theo sự kiện, embedding và reranker; đề không nêu số thành phần của nhóm I phải làm, và ứng dụng minh họa không cần có AI |
 | Chất lượng đề xuất trợ lý | Bộ phân loại có thể từ chối câu hợp lệ hoặc gợi ý sai với cách nói chưa gặp, số đo nghiệm thu lấy trên câu do đội viết, chưa trên hồ sơ thật, và bộ nghiệm thu đã được đo ba lần; người dùng đối chiếu căn cứ rồi mới xác nhận; image và vòng đời trợ lý (bật, tắt, cập nhật) chưa chạy trong CI |
 | Bộ phân loại cho nghiệp vụ mới | Tệp mô hình chỉ chọn được bộ phân loại đã có trọng số; nghiệp vụ khác cần soạn dữ liệu, huấn luyện bằng `tools/classifier/` và nạp tệp trọng số, chưa chỉ khai tệp mô hình là có |

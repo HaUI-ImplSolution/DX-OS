@@ -15,10 +15,13 @@ Dữ liệu MASSIVE được tải riêng khi tái tạo trọng số.
 | --- | --- | --- | --- | --- |
 | Câu gốc huấn luyện | `data/seeds/` | 2.490 | Claude (Anthropic) | CC BY 4.0, trong phạm vi đội có quyền |
 | Câu từ chối dùng chung | `data/negatives.jsonl` | 22 | Claude (Anthropic) | như trên |
-| Tập chỉnh | `eval/tuning/` | 420 | Claude (Anthropic), chưa có người duyệt | như trên |
+| Tập chỉnh | `eval/tuning/` | 420 | Claude (Anthropic), đã được đội DX-OS duyệt | như trên |
 | Bộ nghiệm thu | `eval/acceptance/` | 450 | Thành viên đội viết tay, duyệt chéo | CC BY 4.0, ghi công HaUI-ImplSolution |
 | Định nghĩa nhãn | `labels.json` | 5 nhiệm vụ | Đội | CC BY 4.0, ghi công HaUI-ImplSolution |
 | Câu lạc đề ngoài | MASSIVE vi-VN 1.0 | 300 câu lấy mẫu | Amazon | CC BY 4.0, tải lúc huấn luyện, không nằm trong repository |
+
+Đội DX-OS đã duyệt nội dung và nhãn nghiệp vụ của toàn bộ 2.490 câu gốc huấn luyện.
+Đội DX-OS đã duyệt nội dung và nhãn kỳ vọng của toàn bộ 420 câu trong tập chỉnh.
 
 Biến thể do mã của đội sinh từ câu gốc trong tập huấn luyện.
 Cột `nguoi_viet` của các tệp CSV ghi người viết từng dòng; các tệp câu gốc không ghi người viết hay người duyệt.

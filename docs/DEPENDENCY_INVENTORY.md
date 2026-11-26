@@ -2827,4 +2827,4 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 | `Liberation, Lohit and Noto Sans Devanagari fonts (in pdfbox and fontbox)` | 3.0.8 | OFL-1.1 | prod |  |
 | `MASSIVE vi-VN` | 1.0 | CC-BY-4.0 | build | CC-BY-4.0 data of Amazon, not code. Downloaded when the classifier is trained; in no image or release. |
 | `Noto Sans` | 2022 | OFL-1.1 | prod |  |
-| `llama.cpp` | b12387 | MIT | optional |  |
+| `SLURP` | as included in MASSIVE 1.0 | CC-BY-4.0 | build | CC-BY-4.0 data that MASSIVE is built from, not code. Downloaded only inside MASSIVE; in no image or release. |

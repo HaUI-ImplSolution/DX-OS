@@ -55,7 +55,7 @@ Không có nút hoàn tác; hồ sơ xử lý nhầm thì xử lý tiếp theo �
 
 ## Trợ lý nghiệp vụ
 
-Bản cài bật trợ lý thì trang chi tiết của những loại hồ sơ có khai nhiệm vụ hiện khối **Trợ lý nghiệp vụ**.
+Trang chi tiết của những loại hồ sơ có khai nhiệm vụ hiện khối **Trợ lý nghiệp vụ**.
 Lần đầu, mở mục **Trợ lý nghiệp vụ** trên menu và bấm **Liên kết DX-OS**.
 Chọn nhiệm vụ rồi bấm **Tạo đề xuất**: trợ lý đưa giá trị gợi ý kèm căn cứ và độ tự tin, hoặc báo chưa đủ căn cứ.
 Giá trị chỉ được lưu khi bạn xác nhận.

@@ -208,16 +208,16 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/licenses/dependency-excepti
 |                                      |                                      | stack                                |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | Eclipse Mosquitto 2.0.23 (image      | EPL-2.0 hoặc EDL-1.0; dùng EPL-2.0   | Broker MQTT của cầu nối MQTT tùy     |
-| eclipse-mosquitto) [12]              |                                      | chọn, dịch vụ riêng, không sửa mã    |
+| eclipse-mosquitto) [10]              |                                      | chọn, dịch vụ riêng, không sửa mã    |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | Python 3.13.18 (image python:        | Python-2.0, giấy phép của các gói    | Chạy cầu nối MQTT tùy chọn, chỉ dùng |
-| 3.13.18-alpine3.24) [12]             | Alpine của image                     | thư viện chuẩn                       |
+| 3.13.18-alpine3.24) [10]             | Alpine của image                     | thư viện chuẩn                       |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | Prometheus 3.13.5 (image             | Apache-2.0                           | Đọc số đo dxos_* của lõi, dịch vụ    |
-| prom/prometheus) [13]                |                                      | riêng tùy chọn, không sửa mã         |
+| prom/prometheus) [11]                |                                      | riêng tùy chọn, không sửa mã         |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | Grafana 12.4.15 (image               | AGPL-3.0-only (một số gói Apache-2.0)| Vẽ dashboard số đo của lõi, dịch vụ  |
-| grafana/grafana, bản OSS) [13]       |                                      | riêng tùy chọn, không sửa mã         |
+| grafana/grafana, bản OSS) [11]       |                                      | riêng tùy chọn, không sửa mã         |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | Maven Wrapper 3.3.4 [7] (mvnw,       | Apache-2.0                           | Chạy Maven ở phiên bản đã ghim;      |
 | mvnw.cmd, maven-wrapper.properties)  |                                      | chép nguyên từ Apache Maven          |
@@ -293,13 +293,7 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/licenses/dependency-excepti
 | GitHub Actions (actions/*, docker/*, | MIT, Apache-2.0, ISC, 0BSD,          | Chỉ trong CI, ghim theo SHA          |
 | github/*, ossf/*)                    | BlueOak-1.0.0                        |                                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| Mô hình ngôn ngữ [9]                 | Do người vận hành chọn               | Không đóng gói, không chọn model;    |
-|                                      |                                      | người vận hành tự cấp                |
-+--------------------------------------+--------------------------------------+--------------------------------------+
-| llama.cpp b12387 [10]                | MIT                                  | Runtime inference self-host do       |
-|                                      |                                      | người vận hành cấp riêng             |
-+--------------------------------------+--------------------------------------+--------------------------------------+
-| OpenAPI Generator 7.27.0 [11]        | Apache-2.0                           | Sinh client từ OpenAPI của mô hình;  |
+| OpenAPI Generator 7.27.0 [9]         | Apache-2.0                           | Sinh client từ OpenAPI của mô hình;  |
 |                                      |                                      | người vận hành tự cấp                |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 
@@ -351,20 +345,12 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/licenses/dependency-excepti
     Docker Desktop là sản phẩm riêng theo điều khoản thương mại của Docker, không thuộc OSI; DX-OS không cần nó, và trên Linux dùng Docker Engine.
     Các công cụ ở dòng này là phần mềm cài sẵn trên máy chạy, DX-OS không đóng gói hay phân phối lại chúng.
 
-[9] Mô hình ngôn ngữ: repository không đóng gói trọng số và không chọn mô hình ngôn ngữ nào.
-    Model có điều khoản sử dụng riêng của bên phát hành, nên người vận hành tự chọn, tự tải và tự chịu trách nhiệm với các điều khoản đó.
+[9] OpenAPI Generator 7.27.0: Apache-2.0.
+    Giấy phép đúng tag: https://github.com/OpenAPITools/openapi-generator/blob/v7.27.0/LICENSE.
+    Công cụ dòng lệnh do người vận hành hoặc nhà phát triển ứng dụng ngoài chạy, không nằm trong image hay SBOM của DX-OS.
+    Các thư viện nhúng trong JAR của nó theo Apache-2.0, MIT, BSD, EDL-1.0 (văn bản của BSD-3-Clause), EPL-2.0 hoặc LGPL; mã client sinh ra thuộc người dùng.
 
-[10] llama.cpp b12387: MIT, Copyright (c) 2023-2026 The ggml authors.
-     Giấy phép đúng tag: https://github.com/ggml-org/llama.cpp/blob/b12387/LICENSE.
-     Runtime local được người vận hành cấp, không nằm trong image trợ lý hoặc SBOM npm.
-     Thư viện hệ thống và mã vendor của runtime giữ giấy phép riêng; người vận hành giữ thông báo đi kèm bản runtime mình dùng.
-
-[11] OpenAPI Generator 7.27.0: Apache-2.0.
-     Giấy phép đúng tag: https://github.com/OpenAPITools/openapi-generator/blob/v7.27.0/LICENSE.
-     Công cụ dòng lệnh do người vận hành hoặc nhà phát triển ứng dụng ngoài chạy, không nằm trong image hay SBOM của DX-OS.
-     Các thư viện nhúng trong JAR của nó theo Apache-2.0, MIT, BSD, EDL-1.0 (văn bản của BSD-3-Clause), EPL-2.0 hoặc LGPL; mã client sinh ra thuộc người dùng.
-
-[12] Cầu nối MQTT tùy chọn chạy hai image nguyên bản, không sửa và không phân phối lại; chúng chỉ được kéo khi bật deploy/docker-compose.mqtt.yml.
+[10] Cầu nối MQTT tùy chọn chạy hai image nguyên bản, không sửa và không phân phối lại; chúng chỉ được kéo khi bật deploy/docker-compose.mqtt.yml.
     Giấy phép của dự án nguồn được kiểm ở đúng phiên bản bằng .github/scripts/check_upstream_licenses.py: Mosquitto 2.0.23 (EPL-2.0 hoặc EDL-1.0, LICENSE.txt) và CPython 3.13.18 (Python-2.0, PSF License Version 2).
     Thành phần của image eclipse-mosquitto (Alpine 3.24.4), đọc ngày 2026-11-24 từ metadata apk và từ tệp giấy phép của dự án gốc ở đúng phiên bản:
     - Mosquitto liên kết với OpenSSL 3.5.9 (Apache-2.0), libwebsockets 4.3.5 (MIT, vài tệp BSD-3-Clause, ZLIB hoặc CC0) và musl 1.2.6 (MIT); cJSON 1.7.19 (MIT) và zlib 1.3.2 (Zlib) đi kèm.
@@ -377,7 +363,7 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/licenses/dependency-excepti
     Mã của dự án ở deploy/mqtt/ và examples/itot-simulator theo Apache-2.0 và chỉ dùng thư viện chuẩn của Python.
     Đây là đọc metadata và tài liệu của các dự án, không phải tư vấn pháp lý.
 
-[13] Prometheus và Grafana tùy chọn chạy hai image nguyên bản, không sửa và không phân phối lại; chúng chỉ được kéo khi bật deploy/docker-compose.grafana.yml.
+[11] Prometheus và Grafana tùy chọn chạy hai image nguyên bản, không sửa và không phân phối lại; chúng chỉ được kéo khi bật deploy/docker-compose.grafana.yml.
     Giấy phép của dự án nguồn được kiểm ở đúng phiên bản bằng .github/scripts/check_upstream_licenses.py: Prometheus v3.13.5 (Apache-2.0) và Grafana v12.4.15 (AGPL-3.0-only).
     Grafana theo AGPL-3.0-only, đúng như dự án khai ở LICENSING.md; AGPL là giấy phép OSI công nhận và chỉ buộc mở mã nguồn khi sửa chương trình rồi cho người khác dùng qua mạng.
     Dự án chạy Grafana nguyên bản ở dịch vụ riêng, và chỉ thêm tệp cấu hình, nguồn dữ liệu và dashboard của chính mình (Apache-2.0).
@@ -396,7 +382,6 @@ Trang chủ và mã nguồn của các thành phần không nằm trong SBOM (im
 Gói Maven và npm: trang chủ và mã nguồn của từng gói nằm trong sbom/*.cdx.json (mục externalReferences).
 
 Thành phần       Trang chủ | Mã nguồn
-llama.cpp        https://github.com/ggml-org/llama.cpp | https://github.com/ggml-org/llama.cpp/tree/b12387
 OpenAPI Generator https://openapi-generator.tech | https://github.com/OpenAPITools/openapi-generator/tree/v7.27.0
 PostgreSQL       https://www.postgresql.org/ | https://github.com/postgres/postgres
 Keycloak         https://www.keycloak.org | https://github.com/keycloak/keycloak
@@ -449,6 +434,7 @@ Dữ liệu chỉ đọc lúc dựng trang tài liệu, không có trong trang �
 
 Dữ liệu ngoài dùng lúc huấn luyện bộ phân loại tiếng Việt, lưu ở cache ngoài repo và không đóng gói:
   - MASSIVE 1.0, tập train vi-VN (CC-BY-4.0), Amazon: https://github.com/alexa/massive.
+    MASSIVE chứa một phần dữ liệu SLURP (CC-BY-4.0), Bastianelli, Vanzo, Swietojanski và Rieser: https://github.com/pswietojanski/slurp.
 
 Dữ liệu đội biên soạn và định nghĩa nhãn của bộ phân loại, kể cả tập chỉnh và bộ nghiệm thu ở tools/classifier/eval, dùng CC-BY-4.0 theo phạm vi khai trong REUSE.toml.
 Tệp kiểm đối chiếu Python–Node trích từ dữ liệu đội biên soạn và dùng cùng giấy phép CC-BY-4.0.

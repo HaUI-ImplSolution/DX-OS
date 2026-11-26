@@ -11,17 +11,16 @@ import { Store } from './storage/store.js';
 import { CoreSession } from './auth/core-session.js';
 import { CoreClient } from './tools/core-client.js';
 import { Records } from './tools/records.js';
-import { LocalInference, type Framing } from './inference/local.js';
 import { loadClassifiers } from './classifier/index.js';
-import { FieldProposals, type Source } from './tools/fields.js';
+import { FieldProposals } from './tools/fields.js';
 import { fieldRoutes } from './accounts/routes.js';
 
 export async function createServer(store: Store, verify: ReturnType<typeof identityVerifier>,
   options?: { session: CoreSession; publicUrl: URL; core?: CoreClient; fields?: FieldProposals; records?: Records }) {
-  const app = Fastify({ bodyLimit: 32768, requestTimeout: 180000, logger: false });
+  const app = Fastify({ bodyLimit: 32768, requestTimeout: 60000, logger: false });
   await app.register(swagger, { openapi: {
     info: { title: 'DX-OS Assistant API', version: '0.1.0',
-      description: 'Tasks run through self-hosted LLM inference or local classifier weights. ASSISTANT_CLASSIFIERS_DIR selects the weights directory at startup (default: /app/classifiers in the assistant image).',
+      description: 'Tasks run on classifier weights loaded by the service. ASSISTANT_CLASSIFIERS_DIR selects the weights directory at startup (default: /app/classifiers in the assistant image).',
     },
     components: { securitySchemes: { bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' } } },
     security: [{ bearerAuth: [] }],
@@ -47,11 +46,11 @@ export async function createServer(store: Store, verify: ReturnType<typeof ident
     return app.swagger();
   });
   app.get('/assistant-api/v1/me', { schema: {
-    description: 'Account link and task engine status. The assistant is configured when a self-hosted LLM or at least one local classifier is available.',
+    description: 'Account link and loaded classifiers. The assistant is configured when at least one classifier is loaded.',
     response: { 200: { type: 'object', properties: {
       success: { type: 'boolean' }, message: { type: 'string' }, data: { type: 'object', properties: {
         linked: { type: 'boolean' }, admin: { type: 'boolean' }, model: { type: 'object', properties: {
-          configured: { type: 'boolean' }, llmConfigured: { type: 'boolean' },
+          configured: { type: 'boolean' },
           classifiers: { type: 'array', items: { type: 'string' }, description: 'Names of the loaded classifier weights' },
         } },
       } },
@@ -60,7 +59,7 @@ export async function createServer(store: Store, verify: ReturnType<typeof ident
     const owner = await verify(request.headers.authorization);
     return { success: true, message: 'OK', data: {
       linked: !!store.getSecret(owner, 'core'),
-      model: options?.fields?.status() ?? { configured: false, llmConfigured: false, classifiers: [] },
+      model: options?.fields?.status() ?? { configured: false, classifiers: [] },
       admin: owner.admin,
     } };
   });
@@ -132,21 +131,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   }, identityVerifier(issuer, required('ASSISTANT_CORE_AUDIENCE'), jwks));
   const core = new CoreClient(new URL(required('ASSISTANT_CORE_URL')), session);
   const records = new Records(core, store);
-  const readJson = <T>(name: string, fallback: T): T => {
-    const file = process.env[name];
-    return file ? JSON.parse(readFileSync(file, 'utf8')) as T : fallback;
-  };
-  const endpoint = process.env.ASSISTANT_INFERENCE_URL;
-  const inference = endpoint ? new LocalInference({ endpoint, model: required('ASSISTANT_MODEL'),
-    revision: required('ASSISTANT_MODEL_REVISION'),
-    key: process.env.ASSISTANT_INFERENCE_KEY_FILE ? privateFile(process.env.ASSISTANT_INFERENCE_KEY_FILE).toString().trim() : '',
-    framing: readJson<Framing | undefined>('ASSISTANT_PROMPT_FRAMING_FILE', undefined),
-    timeoutMs: Number(process.env.ASSISTANT_INFERENCE_TIMEOUT_MS ?? '120000'),
-    maxInputBytes: Number(process.env.ASSISTANT_MAX_INPUT_BYTES ?? '6000'),
-    maxOutputTokens: Number(process.env.ASSISTANT_MAX_OUTPUT_TOKENS ?? '256'),
-  }) : undefined;
   const classifiers = loadClassifiers(process.env.ASSISTANT_CLASSIFIERS_DIR);
-  const fields = new FieldProposals(records, core, store, inference, readJson<Source[]>('ASSISTANT_SOURCES_FILE', []), classifiers);
+  const fields = new FieldProposals(records, core, store, classifiers);
   const app = await createServer(store, verify, { session, publicUrl, core, fields, records });
   const port = Number(required('ASSISTANT_PORT'));
   if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Invalid assistant port');

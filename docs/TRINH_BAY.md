@@ -175,7 +175,7 @@ Từng bước ở mục 8 của `docs/DEMO.md`.
 
 ## 14. Chưa có, và nói thẳng
 
-- AI là trợ lý tùy chọn, dùng bộ phân loại hồ sơ đội tự huấn luyện để đề xuất giá trị một trường; người dùng xác nhận trước khi lưu; không có hỏi đáp trên tri thức nội bộ.
+- AI là trợ lý, dùng bộ phân loại hồ sơ đội tự huấn luyện để đề xuất giá trị một trường; người dùng xác nhận trước khi lưu; không có hỏi đáp trên tri thức nội bộ.
 - Một bản cài là Compose một máy; chưa chạy nhiều bản sao của lõi.
 - Chưa có chữ ký số, đa thuê giữa các tổ chức, tìm kiếm toàn văn.
 - Chưa nói chuyện với khách hàng thật.

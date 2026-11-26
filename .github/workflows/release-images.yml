@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       services:
-        description: "Images to build: all, or a comma list of backend,monitor,frontend,portal,sso,clamav, or an optional image such as assistant"
+        description: "Images to build: all, or a comma list of backend,monitor,frontend,portal,sso,clamav,assistant"
         required: true
         default: all
 
@@ -31,15 +31,13 @@ jobs:
         env:
           REQUESTED: ${{ inputs.services }}
         run: |
-          ALL="backend monitor frontend portal sso clamav"
-          # Optional images are built only when named.
-          OPTIONAL="assistant"
+          ALL="backend monitor frontend portal sso clamav assistant"
           if [[ "$REQUESTED" == "all" ]]; then
             PICKED="$ALL"
           else
             PICKED="$(echo "$REQUESTED" | tr ',' ' ')"
             for name in $PICKED; do
-              [[ " $ALL $OPTIONAL " == *" $name "* ]] || { echo "Unknown image: $name"; exit 1; }
+              [[ " $ALL " == *" $name "* ]] || { echo "Unknown image: $name"; exit 1; }
             done
           fi
           # The names are split on purpose.

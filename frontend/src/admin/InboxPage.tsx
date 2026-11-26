@@ -124,10 +124,10 @@ export default function InboxPage({ models }: { models: ModelMeta[] }) {
   const entityOf = (item: InboxItem) =>
     models.find((model) => model.name === item.model)?.entities.find((entity) => entity.name === item.entity);
   const declared = models.filter((model) => !model.held).flatMap((model) => model.entities.filter((entity) => entity.canWrite)
-    .flatMap((entity) => Object.values(entity.aiTasks ?? {}).filter((task) => task.engine === "classifier").map((task) => task.classifier)));
+    .flatMap((entity) => Object.values(entity.aiTasks ?? {}).map((task) => task.classifier)));
   const assistantModel = useAssistantModel(declared.length > 0);
   const classifiers = new Set(assistantModel?.classifiers);
-  const canReview = declared.some((name) => !!name && classifiers.has(name));
+  const canReview = declared.some((name) => classifiers.has(name));
   const checked = new Set(batches.flatMap((batch) => batch.checked));
   const sent = new Set(batches.flatMap((batch) => batch.sent));
   const flagsByItem = new Map(canReview ? batches.flatMap((batch) => [...batch.flagged]) : []);
@@ -139,7 +139,7 @@ export default function InboxPage({ models }: { models: ModelMeta[] }) {
     const entity = entityOf(item);
     return entity?.canWrite && !checked.has(reviewKey(item)) &&
       !entity.process?.states.some((state) => state.name === item.status && state.terminal) &&
-      Object.values(entity.aiTasks ?? {}).some((task) => task.engine === "classifier" && !!task.classifier && classifiers.has(task.classifier));
+      Object.values(entity.aiTasks ?? {}).some((task) => classifiers.has(task.classifier));
   }).sort((a, b) => Number(sent.has(reviewKey(a))) - Number(sent.has(reviewKey(b)))).slice(0, REVIEW_SIZE) : [];
 
   const reviewNextBatch = async () => {

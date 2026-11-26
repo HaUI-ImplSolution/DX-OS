@@ -79,58 +79,27 @@ function AiTaskFields({ value, fields, onChange }: { value: unknown; fields: Rec
   const change = (name: string, patch: Rec) => replace(name, { ...rec(tasks[name]), ...patch });
   const fieldType = (key: string) => text(rec(fields[key]).type);
   const textFields = Object.keys(fields).filter(key => fieldType(key) === "text");
-  const outputFields = (classifier: boolean) => Object.keys(fields).filter(key =>
-    (fieldType(key) === "choice" || (!classifier && fieldType(key) === "text")) && !rec(fields[key]).multiple);
+  const outputFields = Object.keys(fields).filter(key => fieldType(key) === "choice" && !rec(fields[key]).multiple);
   return <Box sx={{ display: "grid", gap: 2 }}>
-    <Typography variant="body2">{t("Nhiệm vụ chỉ tạo đề xuất; quyền ghi vẫn do Core kiểm tra sau xác nhận. Chỉ có tác dụng khi bản cài bật trợ lý.")}</Typography>
+    <Typography variant="body2">{t("Nhiệm vụ chỉ tạo đề xuất; quyền ghi vẫn do Core kiểm tra sau xác nhận. Chỉ có tác dụng khi stack chạy ở chế độ full.")}</Typography>
     {Object.entries(tasks).map(([name, raw]) => {
       const task = rec(raw);
-      const classifier = task.engine === "classifier";
       return <Box key={name} sx={{ p: 2, border: 1, borderColor: "divider", display: "grid", gap: 2 }}>
         <Typography variant="subtitle2">{name}</Typography>
         <TextField size="small" label={t("Tên hiển thị")} value={text(task.label)} onChange={e => change(name, { label: e.target.value })} />
-        <TextField select label={t("Cách chạy")} value={classifier ? "classifier" : "llm"} onChange={e => {
-          const engine = e.target.value;
-          const { classifier: _classifier, sources: _sources, max_length: _maxLength, instruction, ...shared } = task;
-          if (engine === "classifier") {
-            const input_fields = texts(task.input_fields).filter(key => textFields.includes(key));
-            const output_field = outputFields(true).includes(text(task.output_field)) ? task.output_field : "";
-            replace(name, { ...shared, engine, classifier: "", input_fields, output_field, ...(text(instruction).trim() ? { instruction } : {}) });
-          } else replace(name, { ...shared, engine, instruction: instruction ?? "", sources: [] });
-        }}>
-          <MenuItem value="llm">{t("Mô hình ngôn ngữ (LLM)")}</MenuItem>
-          <MenuItem value="classifier">{t("Bộ phân loại")}</MenuItem>
-        </TextField>
-        {classifier && <TextField required label={t("Tên bộ phân loại")} value={text(task.classifier)} onChange={e => change(name, { classifier: e.target.value })}
-          helperText={t("Nhập tên tệp trọng số đã nạp, bỏ đuôi .json.")} />}
-        <Autocomplete multiple options={classifier ? textFields : Object.keys(fields).filter(key => !["file","reference","user"].includes(fieldType(key)))}
-          value={texts(task.input_fields)} onChange={(_, input_fields) => change(name, { input_fields })}
+        <TextField required label={t("Tên bộ phân loại")} value={text(task.classifier)} onChange={e => change(name, { classifier: e.target.value })}
+          helperText={t("Nhập tên tệp trọng số đã nạp, bỏ đuôi .json.")} />
+        <Autocomplete multiple options={textFields} value={texts(task.input_fields)} onChange={(_, input_fields) => change(name, { input_fields })}
           renderInput={params => <TextField {...params} label={t("Trường đầu vào")} />} />
         <TextField select label={t("Trường đề xuất")} value={text(task.output_field)} onChange={e => change(name, { output_field: e.target.value })}>
-          {outputFields(classifier).map(key => <MenuItem key={key} value={key}>{text(rec(fields[key]).label) || key}</MenuItem>)}
+          {outputFields.map(key => <MenuItem key={key} value={key}>{text(rec(fields[key]).label) || key}</MenuItem>)}
         </TextField>
-        <TextField multiline minRows={2} label={t("Hướng dẫn nhiệm vụ")} value={text(task.instruction)} onChange={e => {
-          const instruction = e.target.value;
-          if (!classifier || instruction.trim()) return change(name, { instruction });
-          const { instruction: _instruction, ...rest } = task;
-          replace(name, rest);
-        }} />
-        {!classifier && <>
-        <Autocomplete multiple freeSolo options={[]} value={texts(task.sources)} onChange={(_, sources) => change(name, { sources })}
-          renderInput={params => <TextField {...params} label={t("Mã nguồn tri thức có phiên bản")} helperText={t("Nhập mã nguồn do người vận hành cung cấp, nhấn Enter để thêm.")} />} />
-        <TextField type="number" label={t("Độ dài đề xuất tối đa")} placeholder="500" value={task.max_length ?? ""} slotProps={{ htmlInput: { min: 1, max: 2000 } }}
-          onChange={e => {
-            if (e.target.value !== "") return change(name, { max_length: Number(e.target.value) });
-            const { max_length: _unset, ...rest } = task;
-            replace(name, rest);
-          }} />
-        </>}
         <Button color="error" onClick={() => {
           const remaining = { ...tasks }; delete remaining[name]; onChange(Object.keys(remaining).length ? { tasks: remaining } : undefined);
         }}>{t("Xóa nhiệm vụ")}</Button>
       </Box>;
     })}
-    <Button onClick={() => change(uniqueName("task", Object.keys(tasks)), { label: t("Nhiệm vụ mới"), input_fields: [], output_field: "", instruction: "", sources: [], max_length: 500 })}>{t("Thêm nhiệm vụ")}</Button>
+    <Button onClick={() => change(uniqueName("task", Object.keys(tasks)), { label: t("Nhiệm vụ mới"), classifier: "", input_fields: [], output_field: "" })}>{t("Thêm nhiệm vụ")}</Button>
   </Box>;
 }
 

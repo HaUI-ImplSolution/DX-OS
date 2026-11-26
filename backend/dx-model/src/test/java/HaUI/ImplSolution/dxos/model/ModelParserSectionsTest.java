@@ -5,7 +5,6 @@ package HaUI.ImplSolution.dxos.model;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -52,61 +51,31 @@ class ModelParserSectionsTest {
     return "    ai:\n      tasks:\n        t1:\n" + body;
   }
 
-  private static final String GOOD_TASK =
-      "          label: Gợi ý\n          input_fields: [title, note]\n"
-          + "          output_field: note\n          instruction: Hãy tóm tắt\n          sources: [kb_v1]\n";
   private static final String CLASSIFIER_TASK =
-      "          engine: classifier\n          classifier: support\n"
+      "          classifier: support\n"
           + "          input_fields: [title, note]\n          output_field: kind\n";
 
   // --- the assistant ------------------------------------------------------------------------
 
   @Test
-  void anAssistantTaskNamesItsInputsAndTheFieldItFills() {
+  void aTaskNamesItsClassifierItsTextInputsAndTheChoiceItFills() {
     Model.AiTask task =
-        ok(task(GOOD_TASK + "          max_length: 300\n"))
+        ok(task(CLASSIFIER_TASK + "          label: Gợi ý\n"))
             .entities()
             .get("item")
             .aiTasks()
             .get("t1");
 
     assertEquals("Gợi ý", task.label());
-    assertEquals(List.of("title", "note"), task.inputFields());
-    assertEquals("note", task.outputField());
-    assertEquals(300, task.maxLength());
-    assertEquals("llm", task.engine());
-    assertNull(task.classifier());
-  }
-
-  @Test
-  void aClassifierTaskUsesTextInputsAndASingleChoiceOutput() {
-    var task = ok(task(CLASSIFIER_TASK)).entities().get("item").aiTasks().get("t1");
-
-    assertEquals("classifier", task.engine());
     assertEquals("support", task.classifier());
     assertEquals(List.of("title", "note"), task.inputFields());
     assertEquals("kind", task.outputField());
-    assertEquals(List.of(), task.sources());
-    assertNull(task.maxLength());
     assertEquals(
-        "Metadata only",
-        ok(task(CLASSIFIER_TASK + "          instruction: Metadata only\n"))
-            .entities()
-            .get("item")
-            .aiTasks()
-            .get("t1")
-            .instruction());
+        "t1", ok(task(CLASSIFIER_TASK)).entities().get("item").aiTasks().get("t1").label());
   }
 
   @Test
-  void classifierAndLlmTasksEnforceTheirOwnSettings() {
-    refused(
-        task(CLASSIFIER_TASK + "          max_length: 1\n"),
-        "classifier tasks must not declare max_length");
-    refused(task(GOOD_TASK + "          engine: unknown\n"), "engine must be llm or classifier");
-    refused(
-        task(GOOD_TASK + "          classifier: support\n"),
-        "llm tasks must not declare classifier");
+  void aTaskNeedsAClassifierName() {
     refused(
         task(CLASSIFIER_TASK.replace("          classifier: support\n", "")),
         "classifier is required");
@@ -116,9 +85,11 @@ class ModelParserSectionsTest {
     refused(
         task(CLASSIFIER_TASK.replace("classifier: support", "classifier: null")),
         "classifier must be a name");
-    refused(
-        task(CLASSIFIER_TASK + "          sources: []\n"),
-        "classifier tasks must not declare sources");
+  }
+
+  @Test
+  void aTaskReadsTextFieldsAndFillsASingleChoice() {
+    refused(task("          classifier: support\n          output_field: kind\n"), "input_fields");
     refused(
         task(CLASSIFIER_TASK.replace("[title, note]", "[title, amount]")),
         "classifier input_fields must name text fields");
@@ -130,30 +101,9 @@ class ModelParserSectionsTest {
   }
 
   @Test
-  void anAssistantTaskNeedsItsInputsALabelAndAnInstruction() {
-    refused(task("          label: x\n          output_field: note\n"), "input_fields");
-    refused(task(GOOD_TASK.replace("          instruction: Hãy tóm tắt\n", "")), "instruction");
-    refused(
-        task(GOOD_TASK.replace("          sources: [kb_v1]\n", "")),
-        "sources must contain between 1 and 12 names");
-  }
-
-  @Test
-  void anAssistantTaskReadsOnlyFieldsItCanReadAndFillsATextOrChoice() {
-    refused(
-        task(GOOD_TASK.replace("[title, note]", "[title, scan]")),
-        "input_fields must name supported fields");
-    refused(
-        task(GOOD_TASK.replace("output_field: note", "output_field: amount")),
-        "output_field must name a text or single choice field");
-  }
-
-  @Test
-  void anAssistantTaskLengthIsBetweenOneAndTwoThousand() {
-    refused(
-        task(GOOD_TASK + "          max_length: 5000\n"),
-        "max_length must be a whole number between 1 and 2000");
-    refused(task(GOOD_TASK + "          max_length: 0\n"), "max_length");
+  void aTaskRefusesAKeyTheFormatDoesNotHave() {
+    refused(task(CLASSIFIER_TASK + "          engine: classifier\n"), "engine");
+    refused(task(CLASSIFIER_TASK + "          instruction: x\n"), "instruction");
   }
 
   @Test
@@ -161,17 +111,14 @@ class ModelParserSectionsTest {
     refused("    ai:\n      tasks: {}\n", "between 1 and 8 tasks");
     StringBuilder nine = new StringBuilder("    ai:\n      tasks:\n");
     for (int i = 0; i < 9; i++) {
-      nine.append("        t")
-          .append(i)
-          .append(":\n")
-          .append(GOOD_TASK.replace("          ", "          "));
+      nine.append("        t").append(i).append(":\n").append(CLASSIFIER_TASK);
     }
     refused(nine.toString(), "between 1 and 8 tasks");
   }
 
   @Test
   void aTaskIsDeclaredOnce() {
-    refused(task(GOOD_TASK) + "        t1:\n" + GOOD_TASK, "task t1 is declared twice");
+    refused(task(CLASSIFIER_TASK) + "        t1:\n" + CLASSIFIER_TASK, "task t1 is declared twice");
   }
 
   // --- print templates ----------------------------------------------------------------------

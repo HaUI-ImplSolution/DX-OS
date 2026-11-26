@@ -157,7 +157,7 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 
 Prometheus và Grafana là thành phần tùy chọn nằm ngoài stack mặc định; cách bật và đọc dashboard ở [`MONITORING.md`](./MONITORING.md#prometheus-và-grafana-kèm-theo-tùy-chọn).
 Cầu nối MQTT là thành phần tùy chọn nằm ngoài stack mặc định; cách bật, cấu hình tuyến và giới hạn ở [`INTEGRATIONS.md`](./INTEGRATIONS.md#cầu-nối-mqtt-tùy-chọn).
-Trợ lý nghiệp vụ là thành phần tùy chọn nằm ngoài stack mặc định; cách bật, cấu hình, thay khóa và gỡ ở [`assistant/README.md`](../assistant/README.md).
+Trợ lý nghiệp vụ chạy cùng stack ở chế độ full; cấu hình, thay khóa và gỡ ở [`assistant/README.md`](../assistant/README.md).
 File route riêng `deploy/apisix/local.yaml` được giữ khi cập nhật và ghép với cấu hình lõi mới sau khi kiểm; cấu hình xung đột làm cập nhật dừng trước khi thay container.
 Cách khai báo và nạp lại ở [Route riêng trong APISIX](EXTENSIONS.md#route-riêng-trong-apisix).
 
@@ -445,7 +445,7 @@ Tham số dùng cú pháp literal của DuckDB; giá trị chuỗi đặt trong 
 ## Chế độ chỉ lõi
 
 `dxos start --core` chỉ chạy Tầng 1: cổng vào APISIX, Keycloak, dịch vụ lõi, PostgreSQL và kho tệp SeaweedFS, thêm ClamAV khi bật quét mã độc.
-Ứng dụng web, portal và dịch vụ giám sát không chạy, và gateway không có route của chúng: `/`, `/portal/`, `/monitor/` và `/console` trả 404.
+Ứng dụng web, portal, dịch vụ giám sát và trợ lý không chạy, và gateway không có route của chúng: `/`, `/portal/`, `/monitor/`, `/console` và `/assistant-api/` trả 404.
 Hồ sơ và thông điệp webhook không có trường `webUrl`.
 Gateway cũng không gửi nhật ký truy cập tới dịch vụ giám sát.
 API, đăng nhập, áp dụng tệp mô hình, `/v3/api-docs`, OpenAPI theo mô hình và lưu tệp dùng như ở chế độ đầy đủ.
@@ -558,7 +558,7 @@ Số đo trên máy 12 CPU, 31 GB RAM, với stack tám service (không bật `c
 | `seaweedfs` | 75 |
 | `frontend`, `portal` | 11 mỗi service |
 
-Cả stack dùng khoảng 1,8 GiB RAM, CPU gần 0 lúc rảnh; số này chưa gồm `clamav` (khoảng 1 GB RAM, bật sẵn, `dxos av off` để bỏ).
+Cả stack dùng khoảng 1,8 GiB RAM, CPU gần 0 lúc rảnh; số này chưa gồm `clamav` (khoảng 1 GB RAM, bật sẵn, `dxos av off` để bỏ) và `assistant-control` (giới hạn 256 MB RAM và 0,5 CPU trong `docker-compose.yml`).
 Số nhân và RAM cần cho một số người dùng đồng thời nhất định, và cách đo lại trên máy của bạn, ở [`docs/SIZING.md`](SIZING.md).
 Image chiếm khoảng 3,5 GiB đĩa (kích thước `docker images` của tám service); cơ sở dữ liệu 12 MB.
 

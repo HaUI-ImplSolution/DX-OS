@@ -7,20 +7,22 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ## [Unreleased]
 
-### Trợ lý nghiệp vụ (tùy chọn)
+### Trợ lý nghiệp vụ
 
-- Trợ lý dùng bộ phân loại hồ sơ tiếng Việt do đội tự huấn luyện, chạy trên CPU mà không cần mô hình ngôn ngữ, để gợi ý loại hồ sơ, mức ưu tiên hoặc dịch vụ trong các mẫu `onestop`, `support_desk` và `clinic_appointment`, kèm cụm chữ của hồ sơ làm căn cứ.
+- Trợ lý dùng bộ phân loại hồ sơ tiếng Việt do đội tự huấn luyện, chạy trên CPU trong chính dịch vụ, để gợi ý loại hồ sơ, mức ưu tiên hoặc dịch vụ trong các mẫu `onestop`, `support_desk` và `clinic_appointment`, kèm cụm chữ của hồ sơ làm căn cứ.
 - Hộp việc có nút **Rà loại hồ sơ** để rà tối đa 25 hồ sơ mỗi lượt (`POST /assistant-api/v1/me/reviews`) và mở đề xuất từng hồ sơ được đánh dấu **Cần rà**, kèm độ tự tin của từng gợi ý.
-- `ASSISTANT_CLASSIFIERS_DIR` chọn thư mục trọng số khác, và `GET /assistant-api/v1/me` trả thêm `model.classifiers` và `model.llmConfigured`.
-- Mã huấn luyện, dữ liệu, thẻ mô hình và trọng số ở `tools/classifier/`; trọng số theo Apache-2.0, dữ liệu đội biên soạn theo CC-BY-4.0, câu lạc đề từ MASSIVE được tải lúc huấn luyện.
+- `ASSISTANT_CLASSIFIERS_DIR` chọn thư mục trọng số khác, và `GET /assistant-api/v1/me` trả thêm `model.classifiers`.
+- Mã huấn luyện, dữ liệu, thẻ mô hình và trọng số ở `tools/classifier/`; trọng số theo Apache-2.0, dữ liệu đội biên soạn theo CC-BY-4.0, câu lạc đề từ MASSIVE (gồm dữ liệu SLURP) được tải lúc huấn luyện.
 
 ### Tệp mô hình
 
-- Nhiệm vụ `ai.tasks` nhận `engine` (`llm` khi bỏ trống, hoặc `classifier`) và `classifier`; nhiệm vụ `classifier` đọc các trường `text` và đề xuất cho một trường `choice` đơn trị.
+- Nhiệm vụ `ai.tasks` khai `classifier`, `input_fields` (các trường `text`) và `output_field` (một trường `choice` đơn trị).
+- Mẫu `onestop` và `support_desk` chỉ có nhiệm vụ phân loại.
 
 ### Giấy phép
 
 - Danh sách ngoại lệ nêu cả dữ liệu đóng trong thư viện PDFBox của image `backend` và lớp nền được phân phối lại của các image phát hành.
+- Ghi công SLURP, nguồn của một phần câu trong MASSIVE.
 - `third-party-licenses.txt` của web và trang docs kèm cả tệp thông báo bên thứ ba của thư viện, và văn bản chuẩn của giấy phép cho gói không kèm tệp giấy phép.
 
 ## [2.1.0] - 2026-11-26
@@ -110,16 +112,15 @@ Nâng cấp từ `2.0.2` giữ nguyên dữ liệu; hai migration mới thêm b�
 
 - Mẫu Một cửa in "Kết quả xử lý hồ sơ" sau khi duyệt, nên cùng một mẫu không gọi hồ sơ Hoãn thi hoặc Phúc khảo là giấy xác nhận.
 
-### Trợ lý nghiệp vụ (tùy chọn)
+### Trợ lý nghiệp vụ
 
-- Trợ lý đề xuất một giá trị trường từ hồ sơ và nguồn tham khảo; người dùng sửa, hủy hoặc xác nhận, Core kiểm quyền và phiên bản trước khi ghi.
-- Trợ lý dùng inference self-host với endpoint tương thích OpenAI hoặc llama.cpp do người vận hành cấu hình; nguồn tham khảo hiển thị nhãn trường và tên đơn vị theo metadata của mô hình.
-- Trợ lý nằm trong `deploy/docker-compose.assistant.yml`, chỉ nạp khi `COMPOSE_FILE` nêu tệp đó; bật hay tắt không tạo lại service nào của lõi.
-- Cấu hình ở `deploy/assistant.env`, kiểm tra ở workflow `Assistant`, và `assistant/README.md` có danh sách các chỗ cần xóa để gỡ trợ lý.
+- Trợ lý đề xuất một giá trị trường từ hồ sơ; người dùng sửa, hủy hoặc xác nhận, Core kiểm quyền và phiên bản trước khi ghi.
+- Trợ lý chạy cùng stack ở chế độ full (nhóm `app` của `deploy/docker-compose.yml`) và `dxos update` kéo image của nó; chế độ core không có trợ lý.
+- Cấu hình tùy chọn ở `deploy/assistant.env`, kiểm tra ở workflow `Assistant`, và `assistant/README.md` có danh sách các chỗ cần xóa để gỡ trợ lý.
 - Image trợ lý chỉ chứa Node.js và mã của trợ lý, không có npm, corepack và yarn.
-- Trợ lý chạy trên network nội bộ riêng; đường ra duy nhất là dịch vụ `assistant-egress`, chỉ tới host và cổng của `ASSISTANT_INFERENCE_URL`.
+- Trợ lý chạy trên network nội bộ riêng, không có đường ra ngoài stack.
 - Người dùng hủy liên kết ở trang Trợ lý nghiệp vụ (`DELETE /assistant-api/v1/me/core/link`): refresh token bị thu hồi ở Keycloak, token đã lưu bị xóa và các đề xuất đang chờ bị hủy.
-- `docker compose run --rm assistant-init dist/rotate.js /bootstrap` thay master key và mã hóa lại state; cách thay khóa gọi inference ở `assistant/README.md`.
+- `docker compose run --rm assistant-init dist/rotate.js /bootstrap` thay master key và mã hóa lại state.
 
 ### Giấy phép
 

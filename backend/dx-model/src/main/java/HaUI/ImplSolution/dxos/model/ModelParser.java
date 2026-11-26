@@ -566,55 +566,22 @@ public final class ModelParser {
         continue;
       }
       Map<String, Node> keys =
-          mapping(
-              task,
-              Set.of(
-                  "label",
-                  "input_fields",
-                  "output_field",
-                  "instruction",
-                  "sources",
-                  "max_length",
-                  "engine",
-                  "classifier"));
-      String engine = keys.containsKey("engine") ? scalar(keys.get("engine")) : "llm";
-      boolean usesClassifier = engine.equals("classifier");
-      String classifier = null;
-      if (usesClassifier) {
-        classifier = readName(task, keys.get("classifier"), "classifier");
-        if (classifier != null && !Tag.STR.equals(keys.get("classifier").getTag()))
-          problem(task, "classifier must be a name in a string");
-        if (keys.containsKey("sources")) problem(task, "classifier tasks must not declare sources");
-        if (keys.containsKey("max_length"))
-          problem(task, "classifier tasks must not declare max_length");
-      } else {
-        if (!engine.equals("llm")) problem(task, "engine must be llm or classifier");
-        if (keys.containsKey("classifier")) problem(task, "llm tasks must not declare classifier");
+          mapping(task, Set.of("label", "classifier", "input_fields", "output_field"));
+      String classifier = readName(task, keys.get("classifier"), "classifier");
+      if (classifier != null && !Tag.STR.equals(keys.get("classifier").getTag())) {
+        problem(task, "classifier must be a name in a string");
       }
-      List<String> input = aiNames(task, keys.get("input_fields"), "input_fields");
-      List<String> sources =
-          usesClassifier ? List.of() : aiNames(task, keys.get("sources"), "sources");
+      List<String> input = inputNames(task, keys.get("input_fields"));
       for (String field : input) {
         Field f = fields.get(field);
-        if (usesClassifier) {
-          if (f == null || f.type() != FieldType.TEXT)
-            problem(task, "classifier input_fields must name text fields of this entity");
-        } else if (f == null
-            || Set.of(FieldType.FILE, FieldType.USER, FieldType.REFERENCE).contains(f.type())) {
-          problem(task, "input_fields must name supported fields of this entity");
+        if (f == null || f.type() != FieldType.TEXT) {
+          problem(task, "classifier input_fields must name text fields of this entity");
         }
       }
       String output = keys.get("output_field") == null ? "" : scalar(keys.get("output_field"));
       Field target = fields.get(output);
-      if (target == null
-          || target.multiple()
-          || (target.type() != FieldType.CHOICE
-              && (usesClassifier || target.type() != FieldType.TEXT))) {
-        problem(
-            task,
-            usesClassifier
-                ? "classifier output_field must name a single choice field"
-                : "output_field must name a text or single choice field");
+      if (target == null || target.multiple() || target.type() != FieldType.CHOICE) {
+        problem(task, "classifier output_field must name a single choice field");
       }
       if (process != null
           && process.after() != null
@@ -624,57 +591,28 @@ public final class ModelParser {
         problem(task, "output_field must not supply a membership group");
       }
       String label = keys.get("label") == null ? name : scalar(keys.get("label"));
-      String instruction = keys.get("instruction") == null ? "" : scalar(keys.get("instruction"));
-      if (label.isBlank()
-          || label.length() > 200
-          || ((!usesClassifier || keys.containsKey("instruction")) && instruction.isBlank())
-          || (usesClassifier
-              && keys.containsKey("instruction")
-              && !Tag.STR.equals(keys.get("instruction").getTag()))
-          || instruction.length() > 2000) {
-        problem(
-            task,
-            usesClassifier
-                ? "a classifier task needs a label up to 200 and optional instruction up to 2000 characters"
-                : "a task needs a label up to 200 and instruction up to 2000 characters");
-      }
-      int maxLength = 500;
-      try {
-        if (!usesClassifier && keys.get("max_length") != null)
-          maxLength = Integer.parseInt(scalar(keys.get("max_length")));
-        if (maxLength < 1 || maxLength > 2000) throw new NumberFormatException();
-      } catch (NumberFormatException error) {
-        problem(task, "max_length must be a whole number between 1 and 2000");
+      if (label.isBlank() || label.length() > 200) {
+        problem(task, "a task needs a label up to 200 characters");
       }
       if (result.containsKey(name))
         problem(tuple.getKeyNode(), "task " + name + " is declared twice");
-      result.put(
-          name,
-          new Model.AiTask(
-              label,
-              input,
-              output,
-              instruction,
-              sources,
-              usesClassifier ? null : maxLength,
-              engine,
-              classifier));
+      result.put(name, new Model.AiTask(label, input, output, classifier));
     }
     return result;
   }
 
-  private List<String> aiNames(Node parent, Node node, String name) {
+  private List<String> inputNames(Node parent, Node node) {
     if (!(node instanceof SequenceNode sequence)
         || sequence.getValue().isEmpty()
         || sequence.getValue().size() > 12) {
-      problem(parent, name + " must contain between 1 and 12 names");
+      problem(parent, "input_fields must contain between 1 and 12 names");
       return List.of();
     }
     List<String> names = new ArrayList<>();
     for (Node item : sequence.getValue()) {
       String value = scalar(item);
       if (!NAME.matcher(value).matches() || names.contains(value))
-        problem(item, name + " requires unique valid names");
+        problem(item, "input_fields requires unique valid names");
       names.add(value);
     }
     return names;

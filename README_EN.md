@@ -88,7 +88,7 @@ Ten templates are ready to pick in the control panel: student one-stop service, 
 | | **Try it at once:** one command creates a trial account for each role and sample records in several states, so a visitor who signs in finds a system with work in it. |
 | | **Simple to install and run:** one command installs and one starts; backups can be checked, services restart on their own, attachments are virus-scanned, and the operational numbers can be read by the monitoring tool you already have. |
 | | **Single sign-on:** through Keycloak, and administrators can be required to enter a one-time code as well. |
-| | **[Optional business assistant](./assistant/README.md):** an AI model trained by the team, running on your own server, reads the text of a record, suggests how to fill it in with the words it relied on, and points out records worth a second look; the user confirms before saving. |
+| | **[Business assistant](./assistant/README.md):** an AI model trained by the team, running with the installation on your own server, reads the text of a record, suggests how to fill it in with the words it relied on, and points out records worth a second look; the user confirms before saving. |
 
 Each feature and the test that proves it are matched in the [evidence matrix](https://haui-implsolution.github.io/DX-OS/docs/evidence-matrix) (Vietnamese).
 
@@ -144,7 +144,7 @@ Why Supabase, Strapi and Directus were read for ideas or not used as a base is o
 | Operating system | Linux, or Windows 10/11 through WSL2 | With Docker and Docker Compose v2; on Windows use Docker Desktop and run the commands in WSL, see [Windows (WSL2)](./docs/OPERATIONS.md#windows-wsl2) (Vietnamese) |
 | Source code | Not needed with the installer | Only to build it yourself |
 | JDK, Node | 21, 22 | Only to build and test outside Docker |
-| RAM | About 1.8 GiB for the eight services when idle | Measured numbers in [`docs/OPERATIONS.md`](./docs/OPERATIONS.md#tài-nguyên-và-số-bản-sao) (Vietnamese); ClamAV adds about 1 GB, turn it off with `dxos av off` |
+| RAM | About 1.8 GiB for the eight services when idle, the assistant adds at most 256 MB | Measured numbers in [`docs/OPERATIONS.md`](./docs/OPERATIONS.md#tài-nguyên-và-số-bản-sao) (Vietnamese); ClamAV adds about 1 GB, turn it off with `dxos av off` |
 | Disk | About 3.5 GiB for the images | The database and the attachments grow with the data |
 
 `dxos doctor` (or `deploy/doctor.sh`) checks Docker, RAM, disk, `deploy/.env` and the ports before you run.
@@ -164,7 +164,7 @@ The installer downloads the latest release, checks its SHA-256 and installs it i
 Sign in at `http://localhost:9080/console` as `admin`, change the password, pick a template on the Template library tab, preview the plan and apply it.
 If you already have a model file, `dxos start <file>` takes it in at once; list every file after `dxos start` when there are several.
 To connect DX-OS to your own application, follow the [quick start](./docs/QUICKSTART.md) (Vietnamese): two paths, without code and with code, from a clean machine to a working process.
-If you only need the API platform for outside applications, run `dxos start --core`: no web application, portal or monitoring, see [Core-only mode](./docs/OPERATIONS.md#chế-độ-chỉ-lõi) (Vietnamese).
+If you only need the API platform for outside applications, run `dxos start --core`: no web application, portal, monitoring or assistant, see [Core-only mode](./docs/OPERATIONS.md#chế-độ-chỉ-lõi) (Vietnamese).
 
 ### From source
 
@@ -238,7 +238,7 @@ DX-OS is, in Tier 1, a headless core, in Tier 2 a web interface and a control pa
 | H, shared digital environment | One sign-in; roles and units declared in the model; each person sees only their own work in the inbox, the board by state and the calendar | Done |
 | P, guard rails and automatic flows | A state changes only through the workflow; rejecting and returning need a reason; the creator cannot approve their own record; due and overdue dates and escalation to other roles; work after an approval runs through a queue and is retried | Done |
 | D, one source of truth | Data, history and queue live in one database; the history is chained so tampering shows; every change is reported outside by a signed webhook; statistics and a data catalog | Done |
-| I, artificial intelligence | An optional business assistant uses a Vietnamese record classifier trained by the team, running on CPU without an external model, to suggest the value of one field with evidence from the record; the user confirms before saving; the code, the weights, the team-written data and the way to fetch the external data are published | Done, one component |
+| I, artificial intelligence | A business assistant uses a Vietnamese record classifier trained by the team, running on CPU without an external model, to suggest the value of one field with evidence from the record; the user confirms before saving; the code, the weights, the team-written data and the way to fetch the external data are published | Done, one component |
 
 The brief also names four technical principles; the steps to show each one are in [`docs/DEMO.md`](./docs/DEMO.md#8-bốn-nguyên-lý-của-đề-tùy-chọn), in Vietnamese.
 
@@ -262,7 +262,7 @@ The shortest way to check DX-OS:
 
 ## Known limits
 
-- The AI part is one optional assistant that suggests a value for one field, and the user confirms before saving; it works for a few of the shipped templates, and a new business needs its own data and training; there is no question answering over internal knowledge.
+- The AI part is one assistant that suggests a value for one field, and the user confirms before saving; it works for a few of the shipped templates, and a new business needs its own data and training; there is no question answering over internal knowledge.
 - An install runs on one machine with Docker Compose; the core does not run as several replicas.
 - Device readings enter the core through the common API; the core keeps no device state.
 - There is no digital signature, secret vault, multi-tenancy across organizations or full-text search.
@@ -314,7 +314,7 @@ The documents on writing a model file, the API, operation, monitoring, integrati
 | `sso` | Core | The Keycloak realm |
 | `portal` | Apps | The page that links the addresses and the state of the services |
 | `examples` | Outside the core | Sample programs: a receiver that keeps history hashes ([`history-witness`](./examples/history-witness/README.md)), an IT/OT system simulator ([`itot-simulator`](./examples/itot-simulator/README.md)), an order-approval application with its model file ([`order_approval`](./examples/order_approval/README.md)), an outside sales application that adds returns and warranty processes from the console ([`appliance-store`](./examples/appliance-store/README.md)), model files kept in a git repository ([`model-repo`](./examples/model-repo/README.md)), the effort compared with hand-written code ([`effort-benchmark`](./examples/effort-benchmark/README.md)) |
-| `assistant` | Optional | The business assistant: a Node.js service that proposes the value of one field with the self-trained classifier, loaded only when enabled ([`assistant/README.md`](./assistant/README.md)) |
+| `assistant` | Apps | The business assistant: a Node.js service that proposes the value of one field with the self-trained classifier ([`assistant/README.md`](./assistant/README.md)) |
 | `tools` | Tools | Developer tools, such as counting hand-written code and training the record classifier ([`classifier`](./tools/classifier/README.md)) |
 | `e2e` | Testing | Automatic checks on a running stack: the API (`api/`), the web interface with Playwright (`web/`) and invalid model files (`fixtures/`) |
 | `website` | Documentation | The docs site (Docusaurus), published on GitHub Pages |

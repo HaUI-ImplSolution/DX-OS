@@ -91,17 +91,9 @@ public record Model(
   }
 
   public record AiTask(
-      String label,
-      List<String> inputFields,
-      String outputField,
-      String instruction,
-      List<String> sources,
-      Integer maxLength,
-      String engine,
-      String classifier) {
+      String label, List<String> inputFields, String outputField, String classifier) {
     public AiTask {
       inputFields = List.copyOf(inputFields);
-      sources = List.copyOf(sources);
     }
   }
 

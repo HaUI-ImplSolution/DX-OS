@@ -97,27 +97,11 @@
                   "type": "object",
                   "additionalProperties": false,
                   "required": [
+                    "classifier",
                     "input_fields",
                     "output_field"
                   ],
-                  "if": {
-                    "required": ["engine"],
-                    "properties": { "engine": { "const": "classifier" } }
-                  },
-                  "then": {
-                    "required": ["classifier"],
-                    "properties": { "sources": false, "max_length": false }
-                  },
-                  "else": {
-                    "required": ["instruction", "sources"],
-                    "properties": { "classifier": false }
-                  },
                   "properties": {
-                    "engine": {
-                      "type": "string",
-                      "enum": ["llm", "classifier"],
-                      "default": "llm"
-                    },
                     "classifier": {
                       "type": "string",
                       "pattern": "^[a-z][a-z0-9_]{0,39}$"
@@ -140,26 +124,6 @@
                     "output_field": {
                       "type": "string",
                       "pattern": "^[a-z][a-z0-9_]{0,39}$"
-                    },
-                    "instruction": {
-                      "type": "string",
-                      "minLength": 1,
-                      "maxLength": 2000
-                    },
-                    "sources": {
-                      "type": "array",
-                      "minItems": 1,
-                      "maxItems": 12,
-                      "uniqueItems": true,
-                      "items": {
-                        "type": "string",
-                        "pattern": "^[a-z][a-z0-9_]{0,39}$"
-                      }
-                    },
-                    "max_length": {
-                      "type": "integer",
-                      "minimum": 1,
-                      "maximum": 2000
                     }
                   }
                 }

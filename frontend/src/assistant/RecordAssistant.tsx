@@ -2,29 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Box, Button, Card, CircularProgress, MenuItem, Stack, TextField, Typography } from "@mui/material";
-import { EditButton, useRecordContext, useRefresh } from "react-admin";
+import { useRecordContext, useRefresh } from "react-admin";
 import { useLocation } from "react-router-dom";
 import { assistantRequest, useEntityAssistant, type Proposal } from "./api";
 import { takeInboxReview } from "./inboxReview";
-import { resourceName, type EntityMeta } from "../admin/types";
+import type { EntityMeta } from "../admin/types";
 import { t } from "../shell/t";
 
 type Result = { insufficient: boolean; proposal: Proposal | null };
 
-function sourceText(text: string, entity: EntityMeta, units: Record<string, string>): string {
-  const labels = new Map([...entity.fields.map(f => [f.name, f.label] as const), ...Object.entries(units)]);
-  const escapeRegex = (name: string) => name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const names = [...labels.keys()].filter(name => name && labels.get(name) !== name).sort((a, b) => b.length - a.length);
-  const readable = text.replace(/\b([a-z][a-z0-9_]*)\s*=\s*([\p{L}\p{N}_-]+)/gu, (whole, name: string, value: string) => {
-    const field = entity.fields.find(f => f.name === name);
-    return field ? `${field.label} ${t("là")} ${value}` : whole;
-  });
-  const result = names.length ? readable.replace(new RegExp(`\\b(${names.map(escapeRegex).join("|")})\\b`, "g"), name => labels.get(name)!) : readable;
-  const unitLabels = [...new Set(Object.values(units))].filter(Boolean).sort((a, b) => b.length - a.length);
-  return unitLabels.length ? result.replace(new RegExp(`(${unitLabels.map(escapeRegex).join("|")})[ \\t]*\\(\\1\\)`, "gi"), "$1") : result;
-}
-
-export default function RecordAssistant({ model, entity, units }: { model: string; entity: EntityMeta; units: Record<string, string> }) {
+export default function RecordAssistant({ model, entity }: { model: string; entity: EntityMeta }) {
   const record = useRecordContext(); const refresh = useRefresh();
   const { model: status, failed } = useEntityAssistant(entity) ?? {};
   const { state } = useLocation();
@@ -46,16 +33,14 @@ export default function RecordAssistant({ model, entity, units }: { model: strin
     return () => window.clearTimeout(timer);
   }, [proposal?.id, proposal?.state, deadline]);
   const tasks = Object.entries(entity.aiTasks ?? {});
-  const readyClassifier = status?.llmConfigured === false ? tasks.find(([, item]) =>
-    item.engine === "classifier" && item.classifier && status.classifiers?.includes(item.classifier)) : undefined;
-  const task = (entity.aiTasks?.[selectedTask] && selectedTask) || readyClassifier?.[0] || tasks[0]?.[0] || "";
+  const ready = tasks.find(([, item]) => status?.classifiers?.includes(item.classifier));
+  const task = (entity.aiTasks?.[selectedTask] && selectedTask) || ready?.[0] || tasks[0]?.[0] || "";
   const current = entity.aiTasks?.[task];
   const field = entity.fields.find(f => f.name === current?.outputField);
   const run = useCallback(async (work: () => Promise<void>) => {
     setBusy(true); setError(""); setMessage("");
     try { await work(); } catch (e) {
-      if (e instanceof Error && e.name === "AbortError") setMessage(t("Đã hủy lượt tạo đề xuất."));
-      else setError(e instanceof Error ? e.message : t("Không thể hoàn tất yêu cầu."));
+      if (!(e instanceof Error && e.name === "AbortError")) setError(e instanceof Error ? e.message : t("Không thể hoàn tất yêu cầu."));
     }
     finally { setBusy(false); }
   }, []);
@@ -77,7 +62,7 @@ export default function RecordAssistant({ model, entity, units }: { model: strin
     if (!reviewTask) return;
     panel.current.focus({ preventScroll: true });
     panel.current.scrollIntoView({ block: "start" });
-    if (!entity.canWrite || !Object.keys(entity.aiTasks ?? {}).includes(reviewTask) || entity.aiTasks?.[reviewTask]?.engine !== "classifier") {
+    if (!entity.canWrite || !Object.keys(entity.aiTasks ?? {}).includes(reviewTask)) {
       setError(t("Nhiệm vụ không còn khả dụng hoặc bạn không có quyền sửa hồ sơ."));
       return;
     }
@@ -95,7 +80,6 @@ export default function RecordAssistant({ model, entity, units }: { model: strin
         {tasks.map(([name, item]) => <MenuItem key={name} value={name}>{item.label}</MenuItem>)}
       </TextField>
       <Button disabled={busy || !current || !entity.canWrite} variant="outlined" onClick={() => void run(() => createProposal(task))}>{t("Tạo đề xuất")}</Button>
-      {busy && active.current && <Button onClick={() => active.current?.abort()}>{t("Dừng tạo đề xuất")}</Button>}
       {busy && <Box role="status"><CircularProgress size={20} /><Typography component="span" sx={{ ml: 1 }}>{t("Đang xử lý…")}</Typography></Box>}
       {error && <Alert severity="error">{error}</Alert>}
       {message && <Alert severity="info">{message}</Alert>}
@@ -109,14 +93,6 @@ export default function RecordAssistant({ model, entity, units }: { model: strin
           onChange={e => setValue(e.target.value)}>
           {field?.type === "choice" && field.options?.map(option => <MenuItem key={option} value={option}>{option}</MenuItem>)}
         </TextField>
-        {proposal.snapshot.warnings?.map(warning => <Alert key={warning.field} severity="warning">
-          <strong>{t("Cần kiểm tra")} — {entity.fields.find(f => f.name === warning.field)?.label ?? warning.field}: </strong>{units[warning.expected] ?? warning.expected}
-          <Typography variant="body2">{t("Giá trị hiện tại")}: {warning.actual === null ? "—" : units[warning.actual] ?? warning.actual}</Typography>
-        </Alert>)}
-        {!!proposal.snapshot.warnings?.length && <>
-          <Typography variant="caption" color="text.secondary">{t("Xác nhận chỉ lưu trường đề xuất; các lưu ý không tự thay đổi hồ sơ.")}</Typography>
-          {entity.canWrite && <EditButton resource={resourceName(model, entity.name)} record={record} label={t("Sửa hồ sơ theo lưu ý")} />}
-        </>}
         {proposal.snapshot.evidence?.length ? <Box>
           <Stack direction="row" spacing={1} alignItems="baseline">
             <Typography variant="subtitle2">{t("Căn cứ trong hồ sơ")}</Typography>
@@ -129,16 +105,7 @@ export default function RecordAssistant({ model, entity, units }: { model: strin
             {proposal.snapshot.evidence.map(phrase => <Typography component="li" variant="body2" key={phrase}
               sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{phrase}</Typography>)}
           </Box>
-        </Box> : !!proposal.snapshot.sources?.length && <Box component="details">
-          <Typography component="summary" sx={{ cursor: "pointer", color: "primary.main" }}>{t("Nguồn tham khảo")}</Typography>
-          <Stack spacing={1} sx={{ mt: 1 }}>
-            {proposal.snapshot.sources.map(source => <Box key={source.id}>
-              <Typography variant="subtitle2">{source.title}</Typography>
-              <Typography variant="body2" sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{sourceText(source.text, entity, units)}</Typography>
-              <Typography variant="caption" color="text.secondary">{source.license} · {source.revision}</Typography>
-            </Box>)}
-          </Stack>
-        </Box>}
+        </Box> : null}
         {pending && <>
           <Button disabled={busy || !value.trim() || unchanged} variant="contained" onClick={() => void run(async () => {
             if (value !== proposal.snapshot.value) {

@@ -40,15 +40,13 @@ if command -v flock >/dev/null 2>&1 && ! flock -w 300 9; then
   exit 1
 fi
 
-# In core mode the web app, the portal and the monitor are not part of the stack, so they are neither pulled nor checked.
+# In core mode the web app, the portal, the monitor and the assistant are not part of the stack, so they are neither pulled nor checked.
 if [[ "$(grep -E '^DXOS_MODE=' .env | tail -n1 | cut -d= -f2-)" == core ]]; then
   SERVICES=(backend keycloak)
 else
-  SERVICES=(backend monitor frontend portal keycloak)
+  SERVICES=(backend monitor frontend portal assistant-control keycloak)
 fi
-# The optional assistant is part of the project only when COMPOSE_FILE names its file.
 PROJECT_SERVICES="$(docker compose config --services)"
-if grep -qx assistant-control <<<"$PROJECT_SERVICES"; then SERVICES+=(assistant-control); fi
 BEHIND_GATEWAY=("${SERVICES[@]}")
 # The virus scan is pulled with the others when it is part of the project (the av profile).
 PULLED=("${SERVICES[@]}")

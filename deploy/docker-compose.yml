@@ -417,9 +417,6 @@ services:
         condition: service_completed_successfully
       assistant-sso:
         condition: service_completed_successfully
-    env_file:
-      - path: ./assistant.env
-        required: false
     environment:
       ASSISTANT_HOST: 0.0.0.0
       ASSISTANT_PORT: 18790
@@ -433,6 +430,8 @@ services:
       ASSISTANT_OIDC_JWKS_URL: http://keycloak:8080/realms/dxos/protocol/openid-connect/certs
       ASSISTANT_OIDC_TOKEN_URL: http://keycloak:8080/realms/dxos/protocol/openid-connect/token
       ASSISTANT_OIDC_CLIENT_ID: dxos-assistant
+      ASSISTANT_OIDC_REVOKE_URL: ${ASSISTANT_OIDC_REVOKE_URL:-http://keycloak:8080/realms/dxos/protocol/openid-connect/revoke}
+      ASSISTANT_CLASSIFIERS_DIR: ${ASSISTANT_CLASSIFIERS_DIR:-/app/classifiers}
     volumes:
       - ./data/assistant/control:/state
       - ./data/assistant/private:/run/secrets:ro

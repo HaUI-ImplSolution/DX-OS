@@ -102,7 +102,8 @@ Nâng cấp từ `2.0.2` giữ nguyên dữ liệu; hai migration mới thêm b�
 - `ASSISTANT_CLASSIFIERS_DIR` chọn thư mục trọng số khác, và `GET /assistant-api/v1/me` trả thêm `model.classifiers`.
 - Mã huấn luyện, dữ liệu, thẻ mô hình và trọng số ở `tools/classifier/`; trọng số theo Apache-2.0, dữ liệu theo CC-BY-4.0 trong phạm vi đội có quyền (câu huấn luyện và tập chỉnh do Claude soạn), câu lạc đề từ MASSIVE (gồm dữ liệu SLURP) được tải lúc huấn luyện.
 - Trợ lý chạy cùng stack ở chế độ full (nhóm `app` của `deploy/docker-compose.yml`) và `dxos update` kéo image của nó; chế độ core không có trợ lý.
-- Cấu hình tùy chọn ở `deploy/assistant.env`, kiểm tra ở workflow `Assistant`, và `assistant/README.md` có danh sách các chỗ cần xóa để gỡ trợ lý.
+- `dxos start`, `dxos update` và `reset.sh` khởi động trợ lý sau nền tảng và không chờ nó, nên trợ lý lỗi hay bị dừng chỉ có cảnh báo, Core và ứng dụng vẫn chạy.
+- Hai biến tùy chọn của trợ lý nằm ở `deploy/.env`, kiểm tra ở workflow `Assistant`, và `assistant/README.md` có danh sách các chỗ cần xóa để gỡ trợ lý.
 - Image trợ lý chỉ chứa Node.js và mã của trợ lý, không có npm, corepack và yarn.
 - Trợ lý chạy trên network nội bộ riêng, không có đường ra ngoài stack.
 - Người dùng hủy liên kết ở trang Trợ lý nghiệp vụ (`DELETE /assistant-api/v1/me/core/link`): refresh token bị thu hồi ở Keycloak, token đã lưu bị xóa và các đề xuất đang chờ bị hủy.

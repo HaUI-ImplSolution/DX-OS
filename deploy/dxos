@@ -123,6 +123,19 @@ from_caller() { if [[ "$1" == /* ]]; then printf '%s\n' "$1"; else printf '%s\n'
 env_value() { grep -E "^$1=" "$DEPLOY_DIR/.env" | tail -n1 | cut -d= -f2- || true; }
 compose() { docker compose "$@"; }
 
+# Starts the platform first and the assistant after it, so a failure of the assistant is a warning and never holds the platform.
+up_stack() {
+  local platform=() assistant=() service
+  while read -r service; do
+    if [[ "$service" == assistant-* ]]; then assistant+=("$service"); else platform+=("$service"); fi
+  done < <(compose config --services)
+  compose up -d --no-build --pull missing "${platform[@]}" || return
+  if ((${#assistant[@]} > 0)); then
+    compose up -d --no-build --pull missing "${assistant[@]}" \
+      || echo "WARNING: the assistant did not start; the platform is not affected (see: docker compose logs assistant-init assistant-sso assistant-control)." >&2
+  fi
+}
+
 # The mode of the stack: core runs tier 1 only, full (the default) also runs the web app, the portal, the monitor and the assistant.
 stack_mode() { local mode; mode="$(env_value DXOS_MODE)"; echo "${mode:-full}"; }
 
@@ -358,7 +371,7 @@ cmd_start() {
   since="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
   since_epoch="$(date +%s)"
   echo "==> Starting DX-OS $(env_value DXOS_IMAGE_TAG), $(stack_mode) mode (images are downloaded on the first start)"
-  compose up -d --no-build --pull missing
+  up_stack
   started="$(date -d "$(docker inspect -f '{{.State.StartedAt}}' "$(compose ps -q backend)")" +%s)"
   # A backend that kept running is started again so it reads a model file whose content changed.
   if $was_running && (( $# > 0 )) && ((started < since_epoch)); then
@@ -1367,7 +1380,7 @@ reconcile_once() {
   if command -v flock >/dev/null 2>&1 && ! flock -n 9; then
     return 0
   fi
-  if ! compose up -d --no-build --pull missing >"$out" 2>&1; then
+  if ! up_stack >"$out" 2>&1; then
     echo "$(date -Iseconds) failed: $(tail -n1 "$out")" >>"$log"
     return 1
   fi

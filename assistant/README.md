@@ -16,7 +16,10 @@ Trợ lý chạy cùng stack ở chế độ full (nhóm `app`), nhẹ vì suy l
    Sửa giá trị thì đề xuất được tạo lại để xem lại, sau đó xác nhận lưu bằng một thao tác riêng.
 4. Chạy `dxos start --core` thì trợ lý không chạy; `dxos start --full` đưa nó trở lại.
 
-Trợ lý chạy được không cần tệp cấu hình riêng; hai biến tùy chọn ở [`deploy/assistant.env.example`](../deploy/assistant.env.example).
+Trợ lý không giữ nền tảng: `dxos start`, `dxos update` và `reset.sh` khởi động nó sau nền tảng, nên trợ lý lỗi hay bị dừng chỉ có cảnh báo, Core và ứng dụng vẫn chạy bình thường.
+Giao diện chỉ hiện mục Trợ lý khi dịch vụ trả lời, nên dừng `assistant-control` là ẩn mục đó.
+
+Trợ lý chạy được không cần tệp cấu hình riêng; hai biến tùy chọn `ASSISTANT_CLASSIFIERS_DIR` và `ASSISTANT_OIDC_REVOKE_URL` ở mục 6 của [`deploy/.env.example`](../deploy/.env.example).
 Giới hạn RAM và CPU của container nằm ở dịch vụ `assistant-control` trong `deploy/docker-compose.yml`.
 
 Nếu mật khẩu quản trị Keycloak trong `deploy/.env` không còn đúng, `assistant-sso` chỉ ghi cảnh báo và trợ lý không liên kết được tài khoản.
@@ -139,7 +142,7 @@ Hỏi đáp mở, embedding, reranker và tác tử tự tạo đề xuất theo
 ## Kiểm tra
 
 Workflow `Assistant` (`.github/workflows/ci-assistant.yml`) chạy khi đổi `assistant/`, `tools/classifier/`, tệp compose, tệp SSO hay SBOM của trợ lý.
-Nó build và test dịch vụ, so SBOM với tệp khóa, kiểm tệp compose có và không có `assistant.env`, và kiểm route cổng ở mọi chế độ.
+Nó build và test dịch vụ, so SBOM với tệp khóa, kiểm tệp compose, và kiểm route cổng ở mọi chế độ.
 Workflow `Platform` dựng image trợ lý cùng các image khác.
 Chạy `PYTHONDONTWRITEBYTECODE=1 python3 tools/classifier/make_parity_fixture.py` từ gốc repo để sinh lại bộ đối chiếu khi đổi trọng số hoặc dữ liệu huấn luyện.
 Tệp đối chiếu `assistant/test/fixtures/classifier.json` lấy câu gốc và biến thể đã dùng để huấn luyện, phát hành theo CC-BY-4.0 như thẻ dữ liệu nêu.
@@ -155,7 +158,7 @@ Gỡ hẳn khỏi mã nguồn thì làm theo ba nhóm sau.
 
 - `assistant/`, `sbom/assistant.cdx.json`
 - `tools/classifier/` (dữ liệu, huấn luyện và trọng số của bộ phân loại) và `LICENSES/CC-BY-4.0.txt`
-- `deploy/assistant-sso.sh`, `deploy/assistant.env.example`
+- `deploy/assistant-sso.sh`
 - `.github/workflows/ci-assistant.yml`
 - `frontend/src/assistant/`
 - `e2e/web/tests/assistant.spec.ts`
@@ -163,13 +166,15 @@ Gỡ hẳn khỏi mã nguồn thì làm theo ba nhóm sau.
 **Xóa một khối hoặc một dòng trong tệp chung**
 
 - `.github/dependabot.yml`: mục "The assistant".
+- `deploy/.env.example`: hai biến `ASSISTANT_*` ở mục 6.
 - `.github/workflows/release-images.yml`: chữ `assistant` ở phần mô tả, ở `ALL` và nhánh đặt build context gốc repo cho `assistant`.
 - `.github/workflows/ci-platform.yml`: `assistant/**` và `tools/classifier/model/**` trong khóa cache của job `images`.
 - `deploy/docker-compose.yml`: các dịch vụ `assistant-init`, `assistant-sso`, `assistant-control`, mạng `assistant` và dòng `networks` của `backend`, `keycloak`, `apisix`.
 - `deploy/apisix/common.yaml`: khối giữa `# assistant:begin` và `# assistant:end`.
 - `deploy/apisix/render.lua`: mục `assistant-api` trong `public` và mục `assistant` trong `excluded`.
-- `deploy/dxos`: đoạn bỏ qua `assistant-*` trong `pending_services` và các tên `assistant-*` trong `switch_mode`.
-- `deploy/update.sh`: `assistant-control` trong `SERVICES`.
+- `deploy/dxos`: hàm `up_stack`, đoạn bỏ qua `assistant-*` trong `pending_services` và các tên `assistant-*` trong `switch_mode`.
+- `deploy/update.sh`: `assistant-control` trong `SERVICES`, và phần tách `PLATFORM`/`ASSISTANT` khi khởi động lại.
+- `deploy/reset.sh`: phần tách `PLATFORM`/`ASSISTANT` khi khởi động và đoạn bỏ qua `assistant-*` ở `pending_services`.
 - `frontend/src/admin/AdminApp.tsx`: import, `useAssistantEnabled`, mục menu, route và `lazy`.
 - `frontend/src/admin/resources.tsx`: `RecordAssistant`.
 - `frontend/src/admin/InboxPage.tsx`: nút "Rà loại hồ sơ" và phần làm nổi hồ sơ cần rà.

@@ -55,7 +55,21 @@ mkdir -p "$DATA_DIR"
 docker run --rm -v "$DATA_DIR:/data" alpine:3.24@sha256:3f4d6b32e26703c6082839234f43769d5046b3ac7c910033911d1e71d8cd630a find /data -mindepth 1 -delete
 
 echo "==> Starting the stack"
-docker compose up -d ${BUILD_FLAG[@]+"${BUILD_FLAG[@]}"} ${SERVICES[@]+"${SERVICES[@]}"}
+# Without named services, the assistant starts after the platform, so a failure of the assistant never holds the reset.
+if ((${#SERVICES[@]} > 0)); then
+  docker compose up -d ${BUILD_FLAG[@]+"${BUILD_FLAG[@]}"} "${SERVICES[@]}"
+else
+  PLATFORM=()
+  ASSISTANT=()
+  while read -r service; do
+    if [[ "$service" == assistant-* ]]; then ASSISTANT+=("$service"); else PLATFORM+=("$service"); fi
+  done < <(docker compose config --services)
+  docker compose up -d ${BUILD_FLAG[@]+"${BUILD_FLAG[@]}"} "${PLATFORM[@]}"
+  if ((${#ASSISTANT[@]} > 0)); then
+    docker compose up -d ${BUILD_FLAG[@]+"${BUILD_FLAG[@]}"} "${ASSISTANT[@]}" \
+      || echo "WARNING: the assistant did not start; the platform is not affected." >&2
+  fi
+fi
 
 # A container is ready when it is healthy, running without a healthcheck, or a one-shot job
 # that exited with code 0.
@@ -69,6 +83,8 @@ pending_services() {
   local id name status health exit_code
   while read -r id; do
     [[ -n "$id" ]] || continue
+    # The assistant never holds the start of the platform.
+    [[ "$(docker inspect -f '{{index .Config.Labels "com.docker.compose.service"}}' "$id")" == assistant-* ]] && continue
     read -r name status health exit_code <<<"$(container_state "$id")"
     case "$status:$health:$exit_code" in
       running:healthy:*|running:-:*|exited:*:0) ;;

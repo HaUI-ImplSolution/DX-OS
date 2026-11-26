@@ -34,7 +34,7 @@ const sidebars = {
       type: 'category',
       label: 'Hồ sơ dự thi',
       collapsed: false,
-      items: ['evidence-matrix', 'pof-audit', 'council-qa', 'dependencies'],
+      items: ['tai-lieu/tri-tue-nhan-tao', 'evidence-matrix', 'pof-audit', 'council-qa', 'dependencies'],
     },
     {
       type: 'category',

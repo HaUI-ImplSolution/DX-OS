@@ -40,7 +40,6 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 | Cài trên Windows | Chưa có người dùng Windows thử cài và làm theo `docs/QUICKSTART.md` trong WSL2 với Docker Desktop |
 | Dữ liệu bộ phân loại do Claude soạn | Tập chỉnh 420 câu chưa có người duyệt; chưa có bằng chứng đội đã duyệt các câu gốc huấn luyện; còn phải duyệt hoặc viết lại dữ liệu rồi huấn luyện lại |
 | Điều khoản Anthropic và CC-BY-4.0 của dữ liệu | Câu do Claude soạn được phát hành theo CC-BY-4.0, nhưng điều khoản của Anthropic cấm dùng kết quả để huấn luyện chatbot đa dụng hoặc mô hình sinh văn bản, và CC-BY không cho thêm hạn chế nào ở người dùng sau; thẻ dữ liệu đang để người dùng lại tự chịu trách nhiệm; còn phải chọn một hướng: thay phần do Claude soạn bằng câu đội viết, hoặc hỏi Anthropic về phạm vi cho phép rồi ghi rõ ở thẻ dữ liệu |
-| Bản dữ liệu trên Kaggle | Câu huấn luyện (2.280 câu, repository có 2.490), bảng số đo và tập chỉnh (70 dòng lệch cột, repository đã sửa) trên Kaggle là bản cũ; còn phải cập nhật bản Kaggle hoặc bỏ liên kết ở thẻ dữ liệu và `tools/classifier/README.md` |
 | Video MP4 mã hóa H.264 | Hai video ở `website/docs/images/video` dùng H.264, định dạng có bằng sáng chế; đã có bản GIF; còn phải chuyển sang WebM (VP9 hoặc AV1) hoặc bỏ tệp MP4 |
 
 ## 4. Giới hạn chấp nhận
@@ -55,7 +54,7 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 | Bộ phân loại cho mẫu Đổi trả hàng | Chưa bật vì chưa đạt điều kiện nghiệm thu, cần thêm dữ liệu và một bộ nghiệm thu mới để bật |
 | Bộ phân loại cho mẫu Cấp quyền CNTT | Đạt điều kiện phát hành nhưng không bật: trường `access_group` cấp nhóm quyền qua `add_to_group`, và định dạng mô hình không cho nhiệm vụ AI đề xuất trường đó |
 | Độ phủ của bộ phân loại mẫu Hỗ trợ kỹ thuật | Ngưỡng cao nên phiếu sự cố viết tự nhiên (ví dụ "Hệ thống trả về lỗi 500") thường bị từ chối; cần thêm câu huấn luyện kiểu sự cố thật rồi đo lại |
-| Quy mô vận hành trợ lý | Không chạy nhiều replica trên cùng SQLite; chưa có SLA; chưa có số đo thời gian và bộ nhớ của bộ phân loại, cần đo trên máy của người triển khai trước khi cam kết tải |
+| Quy mô vận hành trợ lý | Không chạy nhiều replica trên cùng SQLite; chưa có SLA; đã đo bộ phân loại ngoại tuyến; cần đo độ trễ API và RAM của dịch vụ trợ lý trên hệ thống triển khai trước khi cam kết tải |
 | Tìm người cho trường `user` | `GET /api/v1/people` cho mọi người đã đăng nhập tìm cả người ngoài phạm vi mô hình, khớp theo tên, tên đăng nhập hoặc email, và chỉ trả id với tên hiển thị; thu hẹp theo vai của mô hình thì phải đối chiếu vai của từng người |
 | Đổi mô hình khi còn hồ sơ mở | Hồ sơ chưa lưu phiên bản mô hình và hồ sơ đang chạy giữ bản BPMN cũ (Flowable không chuyển chúng sang bản mới); hạn xử lý, quyền tự quyết, hành động hoàn tất, đặt chỗ, trạng thái, hành động và điều kiện `when` vì thế chỉ đổi được khi thực thể không còn hồ sơ đang xử lý, phải hoàn tất hoặc rút hết hồ sơ trước; đổi vai xử lý thì có hiệu lực ngay vì quyền xét theo mô hình, hồ sơ đã giao cho người không còn giữ vai mới chỉ người điều phối giao lại được, và nhóm ứng viên ghi trong task Flowable đang chạy vẫn là vai cũ (không nơi nào đọc nó) |
 | Ngôn ngữ giao diện | Chữ do mô hình định nghĩa (tên thực thể, nhãn trường, nhãn trạng thái và hành động tự khai, nội dung tệp mẫu) không được dịch |

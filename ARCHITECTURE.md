@@ -300,3 +300,14 @@ Lý do chọn từng công cụ ở [trang thành phần](https://haui-implsolut
 - **Phương án:** viết lại các thành phần; sửa hoặc vá mã thượng nguồn; dùng nguyên bản và cấu hình.
 - **Quyết định:** image chính thức ghim tag và digest, không sửa mã thượng nguồn, mọi giấy phép thuộc danh sách OSI và được máy kiểm ở mỗi pull request.
 - **Hệ quả:** thay một thành phần là đổi cấu hình hoặc địa chỉ; đổi lại, phần dự án cần mà thượng nguồn không có phải tự viết ở lớp nối.
+
+### QĐ-9: Bộ phân loại tại chỗ cho đề xuất một trường
+
+- **Bối cảnh.** Trợ lý cần gợi ý một nhãn trong tập giá trị mà nghiệp vụ cho phép và đưa ra căn cứ từ hồ sơ để cán bộ kiểm.
+- **Phương án.** Dò từ khóa, chạy mô hình ngôn ngữ tổng quát qua dịch vụ suy luận, hoặc huấn luyện một bộ phân loại nhỏ cho từng nhiệm vụ.
+- **Quyết định.** Chạy bộ phân loại hồi quy logistic tự huấn luyện trong trợ lý Node.js ở Tầng 2.
+  API Core vẫn quyết định quyền và phiên bản lúc ghi.
+- **Hệ quả.** Trọng số nhỏ, có thể tái tạo từ dữ liệu được mô tả và so sánh với dò từ khóa ở cùng độ phủ.
+  Một nghiệp vụ mới cần nhãn, dữ liệu và kiểm định riêng.
+  Các đề xuất yếu bị từ chối theo ngưỡng và quyết định lưu thuộc người có thẩm quyền.
+  [Thiết kế và kết quả đo](./docs/AI.md)

@@ -403,7 +403,8 @@ Mỗi thực thể có thể khai báo từ một đến tám nhiệm vụ dư�
 Mỗi nhiệm vụ cần `classifier`, `input_fields` và `output_field`.
 `label` mặc định là tên nhiệm vụ.
 Khóa `classifier` là bắt buộc, khớp `^[a-z][a-z0-9_]{0,39}$` và là tên tệp trọng số mà trợ lý đã nạp.
-Trợ lý có sẵn `onestop`, `support` và `clinic`; nghiệp vụ khác cần dữ liệu và huấn luyện riêng bằng [`tools/classifier/`](../tools/classifier/README.md).
+Trợ lý có sẵn `onestop`, `support` và `clinic`.
+Nghiệp vụ khác làm theo [hướng dẫn thêm bộ phân loại](../tools/classifier/README.md#thêm-bộ-phân-loại-cho-nghiệp-vụ-mới).
 `input_fields` chỉ gồm các trường `text`, theo thứ tự dùng khi huấn luyện.
 `output_field` là một trường `choice` đơn trị có tập lựa chọn trùng với tập nhãn nghiệp vụ của bộ phân loại.
 

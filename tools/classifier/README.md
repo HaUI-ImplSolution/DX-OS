@@ -32,7 +32,30 @@ Có thể truyền thư mục chứa các CSV qua `--tune`.
 Tập chỉnh gồm 420 câu do Claude viết, chưa có người duyệt, và chỉ dùng để chọn ngưỡng và siêu tham số.
 Trọng số ghi đường dẫn CSV tính từ thư mục gốc repo ở `tuning_source` và SHA-256 của toàn bộ CSV ở `tuning_sha256`.
 Bộ chọn tối đa hóa độ phủ trên tập chỉnh, với ít nhất 90% đúng trên đề xuất và ít nhất 97% từ chối đúng trong từng loại `lac_de`, `mo_ho`, `hai_y` và `chen_lenh`.
-Bộ nghiệm thu do đội viết tay nằm ở `tools/classifier/eval/acceptance/`. [Kaggle](https://www.kaggle.com/datasets/hittungtran/dx-os-vietnamese-record-classification-data) là nơi công bố cùng dữ liệu của bộ phân loại, gồm tập chỉnh và bộ nghiệm thu.
+Bộ nghiệm thu do đội viết tay nằm ở `tools/classifier/eval/acceptance/`.
+Bản công bố [Kaggle phiên bản 2](https://www.kaggle.com/datasets/hittungtran/dx-os-vietnamese-record-classification-data) chứa cùng các câu gốc, tập chỉnh và bộ nghiệm thu trong kho mã.
+
+## Thêm bộ phân loại cho nghiệp vụ mới
+
+1. Xác định trường đầu vào kiểu `text` và trường đầu ra kiểu `choice` đơn trị.
+   Thêm mục `<task>` vào `tasks` trong [labels.json](labels.json), gồm mẫu, thực thể, `input_fields`, `output_field`, diễn giải từng nhãn và ca biên.
+   Giữ tập nhãn nghiệp vụ trùng với các lựa chọn của trường đầu ra, vì công cụ huấn luyện thêm nhãn từ chối riêng.
+2. Soạn `data/seeds/<task>.jsonl`, `eval/tuning/<task>.csv` và `eval/acceptance/<task>.csv` bằng dữ liệu có quyền sử dụng.
+   Dùng trường `family` để gom câu cùng ý và giữ bộ nghiệm thu độc lập với các câu dùng để huấn luyện hay chọn ngưỡng.
+   Định dạng trong [thẻ dữ liệu](data/DATA_CARD.md) và [hướng dẫn đầu vào](#đo-tập-được-cung-cấp).
+   Với nhiệm vụ mới, quy trình huấn luyện hiện nhận nội dung từ `text`; hai đầu vào `title`, `text` là trường hợp riêng của `support`.
+   Dùng một trường văn bản cho nhiệm vụ mới, hoặc mở rộng và kiểm đối chiếu cách chuẩn bị nhiều trường trước khi bật.
+3. Từ gốc repo chạy `python3 tools/classifier/fetch.py`, rồi `python3 tools/classifier/train.py --task <task>`.
+   Công cụ tạo `tools/classifier/model/<task>.json`.
+   Đo bộ nghiệm thu bằng `python3 tools/classifier/evaluate.py --task <task> --input tools/classifier/eval/acceptance/<task>.csv` và lưu kết quả để quyết định bật.
+4. Trong bản cài full, đặt tệp trọng số vào `deploy/data/assistant/private/classifiers/` sao cho tiến trình trong container đọc được.
+   Đặt `ASSISTANT_CLASSIFIERS_DIR=/run/secrets/classifiers` trong `deploy/.env` và chạy `dxos start` để nạp lại dịch vụ với cấu hình đó.
+   Khi chỉ thêm hoặc thay tệp tại đường dẫn đã cấu hình, chạy `docker compose restart assistant-control` từ `deploy/` để nạp lại trọng số.
+   Nếu vẫn dùng các nhiệm vụ có sẵn, chép cả trọng số của chúng vào cùng thư mục để trợ lý nạp.
+   Kiểm `GET /assistant-api/v1/me` có tên mới trong `model.classifiers`.
+5. Khai `ai.tasks` với `classifier: <task>`, danh sách `input_fields` theo thứ tự đã dùng để huấn luyện và `output_field` đã chọn, rồi áp dụng tệp mô hình.
+   Thử hồ sơ đúng nhãn, hồ sơ thiếu căn cứ và xác nhận đề xuất bằng tài khoản có quyền.
+   Xem [khai báo mô hình](../../docs/MODEL.md#nhiệm-vụ-trợ-lý-nghiệp-vụ) và [ví dụ API](../../docs/API.md#api-trợ-lý-nghiệp-vụ).
 
 ## Đo dev và nghiệm thu
 

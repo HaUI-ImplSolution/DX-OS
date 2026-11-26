@@ -5,7 +5,9 @@
 
 Dữ liệu huấn luyện và đo của năm bộ phân loại hồ sơ tiếng Việt trong trợ lý nghiệp vụ.
 Các câu mô tả tình huống giả lập và không chứa hồ sơ của người dùng.
-Bản công bố công khai ở [Kaggle](https://www.kaggle.com/datasets/hittungtran/dx-os-vietnamese-record-classification-data) theo CC BY 4.0, không gồm dữ liệu của MASSIVE.
+Đội DX-OS công bố bộ dữ liệu ở [Kaggle](https://www.kaggle.com/datasets/hittungtran/dx-os-vietnamese-record-classification-data) qua tài khoản `hittungtran` của thành viên Tùng.
+Phiên bản 2 có đủ 2.490 câu gốc cùng tập chỉnh và bộ nghiệm thu theo CC BY 4.0 trong phạm vi đội có quyền.
+Dữ liệu MASSIVE được tải riêng khi tái tạo trọng số.
 
 ## Nguồn gốc và giấy phép
 

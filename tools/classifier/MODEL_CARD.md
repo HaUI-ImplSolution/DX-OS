@@ -96,6 +96,30 @@ Bộ nghiệm thu nằm ở `eval/acceptance/` và được đo một lần cho 
 Các mẫu `onestop`, `support_desk` và `clinic_appointment` có nhiệm vụ bộ phân loại.
 Mẫu `itaccess` đạt điều kiện nhưng không có nhiệm vụ, vì trường `access_group` cấp nhóm quyền qua `add_to_group` và định dạng mô hình không cho nhiệm vụ AI đề xuất trường đó.
 
+### Máy đo, độ trễ và bộ nhớ
+
+Kết quả nghiệm thu ở trên được chạy lại ngày 26/11/2026 trên máy Linux x86-64, CPU Intel Core i5-10300H @ 2,50 GHz (4 nhân, 8 luồng), Python 3.12.3.
+Mỗi lần chạy dùng một tiến trình CPU, làm nóng 25 lượt, đo 150 lượt một câu và 30 lượt lô 25 câu.
+Độ trễ gồm chuẩn hóa câu, phân loại và lấy cụm từ làm căn cứ.
+RAM đỉnh là RSS của toàn bộ tiến trình Python chạy công cụ đo, ghi bằng GNU `time -f '%M'`.
+Số đo dành cho bộ phân loại chạy riêng; độ trễ API và RAM của dịch vụ Node.js khi chạy cùng stack cần được đo riêng.
+
+| Nhiệm vụ | Một câu p50 (ms) | Một câu p95 (ms) | Lô 25 p50 (ms) | Lô 25 p95 (ms) | RAM đỉnh (KiB) |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| onestop | 0,506 | 0,866 | 13,098 | 16,137 | 23.016 |
+| support | 0,699 | 1,276 | 19,731 | 66,056 | 22.932 |
+| clinic | 0,477 | 0,905 | 14,501 | 30,808 | 23.040 |
+| itaccess | 0,713 | 1,219 | 17,971 | 35,429 | 23.132 |
+| retail | 0,622 | 1,049 | 15,110 | 21,188 | 22.584 |
+
+Lệnh đo lại một nhiệm vụ từ thư mục gốc của kho mã.
+
+```bash
+/usr/bin/time -f 'RSS đỉnh: %M KiB' \
+  python3 tools/classifier/evaluate.py --task onestop \
+  --input tools/classifier/eval/acceptance/onestop.csv
+```
+
 ## Giấy phép
 
 Mã và trọng số theo Apache-2.0.

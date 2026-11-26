@@ -13,7 +13,7 @@ Việc chưa làm, chưa kiểm và giới hạn đã biết nằm ở [`BACKLOG
 - **Cách xây:** lõi headless, ghép từ các dịch vụ nguồn mở; đội tự viết một dịch vụ Java gồm phần điều khiển và API chung đọc mô hình lúc chạy.
 - **Ba tính năng đào sâu:** GitOps cho nghiệp vụ, quy trình không lách được, trợ lý AI tùy chọn có người xác nhận.
 - **Mở rộng:** người dùng có thể viết thêm API và giao diện, luôn nằm ngoài lõi.
-- **Nguồn mở:** mọi thành phần của bản phát hành đều mở, kể cả công cụ và dữ liệu; bản phát hành không kèm mô hình AI, người vận hành tự chọn và tự chạy.
+- **Nguồn mở:** mọi thành phần của bản phát hành đều mở, kể cả công cụ, dữ liệu và mô hình AI; mô hình AI là bộ phân loại hồ sơ do đội tự huấn luyện.
 - **Hạn gửi bài:** 17:00 ngày 2026-12-06.
 
 ## Đề thi
@@ -91,7 +91,7 @@ Các hàm ý sau là suy luận từ cách đề viết, người ra đề khôn
 | Điều chỉnh quy trình không cần sửa mã nguồn, BPMN | Họ mẫu quy trình trên Flowable, hoặc tự khai báo trạng thái và hành động; BPMN sinh từ tệp mô hình |
 | GitOps, tự phục hồi                                                  | Triển khai hạ tầng và nghiệp vụ kéo từ git (`dxos gitops`), tệp sai bị chặn, áp dụng dở được hoàn tất hoặc hủy bỏ, `dxos reconcile` tự phục hồi |
 | Kiến trúc hướng sự kiện | Trục sự kiện bằng bảng outbox: webhook có chữ ký, API kéo theo `eventId`, kênh báo cho hộp việc đang mở |
-| Tác tử AI, Human-in-the-loop, RAG                                     | Trợ lý tùy chọn đề xuất giá trị một trường, người xác nhận trước khi ghi; hỏi đáp kèm nguồn và tác tử nghe sự kiện không làm |
+| Tác tử AI, Human-in-the-loop, RAG                                     | Trợ lý tùy chọn đề xuất giá trị một trường bằng bộ phân loại tự huấn luyện, người xác nhận trước khi ghi; hỏi đáp kèm nguồn và tác tử nghe sự kiện không làm |
 | Chống nguyên khối, chủ quyền số                                   | Thành phần thay được, dữ liệu trong PostgreSQL thuần                               |
 | Chống ốc đảo dữ liệu | Một định danh, một cơ sở dữ liệu, mô hình là danh mục dữ liệu và trang Danh mục dữ liệu đọc từ đó; hồ sơ đã đóng ghi ra kho Parquet |
 
@@ -328,7 +328,7 @@ Thêm năng lực mới nghĩa là thêm provider, không phải sửa lõi.
 | Trục sự kiện                   | Bảng outbox trong PostgreSQL             | Webhook theo mô hình, API kéo sự kiện theo `eventId`, thông điệp của việc áp dụng mô hình và của tài khoản (chỉ qua webhook); kênh sự kiện `GET /api/v1/inbox/stream` báo cho giao diện khi hồ sơ đổi |
 | Thông báo                       | Mattermost hoặc Slack do người triển khai cấp | Đích webhook dạng `chat`: việc mới, sắp đến hạn, quá hạn, leo thang |
 | Báo cáo | Công cụ báo cáo do người triển khai cấp | Vai `report_ro` chỉ đọc các bảng nghiệp vụ, cách kết nối ở [`docs/REPORTING.md`](../REPORTING.md) |
-| AI | Mô hình ngôn ngữ mở do người vận hành tự chạy, không kèm bản phát hành | Nhiệm vụ trợ lý khai trong mô hình (`ai.tasks`) |
+| AI | Bộ phân loại hồi quy logistic đội tự huấn luyện, chạy trên CPU | Dữ liệu, huấn luyện và suy luận (`tools/classifier/`, `assistant/`); nhiệm vụ trợ lý khai trong mô hình (`ai.tasks`) |
 | Vận hành                        | `dx-monitor`, `deploy/backup.sh`          | Giữ nguyên                                                    |
 
 ### Nguyên tắc mã nguồn
@@ -461,8 +461,11 @@ Khai báo `ai.tasks` trên một thực thể để người dùng nhờ trợ l
 Người dùng xem căn cứ, sửa hoặc xác nhận; Core kiểm quyền, quy tắc và phiên bản trước khi ghi, nên model không có đường ghi trực tiếp.
 Đây là bước từ P tới I với Human-in-the-loop của đề.
 
+Mô hình của trợ lý là bộ phân loại hồ sơ tiếng Việt do đội tự huấn luyện: nó chạy trên CPU ngay trong trợ lý, đề xuất kèm cụm chữ trích từ hồ sơ làm căn cứ và từ chối khi không đủ căn cứ.
+Trọng số theo Apache-2.0; mã huấn luyện, dữ liệu đội biên soạn và cách lấy dữ liệu ngoài công bố theo [cam kết nguồn mở](#cam-kết-nguồn-mở), xem [`tools/classifier/`](../../tools/classifier/README.md).
+Hộp việc rà được hồ sơ đang chờ và đánh dấu hồ sơ có giá trị khác gợi ý.
+
 Trợ lý là dịch vụ tùy chọn, tắt mặc định, nối vào lõi qua API; lõi và mọi nghiệp vụ chạy đủ khi không có nó.
-Mô hình ngôn ngữ do người vận hành tự chạy và tự chọn; bản phát hành không kèm mô hình và không gọi dịch vụ AI bên ngoài theo mặc định.
 Cách bật, giới hạn và gỡ ở [`assistant/README.md`](../../assistant/README.md).
 Hỏi đáp có nguồn, tìm kiếm tri thức và tác tử nghe sự kiện không nằm trong phạm vi; lý do ở mục "Phạm vi AI" của [`BACKLOG.md`](./BACKLOG.md).
 
@@ -490,7 +493,7 @@ Lõi có webhook theo mô hình và API kéo sự kiện, kèm hai ví dụ ở 
 
 Kịch bản demo chính là **Một cửa sinh viên**: gửi yêu cầu xin giấy xác nhận, phúc khảo, hoãn thi kèm minh chứng.
 Đây là mô hình yêu cầu và phê duyệt chạy trên lõi.
-Phần trợ lý AI đề xuất giá trị trường dựa trên một kho văn bản đạt [cam kết nguồn mở](#cam-kết-nguồn-mở).
+Phần trợ lý AI gợi ý loại hồ sơ bằng bộ phân loại huấn luyện trên dữ liệu đạt [cam kết nguồn mở](#cam-kết-nguồn-mở).
 
 **Mô hình thứ hai** là cấp phát dịch vụ IT, rất ngắn, chứng minh tính trung lập: nhân viên xin vào một nhóm quyền, được duyệt thì Keycloak cấp thật.
 Nếu mô hình này tốn hơn một tệp, đó là tín hiệu lõi còn gắn với ứng dụng đầu.

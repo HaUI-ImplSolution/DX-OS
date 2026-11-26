@@ -8,7 +8,7 @@ Hai nơi đó được máy kiểm ở mỗi pull request, tài liệu này ch�
 
 - **Dùng cái đã có:** thứ đã có phần mềm nguồn mở trưởng thành thì dùng lại và cấu hình, không viết lại.
   Phần đội tự viết là phần nối các thành phần theo một tệp mô hình: định dạng mô hình, phần điều khiển, API chung, họ mẫu quy trình, bảng điều khiển.
-- **Giấy phép OSI, không ngoại lệ:** mã, công cụ build và kiểm thử, mô hình AI và dữ liệu đều phải mở.
+- **Mọi thứ đều mở:** mã, công cụ build và kiểm thử theo giấy phép OSI; trọng số mô hình AI theo giấy phép OSI, dữ liệu huấn luyện theo giấy phép dữ liệu mở (CC0, CC BY, ODbL).
   Không dùng BUSL, SSPL, RSAL, MSCL, và không dùng phần Enterprise của một sản phẩm.
 - **Không sửa mã thượng nguồn:** image bên thứ ba ghim tag và digest trong `deploy/docker-compose.yml`, tùy biến bằng cấu hình.
   Repository không có tệp `.patch`, không có `vendor/`, `node_modules/`, `third_party/` trong cây Git.
@@ -38,7 +38,9 @@ Hai nơi đó được máy kiểm ở mỗi pull request, tài liệu này ch�
 | React Flow, Dagre, Smart Edge | MIT | Sơ đồ quy trình vẽ từ tệp đang soạn | Chỉ để xem quy trình, không để thiết kế | `frontend/src/console/` |
 | FullCalendar | MIT | Lịch đặt chỗ | Kéo thả để đổi giờ | |
 | Fastify, @fastify/swagger, jose | MIT | Dịch vụ trợ lý tùy chọn | Tách khỏi API lõi, chỉ chạy khi bật | `assistant/`, không đưa vào module Java Core |
-| Model suy luận (không đóng gói), llama.cpp | Theo model đã chọn, MIT | Model và runtime suy luận self-host của trợ lý | Endpoint do người vận hành cố định, người dùng không nhập | Do người vận hành cấp, không đóng gói trong repository; xem `assistant/README.md` |
+| Bộ phân loại hồ sơ tiếng Việt (đội tự huấn luyện) | Apache-2.0 (mã, trọng số), CC-BY-4.0 (dữ liệu đội biên soạn) | Mô hình AI của trợ lý | Chạy trên CPU ngay trong trợ lý; mã huấn luyện, dữ liệu và trọng số công khai, tái tạo được | `tools/classifier/`; ba tệp trọng số nằm trong image trợ lý |
+| MASSIVE 1.0, tập train vi-VN (Amazon) | CC-BY-4.0 | Câu lạc đề khi huấn luyện bộ phân loại | Dữ liệu mở có sẵn, không phải tự soạn câu ngoài phạm vi | Tải lúc huấn luyện, kiểm SHA-256; không nằm trong repository hay image |
+| Mô hình ngôn ngữ (không đóng gói), llama.cpp | Theo model đã chọn, MIT | Model và runtime suy luận self-host của trợ lý | Endpoint do người vận hành cố định, người dùng không nhập | Do người vận hành cấp, không đóng gói trong repository; xem `assistant/README.md` |
 | restic | BSD-2-Clause | Sao lưu có mã hóa | Chạy trong container nên chỉ cần Docker | `deploy/backup.sh` |
 | Trivy, gitleaks, CycloneDX | Apache-2.0, MIT | Quét lỗ hổng, bí mật và lập SBOM trong CI | Công cụ nguồn mở, chạy ở mọi pull request | `.github/workflows/` |
 | reuse | Apache-2.0, GPL-3.0-or-later (mã); CC0-1.0, CC-BY-SA-4.0 (tài liệu) | Kiểm giấy phép và bản quyền của từng tệp theo chuẩn REUSE trong CI | Công cụ nguồn mở, chạy bằng `pipx run`, không đóng gói vào sản phẩm | `.github/workflows/ci-compliance.yml` |
@@ -88,7 +90,10 @@ Mã của bản trước (hai ứng dụng nghiệp vụ viết tay, Superset, M
 
 Gói mang giấy phép chưa nằm trong danh sách của OSI được nêu tên kèm lý do ở `.github/licenses/dependency-exceptions.json`, và lý do hiện cuối dòng của gói ở `docs/DEPENDENCY_INVENTORY.md`.
 Đó là `caniuse-lite` (CC-BY-4.0) và `mdn-data` (CC0-1.0), dữ liệu chứ không phải mã, chỉ đọc lúc dựng trang docs và không có trong trang đã dựng; `jdom2` và `xz` 1.9, chỉ do plugin Maven dùng lúc dựng backend và không có trong sản phẩm; phông Codicons (CC-BY-4.0) trong bản build web, kèm ghi công ở `third-party-licenses.txt`; mô-đun Go `xi2/xz` (phạm vi công cộng) trong tệp chạy `pgschema` của image `backend`; và vài gói mà lockfile thiếu trường giấy phép nhưng văn bản giấy phép của gói là MIT hoặc BSD.
-Thành phần nằm sẵn trong image bên thứ ba mà dự án kéo nguyên bản (như gói hệ điều hành của image Debian) nêu ở phần "Giấy phép ngoài danh sách OSI" của `DEPENDENCIES.txt`.
+Dữ liệu của bộ phân loại hồ sơ (CC-BY-4.0) khai ở `REUSE.toml` và chỉ được nhận ở các đường dẫn nêu trong `check_licenses.py`.
+Dữ liệu đóng trong thư viện PDFBox của image `backend` gồm tệp số đo phông của Adobe (điều khoản riêng), hình Font Awesome (CC-BY-4.0) và hồ sơ màu ICC (CC0-1.0); thư viện được dùng nguyên bản và văn bản giấy phép nằm ở `/licenses` của image.
+Image dự án phát hành chứa nguyên lớp nền `eclipse-temurin`, `nginx`, `node` và `clamav/clamav` (`node` đã bỏ npm, corepack, yarn; `clamav` đã bỏ `libclamunrar`), nên các lớp đó được phân phối lại.
+Thành phần nằm sẵn trong image bên thứ ba, kéo nguyên bản hoặc làm lớp nền (như gói hệ điều hành của image Debian, Ubuntu), nêu ở phần "Giấy phép ngoài danh sách OSI" của `DEPENDENCIES.txt`.
 Mọi gói khác phải thuộc danh sách OSI ở `.github/licenses/osi-approved.json` (đối chiếu danh sách SPDX và opensource.org), hoặc có một lựa chọn thay thế thuộc danh sách đó như `MIT OR CC0-1.0`.
 
 Muốn thêm một thành phần: đọc giấy phép ở kho gốc, chạy `python3 .github/scripts/check_license_inventory.py generate` (thêm `--maven` khi đổi Maven) để cập nhật `docs/DEPENDENCY_INVENTORY.md`, ghi vai trò vào các mục 2 đến 4 nếu là thành phần cấp cao, và nếu là image hoặc mô hình thì khai báo ở `.github/licenses/component-catalog.json`; `check_licenses.py` và `check_license_inventory.py check` sẽ chặn nếu thiếu.

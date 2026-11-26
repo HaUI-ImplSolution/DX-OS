@@ -37,6 +37,12 @@ Danh sách giấy phép được OSI công nhận: https://opensource.org/licens
 | khai báo trong pom.xml, package.json,       | Apache-2.0            | check_licenses.py kiểm khớp một loại giấy    |
 | CITATION.cff, chân trang trang docs         |                       | phép                                         |
 +---------------------------------------------+-----------------------+----------------------------------------------+
+| trọng số bộ phân loại hồ sơ                 | Apache-2.0 (LICENSE)  | Do đội huấn luyện; image trợ lý chứa         |
+| (tools/classifier/model)                    |                       | onestop.json, support.json và clinic.json    |
++---------------------------------------------+-----------------------+----------------------------------------------+
+| dữ liệu bộ phân loại: câu gốc, định nghĩa   | CC-BY-4.0             | Giấy phép dữ liệu, khai ở REUSE.toml; xem    |
+| nhãn, tệp đối chiếu Python-Node             |                       | mục 7                                        |
++---------------------------------------------+-----------------------+----------------------------------------------+
 
 Header của file mã nguồn gồm dòng SPDX-FileCopyrightText với chủ bản quyền và dòng SPDX-License-Identifier với giá trị Apache-2.0; `reuse lint` kiểm toàn bộ cây theo chuẩn REUSE.
 Dòng header nằm ở đầu file Java, TypeScript, JavaScript, Python, shell, YAML, CSS, HTML, SQL, XML, nginx.conf, Dockerfile, .env.example và .toml; file không chèn được chú thích (tài liệu, JSON, ảnh, tệp cấu hình của git) và hai nhóm file đặc biệt khai trong REUSE.toml: file của bên thứ ba và migration SQL đã phát hành.
@@ -103,10 +109,10 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/licenses/dependency-excepti
 |                                        | Apache-2.0, EPL-2.0,             |                                        |
 |                                        | BSD-3-Clause                     |                                        |
 +----------------------------------------+----------------------------------+----------------------------------------+
-| SpotBugs (spotbugs-maven-plugin        | LGPL-2.1; plugin Apache-2.0      | Chỉ khi build, phân tích tĩnh mã Java  |
+| SpotBugs (spotbugs-maven-plugin        | LGPL-2.1-only; plugin Apache-2.0 | Chỉ khi build, phân tích tĩnh mã Java  |
 | 4.10.5.0)                              |                                  |                                        |
 +----------------------------------------+----------------------------------+----------------------------------------+
-| find-sec-bugs 1.14.0                   | LGPL-3.0                         | Chỉ khi build, luật bảo mật của        |
+| find-sec-bugs 1.14.0                   | LGPL-3.0-or-later                | Chỉ khi build, luật bảo mật của        |
 |                                        |                                  | SpotBugs                               |
 +----------------------------------------+----------------------------------+----------------------------------------+
 | google-java-format                     | Apache-2.0                       | Chỉ khi build, bộ định dạng mã Java    |
@@ -215,9 +221,8 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/licenses/dependency-excepti
 | Maven Wrapper 3.3.4 [7] (mvnw,       | Apache-2.0                           | Chạy Maven ở phiên bản đã ghim;      |
 | mvnw.cmd, maven-wrapper.properties)  |                                      | chép nguyên từ Apache Maven          |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| Debian, Ubuntu (image nền)           | Giấy phép tự do của từng gói         | Nền của image APISIX (Debian), trợ   |
-|                                      |                                      | lý (node:24-bookworm-slim, không có  |
-|                                      |                                      | npm, corepack, yarn) và sso (Ubuntu) |
+| Debian, Ubuntu (image nền)           | Giấy phép tự do của từng gói         | Nền của image APISIX và PostgreSQL   |
+|                                      |                                      | (Debian) và image sso (Ubuntu)       |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | gitleaks v8.30.1                     | MIT                                  | Quét secret trong CI, chạy trong     |
 |                                      |                                      | container                            |
@@ -263,6 +268,13 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/licenses/dependency-excepti
 | reuse 6.3.0 (pipx run)               | Apache-2.0, GPL-3.0-or-later (mã);   | Kiểm chuẩn REUSE (reuse lint) trong  |
 |                                      | CC0-1.0, CC-BY-SA-4.0 (tài liệu)     | CI; không đóng gói vào sản phẩm      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
+| Marp CLI                             | MIT                                  | Xuất slide docs/TRINH_BAY.md trên    |
+|                                      |                                      | máy của người phát triển             |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| FFmpeg                               | GPL-2.0-or-later (bản có libx264)    | Mã hóa video của trang docs trên máy |
+|                                      |                                      | của người phát triển; không phát     |
+|                                      |                                      | hành kèm                             |
++--------------------------------------+--------------------------------------+--------------------------------------+
 | Docker Engine, Docker Compose v2 [8] | Apache-2.0                           | Chạy stack; cần trên máy chạy        |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | curl, jq                             | giấy phép curl (OSI), MIT            | Bộ cài và dxos gọi API, đọc JSON     |
@@ -280,7 +292,7 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/licenses/dependency-excepti
 | GitHub Actions (actions/*, docker/*, | MIT, Apache-2.0, ISC, 0BSD,          | Chỉ trong CI, ghim theo SHA          |
 | github/*, ossf/*)                    | BlueOak-1.0.0                        |                                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| Model suy luận [9]                   | Do người vận hành chọn               | Không đóng gói, không chọn model;    |
+| Mô hình ngôn ngữ [9]                 | Do người vận hành chọn               | Không đóng gói, không chọn model;    |
 |                                      |                                      | người vận hành tự cấp                |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | llama.cpp b12387 [10]                | MIT                                  | Runtime inference self-host do       |
@@ -338,7 +350,7 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/licenses/dependency-excepti
     Docker Desktop là sản phẩm riêng theo điều khoản thương mại của Docker, không thuộc OSI; DX-OS không cần nó, và trên Linux dùng Docker Engine.
     Các công cụ ở dòng này là phần mềm cài sẵn trên máy chạy, DX-OS không đóng gói hay phân phối lại chúng.
 
-[9] Model suy luận: repository không đóng gói trọng số và không chọn model nào.
+[9] Mô hình ngôn ngữ: repository không đóng gói trọng số và không chọn mô hình ngôn ngữ nào.
     Model có điều khoản sử dụng riêng của bên phát hành, nên người vận hành tự chọn, tự tải và tự chịu trách nhiệm với các điều khoản đó.
 
 [10] llama.cpp b12387: MIT, Copyright (c) 2023-2026 The ggml authors.
@@ -426,7 +438,8 @@ find-sec-bugs    https://find-sec-bugs.github.io/ | https://github.com/find-sec-
 ================================
 
 Mọi giấy phép của dự án và của thành phần dùng đều thuộc danh sách của OSI (https://opensource.org/licenses), trừ các trường hợp dưới đây.
-.github/scripts/check_licenses.py kiểm ngoại lệ của gói theo .github/licenses/dependency-exceptions.json và kiểm phạm vi dữ liệu CC-BY-4.0 trong REUSE.toml.
+.github/scripts/check_licenses.py chỉ nhận một gói ngoài danh sách khi gói được nêu tên kèm lý do ở .github/licenses/dependency-exceptions.json.
+Với REUSE.toml, script chặn mọi giấy phép ngoài danh sách, trừ CC-BY-4.0 ở đúng các đường dẫn dữ liệu của bộ phân loại.
 .github/scripts/check_license_inventory.py áp cùng luật cho mọi gói ở docs/DEPENDENCY_INVENTORY.md, kể cả gói dev, gói test và plugin build.
 
 Dữ liệu chỉ đọc lúc dựng trang tài liệu, không có trong trang đã dựng:
@@ -438,11 +451,14 @@ Dữ liệu ngoài dùng lúc huấn luyện bộ phân loại tiếng Việt, l
 
 Dữ liệu đội biên soạn và định nghĩa nhãn của bộ phân loại dùng CC-BY-4.0 theo phạm vi khai trong REUSE.toml.
 Tệp kiểm đối chiếu Python–Node trích từ dữ liệu đội biên soạn và dùng cùng giấy phép CC-BY-4.0.
-Trọng số do đội huấn luyện dùng Apache-2.0.
-Image trợ lý chứa ba tệp trọng số onestop.json, support.json và clinic.json.
 
 Phông biểu tượng nằm trong gói thư viện, phát hành cùng bản build web:
   - Codicons (codicon.ttf trong monaco-editor 0.57.0): CC-BY-4.0, phông của Microsoft; ghi công và liên kết giấy phép ở third-party-licenses.txt của bản build web và ở /licenses của image frontend.
+
+Dữ liệu đóng trong thư viện Apache PDFBox 3.0.8 (Apache-2.0), nằm trong jar của image backend; thư viện được dùng nguyên bản, và văn bản giấy phép kèm ghi công ở /licenses/THIRD-PARTY-LICENSES-backend.txt của image:
+  - Số đo của 14 phông chuẩn PDF (tệp AFM): điều khoản riêng của Adobe (SPDX APAFML), cho dùng, sao chép và phân phối không thu phí khi giữ thông báo.
+  - Hình ký hiệu lấy từ Font Awesome: CC-BY-4.0.
+  - Hồ sơ màu CMYK (ICC): CC0-1.0.
 
 Công cụ dựng backend (plugin Maven), không có trong image hay jar của sản phẩm:
   - org.jdom:jdom2 2.0.6.1: giấy phép JDOM, văn bản của Apache-1.1 bỏ điều khoản ghi nhận, kiểu BSD; do SpotBugs dùng.
@@ -458,7 +474,15 @@ Công cụ không phân phối:
   - reuse (pipx run, chỉ trong CI): mã theo Apache-2.0 và GPL-3.0-or-later; tài liệu của công cụ theo CC0-1.0 và CC-BY-SA-4.0, không dùng và không phân phối.
   - Docker Desktop: sản phẩm riêng, không thuộc OSI, DX-OS không cần (xem [8]).
 
-Gói hệ điều hành và gói ngôn ngữ nằm sẵn trong image bên thứ ba mà dự án kéo nguyên bản, không đóng gói, không sửa và không phân phối lại; giấy phép ngoài OSI của chúng hiện ở cột Ngoài OSI của docs/IMAGE_PACKAGES.md, và các ví dụ nổi bật ở các ghi chú về ClamAV, cầu nối MQTT, Prometheus và Grafana:
+Lớp nền của image dự án phát hành lên GHCR được phân phối lại cùng image:
+  - backend, monitor: eclipse-temurin:21-jre-alpine, không sửa.
+  - sso: eclipse-temurin:21-jre-jammy (Ubuntu), không sửa.
+  - frontend, portal: nginx:1.30-alpine-slim, không sửa.
+  - assistant: node:24.16.0-alpine, đã xóa npm, corepack và yarn.
+  - clamav: clamav/clamav:1.5.4, đã xóa libclamunrar.
+Gói ngoài OSI trong các lớp đó hiện ở cột Ngoài OSI của docs/IMAGE_PACKAGES.md; nơi lấy nguồn của gói hệ điều hành và thành phần GPL ở /licenses/SOURCES.txt của từng image.
+
+Gói hệ điều hành và gói ngôn ngữ nằm sẵn trong image bên thứ ba, ở image dự án kéo nguyên bản khi chạy và ở lớp nền nêu trên, giữ giấy phép của nhà phân phối; giấy phép ngoài OSI của chúng hiện ở cột Ngoài OSI của docs/IMAGE_PACKAGES.md, và các ví dụ nổi bật ở các ghi chú về ClamAV, cầu nối MQTT, Prometheus và Grafana:
   - libbz2 1.0.8 (giấy phép bzip2, kiểu BSD), sqlite-libs 3.53.4 (phạm vi công cộng) và ncurses 6.6 (giấy phép X11): image python của cầu nối MQTT.
   - tzdata (phạm vi công cộng): các image eclipse-mosquitto, python và grafana.
   - Tài liệu của go-digest (CC-BY-SA-4.0), mô-đun Go biên dịch vào image prometheus; mã của nó theo Apache-2.0.

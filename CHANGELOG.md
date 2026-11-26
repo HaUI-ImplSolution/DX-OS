@@ -7,10 +7,21 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ## [Unreleased]
 
-### Giao diện
+### Trợ lý nghiệp vụ (tùy chọn)
 
-- Trợ lý dùng bộ phân loại tiếng Việt tự huấn luyện để gợi ý loại hồ sơ, mức ưu tiên hoặc dịch vụ trong các mẫu `onestop`, `support_desk` và `clinic_appointment`.
-- Hộp việc có nút **Rà loại hồ sơ** để rà tối đa 25 hồ sơ mỗi lượt và mở đề xuất từng hồ sơ được đánh dấu **Cần rà**, kèm độ tự tin của từng gợi ý.
+- Trợ lý dùng bộ phân loại hồ sơ tiếng Việt do đội tự huấn luyện, chạy trên CPU mà không cần mô hình ngôn ngữ, để gợi ý loại hồ sơ, mức ưu tiên hoặc dịch vụ trong các mẫu `onestop`, `support_desk` và `clinic_appointment`, kèm cụm chữ của hồ sơ làm căn cứ.
+- Hộp việc có nút **Rà loại hồ sơ** để rà tối đa 25 hồ sơ mỗi lượt (`POST /assistant-api/v1/me/reviews`) và mở đề xuất từng hồ sơ được đánh dấu **Cần rà**, kèm độ tự tin của từng gợi ý.
+- `ASSISTANT_CLASSIFIERS_DIR` chọn thư mục trọng số khác, và `GET /assistant-api/v1/me` trả thêm `model.classifiers` và `model.llmConfigured`.
+- Mã huấn luyện, dữ liệu, thẻ mô hình và trọng số ở `tools/classifier/`; trọng số theo Apache-2.0, dữ liệu đội biên soạn theo CC-BY-4.0, câu lạc đề từ MASSIVE được tải lúc huấn luyện.
+
+### Tệp mô hình
+
+- Nhiệm vụ `ai.tasks` nhận `engine` (`llm` khi bỏ trống, hoặc `classifier`) và `classifier`; nhiệm vụ `classifier` đọc các trường `text` và đề xuất cho một trường `choice` đơn trị.
+
+### Giấy phép
+
+- Danh sách ngoại lệ nêu cả dữ liệu đóng trong thư viện PDFBox của image `backend` và lớp nền được phân phối lại của các image phát hành.
+- `third-party-licenses.txt` của web và trang docs kèm cả tệp thông báo bên thứ ba của thư viện, và văn bản chuẩn của giấy phép cho gói không kèm tệp giấy phép.
 
 ## [2.1.0] - 2026-11-26
 

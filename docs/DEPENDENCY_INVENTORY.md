@@ -21,10 +21,10 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 | Keycloak trong image sso | 438 |
 | ClamAV: phần nhúng trong image clamav | 13 |
 | Image | 22 |
-| Công cụ CI và dựng | 12 |
+| Công cụ CI và dựng | 23 |
 | Công cụ của máy chạy | 8 |
 | Thư viện Python | 1 |
-| Phông và model | 3 |
+| Phông và model | 10 |
 
 ## npm: frontend
 
@@ -2775,12 +2775,23 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 | `DuckDB` | 1.4.1 | MIT | runtime |  |
 | `DuckDB httpfs` | 1.4.1 | MIT | runtime |  |
 | `DuckDB postgres` | 1.4.1 | MIT | runtime |  |
+| `FFmpeg` | machine | GPL-2.0-or-later | dev |  |
+| `Marp CLI` | machine | MIT | dev |  |
 | `Maven` | 3.10.0 | Apache-2.0 | build |  |
 | `Maven Wrapper` | 3.3.4 | Apache-2.0 | build |  |
 | `Trivy` | 0.58.1 | Apache-2.0 | ci |  |
 | `actionlint` | 1.7.12 | MIT | ci |  |
+| `com.google.code.findbugs:jsr305` | 3.0.2 | Apache-2.0 | build |  |
+| `com.google.errorprone:error_prone_annotations` | 2.21.1 | Apache-2.0 | build |  |
+| `com.google.googlejavaformat:google-java-format` | 1.27.0 | Apache-2.0 | build |  |
+| `com.google.guava:failureaccess` | 1.0.1 | Apache-2.0 | build |  |
+| `com.google.guava:guava` | 32.1.3-jre | Apache-2.0 | build |  |
+| `com.google.guava:listenablefuture` | 9999.0-empty-to-avoid-conflict-with-guava | Apache-2.0 | build |  |
+| `com.google.j2objc:j2objc-annotations` | 2.8 | Apache-2.0 | build |  |
+| `com.h3xstream.findsecbugs:findsecbugs-plugin` | 1.14.0 | LGPL-3.0-or-later | build |  |
 | `cyclonedx-maven-plugin` | 2.9.1 | Apache-2.0 | build |  |
 | `gitleaks` | 8.30.1 | MIT | ci |  |
+| `org.checkerframework:checker-qual` | 3.37.0 | MIT | build |  |
 | `restic` | 0.17.3 | BSD-2-Clause | runtime |  |
 | `reuse` | 6.3.0 | Apache-2.0 AND GPL-3.0-or-later | ci |  |
 
@@ -2807,6 +2818,13 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 
 | Tên | Phiên bản | Giấy phép | Phạm vi | Ngoại lệ |
 |---|---|---|---|---|
+| `Adobe Core 14 font metrics (AFM files in pdfbox)` | 3.0.8 | APAFML | prod | Adobe's own permission notice for the 14 AFM files (SPDX APAFML): use, copying and distribution for any purpose without charge, keeping the notices; not an OSI license. Data inside the pdfbox jar of the backend image, with its text in /licenses of that image. |
+| `CMYK ICC profile (in pdfbox)` | 3.0.8 | CC0-1.0 | prod | Color profile released under CC0-1.0, not an OSI license. Data inside the pdfbox jar of the backend image. |
 | `Codicons (codicon.ttf in monaco-editor)` | 0.57.0 | CC-BY-4.0 | prod | Icon font of Microsoft vscode-codicons under CC-BY-4.0 (its code is MIT), shipped as codicon.ttf inside monaco-editor. It is an asset, not code; the web bundle carries its attribution in third-party-licenses.txt. |
+| `DX-OS record classifier data` | vi-2026-11-25-v1 | CC-BY-4.0 | build | CC-BY-4.0 data of the team (sentences and label definitions), not code. In the repository at the paths that check_licenses.py names; in no image. |
+| `DX-OS record classifier weights` | vi-2026-11-25-v1 | Apache-2.0 | prod |  |
+| `Font Awesome shapes (in pdfbox)` | 3.0.8 | CC-BY-4.0 | prod | Glyph shapes of Font Awesome under CC-BY-4.0, not an OSI license. Data inside the pdfbox jar of the backend image, with its attribution in /licenses of that image. |
+| `Liberation, Lohit and Noto Sans Devanagari fonts (in pdfbox and fontbox)` | 3.0.8 | OFL-1.1 | prod |  |
+| `MASSIVE vi-VN` | 1.0 | CC-BY-4.0 | build | CC-BY-4.0 data of Amazon, not code. Downloaded when the classifier is trained; in no image or release. |
 | `Noto Sans` | 2022 | OFL-1.1 | prod |  |
 | `llama.cpp` | b12387 | MIT | optional |  |

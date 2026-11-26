@@ -402,15 +402,11 @@ Tin của dòng `escalated` có thêm `level` (mức, từ 1) và `round` (lần
 Mỗi thực thể có thể khai báo từ một đến tám nhiệm vụ dưới `ai.tasks`, với khóa là tên nhiệm vụ.
 Mỗi nhiệm vụ cần `input_fields` và `output_field`.
 `label` mặc định là tên nhiệm vụ.
-`engine` nhận `llm` (mặc định) hoặc `classifier`.
+`engine` chọn mô hình chạy nhiệm vụ: `classifier` là bộ phân loại tự huấn luyện đi kèm trợ lý, `llm` là mô hình ngôn ngữ do người vận hành tự chạy.
+Bỏ `engine` thì nhiệm vụ là `llm`.
 
-Với `llm`, `instruction` và `sources` là bắt buộc.
-`sources` gồm các mã nguồn tham khảo do dịch vụ trợ lý quản lý.
-Đầu vào có thể gồm trường đơn vị ở dạng chỉ đọc và đầu ra là trường `text` hoặc `choice` đơn trị.
-`max_length` giới hạn độ dài đề xuất từ 1 đến 2000 ký tự, mặc định là 500.
-Nhiệm vụ `llm` không được khai `classifier`.
-
-Với `classifier`, tên bộ phân loại phải khớp `^[a-z][a-z0-9_]{0,39}$` và tương ứng với tên tệp trọng số đã nạp.
+Với `classifier`, khóa `classifier` là bắt buộc, khớp `^[a-z][a-z0-9_]{0,39}$` và tương ứng với tên tệp trọng số đã nạp.
+Trợ lý có sẵn `onestop`, `support` và `clinic`; nghiệp vụ khác cần dữ liệu và huấn luyện riêng bằng [`tools/classifier/`](../tools/classifier/README.md).
 `input_fields` chỉ gồm các trường `text`, theo thứ tự dùng khi huấn luyện.
 Đầu ra phải là một trường `choice` đơn trị có tập lựa chọn trùng với tập nhãn nghiệp vụ của bộ phân loại.
 `instruction` là tùy chọn, `sources` không được khai và `max_length` chỉ áp dụng cho LLM.
@@ -425,6 +421,12 @@ ai:
       input_fields: [reason]
       output_field: kind
 ```
+
+Với `llm`, `instruction` và `sources` là bắt buộc.
+`sources` gồm các mã nguồn tham khảo do dịch vụ trợ lý quản lý.
+Đầu vào có thể gồm trường đơn vị ở dạng chỉ đọc và đầu ra là trường `text` hoặc `choice` đơn trị.
+`max_length` giới hạn độ dài đề xuất từ 1 đến 2000 ký tự, mặc định là 500.
+Nhiệm vụ `llm` không được khai `classifier`.
 
 Trường đầu ra của nhiệm vụ không được dùng để cấp nhóm thành viên.
 Khai báo nhiệm vụ không cấp thêm quyền; người xác nhận vẫn phải có quyền sửa hồ sơ.

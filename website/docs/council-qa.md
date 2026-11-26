@@ -45,7 +45,8 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
   Đội tự viết phần nối chúng theo một tệp mô hình.
 - Java 21 và Spring Boot vì ranh giới giữa các module kiểm được lúc biên dịch.
 - Mã, tài liệu, ảnh, video và sơ đồ của đội theo Apache-2.0, hai tệp phông Noto Sans theo OFL-1.1; cả hai giấy phép đều được OSI công nhận và không xung đột.
-  Mọi thành phần khác đều theo giấy phép OSI; không dùng BUSL, SSPL, RSAL, MSCL hay phần Enterprise.
+  Dữ liệu của bộ phân loại hồ sơ theo CC-BY-4.0, giấy phép dữ liệu mở.
+  Thành phần phần mềm bên thứ ba theo giấy phép OSI; không dùng BUSL, SSPL, RSAL, MSCL hay phần Enterprise.
 - Bảng tham chiếu của đề có năm thành phần không đạt OSI: Vault, n8n, Redpanda, MongoDB và immudb.
   Đội không dùng thành phần nào trong số này; đó là quyết định thiết kế theo cam kết chỉ dùng phần mềm nguồn mở.
 - **Bằng chứng:** [Thành phần được chọn và không chọn](./dependencies.md); `DEPENDENCIES.txt`; `sbom/`; job `Check licenses` của workflow `Compliance`.
@@ -75,16 +76,18 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - **H, môi trường số chung:** một lần đăng nhập, vai và đơn vị khai trong mô hình; sinh viên chỉ thấy hồ sơ của mình, cán bộ chỉ thấy hồ sơ của đơn vị mình hoặc được giao, và xử lý từ hộp việc.
 - **P, rào chắn và luồng tự động:** trạng thái chỉ đổi qua quy trình (gọi thẳng API để đổi bị chặn); từ chối và trả lại bắt buộc có lý do; người tạo không tự quyết hồ sơ của mình; hạn xử lý, quá hạn lên đầu hộp việc; việc sau khi duyệt chạy qua hàng đợi và được thử lại.
 - **D, một nguồn sự thật:** dữ liệu nghiệp vụ, lịch sử và hàng đợi cùng nằm ở PostgreSQL; lịch sử hồ sơ nối thành chuỗi hash; mọi thay đổi báo ra ngoài bằng webhook có chữ ký.
-- **I, trí tuệ:** một thành phần, trợ lý tùy chọn đề xuất giá trị một trường, người xác nhận trước khi ghi (xem câu 6 và 11).
+- **I, trí tuệ:** một thành phần, trợ lý tùy chọn đề xuất giá trị một trường bằng bộ phân loại tự huấn luyện, người xác nhận trước khi ghi (xem câu 6 và 11).
 - **Bằng chứng:** `python3 e2e/api/check_demo.py` (tám tiêu chí của kịch bản trình diễn); `check_case.py`, `check_process.py`, `check_events.py`.
 
 ## 6. AI nằm ở đâu, dữ liệu và giới hạn là gì?
 
-- Trợ lý nghiệp vụ đã đề xuất giá trị một trường từ hồ sơ và nguồn cấu hình; người dùng sửa, hủy hoặc xác nhận trước khi ghi qua API Core.
-- Hỏi đáp có trích nguồn, tìm kiếm tri thức và tác tử nghe sự kiện nằm ngoài phạm vi; mọi đề xuất của trợ lý cần người xác nhận trước khi ghi, và suy luận chạy tại chỗ.
-- Suy luận AI: hỗ trợ endpoint chuẩn mở tương thích OpenAI API hoặc llama.cpp chạy self-host; DX-OS không áp đặt hay đóng gói model mặc định để đảm bảo 100% chuẩn OSI; người vận hành tự cấp endpoint và model phù hợp.
+- Trợ lý nghiệp vụ tùy chọn đề xuất giá trị một trường của hồ sơ và rà hồ sơ ở Hộp việc; người dùng sửa, hủy hoặc xác nhận trước khi ghi qua API Core.
+- Mô hình do đội tự huấn luyện: bộ phân loại hồ sơ tiếng Việt chạy trên CPU ngay trong trợ lý, không cần mô hình ngoài; đề xuất kèm cụm chữ của hồ sơ làm căn cứ, và từ chối khi không đủ căn cứ.
+- Dữ liệu: câu huấn luyện là bản nháp viết với công cụ AI, đội biên soạn và duyệt, theo CC-BY-4.0; câu lạc đề lấy từ MASSIVE; bộ nghiệm thu do đội viết tay.
+  Mã, trọng số và dữ liệu được công bố.
+- Giới hạn: số đo lấy trên câu do đội viết, chưa trên hồ sơ thật; bộ phân loại mới bật cho ba mẫu đạt nghiệm thu; hỏi đáp có trích nguồn, tìm kiếm tri thức và tác tử nghe sự kiện nằm ngoài phạm vi.
 - Lõi đã có sẵn chỗ để nối: hàng đợi sự kiện, webhook có chữ ký và `GET /api/v1/events` cho tác tử đọc việc mới, còn ghi lại vẫn đi qua API chung nên quyền, quy tắc và quy trình vẫn áp dụng.
-- **Bằng chứng:** [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md), dòng "Phạm vi AI"; `docs/dynamic-core/README.md`, mục "Cam kết nguồn mở".
+- **Bằng chứng:** `tools/classifier/MODEL_CARD.md`; `tools/classifier/data/DATA_CARD.md`; [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md), dòng "Phạm vi AI"; `docs/dynamic-core/README.md`, mục "Cam kết nguồn mở".
 
 ## 7. Một thành phần ngừng thì hệ thống ra sao?
 
@@ -125,7 +128,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 
 ## 11. Còn gì chưa làm?
 
-- Phần AI mới có một thành phần, trợ lý đề xuất giá trị một trường; chưa có tìm kiếm tri thức có nguồn, hỏi đáp sinh câu trả lời và tác tử nghe sự kiện.
+- Phần AI mới có một thành phần, trợ lý đề xuất giá trị một trường cho vài mẫu đã huấn luyện; chưa có tìm kiếm tri thức có nguồn, hỏi đáp sinh câu trả lời và tác tử nghe sự kiện.
 - Duyệt nhiều cấp tuần tự và rẽ nhánh theo ngưỡng khai báo được bằng quy trình tự khai báo, mới kiểm tay trên stack tạm chứ chưa có kiểm tự động.
 - Hồ dữ liệu có phần lưu trữ hồ sơ đã đóng theo lịch và `dxos archive query` truy vấn từng lần chạy; hai nguyên lý kế tiếp của đề mới được đáp ứng một phần: dữ liệu vận hành mới vào qua bộ mô phỏng IT/OT và chưa có bản sao số; phả hệ mới dừng ở danh mục dữ liệu của mô hình, chưa đến từng trường.
 - Một bản backend; chưa chịu lỗi nhiều nút; chưa thử tải lớn.
@@ -195,8 +198,8 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - Mã, tài liệu và ảnh của repository theo Apache-2.0, hai tệp phông theo OFL-1.1; không có thành phần AGPL nào trong cây mã; Grafana (AGPL-3.0) chỉ là image tùy chọn, chạy nguyên bản ở dịch vụ riêng.
 - Mỗi bản phát hành có gói `.tar.gz` kèm `.sha256` và SBOM CycloneDX; không dùng định dạng đóng.
 - Job `Check licenses` của workflow `Compliance` chạy ở mọi pull request: kiểm header, giấy phép của từng gói trong SBOM, danh mục image, và `docs/DEPENDENCY_INVENTORY.md` liệt kê mọi gói kể cả gói dev, test và plugin build; mỗi image phát hành kèm `LICENSE`, `NOTICE` và giấy phép của thư viện ở `/licenses`, và `docs/IMAGE_PACKAGES.md` liệt kê gói bên trong các image bên thứ ba.
-- Cam kết của đội chặt hơn thể lệ: cả công cụ, mô hình AI (khi có) và dữ liệu đều phải mở; thành phần không đạt đã gỡ khỏi bản phát hành.
-- Mọi ngoại lệ ngoài danh sách OSI nêu tên kèm lý do ở phần "Giấy phép ngoài danh sách OSI" của `DEPENDENCIES.txt` và ở `docs/DEPENDENCY_INVENTORY.md`: dữ liệu chỉ đọc lúc dựng trang tài liệu, công cụ dựng và công cụ không phân phối, phông biểu tượng Codicons (CC-BY-4.0) trong bản build web, một mô-đun Go (phạm vi công cộng) trong tệp chạy pgschema, và vài thành phần nằm sẵn trong image bên thứ ba mà dự án kéo nguyên bản, như gói hệ điều hành của image Debian; image ClamAV của dự án đã bỏ `libclamunrar` (giấy phép UnRAR).
+- Cam kết của đội chặt hơn thể lệ: cả công cụ, mô hình AI và dữ liệu đều phải mở; thành phần không đạt đã gỡ khỏi bản phát hành.
+- Mọi ngoại lệ ngoài danh sách OSI nêu tên kèm lý do ở phần "Giấy phép ngoài danh sách OSI" của `DEPENDENCIES.txt` và ở `docs/DEPENDENCY_INVENTORY.md`: dữ liệu chỉ đọc lúc dựng trang tài liệu, công cụ dựng và công cụ không phân phối, phông biểu tượng Codicons (CC-BY-4.0) trong bản build web, dữ liệu đóng trong thư viện PDFBox của image backend (tệp số đo phông của Adobe, hình Font Awesome theo CC-BY-4.0, hồ sơ màu theo CC0-1.0), dữ liệu của bộ phân loại hồ sơ (CC-BY-4.0), một mô-đun Go (phạm vi công cộng) trong tệp chạy pgschema, và vài thành phần nằm sẵn trong image bên thứ ba mà dự án kéo nguyên bản hoặc dùng làm lớp nền của image phát hành, như gói hệ điều hành của image Debian, Ubuntu; image ClamAV của dự án đã bỏ `libclamunrar` (giấy phép UnRAR).
 - **Bằng chứng:** `LICENSE`, `NOTICE`, `DEPENDENCIES.txt`; `python3 .github/scripts/check_licenses.py`; `python3 .github/scripts/check_license_inventory.py check`; [Thành phần được chọn và không chọn](./dependencies.md); [Rà soát PoF](./pof-audit.md).
 
 ## 19. Mã có phần do công cụ AI viết, đội kiểm soát thế nào?

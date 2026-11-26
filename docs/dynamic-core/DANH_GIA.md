@@ -18,7 +18,7 @@ Nguồn: [đề thi](https://vfossa.vn/tin-tuc/de-thi-phan-mem-nguon-mo-olp-2026
 | Dữ liệu có cấu trúc | PostgreSQL; lược đồ, ràng buộc và API có quyền theo dòng sinh từ mô hình | Đạt |
 | Dữ liệu phi cấu trúc | SeaweedFS, tệp đính kèm theo quyền của hồ sơ, ClamAV; quét mã độc bật mặc định, tệp EICAR bị chặn trong CI | Đạt |
 | Động cơ luồng công việc | Flowable nhúng, BPMN sinh từ mô hình, ba họ mẫu | Đạt |
-| Ít nhất một ứng dụng Tầng 2 trong H-P-D-I | Ứng dụng web dựng từ metadata và bảng điều khiển, chạm H, P và D; chữ I có một thành phần là trợ lý đề xuất giá trị trường từ hồ sơ và nguồn tham khảo, chạy self-host qua endpoint suy luận chuẩn mở, tắt mặc định, người dùng xác nhận trước khi lưu; thiếu tìm kiếm toàn văn và theo ngữ nghĩa, quản trị tác tử AI, OCR và hỏi đáp trên tri thức nội bộ (đề không nêu số thành phần phải làm); `README.md` có mục đối chiếu với đề | Đạt một phần |
+| Ít nhất một ứng dụng Tầng 2 trong H-P-D-I | Ứng dụng web dựng từ metadata và bảng điều khiển, chạm H, P và D; chữ I có một thành phần là trợ lý đề xuất giá trị trường bằng bộ phân loại tiếng Việt do đội tự huấn luyện (mã, trọng số và dữ liệu mở), chạy trên CPU, kèm cụm chữ của hồ sơ làm căn cứ và rà hồ sơ ở Hộp việc, tắt mặc định, người dùng xác nhận trước khi lưu; thiếu tìm kiếm toàn văn và theo ngữ nghĩa, quản trị tác tử AI, OCR và hỏi đáp trên tri thức nội bộ (đề không nêu số thành phần phải làm); `README.md` có mục đối chiếu với đề | Đạt một phần |
 | Giấy phép OSI, mã công khai, có bản phát hành trước khi nộp | Apache-2.0; mười bản `v1.0.0` đến `v2.1.0` | Đạt |
 
 Các giao diện đi kèm được tính như sau.
@@ -33,7 +33,7 @@ Keycloak Admin Console là giao diện của dịch vụ nguồn mở đi kèm c
 | (i) Tách theo vòng đời dữ liệu, đẩy lịch sử xuống hồ dữ liệu | Hồ sơ đã đóng tự ghi ra Parquet trong kho đối tượng theo lịch (kho lạnh; PostgreSQL là kho ấm), kèm manifest và hash; `dxos archive query` truy vấn chỉ đọc từng lần chạy bằng DuckDB; phạm vi là kho hồ sơ, ghi ra tệp Parquet không kèm lớp bảng | Đạt |
 | (ii) Hội tụ IT và OT, bản sao số | Số đo của thiết bị giả lập thành hồ sơ sự cố qua API chung hoặc qua cầu nối MQTT tùy chọn, đi cùng quy trình và quyền với hồ sơ hành chính; lõi không giữ trạng thái thiết bị nên không có bản sao số | Đạt một phần |
 | (iii) Dòng chảy, phả hệ, chất lượng dữ liệu | Mô hình là danh mục dữ liệu, tab Danh mục dữ liệu kèm phả hệ từng trường, lịch sử nối chuỗi hash | Đạt |
-| (iv) Zero-Trust, GitOps, kiểm dịch mã độc, tự phục hồi | Token kiểm ở cổng và ở lõi; trợ lý chạy trên network nội bộ, chỉ ra được tới endpoint inference qua một proxy; mô hình áp dụng theo kế hoạch, phần lệch được sửa khi áp dụng lại; container bị xóa được chạy lại; hạ tầng và mô hình kéo từ git bằng `dxos gitops`; quét mã độc bật mặc định, và nhóm chế độ lõi của CI kiểm tệp EICAR bị chặn; phạm vi là một máy chạy Compose, GitOps và tự phục hồi chạy trên Compose | Đạt |
+| (iv) Zero-Trust, GitOps, kiểm dịch mã độc, tự phục hồi | Token kiểm ở cổng và ở lõi; trợ lý chạy trên network nội bộ không có đường ra tự do; mô hình áp dụng theo kế hoạch, phần lệch được sửa khi áp dụng lại; container bị xóa được chạy lại; hạ tầng và mô hình kéo từ git bằng `dxos gitops`; quét mã độc bật mặc định, và nhóm chế độ lõi của CI kiểm tệp EICAR bị chặn; phạm vi là một máy chạy Compose, GitOps và tự phục hồi chạy trên Compose | Đạt |
 
 ## 3. Bảy cụm dịch vụ của Tầng 1
 
@@ -153,7 +153,7 @@ Backend dùng SpotBugs và web dùng Biome (ESLint không chạy được với 
 
 ## 9. Kết luận
 
-Điểm vững: lõi đáp ứng đủ các thành phần bắt buộc của đề và được kiểm tự động trên stack thật; giấy phép của dự án và của mọi thành phần dùng đều thuộc danh sách OSI, trừ hai gói dữ liệu có ngoại lệ ghi rõ; kho mã có nhiều tệp chuẩn hơn phần lớn dự án trong khảo sát.
+Điểm vững: lõi đáp ứng đủ các thành phần bắt buộc của đề và được kiểm tự động trên stack thật; giấy phép của dự án và của mọi thành phần dùng đều thuộc danh sách OSI, trừ các ngoại lệ nêu tên và lý do ở phần "Giấy phép ngoài danh sách OSI" của `DEPENDENCIES.txt`; kho mã có nhiều tệp chuẩn hơn phần lớn dự án trong khảo sát.
 
 Điểm yếu, theo mức nặng giảm dần:
 

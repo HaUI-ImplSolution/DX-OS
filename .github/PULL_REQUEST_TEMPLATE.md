@@ -27,4 +27,4 @@ Closes #
 - [ ] Dependency mới có giấy phép OSI, đã cập nhật `DEPENDENCIES.txt` và `sbom/`
 - [ ] Không fork, vá hay đóng gói mã nguồn của dự án khác
 - [ ] Mã lõi không chứa tên thực thể, vai hay luồng của một lĩnh vực
-- [ ] Không có secret, `.env`, dữ liệu thật hay trọng số mô hình trong diff
+- [ ] Không có secret, `.env`, dữ liệu thật trong diff; trọng số mô hình chỉ là trọng số đội tự huấn luyện, đã khai trong `component-catalog.json`

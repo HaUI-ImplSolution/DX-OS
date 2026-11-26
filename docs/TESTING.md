@@ -340,18 +340,19 @@ Kiểm bằng đúng các lệnh và thao tác trong tài liệu.
 
 ### Trợ lý (tùy chọn)
 
-54. Theo [`assistant/README.md`](../assistant/README.md), liên kết SSO, cấu hình inference/nguồn của bản cài và khai báo nhiệm vụ `ai.tasks`.
-    Mở hồ sơ, tạo đề xuất, xem nguồn, sửa hoặc hủy, rồi xác nhận và đối chiếu phiên bản/lịch sử Core.
-    Kiểm hai chủ không đọc/ghi chéo; giá trị trùng không tạo lịch sử sửa và model tắt không cản nghiệp vụ.
-    Kiểm container trợ lý không ra được Internet và chỉ `assistant-egress` tới được endpoint inference; "Hủy liên kết" làm trợ lý không đọc được hồ sơ nữa và xóa phiên của Keycloak; `dist/rotate.js` giữ nguyên liên kết sau khi thay master key.
-    Kiểm nâng cấp giữ liên kết SSO và lịch sử, không thực thi lại đề xuất cũ; sau khôi phục từ sao lưu, người dùng liên kết lại tài khoản.
-
-55. Bật trợ lý không cần LLM, rồi liên kết tài khoản cán bộ.
+54. Theo [`assistant/README.md`](../assistant/README.md), bật trợ lý không cấu hình mô hình ngôn ngữ, áp dụng một mẫu có nhiệm vụ phân loại, rồi liên kết tài khoản cán bộ.
     Bấm "Rà loại hồ sơ" ở Hộp việc và kiểm hồ sơ cần rà lên đầu, có màu nổi bật.
     Kiểm mỗi hồ sơ cần rà có độ tự tin theo phần trăm, và tài khoản chưa liên kết bấm rà thì được nhắc liên kết.
     Bấm "Cần rà" để mở hồ sơ, xem "Căn cứ trong hồ sơ" và xác nhận lưu đề xuất.
     Rà lại và kiểm số hồ sơ cần rà giảm.
     Kiểm ghi chú phòng khám chỉ nêu triệu chứng không có đề xuất.
+    Kiểm hai chủ không đọc/ghi chéo, giá trị trùng không tạo lịch sử sửa và tắt trợ lý không cản nghiệp vụ.
+    Kiểm "Hủy liên kết" làm trợ lý không đọc được hồ sơ nữa và xóa phiên của Keycloak; `dist/rotate.js` giữ nguyên liên kết sau khi thay master key.
+    Kiểm nâng cấp giữ liên kết SSO và lịch sử, không thực thi lại đề xuất cũ; sau khôi phục từ sao lưu, người dùng liên kết lại tài khoản.
+
+55. Nhiệm vụ mô hình ngôn ngữ (tùy chọn): cấu hình endpoint suy luận và nguồn của bản cài.
+    Mở hồ sơ, tạo đề xuất, xem nguồn, sửa hoặc hủy, rồi xác nhận và đối chiếu phiên bản/lịch sử Core.
+    Kiểm container trợ lý không ra được Internet và chỉ `assistant-egress` tới được endpoint inference.
 
 ## 7. Hồi quy
 

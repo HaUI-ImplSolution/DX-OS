@@ -78,6 +78,7 @@ cd ../frontend && npm install && npm run dev
 ## Dependency và dữ liệu
 
 - Chỉ dùng thành phần theo giấy phép được OSI công nhận; `check_licenses.py` chặn giấy phép ngoài danh sách, trừ vài gói có lý do ở `.github/licenses/dependency-exceptions.json`.
+  Dữ liệu huấn luyện theo giấy phép dữ liệu mở; CC-BY-4.0 chỉ được nhận ở các đường dẫn dữ liệu bộ phân loại nêu trong `check_licenses.py`.
 - Không fork, vá hay đóng gói mã nguồn của dự án khác vào repository; dùng bản gốc và cấu hình nó.
 - Đổi dependency thì sinh lại SBOM theo [`sbom/README.md`](./sbom/README.md) và chạy `python3 .github/scripts/check_license_inventory.py generate` (thêm `--maven` khi đổi Maven) để cập nhật [`docs/DEPENDENCY_INVENTORY.md`](./docs/DEPENDENCY_INVENTORY.md), nơi mọi gói, kể cả gói dev, test và plugin build, có phiên bản và giấy phép; vai trò của thành phần cấp cao ghi ở các bảng của [`DEPENDENCIES.txt`](./DEPENDENCIES.txt).
 - Mỗi image do dự án phát hành chép `LICENSE`, `NOTICE` và văn bản giấy phép của thư viện nó chứa vào `/licenses`; bản sao `LICENSE` và `NOTICE` nằm ở thư mục `licenses/` cạnh mỗi Dockerfile (build context không thấy thư mục gốc) và `check_licenses.py` chặn khi lệch tệp gốc.

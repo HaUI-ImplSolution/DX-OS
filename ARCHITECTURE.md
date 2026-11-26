@@ -214,9 +214,10 @@ Flowable đặt `search_path` của kết nối nó dùng về `engine` và khô
   Keycloak Admin Console mặc định không mở ra gateway.
 - Gateway kiểm token cho mọi route API; các route không kiểm token nằm trong danh sách công khai kiểm bởi `e2e/api/check_routes.py`.
 - `dxos start <tệp>...` đưa các tệp mô hình vào qua `deploy/model/` và in kết quả của `ModelBootstrap` cho từng tệp.
-- Dịch vụ tùy chọn [`assistant/`](./assistant/README.md) dùng inference self-host để đề xuất giá trị trường, đọc và ghi qua API Core bằng phiên đăng nhập của người dùng.
+- Dịch vụ tùy chọn [`assistant/`](./assistant/README.md) đề xuất giá trị trường, đọc và ghi qua API Core bằng phiên đăng nhập của người dùng.
+  Mô hình của nó là bộ phân loại hồ sơ tiếng Việt do đội tự huấn luyện ([`tools/classifier/`](./tools/classifier/README.md)), suy luận ngay trong tiến trình trên CPU với trọng số đóng gói trong image.
   Nó có SQLite riêng và không truy cập cơ sở dữ liệu nghiệp vụ.
-  Nó chạy trên network nội bộ; đường ra duy nhất là `assistant-egress`, chỉ tới endpoint inference.
+  Nó chạy trên network nội bộ, và bộ phân loại không cần đường ra Internet.
   Core kiểm quyền cùng `modelVersion` và `version` trong giao dịch ghi.
 - Chi tiết vận hành ở [`docs/OPERATIONS.md`](./docs/OPERATIONS.md), log và audit ở [`docs/MONITORING.md`](./docs/MONITORING.md), webhook và lịch sử chống sửa ở [`docs/INTEGRATIONS.md`](./docs/INTEGRATIONS.md).
 

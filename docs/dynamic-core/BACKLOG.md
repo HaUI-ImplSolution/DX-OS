@@ -39,6 +39,7 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 | Bản chạy công khai | Chưa được CI kiểm hằng ngày (`deploy/online-check.sh` chạy tay hoặc theo cron), và chưa có phương án chạy tại chỗ nếu mạng ở buổi thi có sự cố vì bản công khai chạy trên một máy chủ EC2 qua Internet |
 | Cài trên Windows | Chưa có người dùng Windows thử cài và làm theo `docs/QUICKSTART.md` trong WSL2 với Docker Desktop |
 | Dữ liệu bộ phân loại do Claude soạn | Tập chỉnh 420 câu chưa có người duyệt; chưa có bằng chứng đội đã duyệt các câu gốc huấn luyện; còn phải duyệt hoặc viết lại dữ liệu rồi huấn luyện lại |
+| Điều khoản Anthropic và CC-BY-4.0 của dữ liệu | Câu do Claude soạn được phát hành theo CC-BY-4.0, nhưng điều khoản của Anthropic cấm dùng kết quả để huấn luyện chatbot đa dụng hoặc mô hình sinh văn bản, và CC-BY không cho thêm hạn chế nào ở người dùng sau; thẻ dữ liệu đang để người dùng lại tự chịu trách nhiệm; còn phải chọn một hướng: thay phần do Claude soạn bằng câu đội viết, hoặc hỏi Anthropic về phạm vi cho phép rồi ghi rõ ở thẻ dữ liệu |
 | Bản dữ liệu trên Kaggle | Câu huấn luyện (2.280 câu, repository có 2.490), bảng số đo và tập chỉnh (70 dòng lệch cột, repository đã sửa) trên Kaggle là bản cũ; còn phải cập nhật bản Kaggle hoặc bỏ liên kết ở thẻ dữ liệu và `tools/classifier/README.md` |
 | Video MP4 mã hóa H.264 | Hai video ở `website/docs/images/video` dùng H.264, định dạng có bằng sáng chế; đã có bản GIF; còn phải chuyển sang WebM (VP9 hoặc AV1) hoặc bỏ tệp MP4 |
 

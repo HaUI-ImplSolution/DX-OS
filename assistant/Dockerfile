@@ -24,6 +24,8 @@ RUN chmod 0755 ./classifiers
 
 # One flat layer, so the removed npm, corepack and yarn files are not left in a lower layer.
 FROM scratch
+LABEL org.opencontainers.image.licenses="Apache-2.0" \
+      org.opencontainers.image.source="https://github.com/HaUI-ImplSolution/DX-OS"
 COPY --from=runtime / /
 ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin NODE_VERSION=24.16.0
 WORKDIR /app

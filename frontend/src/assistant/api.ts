@@ -74,19 +74,23 @@ export type AssistantAccount = {
   model: { configured: boolean; llmConfigured?: boolean; classifiers?: string[] };
 };
 
-export function useEntityAssistant(entity: EntityMeta): AssistantAccount["model"] | undefined {
-  return useAssistantModel(declares(entity));
+export function useEntityAssistant(entity: EntityMeta) {
+  return useAssistantStatus(declares(entity));
 }
 
 export function useAssistantModel(declared: boolean): AssistantAccount["model"] | undefined {
+  return useAssistantStatus(declared)?.model;
+}
+
+function useAssistantStatus(declared: boolean) {
   const enabled = useAvailability(declared);
-  const [status, setStatus] = useState<AssistantAccount["model"]>();
+  const [status, setStatus] = useState<{ model?: AssistantAccount["model"]; failed?: true }>();
   useEffect(() => {
     if (!declared || !enabled) return;
     const controller = new AbortController();
     void assistantRequest<AssistantAccount>("/me", "GET", undefined, controller.signal)
-      .then(account => { if (!controller.signal.aborted) setStatus(account.model); })
-      .catch(() => { if (!controller.signal.aborted) setStatus(undefined); });
+      .then(account => { if (!controller.signal.aborted) setStatus({ model: account.model }); })
+      .catch(() => { if (!controller.signal.aborted) setStatus({ failed: true }); });
     return () => controller.abort();
   }, [declared, enabled]);
   return declared && enabled ? status : undefined;
@@ -111,25 +115,13 @@ export type ClassifierReview = RecordTarget & {
   field: string;
   current: string | null;
   suggested: string | null;
+  confidence?: number;
   evidence: string[];
   mismatch: boolean;
 };
 
 export const reviewRecords = (items: RecordTarget[], signal: AbortSignal) =>
-  assistantRequest<{ items: ClassifierReview[] }>("/me/reviews", "POST", { items }, signal);
-
-// Consume the selection once so restoring a browser history entry cannot create another proposal.
-let inboxReview: (RecordTarget & { task: string }) | undefined;
-
-export function selectInboxReview({ model, entity, id, task }: RecordTarget & { task: string }) {
-  inboxReview = { model, entity, id, task };
-}
-
-export function takeInboxReview(model: string, entity: string, id: number | string) {
-  const review = inboxReview;
-  inboxReview = undefined;
-  if (review?.model === model && review.entity === entity && String(review.id) === String(id)) return review.task;
-}
+  assistantRequest<{ items: ClassifierReview[]; skipped: number }>("/me/reviews", "POST", { items }, signal);
 
 // expires and now are both server clock readings, so a browser clock that is off does not matter.
 export type Proposal = { id: string; state: string; expires: number; now: number; receipt?: { version?: number } | null; snapshot: {
@@ -138,6 +130,7 @@ export type Proposal = { id: string; state: string; expires: number; now: number
   value?: string; previousValue?: unknown; field?: string;
   sources?: { id: string; title: string; text: string; revision: string; license: string }[];
   evidence?: string[];
+  confidence?: number;
   summary: string; operation: string; note?: string; webOnly: boolean;
   effects?: { operation: string; userSource: string; group: string; asynchronous: boolean }[];
 } };

@@ -12,6 +12,7 @@ const idParams = { type: 'object', required: ['id'], properties: { id: {
 } } };
 const emptyBody = { type: 'object', additionalProperties: false, properties: {} };
 const taskName = { type: 'string', pattern: '^[a-z][a-z0-9_]{0,39}$' };
+const confidence = { type: 'number', minimum: 0, maximum: 1, description: 'Probability of the suggested classifier label.' };
 const targetProperties = {
   model: taskName,
   entity: taskName,
@@ -32,17 +33,18 @@ export function fieldRoutes(app: FastifyInstance, services: {
     properties: { ...targetProperties, task: taskName } };
   app.post<{ Body: { items: Target[] } }>('/assistant-api/v1/me/reviews', {
     schema: {
-      description: 'Review up to 25 records using the caller’s Core session. Each returned item identifies a record and an eligible local classifier task. Unreadable, read-only or closed records and unavailable or incompatible tasks are omitted. Abstentions have suggested=null and mismatch=false. This operation creates no proposals and writes no records.',
+      description: 'Review up to 25 records using the caller’s Core session. A session or link error fails the entire batch. Each returned item identifies a record and an eligible local classifier task. Individual record failures are counted in skipped. Read-only or closed records and unavailable or incompatible tasks are omitted. Items with a suggested label include confidence. Abstentions have suggested=null and mismatch=false. This operation creates no proposals and writes no records.',
       body: { type: 'object', additionalProperties: false, required: ['items'], properties: {
         items: { type: 'array', minItems: 1, maxItems: 25, items: { type: 'object', additionalProperties: false,
           required: ['model', 'entity', 'id'], properties: targetProperties } },
       } },
       response: { 200: { type: 'object', required: ['success', 'message', 'data'], properties: {
         success: { type: 'boolean' }, message: { type: 'string' },
-        data: { type: 'object', required: ['items'], properties: { items: { type: 'array', items: {
+        data: { type: 'object', required: ['items', 'skipped'], properties: {
+          skipped: { type: 'integer', minimum: 0 }, items: { type: 'array', items: {
           type: 'object', required: ['model', 'entity', 'id', 'task', 'field', 'current', 'suggested', 'evidence', 'mismatch'],
           properties: { ...targetProperties, task: taskName, field: { type: 'string' }, current: { type: 'string', nullable: true },
-            suggested: { type: 'string', nullable: true }, evidence: { type: 'array', items: { type: 'string' }, maxItems: 3 },
+            suggested: { type: 'string', nullable: true }, confidence, evidence: { type: 'array', items: { type: 'string' }, maxItems: 3 },
             mismatch: { type: 'boolean' } },
         } } } },
       } } },
@@ -55,12 +57,22 @@ export function fieldRoutes(app: FastifyInstance, services: {
     schema: { body: createBody, description: [
       'Create one field proposal using the task engine in entity metadata. Confirmation writes only the proposed output field.',
       'LLM proposals cite supplied sources and can include read-only warnings about declared input fields.',
-      'Local classifier proposals have an empty snapshot.sources array and snapshot.evidence with one to three excerpts of the declared record fields.',
+      'Local classifier proposals have an empty snapshot.sources array, snapshot.evidence with one to three excerpts of the declared record fields, and snapshot.confidence with the probability of the suggested label.',
       'A classifier can abstain, returning insufficient=true and proposal=null.',
       '409 ERR_CLASSIFIER_UNAVAILABLE means the task weights could not be loaded.',
       '409 ERR_CLASSIFIER_LABELS means the output options differ from the labels of the classifier.',
       '409 ERR_INFERENCE_REQUIRED means an LLM task has no inference endpoint.',
-    ].join(' '), response: { 409: {
+    ].join(' '), response: { 200: {
+      type: 'object', required: ['success', 'message', 'data'], properties: {
+        success: { type: 'boolean' }, message: { type: 'string' },
+        data: { type: 'object', required: ['insufficient', 'proposal'], properties: {
+          insufficient: { type: 'boolean' },
+          proposal: { type: 'object', nullable: true, additionalProperties: true, required: ['snapshot'], properties: {
+            snapshot: { type: 'object', additionalProperties: true, properties: { confidence } },
+          } },
+        } },
+      },
+    }, 409: {
       description: 'Task configuration or record conflict, including ERR_CLASSIFIER_UNAVAILABLE and ERR_CLASSIFIER_LABELS.',
       type: 'object', required: ['success', 'errorCode', 'message', 'data'], properties: {
         success: { type: 'boolean' }, errorCode: { type: 'string' }, message: { type: 'string' },

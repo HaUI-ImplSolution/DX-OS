@@ -113,6 +113,8 @@ export const app: Record<string, string> = {
   // Inbox
   "Không đọc được hộp việc": "Could not read the inbox",
   "Những hồ sơ đang chờ bạn xử lý.": "The records waiting for you.",
+  "Những hồ sơ đang chờ bạn xử lý, việc quá hạn lên đầu.": "The records waiting for you, overdue ones first.",
+  "Không tải được trạng thái trợ lý.": "Could not load the assistant status.",
   "Mô hình {names} đang được áp dụng hoặc cần quản trị viên xử lý nên tạm thời chưa dùng được. Tải lại trang sau ít phút.": "The models {names} are being applied or need an administrator, so they cannot be used for now. Reload the page in a few minutes.",
   "Việc đang chờ": "Waiting",
   "Trong hạn": "On time",

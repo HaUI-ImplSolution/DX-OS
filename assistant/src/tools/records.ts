@@ -34,8 +34,8 @@ export class Records {
     return entity;
   }
 
-  async record(owner: Owner, target: Target) {
-    const entity = await this.entity(owner, target);
+  async record(owner: Owner, target: Target, metadata?: Entity) {
+    const entity = metadata ?? await this.entity(owner, target);
     const record = await this.core.read<RecordData>(owner, targetPath(target));
     return { target, entity, record, retrievedAt: new Date().toISOString() };
   }

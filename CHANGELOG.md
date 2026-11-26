@@ -46,7 +46,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
   Với trường: `required_when` của trường khác, `require` và `when` của hành động, cột, cách sắp xếp, nhóm trường và gợi ý trong `ui`, và `file`, `title`, `text`, `fields` và `signatures` của mẫu in; với vai trò: `role` của hành động và `escalate.to`.
 - Thông báo lỗi của trợ lý nghiệp vụ hiện bằng tiếng Anh khi giao diện ở tiếng Anh.
 - Trợ lý dùng bộ phân loại tiếng Việt tự huấn luyện để gợi ý loại hồ sơ, mức ưu tiên hoặc dịch vụ trong các mẫu `onestop`, `support_desk` và `clinic_appointment`.
-- Hộp việc có nút **Rà loại hồ sơ** để rà tối đa 25 hồ sơ mỗi lượt và mở đề xuất từng hồ sơ được đánh dấu **Cần rà**.
+- Hộp việc có nút **Rà loại hồ sơ** để rà tối đa 25 hồ sơ mỗi lượt và mở đề xuất từng hồ sơ được đánh dấu **Cần rà**, kèm độ tự tin của từng gợi ý.
 - Danh sách hồ sơ có ô "Tìm theo chữ" ở đầu bộ lọc; nó thay ô lọc riêng của trường mã, vì mã cũng được tìm.
 - Trang Thống kê có thẻ "Thời gian trung bình ở từng trạng thái", đánh dấu trạng thái giữ hồ sơ lâu nhất; bấm một dòng mở danh sách hồ sơ ở trạng thái đó.
 - Hộp việc trống có nút tạo hồ sơ cho từng loại hồ sơ người dùng được tạo.

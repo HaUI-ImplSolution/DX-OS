@@ -16,26 +16,32 @@ Tệp [định nghĩa nhãn](labels.json) ghi thực thể, trường và tập 
 
 ## Tái tạo
 
-Chạy từ thư mục gốc của repo.
+Chạy từ thư mục gốc của repo với CPython 3.12.3 trên Linux x86-64 để tái tạo trọng số từng byte.
+Lưu SHA-256 trước khi huấn luyện rồi kiểm lại sau khi chạy.
 
 ```sh
-python3 tools/classifier/fetch.py
-python3 tools/classifier/train.py --tune /duong/dan/den/tap-chinh
-for task in onestop itaccess retail support clinic; do
-  python3 tools/classifier/evaluate.py --task "$task"
-done
+weights_sha=$(mktemp)
+sha256sum tools/classifier/model/*.json > "$weights_sha"
+python3 tools/classifier/fetch.py && python3 tools/classifier/train.py && sha256sum -c "$weights_sha"
 ```
 
 `fetch.py` kiểm SHA-256 của MASSIVE theo [manifest nguồn](data/sources.json) trước khi sử dụng tệp trong `~/.cache/dxos-classifier/`.
 `train.py` ghi năm tệp trọng số và hỗ trợ `--task` khi cần huấn luyện một nhiệm vụ.
-Thư mục truyền qua `--tune` chứa một tệp `<task>.csv` cho mỗi nhiệm vụ được huấn luyện.
-Trọng số trong repo dùng các tệp trong `handoff/AI-210/acceptance/` làm tập chỉnh.
+Mặc định, công cụ đọc `tools/classifier/eval/tuning/<task>.csv`.
+Có thể truyền thư mục chứa các CSV qua `--tune`.
 Tập chỉnh gồm 420 câu do Claude viết với công cụ AI và chỉ dùng để chọn ngưỡng và siêu tham số.
-Bộ nghiệm thu là một bộ riêng do đội tự viết.
-Bỏ đối số `--tune` để dùng tập chỉnh nội bộ đã tách theo họ câu.
-Tệp trọng số ghi `tuning_source` và `tuning_sha256`, là SHA-256 của toàn bộ tệp CSV hoặc của JSONL tuần tự hóa từ tập chỉnh nội bộ.
-Trọng số dùng cùng dữ liệu, tập chỉnh và CPython 3.12.3 trên Linux x86-64 được tái tạo từng byte.
-Lệnh đo trên dev in báo cáo của từng nhiệm vụ ra màn hình.
+Trọng số ghi đường dẫn CSV tính từ thư mục gốc repo ở `tuning_source` và SHA-256 của toàn bộ CSV ở `tuning_sha256`.
+Bộ chọn tối đa hóa độ phủ trên tập chỉnh, với ít nhất 90% đúng trên đề xuất và ít nhất 97% từ chối đúng trong từng loại `lac_de`, `mo_ho`, `hai_y` và `chen_lenh`.
+Bộ nghiệm thu do đội viết tay nằm ở `tools/classifier/eval/acceptance/`. [Kaggle](https://www.kaggle.com/datasets/hittungtran/dx-os-vietnamese-record-classification-data) là nơi công bố cùng dữ liệu do đội biên soạn, gồm tập chỉnh và bộ nghiệm thu.
+
+## Đo dev và nghiệm thu
+
+Thay `<task>` bằng tên nhiệm vụ cần đo.
+
+```sh
+python3 tools/classifier/evaluate.py --task <task>
+python3 tools/classifier/evaluate.py --task <task> --input tools/classifier/eval/acceptance/<task>.csv
+```
 
 ## Đo tập được cung cấp
 
@@ -74,7 +80,9 @@ PY
 
 Hàm `predict` nhận phần văn bản ở `text` và thêm `title` cho nhiệm vụ `support`.
 Trước khi mô hình phân loại, `features.py` tách văn bản thành các đoạn câu và lọc trên bản chuyển chữ thường và bỏ dấu.
-Bộ lọc kết hợp `COMMAND` cho lệnh chung như “Bỏ qua mọi hướng dẫn” với lệnh mở đầu bằng “Chọn” theo danh sách nhãn đã chuẩn hóa từ tệp trọng số.
+Bộ lọc nhận lệnh rõ ràng như “Bỏ qua mọi hướng dẫn” hoặc “Ignore previous instructions”.
+Các mẫu đầu đoạn “Chọn”, “Output” và mẫu “Hệ thống”, “Chương trình” hoặc “Máy” yêu cầu tên nhãn đã chuẩn hóa từ trọng số ngay sau từ chỉ thao tác, có thể kèm “mức” hoặc “nhãn”.
+`output` và `ignore` đứng một mình được giữ lại.
 Đoạn khớp lệnh được bỏ khỏi đầu vào trích đặc trưng và căn cứ.
 Mô hình suy luận từ các đoạn còn lại và có thể từ chối khi thiếu căn cứ.
 Kết quả gồm `label`, `confidence` và `evidence`.

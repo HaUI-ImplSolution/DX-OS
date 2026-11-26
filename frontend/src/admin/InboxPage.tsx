@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
-import { useEffect, useRef, useState, type MouseEvent } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type MouseEvent } from "react";
 import {
   Alert,
   Box,
@@ -27,7 +27,8 @@ import { Link, Title } from "react-admin";
 import PageHeader from "../shell/PageHeader";
 import { formatDateTime, timeAgo } from "../shell/format";
 import { onLiveChange } from "../shell/liveChanges";
-import { reviewRecords, selectInboxReview, useAssistantModel, type ClassifierReview, type RecordTarget } from "../assistant/api";
+import { reviewRecords, useAssistantModel, type ClassifierReview, type RecordTarget } from "../assistant/api";
+import { getInboxReviews, inboxReviewSignal, saveInboxReview, selectInboxReview, subscribeInboxReviews } from "../assistant/inboxReview";
 import { listInbox } from "./api";
 import { StatusChip } from "./StatusChip";
 import { resourceName, type InboxItem, type ModelMeta, type Page } from "./types";
@@ -35,9 +36,6 @@ import { t } from "../shell/t";
 
 const PAGE_SIZE = 50;
 const REVIEW_SIZE = 25;
-const REVIEW_TTL = 120_000;
-
-type ReviewBatch = { checked: string[]; reviewed: number; flagged: Map<string, ClassifierReview[]>; expires: number };
 const targetKey = (item: RecordTarget) => `${item.model}/${item.entity}/${item.id}`;
 const reviewKey = (item: InboxItem) => `${targetKey(item)}/${item.updatedAt}`;
 const reviewBackground = (theme: Theme) => alpha(theme.palette.warning.main, theme.palette.mode === "dark" ? 0.18 : 0.10);
@@ -55,7 +53,8 @@ function ReviewFlags({ item, flags }: { item: InboxItem; flags: ClassifierReview
         }}
         sx={{ display: "inline-flex", maxWidth: "100%" }}
       >
-        <Chip size="small" color="warning" label={`${t("Cần rà")} · ${review.suggested}`}
+        <Chip size="small" color="warning"
+          label={`${t("Cần rà")} · ${review.suggested}${review.confidence === undefined ? "" : ` · ${Math.round(review.confidence * 100)}%`}`}
           sx={{ color: "common.black", height: "auto", minHeight: 24, "& .MuiChip-label": { whiteSpace: "normal" } }} />
       </Link>
       <Typography variant="caption" component="div" color="text.secondary">
@@ -99,7 +98,7 @@ export default function InboxPage({ models }: { models: ModelMeta[] }) {
   const [page, setPage] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [reload, setReload] = useState(0);
-  const [batches, setBatches] = useState<ReviewBatch[]>([]);
+  const batches = useSyncExternalStore(subscribeInboxReviews, getInboxReviews);
   const [reviewing, setReviewing] = useState(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
   const reviewRequest = useRef<AbortController | null>(null);
@@ -121,13 +120,6 @@ export default function InboxPage({ models }: { models: ModelMeta[] }) {
     return () => { active = false; };
   }, [page, reload]);
   useEffect(() => () => reviewRequest.current?.abort(), []);
-  const expires = batches[0]?.expires;
-  useEffect(() => {
-    if (expires === undefined) return;
-    const timer = window.setTimeout(() => setBatches((value) => value.filter((batch) => batch.expires > expires)),
-      Math.max(0, expires - Date.now()));
-    return () => window.clearTimeout(timer);
-  }, [expires]);
 
   const entityOf = (item: InboxItem) =>
     models.find((model) => model.name === item.model)?.entities.find((entity) => entity.name === item.entity);
@@ -140,7 +132,8 @@ export default function InboxPage({ models }: { models: ModelMeta[] }) {
   const flagsByItem = new Map(canReview ? batches.flatMap((batch) => [...batch.flagged]) : []);
   const orderedItems = (items ?? []).map((item) => ({ item, flags: flagsByItem.get(reviewKey(item)) }))
     .sort((a, b) => Number(!!b.flags) - Number(!!a.flags));
-  const latestBatch = batches[batches.length - 1];
+  const pageBatches = batches.filter((batch) => batch.page === page);
+  const latestBatch = pageBatches[pageBatches.length - 1];
   const nextBatch = canReview ? (items ?? []).filter((item) => {
     const entity = entityOf(item);
     return entity?.canWrite && !checked.has(reviewKey(item)) &&
@@ -151,14 +144,15 @@ export default function InboxPage({ models }: { models: ModelMeta[] }) {
   const reviewNextBatch = async () => {
     if (!nextBatch.length || reviewRequest.current) return;
     const controller = new AbortController();
+    const signal = AbortSignal.any([controller.signal, inboxReviewSignal()]);
     reviewRequest.current = controller;
     setReviewing(true);
     setReviewError(null);
     const targets = nextBatch.map(({ model, entity, id }) => ({ model, entity, id }));
     const keys = new Map(nextBatch.map((item) => [targetKey(item), reviewKey(item)]));
     try {
-      const result = await reviewRecords(targets, controller.signal);
-      if (controller.signal.aborted) return;
+      const result = await reviewRecords(targets, signal);
+      if (signal.aborted) return;
       const flagged = new Map<string, ClassifierReview[]>();
       const reviewed = new Set<string>();
       for (const review of result.items) {
@@ -167,9 +161,9 @@ export default function InboxPage({ models }: { models: ModelMeta[] }) {
         reviewed.add(key);
         if (review.mismatch) flagged.set(key, [...(flagged.get(key) ?? []), review]);
       }
-      setBatches((value) => [...value, { checked: [...keys.values()], reviewed: reviewed.size, flagged, expires: Date.now() + REVIEW_TTL }]);
+      saveInboxReview({ page, checked: [...keys.values()], reviewed: reviewed.size, skipped: result.skipped, flagged });
     } catch (e) {
-      if (!controller.signal.aborted) setReviewError(e instanceof Error ? e.message : t("Không thể rà loại hồ sơ."));
+      if (!signal.aborted) setReviewError(e instanceof Error ? e.message : t("Không thể rà loại hồ sơ."));
     } finally {
       if (reviewRequest.current === controller) {
         reviewRequest.current = null;
@@ -186,14 +180,17 @@ export default function InboxPage({ models }: { models: ModelMeta[] }) {
   return (
     <Box>
       <Title title={t("Hộp việc")} />
-      <PageHeader title={t("Hộp việc")} subtitle={t("Những hồ sơ đang chờ bạn xử lý.")}
+      <PageHeader title={t("Hộp việc")} subtitle={canReview ? t("Những hồ sơ đang chờ bạn xử lý.") :
+        t("Những hồ sơ đang chờ bạn xử lý, việc quá hạn lên đầu.")}
         actions={canReview && (
           <Box sx={{ textAlign: { xs: "left", sm: "right" } }}>
             <Button variant="outlined" disabled={reviewing || !nextBatch.length} onClick={() => void reviewNextBatch()}>
               {reviewing ? t("Đang rà loại hồ sơ…") : t("Rà loại hồ sơ")}
             </Button>
             <Typography component="div" variant="body2" color="text.secondary" role="status">
-              {latestBatch && t("Đã rà {n} hồ sơ, {m} hồ sơ cần rà", { n: latestBatch.reviewed, m: latestBatch.flagged.size })}
+              {latestBatch && t(latestBatch.skipped > 0
+                ? "Đã rà {n} hồ sơ, {m} hồ sơ cần rà, {s} hồ sơ không đọc được"
+                : "Đã rà {n} hồ sơ, {m} hồ sơ cần rà", { n: latestBatch.reviewed, m: latestBatch.flagged.size, s: latestBatch.skipped })}
             </Typography>
           </Box>
         )} />
@@ -325,7 +322,6 @@ export default function InboxPage({ models }: { models: ModelMeta[] }) {
           reviewRequest.current = null;
           setReviewing(false);
           setReviewError(null);
-          setBatches([]);
           setError(null);
           setPage(next - 1);
         }} />

@@ -7,23 +7,30 @@ Dữ liệu câu gốc là bản nháp viết với công cụ AI để đội b
 Biến thể sinh bằng mã của đội.
 Các câu lạc đề từ nguồn ngoài lấy từ MASSIVE (CC BY 4.0, Amazon).
 Các câu do công cụ soạn mô tả tình huống giả lập và không chứa hồ sơ người dùng.
-Câu gốc, định nghĩa nhãn, bộ nghiệm thu do đội viết tay và bộ chỉnh ngưỡng được công bố theo CC BY 4.0 tại [Kaggle](https://www.kaggle.com/datasets/hittungtran/dx-os-vietnamese-record-classification-data); bản này không gồm câu của MASSIVE.
+Câu gốc, định nghĩa nhãn, tập chỉnh và bộ nghiệm thu do đội biên soạn được công bố theo CC BY 4.0 tại [Kaggle](https://www.kaggle.com/datasets/hittungtran/dx-os-vietnamese-record-classification-data).
+Bản Kaggle chỉ gồm dữ liệu của đội.
 
 ## Thành phần
 
 | Nhiệm vụ | Nhãn nghiệp vụ | Câu mỗi nhãn | Câu từ chối trong tệp nhiệm vụ | Tổng |
 | --- | --- | --- | --- | --- |
-| `onestop` | Giấy xác nhận, Phúc khảo, Hoãn thi | 120 | 120 | 480 |
-| `itaccess` | GIT_USERS, VPN_USERS, WIKI_EDITORS | 120 | 120 | 480 |
-| `retail` | Đổi hàng, Trả hàng | 120 | 120 | 360 |
-| `support` | Thấp, Trung bình, Cao | 120 | 120 | 480 |
-| `clinic` | Khám tổng quát, Tư vấn, Tái khám | 120 | 120 | 480 |
+| `onestop` | Giấy xác nhận, Phúc khảo, Hoãn thi | 135 | 120 | 525 |
+| `itaccess` | GIT_USERS, VPN_USERS, WIKI_EDITORS | 135 | 120 | 525 |
+| `retail` | Đổi hàng, Trả hàng | 135 | 120 | 390 |
+| `support` | Thấp, Trung bình, Cao | 135 | 120 | 525 |
+| `clinic` | Khám tổng quát, Tư vấn, Tái khám | 135 | 120 | 525 |
 
-Bộ câu gốc có 2.280 dòng, gồm 1.680 câu nghiệp vụ và 600 câu từ chối riêng chia đều giữa bốn loại ca của từng nhiệm vụ.
+Bộ câu gốc có 2.490 dòng, gồm 1.890 câu nghiệp vụ và 600 câu từ chối riêng chia đều giữa bốn loại ca của từng nhiệm vụ.
 Tệp `negatives.jsonl` có 17 câu dùng chung và năm câu lạc đề bổ sung, mỗi nhiệm vụ có một câu riêng.
-Trong từng tệp câu gốc, văn phong lịch sự chiếm 30%, bình thường 40% và cẩu thả 30%.
-Trong mỗi nhiệm vụ, hơn một nửa số câu nghiệp vụ diễn đạt yêu cầu mà không dùng nguyên văn tên nhãn.
+Văn phong lịch sự, bình thường và cẩu thả chiếm lần lượt khoảng 30%, 40% và 30% trong mỗi tệp câu gốc.
+Mỗi nhãn nghiệp vụ có 15 câu ngắn nói thẳng yêu cầu bằng tên nhãn hoặc từ gần nghĩa, chia đều cho ba văn phong.
 Dữ liệu đội viết và biến thể sinh từ dữ liệu đó theo CC-BY-4.0, ghi công HaUI-ImplSolution.
+
+Tập chỉnh ở `tools/classifier/eval/tuning/` gồm 420 câu do Claude viết với công cụ AI để chọn ngưỡng và siêu tham số.
+Bộ nghiệm thu ở `tools/classifier/eval/acceptance/` gồm 450 câu do đội viết tay, duyệt chéo và giữ riêng để đo.
+Khi trích đặc trưng, các lệnh rõ ràng như “Bỏ qua mọi hướng dẫn” được lọc bỏ.
+Các cụm có chủ thể “Hệ thống”, “Chương trình” hoặc “Máy” và động từ điền nhãn chỉ khớp khi theo sau là tên nhãn.
+Từ `output` và `ignore` đứng riêng được giữ lại.
 
 | Nguồn | Phiên bản hoặc revision | Giấy phép | Câu lấy mẫu |
 | --- | --- | --- | --- |
@@ -49,18 +56,18 @@ Cột tỉ lệ lấy từ trọng số chọn phép biến đổi, còn số m�
 
 | Biến đổi | Tỉ lệ chọn | Số biến thể thực tế cộng năm nhiệm vụ |
 | --- | --- | --- |
-| Bỏ dấu toàn phần | 22% | 1.016 |
-| Bỏ dấu một phần | 20% | 1.455 |
-| Viết tắt | 14% | 391 |
-| Lỗi gõ Telex | 12% | 865 |
-| Lặp hoặc rơi một ký tự | 12% | 1.243 |
-| Đổi hoa thường | 10% | 772 |
-| Bỏ dấu câu | 10% | 543 |
+| Bỏ dấu toàn phần | 22% | 1.095 |
+| Bỏ dấu một phần | 20% | 1.641 |
+| Viết tắt | 14% | 374 |
+| Lỗi gõ Telex | 12% | 1.004 |
+| Lặp hoặc rơi một ký tự | 12% | 1.306 |
+| Đổi hoa thường | 10% | 754 |
+| Bỏ dấu câu | 10% | 609 |
 
 | Nhiệm vụ | Câu đội viết trong train | Biến thể train | Câu ngoài trong train | Tổng train | Chỉnh nội bộ | Dev |
 | --- | --- | --- | --- | --- | --- | --- |
-| `onestop` | 338 | 1.316 | 204 | 1.858 | 128 | 128 |
-| `itaccess` | 338 | 1.317 | 204 | 1.859 | 128 | 128 |
-| `retail` | 256 | 1.008 | 204 | 1.468 | 109 | 109 |
-| `support` | 338 | 1.332 | 204 | 1.874 | 128 | 128 |
-| `clinic` | 338 | 1.312 | 204 | 1.854 | 128 | 128 |
+| `onestop` | 365 | 1.419 | 204 | 1.988 | 137 | 137 |
+| `itaccess` | 365 | 1.435 | 204 | 2.004 | 137 | 137 |
+| `retail` | 274 | 1.075 | 204 | 1.553 | 115 | 115 |
+| `support` | 365 | 1.431 | 204 | 2.000 | 137 | 137 |
+| `clinic` | 365 | 1.423 | 204 | 1.992 | 137 | 137 |

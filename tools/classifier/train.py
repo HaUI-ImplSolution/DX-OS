@@ -37,10 +37,12 @@ FEATURE_GRID = {
     },
 }
 L2_GRID = (0.00012, 0.00004)
-TARGET_PERCENT = 97
+ACCURACY_TARGET_PERCENT = 90
+REFUSAL_TARGET_PERCENT = 97
 REFUSAL_CASES = ("lac_de", "mo_ho", "hai_y", "chen_lenh")
 EXTERNAL_SAMPLE_SIZE = 300
 SPLITS = ("train", "calibration", "dev")
+TUNING_DIR = ROOT / "eval" / "tuning"
 
 
 def jsonl(path):
@@ -225,8 +227,8 @@ def calibrate(model, rows):
             covered += gold != REFUSE
             if gold == REFUSE:
                 selected_cases[case] += 1
-        if correct * 100 < TARGET_PERCENT * offered or any(
-            (cases[case] - selected_cases[case]) * 100 < TARGET_PERCENT * cases[case]
+        if correct * 100 < ACCURACY_TARGET_PERCENT * offered or any(
+            (cases[case] - selected_cases[case]) * 100 < REFUSAL_TARGET_PERCENT * cases[case]
             for case in REFUSAL_CASES
         ):
             continue
@@ -255,21 +257,14 @@ def digest_rows(rows):
     return hashlib.sha256("".join(encode(row) + "\n" for row in rows).encode()).hexdigest()
 
 
-def calibration_data(task, definitions, data, tune_dir):
-    if tune_dir is None:
-        rows = data["calibration"]
-        return rows, digest_rows(rows)
-    path = tune_dir / f"{task}.csv"
-    content = path.read_bytes()
-    return read_input(path, task, definitions, content), hashlib.sha256(content).hexdigest()
-
-
 # Train each configuration, select the best on the tuning set, and write its weights.
-def train(task, definitions, tune_dir=None):
+def train(task, definitions, tune_dir=TUNING_DIR):
     data = datasets(task)
     rows = data["train"]
     task_definitions = definitions["tasks"][task]
-    tune, tune_hash = calibration_data(task, task_definitions, data, tune_dir)
+    tune_path = tune_dir / f"{task}.csv"
+    tune_content = tune_path.read_bytes()
+    tune = read_input(tune_path, task, task_definitions, tune_content)
     labels = [*task_definitions["labels"], REFUSE]
     command = command_pattern(tuple(labels))
     indexes = {label: i for i, label in enumerate(labels)}
@@ -277,7 +272,8 @@ def train(task, definitions, tune_dir=None):
     metadata = {
         "format_version": FORMAT_VERSION, "task": task, "labels": labels,
         "label_revision": definitions["revision"], "training_sha256": digest_rows(rows),
-        "tuning_sha256": tune_hash, "tuning_source": "csv" if tune_dir is not None else "internal",
+        "tuning_sha256": hashlib.sha256(tune_content).hexdigest(),
+        "tuning_source": os.path.relpath(tune_path, ROOT.parents[1]),
         "seed": SEED,
     }
     best = None
@@ -307,7 +303,8 @@ def main():
     definitions = label_definitions()
     parser = argparse.ArgumentParser()
     parser.add_argument("--task", choices=definitions["tasks"])
-    parser.add_argument("--tune", type=Path, help="Directory containing one tuning CSV per task")
+    parser.add_argument("--tune", type=Path, default=TUNING_DIR,
+                        help="Directory containing one tuning CSV per task (default: eval/tuning)")
     args = parser.parse_args()
     for task in (args.task,) if args.task else definitions["tasks"]:
         train(task, definitions, args.tune)

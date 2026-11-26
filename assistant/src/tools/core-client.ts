@@ -15,6 +15,10 @@ export const targetPath = (target: Target) => {
 export class CoreClient {
   constructor(private readonly baseUrl: URL, private readonly session: CoreSession) {}
 
+  async checkSession(owner: Owner): Promise<void> {
+    await this.session.accessToken(owner);
+  }
+
   async read<T>(owner: Owner, path: string): Promise<T> {
     return this.request<T>(owner, path);
   }
@@ -37,7 +41,7 @@ export class CoreClient {
       throw new ApiError(503, body === undefined ? 'ERR_CORE_UNAVAILABLE' : 'ERR_EXECUTION_UNCERTAIN',
         body === undefined ? 'Core is unavailable' : 'The result is unknown; check the record history before trying again');
     }
-    let data: { success?: boolean; data?: T & { reason?: string }; errorCode?: string };
+    let data: { success?: boolean; data?: T & { reason?: string }; errorCode?: string } | null;
     try {
       const reader = response.body?.getReader();
       if (!reader) throw new Error('Missing body');
@@ -51,12 +55,15 @@ export class CoreClient {
       }
       data = JSON.parse(Buffer.concat(parts).toString('utf8'));
     } catch {
-      throw new ApiError(502, body === undefined ? 'ERR_CORE_RESPONSE' : 'ERR_EXECUTION_UNCERTAIN',
-        body === undefined ? 'Core returned an invalid response' : 'The result is unknown; check the record history');
+      if (response.status !== 401)
+        throw new ApiError(502, body === undefined ? 'ERR_CORE_RESPONSE' : 'ERR_EXECUTION_UNCERTAIN',
+          body === undefined ? 'Core returned an invalid response' : 'The result is unknown; check the record history');
+      data = null;
     }
-    if (!response.ok || data.success !== true) {
-      const code = typeof data.errorCode === 'string' && /^ERR_[A-Z_]+$/.test(data.errorCode) ? data.errorCode : 'ERR_CORE_RESPONSE';
-      const reason = typeof data.data?.reason === 'string' && /^[A-Z_]{1,80}$/.test(data.data.reason) ? data.data.reason : undefined;
+    if (!response.ok || data?.success !== true) {
+      const fallback = response.status === 401 ? 'ERR_UNAUTHENTICATED' : 'ERR_CORE_RESPONSE';
+      const code = typeof data?.errorCode === 'string' && /^ERR_[A-Z_]+$/.test(data.errorCode) ? data.errorCode : fallback;
+      const reason = typeof data?.data?.reason === 'string' && /^[A-Z_]{1,80}$/.test(data.data.reason) ? data.data.reason : undefined;
       throw new ApiError(response.ok ? 502 : response.status, code, 'Core refused this request', reason);
     }
     return data.data as T;

@@ -13,7 +13,14 @@ SPDX-License-Identifier = "Apache-2.0"
 
 # Classifier examples and label definitions carry the team's data license.
 [[annotations]]
-path = ["tools/classifier/labels.json", "tools/classifier/data/seeds/*.jsonl", "tools/classifier/data/negatives.jsonl", "assistant/test/fixtures/classifier.json"]
+path = [
+    "tools/classifier/labels.json",
+    "tools/classifier/data/seeds/*.jsonl",
+    "tools/classifier/data/negatives.jsonl",
+    "tools/classifier/eval/tuning/*.csv",
+    "tools/classifier/eval/acceptance/*.csv",
+    "assistant/test/fixtures/classifier.json",
+]
 precedence = "override"
 SPDX-FileCopyrightText = "2026 HaUI-ImplSolution"
 SPDX-License-Identifier = "CC-BY-4.0"

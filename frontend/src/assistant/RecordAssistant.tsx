@@ -4,7 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Box, Button, Card, CircularProgress, MenuItem, Stack, TextField, Typography } from "@mui/material";
 import { EditButton, useRecordContext, useRefresh } from "react-admin";
 import { useLocation } from "react-router-dom";
-import { assistantRequest, takeInboxReview, useEntityAssistant, type Proposal } from "./api";
+import { assistantRequest, useEntityAssistant, type Proposal } from "./api";
+import { takeInboxReview } from "./inboxReview";
 import { resourceName, type EntityMeta } from "../admin/types";
 import { t } from "../shell/t";
 
@@ -25,7 +26,7 @@ function sourceText(text: string, entity: EntityMeta, units: Record<string, stri
 
 export default function RecordAssistant({ model, entity, units }: { model: string; entity: EntityMeta; units: Record<string, string> }) {
   const record = useRecordContext(); const refresh = useRefresh();
-  const status = useEntityAssistant(entity);
+  const { model: status, failed } = useEntityAssistant(entity) ?? {};
   const { state } = useLocation();
   const fromInboxReview = state?.fromInboxReview === true;
   const panel = useRef<HTMLDivElement>(null);
@@ -83,12 +84,12 @@ export default function RecordAssistant({ model, entity, units }: { model: strin
     setTask(reviewTask);
     void run(() => createProposal(reviewTask));
   }, [fromInboxReview, model, entity.name, recordId, status?.configured, entity.canWrite, entity.aiTasks, run, createProposal]);
-  if (!status?.configured || !record || !tasks.length) return null;
+  if ((!status?.configured && !failed) || !record || !tasks.length) return null;
   const unchanged = !!proposal && value === proposal.snapshot.previousValue;
   const pending = proposal?.state === "pending" && deadline > Date.now();
   return <Card ref={panel} tabIndex={-1} aria-labelledby="record-assistant-heading" sx={{ p: 2, scrollMarginTop: 80 }}>
     <Typography id="record-assistant-heading" variant="h6" gutterBottom>{t("Trợ lý nghiệp vụ")}</Typography>
-    <Stack spacing={2}>
+    {failed ? <Alert severity="error">{t("Không tải được trạng thái trợ lý.")}</Alert> : <Stack spacing={2}>
       <Typography variant="body2" color="text.secondary">{t("Xem căn cứ và xác nhận trước khi lưu đề xuất vào hồ sơ.")}</Typography>
       <TextField select label={t("Nhiệm vụ")} value={current ? task : ""} disabled={busy} onChange={e => { setTask(e.target.value); setProposal(null); setMessage(""); }}>
         {tasks.map(([name, item]) => <MenuItem key={name} value={name}>{item.label}</MenuItem>)}
@@ -117,7 +118,13 @@ export default function RecordAssistant({ model, entity, units }: { model: strin
           {entity.canWrite && <EditButton resource={resourceName(model, entity.name)} record={record} label={t("Sửa hồ sơ theo lưu ý")} />}
         </>}
         {proposal.snapshot.evidence?.length ? <Box>
-          <Typography variant="subtitle2">{t("Căn cứ trong hồ sơ")}</Typography>
+          <Stack direction="row" spacing={1} alignItems="baseline">
+            <Typography variant="subtitle2">{t("Căn cứ trong hồ sơ")}</Typography>
+            {proposal.snapshot.confidence !== undefined && value === proposal.snapshot.value &&
+              <Typography variant="caption" color="text.secondary">
+                {t("Độ tự tin {n}%", { n: Math.round(proposal.snapshot.confidence * 100) })}
+              </Typography>}
+          </Stack>
           <Box component="ul" sx={{ my: 0.5, pl: 3 }}>
             {proposal.snapshot.evidence.map(phrase => <Typography component="li" variant="body2" key={phrase}
               sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{phrase}</Typography>)}
@@ -147,6 +154,6 @@ export default function RecordAssistant({ model, entity, units }: { model: strin
           })}>{t("Hủy đề xuất")}</Button>
         </>}
       </>}
-    </Stack>
+    </Stack>}
   </Card>;
 }

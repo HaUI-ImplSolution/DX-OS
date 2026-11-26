@@ -106,7 +106,7 @@
                   },
                   "then": {
                     "required": ["classifier"],
-                    "properties": { "sources": false }
+                    "properties": { "sources": false, "max_length": false }
                   },
                   "else": {
                     "required": ["instruction", "sources"],

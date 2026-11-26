@@ -7,7 +7,9 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { CoreSession } from '../dist/auth/core-session.js';
 import { Store } from '../dist/storage/store.js';
+import { CoreClient } from '../dist/tools/core-client.js';
 import { Records } from '../dist/tools/records.js';
 import { FieldProposals } from '../dist/tools/fields.js';
 import { ApiError } from '../dist/errors.js';
@@ -148,6 +150,7 @@ function setupClassifier(t) {
   const model = classifiers.get('support');
   const support = new Map([['support', model]]);
   const example = parityFixture.support.cases.find(row => row.label && row.inputs.every(Boolean));
+  const confidence = model.predict(example.inputs).probability;
   f.entity.fields.push({ name: 'title', label: 'Title', type: 'text' });
   f.entity.fields[1].options = [...model.labels].reverse();
   f.entity.aiTasks.local = { label: 'Classify locally', engine: 'classifier', classifier: 'support',
@@ -155,23 +158,54 @@ function setupClassifier(t) {
   Object.assign(f.record, { title: example.inputs[0], detail: example.inputs[1],
     category: model.labels.find(label => label !== example.label) });
   const fields = new FieldProposals(f.records, f.core, f.store, undefined, [], support);
-  return { ...f, fields, example, support };
+  return { ...f, fields, example, confidence, support };
 }
 
 async function setupReviews(t) {
   const f = setupClassifier(t);
   const publicUrl = new URL('http://dxos.invalid');
-  const app = await createServer(f.store, async authorization => {
+  const verify = async authorization => {
     if (authorization !== 'Bearer owner') throw new ApiError(401, 'ERR_UNAUTHORIZED', 'Unauthorized');
     return { ...a, admin: false };
-  }, { publicUrl, session: {}, fields: f.fields, records: f.records });
+  };
+  const session = new CoreSession(f.store, {}, verify);
+  const upstream = new CoreClient(publicUrl, session);
+  f.store.setSecret(a, 'core', { accessToken: 'owner', refreshToken: 'refresh', expires: Date.now() + 60000 });
+  f.core.checkSession = owner => upstream.checkSession(owner);
+  const app = await createServer(f.store, verify, { publicUrl, session, fields: f.fields, records: f.records });
   f.useServer(app);
   const headers = { origin: publicUrl.origin, authorization: 'Bearer owner' };
   const review = items => app.inject({ method: 'POST', url: '/assistant-api/v1/me/reviews', headers, payload: { items } });
-  return { ...f, app, headers, review };
+  return { ...f, app, headers, review, upstream };
 }
 
-test('batch review uses the caller and omits forbidden, missing, read-only and closed records', async t => {
+test('batch review rejects an unlinked account before reading Core metadata or records', async t => {
+  const f = await setupReviews(t);
+  f.store.deleteSecret(a, 'core');
+  const read = t.mock.method(f.core, 'read');
+  const response = await f.review([target]);
+  assert.equal(response.statusCode, 409, response.body);
+  assert.equal(response.json().errorCode, 'ERR_CORE_LINK');
+  assert.equal(response.json().data, null);
+  assert.equal(read.mock.callCount(), 0);
+});
+
+test('a Core 401 fails the entire batch even if another record can be reviewed', async t => {
+  const f = await setupReviews(t);
+  const read = f.core.read.bind(f.core);
+  f.core.read = (owner, path) => path.endsWith('/2') ? f.upstream.read(owner, path) : read(owner, path);
+  for (const body of [JSON.stringify({ success: false, errorCode: 'ERR_UNAUTHENTICATED' }), 'Unauthorized']) {
+    const fetch = t.mock.method(globalThis, 'fetch', async () => new Response(body, { status: 401 }));
+    const response = await f.review([target, { ...target, id: 2 }]);
+    assert.equal(response.statusCode, 401, response.body);
+    assert.equal(response.json().errorCode, 'ERR_UNAUTHENTICATED');
+    assert.equal(response.json().data, null);
+    assert.equal(fetch.mock.callCount(), 1);
+    fetch.mock.restore();
+  }
+});
+
+test('batch review uses the caller and omits failed, read-only and closed records', async t => {
   const f = await setupReviews(t);
   const read = f.core.read.bind(f.core);
   f.entity.process = { states: [{ name: 'closed', terminal: true }] };
@@ -182,13 +216,15 @@ test('batch review uses the caller and omits forbidden, missing, read-only and c
     if (path.endsWith('/2')) throw new ApiError(403, 'ERR_ACTION_NOT_ALLOWED', 'Denied');
     if (path.endsWith('/3')) throw new ApiError(404, 'ERR_NOT_FOUND', 'Missing');
     if (path.endsWith('/4')) return { ...f.record, status: 'closed' };
+    if (path.endsWith('/5')) throw new ApiError(500, 'ERR_INTERNAL', 'Internal error');
     return read(owner, path);
   };
-  const response = await f.review([target, ...[2, 3, 4].map(id => ({ ...target, id })), { ...target, entity: 'readonly' }]);
+  const response = await f.review([target, ...[2, 3, 4, 5].map(id => ({ ...target, id })), { ...target, entity: 'readonly' }]);
   assert.equal(response.statusCode, 200, response.body);
   assert.equal(response.headers['cache-control'], 'no-store');
+  assert.equal(response.json().data.skipped, 3);
   assert.deepEqual(response.json().data.items, [{ ...target, task: 'local', field: 'category', current: f.record.category,
-    suggested: f.example.label, evidence: f.example.evidence, mismatch: true }]);
+    suggested: f.example.label, confidence: f.confidence, evidence: f.example.evidence, mismatch: true }]);
   assert.equal(f.writes(), 0);
   assert.equal(f.store.proposals(a, 0, 5).length, 0);
 });
@@ -196,18 +232,37 @@ test('batch review uses the caller and omits forbidden, missing, read-only and c
 test('batch review accepts at most 25 records and publishes its schemas', async t => {
   const f = await setupReviews(t);
   const items = Array.from({ length: 26 }, (_, i) => ({ ...target, id: i + 1 }));
-  let coreReads = 0;
+  let metadataReads = 0, recordReads = 0, active = 0, peak = 0;
   const read = f.core.read.bind(f.core);
-  f.core.read = async (...args) => { coreReads++; return read(...args); };
+  f.core.read = async (owner, path) => {
+    if (path.startsWith('/meta/')) metadataReads++;
+    else recordReads++;
+    peak = Math.max(peak, ++active);
+    try {
+      await new Promise(resolve => setImmediate(resolve));
+      return await read(owner, path);
+    } finally { active--; }
+  };
   assert.equal((await f.review(items)).statusCode, 400);
-  assert.equal(coreReads, 0);
+  assert.equal(metadataReads + recordReads, 0);
   const accepted = await f.review(items.slice(0, 25));
   assert.equal(accepted.statusCode, 200, accepted.body);
-  assert.equal(accepted.json().data.items.length, 25);
+  assert.deepEqual(accepted.json().data.items.map(({ id }) => id), items.slice(0, 25).map(({ id }) => id));
+  assert.equal(accepted.json().data.skipped, 0);
+  assert.equal(metadataReads, 1);
+  assert.equal(recordReads, 25);
+  assert.equal(peak, 5);
   const api = await f.app.inject({ method: 'GET', url: '/assistant-api/v1/openapi.json', headers: f.headers });
   const operation = api.json().paths['/assistant-api/v1/me/reviews'].post;
   assert.equal(operation.requestBody.content['application/json'].schema.properties.items.maxItems, 25);
-  assert.equal(operation.responses[200].content['application/json'].schema.properties.data.properties.items.items.properties.suggested.nullable, true);
+  const dataSchema = operation.responses[200].content['application/json'].schema.properties.data;
+  assert.equal(dataSchema.properties.items.items.properties.suggested.nullable, true);
+  const { confidence } = dataSchema.properties.items.items.properties;
+  assert.equal(confidence.type, 'number');
+  assert.equal(confidence.minimum, 0);
+  assert.equal(confidence.maximum, 1);
+  assert.ok(dataSchema.required.includes('skipped'));
+  assert.equal(dataSchema.properties.skipped.type, 'integer');
 });
 
 test('batch review omits incompatible tasks and reports matches and abstentions without flags', async t => {
@@ -219,7 +274,7 @@ test('batch review omits incompatible tasks and reports matches and abstentions 
   const match = await f.review([target]);
   assert.equal(match.statusCode, 200, match.body);
   assert.deepEqual(match.json().data.items, [{ ...target, task: 'local', field: 'category', current: f.example.label,
-    suggested: f.example.label, evidence: f.example.evidence, mismatch: false }]);
+    suggested: f.example.label, confidence: f.confidence, evidence: f.example.evidence, mismatch: false }]);
   Object.assign(f.record, { title: '', detail: '' });
   delete f.record.category;
   const abstention = await f.review([target]);
@@ -238,7 +293,10 @@ test('a classifier can propose and confirm through the API without LLM or a sour
   assert.deepEqual(me.json().data.model, { configured: true, llmConfigured: false, classifiers: ['support'] });
   const api = await app.inject({ method: 'GET', url: '/assistant-api/v1/openapi.json' });
   assert.match(api.json().info.description, /ASSISTANT_CLASSIFIERS_DIR/);
-  assert.match(api.json().paths['/assistant-api/v1/me/proposals'].post.responses[409].description, /ERR_CLASSIFIER_LABELS/);
+  const responses = api.json().paths['/assistant-api/v1/me/proposals'].post.responses;
+  assert.match(responses[409].description, /ERR_CLASSIFIER_LABELS/);
+  const snapshot = responses[200].content['application/json'].schema.properties.data.properties.proposal.properties.snapshot;
+  assert.equal(snapshot.properties.confidence.type, 'number');
   const headers = { origin: publicUrl.origin };
   const llm = await app.inject({ method: 'POST', url: '/assistant-api/v1/me/proposals',
     headers, payload: { ...target, task: 'classify' } });
@@ -251,12 +309,28 @@ test('a classifier can propose and confirm through the API without LLM or a sour
   assert.equal(p.snapshot.value, f.example.label);
   assert.deepEqual(p.snapshot.evidence, f.example.evidence);
   assert.deepEqual(p.snapshot.sources, []);
+  assert.equal(p.snapshot.confidence, f.confidence);
+  assert.equal(f.store.proposal(a, p.id).snapshot.confidence, f.confidence);
   assert.equal(f.writes(), 0);
   const confirmed = await app.inject({ method: 'POST', url: `/assistant-api/v1/me/proposals/${p.id}/confirm`,
     headers, payload: {} });
   assert.equal(confirmed.statusCode, 200, confirmed.body);
   assert.equal(confirmed.json().data.record.category, f.example.label);
   assert.equal(f.writes(), 1);
+  Object.assign(f.record, { title: '', detail: '' });
+  const abstention = await app.inject({ method: 'POST', url: '/assistant-api/v1/me/proposals',
+    headers, payload: { ...target, task: 'local' } });
+  assert.equal(abstention.statusCode, 200, abstention.body);
+  assert.deepEqual(abstention.json().data, { insufficient: true, proposal: null });
+});
+
+test('a revised classifier label does not inherit the original label confidence', async t => {
+  const f = setupClassifier(t);
+  const { proposal } = await f.fields.create(a, target, 'local');
+  const revised = await f.fields.revise(a, proposal.id, f.record.category);
+  assert.equal(revised.snapshot.value, f.record.category);
+  assert.equal(revised.snapshot.confidence, undefined);
+  assert.equal(f.store.proposal(a, proposal.id).snapshot.confidence, f.confidence);
 });
 
 test('missing or invalid weights, mismatched labels and abstentions affect only their task', async t => {
@@ -309,7 +383,16 @@ test('a different weights SHA-256 makes a classifier proposal stale on revise an
 
 test('explicit LLM metadata retains the revision of a proposal created without engine metadata', async t => {
   const f = setup(t);
-  const p = (await f.fields.create(a, target, 'classify')).proposal;
+  const publicUrl = new URL('http://dxos.invalid');
+  const app = await createServer(f.store, async () => ({ ...a, admin: false }),
+    { publicUrl, session: {}, fields: f.fields, records: f.records });
+  f.useServer(app);
+  const response = await app.inject({ method: 'POST', url: '/assistant-api/v1/me/proposals',
+    headers: { origin: publicUrl.origin }, payload: { ...target, task: 'classify' } });
+  assert.equal(response.statusCode, 200, response.body);
+  const p = response.json().data.proposal;
+  assert.deepEqual(p.snapshot.sources, [source]);
+  assert.equal(p.snapshot.confidence, undefined);
   Object.assign(f.entity.aiTasks.classify, { engine: 'llm', classifier: null });
   await f.fields.execute(a, p.id);
   assert.equal(f.writes(), 1);

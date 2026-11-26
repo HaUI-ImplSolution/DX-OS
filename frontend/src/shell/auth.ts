@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import { UserManager, WebStorageStateStore, type User as OidcUser } from "oidc-client-ts";
+import { clearInboxReviews } from "../assistant/inboxReview";
 
 // Empty in the packaged build: Keycloak is served by the gateway on the same origin as the app.
 const KEYCLOAK_URL =
@@ -90,11 +91,13 @@ export function takeReturnPath(): string | null {
 // signoutRedirect tự lấy id_token_hint rồi mới xoá user, nên không gọi removeUser trước đó.
 export function signOut(): Promise<void> {
   cachedUser = null;
+  clearInboxReviews();
   return userManager.signoutRedirect();
 }
 
 export function clearSession() {
   cachedUser = null;
+  clearInboxReviews();
   void userManager.removeUser();
 }
 

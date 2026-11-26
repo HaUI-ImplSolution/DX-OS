@@ -10,6 +10,8 @@ import type { Classifier } from '../classifier/index.js';
 import { normalized } from '../classifier/features.js';
 
 export type Source = { id: string; title: string; revision: string; text: string; license: string };
+const REVIEW_CONCURRENCY = 5;
+const SESSION_ERRORS = new Set(['ERR_CORE_LINK', 'ERR_LINK_IDENTITY', 'ERR_IDENTITY_UNAVAILABLE', 'ERR_IDENTITY_RESPONSE']);
 const isClosed = (entity: Entity, status: string) => entity.process?.states.some(x => x.name === status && x.terminal);
 
 function matchesClassifierLabels(field: Entity['fields'][number] | undefined, classifier: Classifier) {
@@ -51,25 +53,50 @@ export class FieldProposals {
   }
 
   async review(owner: Owner, targets: Target[]) {
-    const reviews = await Promise.all(targets.map(async target => {
-      const data = await this.records.record(owner, target).catch(error => {
-        if (error instanceof ApiError && [403, 404].includes(error.status)) return null;
-        throw error;
-      });
-      if (!data || !data.entity.canWrite || isClosed(data.entity, data.record.status)) return [];
-      return Object.entries(data.entity.aiTasks ?? {}).flatMap(([task, config]) => {
+    await this.core.checkSession(owner);
+    const metadata = new Map<string, Promise<Entity>>();
+    const reviewTarget = async (target: Target) => {
+      const key = `${target.model}/${target.entity}`;
+      let pending = metadata.get(key);
+      if (!pending) {
+        pending = this.records.entity(owner, target);
+        metadata.set(key, pending);
+      }
+      const entity = await pending;
+      if (!entity.canWrite) return [];
+      const { record } = await this.records.record(owner, target, entity);
+      if (isClosed(entity, record.status)) return [];
+      return Object.entries(entity.aiTasks ?? {}).flatMap(([task, config]) => {
         if (config.engine !== 'classifier') return [];
         const classifier = this.classifiers.get(config.classifier);
-        const field = data.entity.fields.find(x => x.name === config.outputField);
+        const field = entity.fields.find(x => x.name === config.outputField);
         if (!classifier || !matchesClassifierLabels(field, classifier)) return [];
-        const { label: suggested, evidence } = classify(classifier, config, data.record);
-        const value = data.record[config.outputField];
+        const { label: suggested, probability, evidence } = classify(classifier, config, record);
+        const value = record[config.outputField];
         const current = typeof value === 'string' ? value : null;
         return { ...target, task, field: config.outputField, current, suggested, evidence,
+          ...(suggested === null ? {} : { confidence: probability }),
           mismatch: suggested !== null && suggested !== current };
       });
+    };
+    const queue = targets.entries();
+    const results: Awaited<ReturnType<typeof reviewTarget>>[] = [];
+    let skipped = 0;
+    let sessionFailed = false;
+    await Promise.all(Array.from({ length: Math.min(REVIEW_CONCURRENCY, targets.length) }, async () => {
+      for (const [index, target] of queue) {
+        if (sessionFailed) break;
+        try { results[index] = await reviewTarget(target); }
+        catch (error) {
+          if (error instanceof ApiError && (error.status === 401 || SESSION_ERRORS.has(error.errorCode))) {
+            sessionFailed = true;
+            throw error;
+          }
+          skipped++;
+        }
+      }
     }));
-    return { items: reviews.flat() };
+    return { items: results.flat(), skipped };
   }
 
   private async context(owner: Owner, target: Target, taskName: string, creating = false) {
@@ -114,9 +141,9 @@ export class FieldProposals {
         throw new ApiError(409, 'ERR_CLASSIFIER_UNAVAILABLE', `Classifier '${task.classifier}' is not ready`);
       if (!matchesClassifierLabels(field, c.classifier))
         throw new ApiError(409, 'ERR_CLASSIFIER_LABELS', `Options for '${task.outputField}' must match the labels of classifier '${task.classifier}'`);
-      const { label, evidence } = classify(c.classifier, task, c.record);
+      const { label, probability, evidence } = classify(c.classifier, task, c.record);
       if (label === null) return { insufficient: true, proposal: null };
-      return this.save(owner, taskName, c, label, { sources: [], evidence });
+      return this.save(owner, taskName, c, label, { sources: [], evidence, confidence: probability });
     }
     if (!field) throw new ApiError(422, 'ERR_INFERENCE_OUTPUT', 'The proposed field is outside the task schema');
     const reviewFields = c.entity.fields.filter(f => task.inputFields.includes(f.name) &&
@@ -181,7 +208,7 @@ export class FieldProposals {
   }
 
   private async save(owner: Owner, taskName: string, c: Awaited<ReturnType<FieldProposals['context']>>,
-    value: unknown, details: Pick<Proposal, 'sources' | 'warnings' | 'evidence'>) {
+    value: unknown, details: Pick<Proposal, 'sources' | 'warnings' | 'evidence' | 'confidence'>) {
     this.validateValue(c.entity, c.task, value);
     const target = c.target;
     // Refresh after inference; any changed record or model needs a new decision.

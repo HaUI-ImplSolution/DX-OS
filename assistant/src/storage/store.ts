@@ -13,6 +13,7 @@ export type Proposal = {
   task?: string; field?: string; value?: string; previousValue?: unknown; taskRevision?: string;
   sources?: { id: string; title: string; revision: string; text: string; license: string }[];
   evidence?: string[];
+  confidence?: number;
   action?: string; assignee?: string | null; note?: string;
   version: number; modelVersion: number; summary: string; webOnly: boolean;
   effects?: { operation: string; userSource: string; group: string; asynchronous: boolean }[];
@@ -137,7 +138,9 @@ export class Store {
       if (previous.snapshot.operation !== 'field' || previous.expires <= Date.now())
         throw new ApiError(409, 'ERR_PROPOSAL_CLOSED', 'Create a new field proposal');
       this.cancel(owner, id);
-      const next = this.createProposal(owner, { ...previous.snapshot, value });
+      const snapshot = { ...previous.snapshot, value };
+      if (value !== previous.snapshot.value) delete snapshot.confidence;
+      const next = this.createProposal(owner, snapshot);
       this.db.exec('COMMIT');
       return next;
     } catch (error) { this.db.exec('ROLLBACK'); throw error; }

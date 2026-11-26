@@ -19,7 +19,7 @@ const alphanumeric = String.raw`[\p{L}\p{N}_]`;
 const boundary = `(?:(?<!${alphanumeric})(?=${alphanumeric})|(?<=${alphanumeric})(?!${alphanumeric}))`;
 const pattern = (source: string) => new RegExp(source.replaceAll('\\b', boundary), 'u');
 const command = (
-  /\b(?:bo qua (?:moi |tat ca )?(?:huong dan|tieu chi|quy tac)|ignore|output|bot (?:set|chon|skip|tra)|nhan phai la|(?:he thong|chuong trinh|may) (?:hay |luon )?(?:chon|dien|gan|tra ve)|luon chon)\b/.source
+  /\b(?:bo qua (?:moi |tat ca )?(?:huong dan|tieu chi|quy tac)|ignore (?:(?:all |previous )?(?:instructions|rules?)|huong dan|quy tac)|bot (?:set|chon|skip|tra)|nhan phai la|luon chon)\b/.source
   + '|'
   + /^\s*(?:xin |vui long )?chi (?:in|can go|in ra)\b/.source
 );
@@ -40,8 +40,12 @@ export function normalized(text: string) {
 // Build the command filter from generic phrases and the model's normalized labels.
 export function commandPattern(labels: readonly string[]): RegExp {
   const names = labels.map(normalized).filter(Boolean).join('|');
-  const choose = names ? String.raw`|^\s*chon (?:muc |nhan )?(?:${names})\b` : '';
-  return pattern(command + choose);
+  const labeled = names ? (
+    String.raw`|(?:^\s*(?:chon|(?:nhan )?output)|`
+    + String.raw`\b(?:he thong|chuong trinh|may) (?:hay |luon )?(?:chon|dien|gan|tra ve))`
+    + String.raw` (?:muc |nhan )?(?:${names})\b`
+  ) : '';
+  return pattern(command + labeled);
 }
 
 // Keep the segments that do not match the command filter.

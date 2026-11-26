@@ -585,6 +585,8 @@ public final class ModelParser {
         if (classifier != null && !Tag.STR.equals(keys.get("classifier").getTag()))
           problem(task, "classifier must be a name in a string");
         if (keys.containsKey("sources")) problem(task, "classifier tasks must not declare sources");
+        if (keys.containsKey("max_length"))
+          problem(task, "classifier tasks must not declare max_length");
       } else {
         if (!engine.equals("llm")) problem(task, "engine must be llm or classifier");
         if (keys.containsKey("classifier")) problem(task, "llm tasks must not declare classifier");
@@ -638,7 +640,7 @@ public final class ModelParser {
       }
       int maxLength = 500;
       try {
-        if (keys.get("max_length") != null)
+        if (!usesClassifier && keys.get("max_length") != null)
           maxLength = Integer.parseInt(scalar(keys.get("max_length")));
         if (maxLength < 1 || maxLength > 2000) throw new NumberFormatException();
       } catch (NumberFormatException error) {

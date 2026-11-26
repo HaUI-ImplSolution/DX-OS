@@ -146,6 +146,8 @@ CLASSIFIER_DATA_PATHS = {
     "tools/classifier/labels.json",
     "tools/classifier/data/seeds/*.jsonl",
     "tools/classifier/data/negatives.jsonl",
+    "tools/classifier/eval/tuning/*.csv",
+    "tools/classifier/eval/acceptance/*.csv",
     "assistant/test/fixtures/classifier.json",
 }
 

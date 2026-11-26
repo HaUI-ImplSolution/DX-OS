@@ -348,6 +348,7 @@ Kiểm bằng đúng các lệnh và thao tác trong tài liệu.
 
 55. Bật trợ lý không cần LLM, rồi liên kết tài khoản cán bộ.
     Bấm "Rà loại hồ sơ" ở Hộp việc và kiểm hồ sơ cần rà lên đầu, có màu nổi bật.
+    Kiểm mỗi hồ sơ cần rà có độ tự tin theo phần trăm, và tài khoản chưa liên kết bấm rà thì được nhắc liên kết.
     Bấm "Cần rà" để mở hồ sơ, xem "Căn cứ trong hồ sơ" và xác nhận lưu đề xuất.
     Rà lại và kiểm số hồ sơ cần rà giảm.
     Kiểm ghi chú phòng khám chỉ nêu triệu chứng không có đề xuất.

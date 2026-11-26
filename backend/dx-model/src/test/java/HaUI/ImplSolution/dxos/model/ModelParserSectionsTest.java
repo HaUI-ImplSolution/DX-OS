@@ -80,12 +80,7 @@ class ModelParserSectionsTest {
 
   @Test
   void aClassifierTaskUsesTextInputsAndASingleChoiceOutput() {
-    var task =
-        ok(task(CLASSIFIER_TASK + "          max_length: 1\n"))
-            .entities()
-            .get("item")
-            .aiTasks()
-            .get("t1");
+    var task = ok(task(CLASSIFIER_TASK)).entities().get("item").aiTasks().get("t1");
 
     assertEquals("classifier", task.engine());
     assertEquals("support", task.classifier());
@@ -105,6 +100,9 @@ class ModelParserSectionsTest {
 
   @Test
   void classifierAndLlmTasksEnforceTheirOwnSettings() {
+    refused(
+        task(CLASSIFIER_TASK + "          max_length: 1\n"),
+        "classifier tasks must not declare max_length");
     refused(task(GOOD_TASK + "          engine: unknown\n"), "engine must be llm or classifier");
     refused(
         task(GOOD_TASK + "          classifier: support\n"),

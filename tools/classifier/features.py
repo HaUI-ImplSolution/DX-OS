@@ -26,8 +26,8 @@ FILLER = set("em e anh chi minh toi xin cho nho giup de va voi vs a ah oi nhe cu
              "thi ma nay do cac nhung mot khi da dang se bi k ko khong".split())
 COMMAND = (
     r"\b(?:bo qua (?:moi |tat ca )?(?:huong dan|tieu chi|quy tac)|"
-    r"ignore|output|bot (?:set|chon|skip|tra)|nhan phai la|"
-    r"(?:he thong|chuong trinh|may) (?:hay |luon )?(?:chon|dien|gan|tra ve)|"
+    r"ignore (?:(?:all |previous )?(?:instructions|rules?)|huong dan|quy tac)|"
+    r"bot (?:set|chon|skip|tra)|nhan phai la|"
     r"luon chon)\b|^\s*(?:xin |vui long )?chi (?:in|can go|in ra)\b"
 )
 
@@ -41,8 +41,12 @@ def normalized(text):
 @lru_cache(maxsize=64)
 def command_pattern(labels):
     names = "|".join(filter(None, map(normalized, labels)))
-    choose = rf"|^\s*chon (?:muc |nhan )?(?:{names})\b" if names else ""
-    return re.compile(COMMAND + choose)
+    labeled = (
+        rf"|(?:^\s*(?:chon|(?:nhan )?output)|"
+        rf"\b(?:he thong|chuong trinh|may) (?:hay |luon )?(?:chon|dien|gan|tra ve))"
+        rf" (?:muc |nhan )?(?:{names})\b"
+    ) if names else ""
+    return re.compile(COMMAND + labeled)
 
 
 def input_fields(row):

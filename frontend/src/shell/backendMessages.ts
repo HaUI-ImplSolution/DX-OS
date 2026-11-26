@@ -25,6 +25,7 @@ const VI: Rule[] = [
   fixed("classifier must match [a-z][a-z0-9_]* and be at most 40 characters", "Tên bộ phân loại phải khớp [a-z][a-z0-9_]* và dài tối đa 40 ký tự"),
   fixed("llm tasks must not declare classifier", "Nhiệm vụ LLM không được khai classifier"),
   fixed("classifier tasks must not declare sources", "Nhiệm vụ classifier không được khai sources"),
+  fixed("classifier tasks must not declare max_length", "Nhiệm vụ classifier không được khai max_length"),
   fixed("classifier input_fields must name text fields of this entity", "input_fields của bộ phân loại phải chỉ đến các trường text của thực thể này"),
   fixed("classifier output_field must name a single choice field", "output_field của bộ phân loại phải là trường choice đơn trị"),
   fixed("a classifier task needs a label up to 200 and optional instruction up to 2000 characters", "Nhiệm vụ classifier cần nhãn tối đa 200 ký tự và có thể khai hướng dẫn tối đa 2000 ký tự"),

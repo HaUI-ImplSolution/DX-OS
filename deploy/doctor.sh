@@ -10,6 +10,7 @@ set -uo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 source lib/web-url.sh
+source lib/windows-ports.sh
 
 FAILS=0
 WARNS=0
@@ -22,12 +23,14 @@ env_value() { grep -E "^$1=" .env | tail -n1 | cut -d= -f2-; }
 # Port number of a *_HOST_PORT value such as 9080 or 127.0.0.1:9082.
 port_of() { printf '%s' "${1##*:}"; }
 
+DOCKER_REACHABLE=false
 echo "Docker"
 if ! command -v docker >/dev/null 2>&1; then
   fail "docker is not installed"
 elif ! docker info >/dev/null 2>&1; then
   fail "the Docker daemon is not reachable by this user"
 else
+  DOCKER_REACHABLE=true
   version="$(docker compose version --short 2>/dev/null | sed 's/^v//')"
   if [[ -z "$version" ]]; then
     fail "Docker Compose v2 is missing (docker compose version)"
@@ -147,7 +150,7 @@ else
   echo "Ports"
   # Each published port: the .env key, the service and the port inside its container. A port that
   # this stack's own container holds is fine, also when the stack is only partly up; any other
-  # program on it is a conflict.
+  # program on it is a conflict. In WSL, Windows is asked as well, since a Windows program is invisible from here.
   for entry in APISIX_HOST_PORT:apisix:9080 POSTGRES_HOST_PORT:postgres:5432; do
     key="${entry%%:*}"
     rest="${entry#*:}"
@@ -156,11 +159,24 @@ else
     value="$(env_value "$key")"
     [[ -n "$value" ]] || continue
     port="$(port_of "$value")"
-    held="$(port_of "$(docker compose port "$service" "$inside" 2>/dev/null | head -n1)")"
+    held=""
+    if [[ "$DOCKER_REACHABLE" == true ]]; then held="$(port_of "$(docker compose port "$service" "$inside" 2>/dev/null | head -n1)")"; fi
+    windows_state=unknown
+    if windows_probe_available; then windows_state="$(windows_port_state "$key")"; fi
     if [[ "$held" == "$port" && "$port" != 0 ]]; then
-      ok "$key: port $port is held by this stack's $service"
+      if [[ "$windows_state" == foreign ]]; then
+        fail "$key: port $port is held by this stack's $service, but on Windows a program outside this stack answers on it; change $key in deploy/.env or stop that program"
+      else
+        ok "$key: port $port is held by this stack's $service"
+      fi
     elif (exec 3<>"/dev/tcp/127.0.0.1/$port") 2>/dev/null; then
+      if [[ "$DOCKER_REACHABLE" != true ]]; then
+        warn "$key: port $port is in use, and Docker does not answer, so it is not known whether this stack's $service holds it"
+        continue
+      fi
       fail "$key: port $port is in use by a program outside this stack; dxos stop does not free it, so change $key in deploy/.env or stop that program"
+    elif [[ "$windows_state" == foreign ]]; then
+      fail "$key: port $port is free in WSL but a program on Windows holds it; change $key in deploy/.env or stop that program"
     else
       ok "$key: port $port is free"
     fi

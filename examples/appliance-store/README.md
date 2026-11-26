@@ -143,7 +143,8 @@ Chi tiết ở [`docs/QUICKSTART.md`](../../docs/QUICKSTART.md), đường 1, b�
    - tên `warranty-requester`, mô hình `warranty`, vai `REQUESTER`.
 2. Mỗi lần đăng ký, DX-OS hiện mã tài khoản (dạng `dxos-app-<tên>`) và mã bí mật một lần duy nhất; bấm **Sao chép**.
    Quên thì dùng nút đổi mã ở cùng tab.
-3. Ghi vào tệp `.env` cạnh `docker-compose.yml`, giữ quyền riêng tư cho nó:
+3. Ghi vào tệp `.env` cạnh `docker-compose.yml`, giữ quyền riêng tư cho nó.
+   Ở ổ Windows gắn vào WSL (`/mnt/c`) `chmod` không có tác dụng, nên để thư mục `appliance-store` trong ổ của WSL, ví dụ dưới `~`:
 
    ```bash
    touch .env && chmod 600 .env
@@ -226,7 +227,7 @@ curl -i -X POST -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/
   http://localhost:9080/api/v1/data/retail/return_request/1/actions/approve
 ```
 
-Kết quả: `HTTP 403` kèm "Only STORE_STAFF can do this", và phiếu vẫn "Chờ duyệt".
+Kết quả: `HTTP 403` kèm "Only STORE_STAFF can do this", và trạng thái của phiếu không đổi.
 Cùng token đó gọi `/api/v1/data/warranty/ticket` (dữ liệu của mô hình khác) hoặc `/api/v1/users` cũng trả 403.
 
 ### 2. Lịch sử bị sửa là lộ ra

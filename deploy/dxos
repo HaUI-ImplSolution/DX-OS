@@ -114,6 +114,7 @@ CALLER_DIR="$PWD"
 ALPINE="alpine:3.24@sha256:3f4d6b32e26703c6082839234f43769d5046b3ac7c910033911d1e71d8cd630a"
 source "$DEPLOY_DIR/lib/web-url.sh"
 source "$DEPLOY_DIR/lib/gitops.sh"
+source "$DEPLOY_DIR/lib/windows-ports.sh"
 
 die() { echo "dxos: $*" >&2; exit 1; }
 # The usage text: the comment block at the top of this file.
@@ -122,6 +123,27 @@ from_caller() { if [[ "$1" == /* ]]; then printf '%s\n' "$1"; else printf '%s\n'
 # Value of KEY in .env (last assignment), empty when absent or blank.
 env_value() { grep -E "^$1=" "$DEPLOY_DIR/.env" | tail -n1 | cut -d= -f2- || true; }
 compose() { docker compose "$@"; }
+# Names the .env key to change when compose could not publish a port; the log is the output of docker compose up.
+# Docker reports this only when it cannot publish the port; a Windows program that holds it exclusively is found by windows_ports_check.
+port_conflict_hint() {
+  local key value port found=false
+  grep -qE 'ports are not available|port is already allocated|address already in use' "$1" || return 0
+  for key in APISIX_HOST_PORT POSTGRES_HOST_PORT; do
+    value="$(env_value "$key")"
+    port="${value##*:}"
+    if [[ -n "$port" ]] && grep -qE "[:. ]$port([^0-9]|$)" "$1"; then
+      echo "dxos: port $port is held by a program outside this stack, so change $key in deploy/.env or stop that program" >&2
+      found=true
+    fi
+  done
+  $found || echo "dxos: a port of the stack is held by another program, so change APISIX_HOST_PORT or POSTGRES_HOST_PORT in deploy/.env" >&2
+}
+
+# Recreates the backend and restarts the gateway, which keeps the address of the replaced container until then.
+recreate_backend() {
+  compose up -d --no-build --no-deps --force-recreate backend
+  compose restart apisix
+}
 
 # Starts the platform first and the assistant after it, so a failure of the assistant is a warning and never holds the platform.
 up_stack() {
@@ -348,7 +370,7 @@ EOF
 }
 
 cmd_start() {
-  local since since_epoch was_running=false model_status=0 started mode=""
+  local since since_epoch was_running=false model_status=0 started mode="" log
   while (( $# )); do
     case "$1" in
       --core) mode=core; shift ;;
@@ -371,14 +393,21 @@ cmd_start() {
   since="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
   since_epoch="$(date +%s)"
   echo "==> Starting DX-OS $(env_value DXOS_IMAGE_TAG), $(stack_mode) mode (images are downloaded on the first start)"
-  up_stack
+  log="$(mktemp)"
+  if ! up_stack 2>&1 | tee "$log"; then
+    port_conflict_hint "$log"
+    rm -f "$log"
+    die "docker compose could not start the stack"
+  fi
+  rm -f "$log"
   started="$(date -d "$(docker inspect -f '{{.State.StartedAt}}' "$(compose ps -q backend)")" +%s)"
   # A backend that kept running is started again so it reads a model file whose content changed.
   if $was_running && (( $# > 0 )) && ((started < since_epoch)); then
-    compose up -d --no-build --no-deps --force-recreate backend
+    recreate_backend
     started="$since_epoch"
   fi
   wait_ready
+  windows_ports_check || die "the stack runs, but a program on Windows holds one of its ports"
   set +e
   admin_account ensure
   # The backend reads the model file only when it starts, so a backend that kept running has no result.
@@ -421,7 +450,7 @@ cmd_av() {
       if $running; then
         # The scan image is pulled when it is published and built from clamav/ when it is not, as in a source checkout.
         compose up -d --pull missing clamav
-        compose up -d --no-build --no-deps --force-recreate backend
+        recreate_backend
         wait_ready
       fi ;;
     off)
@@ -429,7 +458,7 @@ cmd_av() {
       set_env STORAGE_SCAN_HOST ""
       if $running; then
         compose --profile av rm -sf clamav
-        compose up -d --no-build --no-deps --force-recreate backend
+        recreate_backend
         wait_ready
       fi ;;
     "") ;;
@@ -1054,7 +1083,7 @@ merge_cors_origins() {
   set_env CORS_ALLOWED_ORIGINS "$joined"
   if [[ -n "$(compose ps -q --status running backend)" ]]; then
     echo "==> Applying the CORS allowlist"
-    compose up -d --no-build --no-deps --force-recreate backend >/dev/null
+    recreate_backend >/dev/null
     wait_ready
   fi
 }
@@ -1828,7 +1857,7 @@ cmd_update() {
 }
 
 cmd_uninstall() {
-  local purge=false yes=false arg answer
+  local purge=false yes=false arg answer dir
   for arg in "$@"; do
     case "$arg" in
       --purge) purge=true ;;
@@ -1849,10 +1878,13 @@ cmd_uninstall() {
   fi
   if [[ "$purge" == true ]]; then
     echo "==> Deleting the data and $PREFIX"
-    # deploy/data holds root-owned files, so it is emptied from a throwaway container.
-    if [[ -d "$DEPLOY_DIR/data" ]]; then
-      docker run --rm -v "$DEPLOY_DIR/data:/data" "$ALPINE" find /data -mindepth 1 -delete
-    fi
+    # deploy/data and the restic repository in deploy/backups hold root-owned files, so they are emptied from a throwaway container.
+    # A repository outside the install directory (BACKUP_DIR, BACKUP_REPOSITORY) is left alone.
+    for dir in "$DEPLOY_DIR/data" "$DEPLOY_DIR/backups"; do
+      if [[ -d "$dir" ]]; then
+        docker run --rm -v "$dir:/data" "$ALPINE" find /data -mindepth 1 -delete
+      fi
+    done
     rm -rf "$PREFIX"
   fi
   if [[ -L "$BIN_LINK" && "$(readlink "$BIN_LINK")" == "$DEPLOY_DIR/dxos" ]]; then
@@ -1863,6 +1895,15 @@ cmd_uninstall() {
   else
     echo "DX-OS is stopped and the dxos command removed; the data stays in $PREFIX (dxos uninstall --purge from $DEPLOY_DIR/dxos deletes it)."
   fi
+}
+
+# Warns when other accounts of this machine can read a file of secrets.
+# A Windows drive mounted in WSL without metadata ignores chmod and shows mode 777.
+warn_env_mode() {
+  local mode
+  mode="$(stat -c %a "$1" 2>/dev/null)" || return 0
+  [[ "${mode: -2}" == 00 ]] && return 0
+  echo "dxos: $1 has mode $mode, so other accounts of this machine may read its secrets; on a Windows drive mounted in WSL (/mnt/c) chmod has no effect, so keep the application in the WSL file system (for example under ~) or mount the drive with the metadata option" >&2
 }
 
 # Connects an application: registers one client for each role it uses and writes DXOS_BASE_URL and the
@@ -1949,6 +1990,7 @@ cmd_connect() {
     echo "Checking dxos-app-$test_name"
     DXOS_CLIENT_SECRET="$test_secret" cmd_client_test "$test_name" || echo "dxos: the check failed; the variables are written, see the step above" >&2
   fi
+  warn_env_mode "$env_file"
   if (( wrote == 0 )); then echo "Nothing new to write."; return 0; fi
   cat <<EOF
 

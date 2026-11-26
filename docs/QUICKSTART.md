@@ -173,6 +173,7 @@ dxos connect order_approval --role REQUESTER --role APPROVER
 
 Lệnh đăng ký một client cho mỗi vai (`dxos-app-order_approval-requester` và `dxos-app-order_approval-approver`) và ghi vào `.env` ở thư mục hiện tại: `DXOS_BASE_URL`, rồi `DXOS_<VAI>_CLIENT_ID` và `DXOS_<VAI>_CLIENT_SECRET` cho từng vai.
 Tệp `.env` mới tạo có quyền `600`, tệp có sẵn được nối thêm và không bị ghi đè.
+Ở ổ Windows gắn vào WSL (`/mnt/c`) quyền này không giữ được và lệnh in cảnh báo; đặt thư mục ứng dụng trong ổ của WSL, ví dụ dưới `~`.
 Cuối cùng lệnh đăng nhập thử bằng client đầu tiên, gọi API của mô hình, rồi in hai dòng cần thêm vào `docker-compose.yml` ở bước 4.
 `order_approval` là `name` của tệp mô hình đã áp dụng và `--role` là tên một vai khai trong tệp đó; đổi `name` hay tên vai trong mô hình thì đổi theo trong lệnh.
 `DXOS_BASE_URL` là `http://host.docker.internal:9080`, địa chỉ mà container trên cùng máy với DX-OS dùng được; `--base-url` đổi nó khi ứng dụng chạy ở máy khác, và dòng `DXOS_BASE_URL` đã có trong `.env` thì được giữ nguyên.

@@ -98,7 +98,7 @@ Mẫu `itaccess` đạt điều kiện nhưng không có nhiệm vụ, vì trư�
 
 ### Máy đo, độ trễ và bộ nhớ
 
-Kết quả nghiệm thu ở trên được chạy lại ngày 26/11/2026 trên máy Linux x86-64, CPU Intel Core i5-10300H @ 2,50 GHz (4 nhân, 8 luồng), Python 3.12.3.
+Các số đo độ trễ và bộ nhớ bên dưới lấy từ phép đo ngày 26/11/2026 trên Linux x86-64 với Intel Core i5-10300H @ 2,50 GHz (4 nhân, 8 luồng) và Python 3.12.3.
 Mỗi lần chạy dùng một tiến trình CPU, làm nóng 25 lượt, đo 150 lượt một câu và 30 lượt lô 25 câu.
 Độ trễ gồm chuẩn hóa câu, phân loại và lấy cụm từ làm căn cứ.
 RAM đỉnh là RSS của toàn bộ tiến trình Python chạy công cụ đo, ghi bằng GNU `time -f '%M'`.

@@ -35,7 +35,7 @@ Bộ chọn tối đa hóa độ phủ trên tập chỉnh, với ít nhất 90%
 Bộ nghiệm thu do đội viết tay nằm ở `tools/classifier/eval/acceptance/`.
 Bản công bố [Kaggle phiên bản 2](https://www.kaggle.com/datasets/hittungtran/dx-os-vietnamese-record-classification-data) chứa cùng các câu gốc, tập chỉnh và bộ nghiệm thu trong kho mã.
 
-## Thêm bộ phân loại cho nghiệp vụ mới
+### Thêm bộ phân loại cho nghiệp vụ mới
 
 1. Xác định trường đầu vào kiểu `text` và trường đầu ra kiểu `choice` đơn trị.
    Thêm mục `<task>` vào `tasks` trong [labels.json](labels.json), gồm mẫu, thực thể, `input_fields`, `output_field`, diễn giải từng nhãn và ca biên.
@@ -53,9 +53,10 @@ Bản công bố [Kaggle phiên bản 2](https://www.kaggle.com/datasets/hittung
    Khi chỉ thêm hoặc thay tệp tại đường dẫn đã cấu hình, chạy `docker compose restart assistant-control` từ `deploy/` để nạp lại trọng số.
    Nếu vẫn dùng các nhiệm vụ có sẵn, chép cả trọng số của chúng vào cùng thư mục để trợ lý nạp.
    Kiểm `GET /assistant-api/v1/me` có tên mới trong `model.classifiers`.
-5. Khai `ai.tasks` với `classifier: <task>`, danh sách `input_fields` theo thứ tự đã dùng để huấn luyện và `output_field` đã chọn, rồi áp dụng tệp mô hình.
+5. Trong tệp mô hình, khai nhiệm vụ dưới `entities.<thực_thể>.ai.tasks` với `classifier: <task>`, `input_fields` theo thứ tự dùng khi huấn luyện và `output_field` đã chọn.
+   Áp dụng tệp mô hình.
    Thử hồ sơ đúng nhãn, hồ sơ thiếu căn cứ và xác nhận đề xuất bằng tài khoản có quyền.
-   Xem [khai báo mô hình](../../docs/MODEL.md#nhiệm-vụ-trợ-lý-nghiệp-vụ) và [ví dụ API](../../docs/API.md#api-trợ-lý-nghiệp-vụ).
+   Xem [khai báo mô hình](../../docs/MODEL.md#nhiệm-vụ-trợ-lý-nghiệp-vụ) và [ví dụ API](../../assistant/README.md#rà-loại-hồ-sơ-ở-hộp-việc).
 
 ## Đo dev và nghiệm thu
 

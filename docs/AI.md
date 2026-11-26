@@ -14,11 +14,15 @@ Cùng một cơ chế dùng cho nhiều nghiệp vụ qua `ai.tasks`; mỗi nghi
 
 ## Luồng xử lý và an toàn
 
-| Bước | Cơ chế | Nơi kiểm tra |
-| --- | --- | --- |
-| Khai báo | Tệp mô hình chọn trường văn bản làm đầu vào và một trường lựa chọn đơn trị làm đầu ra. | [Đặc tả mô hình](./MODEL.md#nhiệm-vụ-trợ-lý-nghiệp-vụ) · [Bộ kiểm khai báo](../backend/dx-model/src/main/java/HaUI/ImplSolution/dxos/model/ModelParser.java) |
-| Rà soát | Trợ lý đọc hồ sơ bằng phiên Core của người dùng. Bộ phân loại bỏ qua ca dưới ngưỡng hoặc chứa dấu hiệu chèn lệnh. Mỗi đề xuất đưa ra một giá trị và cụm từ làm căn cứ. | [Mã bộ phân loại](../assistant/src/classifier/index.ts) · [Luồng rà Hộp việc](../assistant/README.md#rà-loại-hồ-sơ-ở-hộp-việc) |
-| Xác nhận | Người dùng xác nhận đề xuất. Trợ lý kiểm lại quyền và trạng thái hồ sơ trước khi ghi qua API Core. Trường dùng để cấp nhóm quyền bị chặn ở bước kiểm khai báo mô hình. | [Mã kiểm và ghi đề xuất](../assistant/src/tools/fields.ts) · [Ví dụ API](./API.md#api-trợ-lý-nghiệp-vụ) |
+1. **Khai báo.** Tệp mô hình chọn trường văn bản làm đầu vào và một trường lựa chọn đơn trị làm đầu ra.
+   Bộ kiểm khai báo chặn trường đầu ra dùng để cấp nhóm quyền.
+   [Đặc tả mô hình](./MODEL.md#nhiệm-vụ-trợ-lý-nghiệp-vụ) · [Bộ kiểm khai báo](../backend/dx-model/src/main/java/HaUI/ImplSolution/dxos/model/ModelParser.java)
+2. **Rà soát.** Trợ lý đọc hồ sơ bằng phiên Core của người dùng và bỏ các đoạn khớp bộ lọc câu lệnh.
+   Đề xuất chỉ xuất hiện khi nhãn đạt ngưỡng và có cụm từ làm căn cứ.
+   [Mã bộ lọc](../assistant/src/classifier/features.ts) · [Mã bộ phân loại](../assistant/src/classifier/index.ts)
+3. **Xác nhận.** Người dùng duyệt giá trị đề xuất.
+   Trợ lý kiểm lại quyền, trạng thái và phiên bản hồ sơ trước khi ghi qua API Core.
+   [Mã kiểm và ghi đề xuất](../assistant/src/tools/fields.ts) · [Luồng rà và ví dụ API](../assistant/README.md#rà-loại-hồ-sơ-ở-hộp-việc)
 
 Trợ lý chạy trong mạng nội bộ, không có đường ra Internet.
 Trong bản cài full, có thể dừng `assistant-control` và tiếp tục nhập, sửa và xử lý hồ sơ trên giao diện chuẩn.
@@ -28,8 +32,12 @@ Trong bản cài full, có thể dừng `assistant-control` và tiếp tục nh�
 ## Dữ liệu và giấy phép
 
 - **Huấn luyện** dùng 2.490 câu gốc và 22 câu từ chối do Claude soạn, cùng 300 câu lạc đề lấy mẫu từ MASSIVE vi-VN.
-- **Chọn ngưỡng** dùng 420 câu giả lập do Claude soạn. **Nghiệm thu** dùng 450 câu riêng do thành viên đội viết tay và duyệt chéo.
-- **Công bố** mã và trọng số theo Apache-2.0. Dữ liệu của đội ghi CC BY 4.0 trong phạm vi đội có quyền. MASSIVE vi-VN 1.0 theo CC BY 4.0, có ghi công nguồn. Phạm vi tái sử dụng phần do Claude soạn theo điều khoản Anthropic còn cần làm rõ, nên chưa thể kết luận toàn bộ chuỗi dữ liệu đạt OSAID.
+- **Chọn ngưỡng** dùng 420 câu giả lập do Claude soạn.
+- **Nghiệm thu** dùng 450 câu riêng do thành viên đội viết tay và duyệt chéo.
+- **Giấy phép.** Mã và trọng số theo Apache-2.0.
+  Dữ liệu của đội công bố theo CC BY 4.0 trong phạm vi đội có quyền.
+  MASSIVE vi-VN 1.0 theo CC BY 4.0 và có ghi công nguồn.
+  Phạm vi tái sử dụng phần do Claude soạn theo điều khoản Anthropic còn cần làm rõ trước khi kết luận toàn bộ chuỗi dữ liệu đạt OSAID.
 
 [Thẻ dữ liệu](../tools/classifier/data/DATA_CARD.md) · [Bộ dữ liệu trên Kaggle](https://www.kaggle.com/datasets/hittungtran/dx-os-vietnamese-record-classification-data) · [Danh mục giấy phép và SHA-256 của trọng số](../DEPENDENCIES.txt) · [Vấn đề đang theo dõi](./dynamic-core/BACKLOG.md#32-chưa-có-issue).
 
@@ -51,7 +59,6 @@ Ba bộ phân loại đi kèm bản cài đề xuất đúng toàn bộ ca đã 
 Câu quá ngắn, cách nói mới, lỗi gõ nặng hoặc nhiều yêu cầu trong cùng hồ sơ vẫn có thể bị bỏ qua hoặc phân loại sai.
 Các phép đo dùng ca viết cho dự án; hiệu quả trên hồ sơ thực tế và thời gian cán bộ tiết kiệm được chưa được đo.
 
-Đo lại ngày 26/11/2026 trên Intel Core i5-10300H, Linux x86-64, Python 3.12.3 cho kết quả nghiệm thu như bảng.
 Trên ba bộ đi kèm, độ trễ p95 của một câu là 0,866–1,276 ms, của lô 25 câu là 16,137–66,056 ms và RAM đỉnh của tiến trình đo là 22,4–22,5 MiB.
 Phép đo chạy ngoại tuyến, chỉ đo bộ phân loại Python; độ trễ API và tài nguyên toàn dịch vụ cần đo trên hệ thống triển khai.
 [Thẻ mô hình và bảng đo đầy đủ](../tools/classifier/MODEL_CARD.md).

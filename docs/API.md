@@ -4,6 +4,8 @@ Bảng dưới liệt kê các đường dẫn chính dưới `/api/v1`; đặc 
 Mọi phản hồi bọc trong `ApiResponse`, và lỗi có `errorCode` ổn định.
 Script `e2e/api/check_docs.py` kiểm các đường dẫn của Core trong bảng có trong OpenAPI.
 
+Ví dụ gọi API của trợ lý và phản hồi mẫu nằm trong [hướng dẫn rà loại hồ sơ](../assistant/README.md#rà-loại-hồ-sơ-ở-hộp-việc).
+
 | Đường dẫn | Việc |
 |---|---|
 | `POST /api/v1/models/plan`, `/apply` | Xem trước và áp dụng tệp mô hình (ADMIN); kế hoạch có `impacts`: mỗi hành động mới đòi thêm trường bằng `require` kèm số hồ sơ đang ở trạng thái nguồn còn thiếu trường đó, và `CHANGE_ACTIONS` nêu hành động đã đổi |
@@ -42,103 +44,3 @@ Script `e2e/api/check_docs.py` kiểm các đường dẫn của Core trong bả
 | `PUT`, `DELETE /api/v1/users/{id}/roles/{model}/{role}`, `/units/{unit}` | Gán và gỡ vai của một mô hình, và đơn vị (ADMIN). Quản trị viên của dự án gán và gỡ vai của mô hình thuộc dự án mình cho thành viên của dự án đó; đơn vị và mô hình chưa phân loại chỉ ADMIN, ngoài phạm vi trả 403 |
 | `POST /api/v1/users`, `PUT /{id}/enabled`, `POST /{id}/password` | Tạo người dùng với mật khẩu tạm, khóa và mở, đặt lại mật khẩu (chỉ ADMIN) |
 | `GET /api/v1/audit-logs` | Nhật ký lần truy cập bị từ chối, lỗi, thay đổi về tài khoản và việc áp dụng mô hình; lọc theo `actor`, `action`, `targetType`, `targetId`, `outcome`, `from`, `to` (ADMIN) |
-
-## API trợ lý nghiệp vụ
-
-Các ví dụ dùng mẫu Một cửa sinh viên ở chế độ full.
-Đặt `DXOS_URL` là URL công khai của cổng, không có dấu gạch chéo cuối, và `DXOS_TOKEN` là access token có audience `dxos-api` của cán bộ đã liên kết Core trong giao diện trợ lý.
-Gửi `Origin` trùng origin công khai và chọn mã ID nội bộ của một hồ sơ thử đang mở mà cán bộ có quyền sửa.
-Các phản hồi bên dưới là ví dụ với hồ sơ `17`, lý do “xin xem lại bài thi môn CSDL” và loại hiện tại “Hoãn thi”.
-
-### Rà loại hồ sơ
-
-```sh
-curl --fail-with-body "$DXOS_URL/assistant-api/v1/me/reviews" \
-  -H "Authorization: Bearer $DXOS_TOKEN" -H "Origin: $DXOS_URL" \
-  --json '{"items":[{"model":"onestop","entity":"request","id":17}]}'
-```
-
-```json
-{
-  "success": true,
-  "message": "OK",
-  "data": {
-    "items": [{
-      "model": "onestop",
-      "entity": "request",
-      "id": 17,
-      "task": "classify_kind",
-      "field": "kind",
-      "current": "Hoãn thi",
-      "suggested": "Phúc khảo",
-      "confidence": 0.9791523993616698,
-      "evidence": ["xem lại bài", "thi môn CSDL"],
-      "mismatch": true
-    }],
-    "skipped": 0
-  }
-}
-```
-
-Mỗi lượt nhận tối đa 25 hồ sơ và chỉ đọc dữ liệu.
-`skipped` đếm lỗi riêng của hồ sơ.
-Khi bộ phân loại từ chối, `suggested` là `null` và `mismatch` là `false`.
-
-### Tạo đề xuất và xác nhận
-
-```sh
-curl --fail-with-body "$DXOS_URL/assistant-api/v1/me/proposals" \
-  -H "Authorization: Bearer $DXOS_TOKEN" -H "Origin: $DXOS_URL" \
-  --json '{"model":"onestop","entity":"request","id":17,"task":"classify_kind"}'
-```
-
-Phản hồi rút gọn để thấy mã đề xuất, giá trị và căn cứ.
-
-```json
-{
-  "success": true,
-  "message": "OK",
-  "data": {
-    "insufficient": false,
-    "proposal": {
-      "id": "3ead3b5e-0b2a-4f71-8c20-acc442fc00b1",
-      "state": "pending",
-      "snapshot": {
-        "field": "kind",
-        "previousValue": "Hoãn thi",
-        "value": "Phúc khảo",
-        "evidence": ["xem lại bài", "thi môn CSDL"],
-        "confidence": 0.9791523993616698
-      }
-    }
-  }
-}
-```
-
-Nếu `insufficient` là `true`, `proposal` là `null`.
-Sau khi cán bộ kiểm tra và đồng ý với giá trị, đặt `PROPOSAL_ID` bằng `data.proposal.id` rồi gửi xác nhận trong 120 giây kể từ khi tạo đề xuất.
-
-```sh
-curl --fail-with-body "$DXOS_URL/assistant-api/v1/me/proposals/$PROPOSAL_ID/confirm" \
-  -H "Authorization: Bearer $DXOS_TOKEN" -H "Origin: $DXOS_URL" \
-  --json '{}'
-```
-
-Phản hồi thành công gồm bản ghi sau khi Core lưu, dưới đây là dạng rút gọn.
-
-```json
-{
-  "success": true,
-  "message": "OK",
-  "data": {
-    "coreCommitted": true,
-    "changed": true,
-    "record": {"id": 17, "kind": "Phúc khảo", "version": 4}
-  }
-}
-```
-
-Hồ sơ, mô hình nghiệp vụ, nhiệm vụ hoặc trọng số đã đổi thì API trả `409 ERR_PROPOSAL_STALE` và cần tạo đề xuất mới.
-Nếu giá trị đề xuất trùng giá trị hiện tại, API trả `409 ERR_PROPOSAL_NO_CHANGE`.
-Đặc tả đầy đủ ở `GET /assistant-api/v1/openapi.json` khi trợ lý chạy và người gọi đã đăng nhập.
-Xem [quy tắc ghi và thời hạn](../assistant/README.md#đề-xuất-và-xác-nhận).

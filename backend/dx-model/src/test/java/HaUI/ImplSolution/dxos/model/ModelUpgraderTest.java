@@ -81,19 +81,17 @@ class ModelUpgraderTest {
   @Test
   void aiTasksAreReadAndRefuseAFieldThatDoesNotExist() {
     String yaml =
-        MODEL
+        MODEL.replace("access:", "  kind: {type: choice, options: [A, B]}\n    access:")
             + """
             ai:
               tasks:
-                summarize:
+                suggest:
+                  classifier: kinds
                   input_fields: [title]
-                  output_field: title
-                  instruction: Summarize the supplied title.
-                  sources: [guide_v1]
-                  max_length: 100
+                  output_field: kind
         """;
-    var task = ModelParser.parse(yaml).entities().get("item").aiTasks().get("summarize");
-    assertEquals("title", task.outputField());
+    var task = ModelParser.parse(yaml).entities().get("item").aiTasks().get("suggest");
+    assertEquals("kind", task.outputField());
     assertEquals(java.util.List.of("title"), task.inputFields());
     assertThrows(
         ModelException.class,

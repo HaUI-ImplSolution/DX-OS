@@ -106,19 +106,19 @@ def conditional_actions(admin, asker, agent, other_agent):
 
 
 def ai_task_changes(admin):
-    base = DESK.replace("name: desk8", "name: taskplan8")
+    base = DESK.replace("name: desk8", "name: taskplan8").replace(
+        "      title: {type: text, required: true}",
+        "      title: {type: text, required: true}\n      topic: {type: choice, options: [A, B]}", 1)
     status, body = kc.api(admin, "POST", "/models/apply", base, YAML)
     rt.check("T8-14 the task plan fixture applies", status == 200, str(status))
     version = body["data"]["version"]
     task = """    ai:
       tasks:
-        summarize:
-          label: Summary
+        suggest_topic:
+          label: Topic
+          classifier: topics
           input_fields: [title]
-          output_field: title
-          instruction: Summarize using the supplied source.
-          sources: [fixture_source_v1]
-          max_length: 100
+          output_field: topic
 """
     configured = base.replace("    fields:", task + "    fields:", 1)
     status, body = kc.api(admin, "POST", "/models/plan", configured, YAML)

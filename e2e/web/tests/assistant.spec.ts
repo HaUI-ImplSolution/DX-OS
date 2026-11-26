@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { expect, test, type Page } from "@playwright/test";
 
-// Runs only against a stack with the optional assistant, its inference and its sources (see assistant/README.md).
+// Runs only against a full-mode stack, where the assistant runs (see assistant/README.md).
 // E2E_ASSISTANT_RECORD_PATH is a record whose suggestion differs from its value, E2E_ASSISTANT_UNCHANGED_RECORD_PATH one whose suggestion equals it.
 const PASSWORD = process.env.E2E_PASSWORD ?? "Test1234!";
 const USER = process.env.E2E_ASSISTANT_USER ?? "business-demo";
@@ -19,7 +19,7 @@ async function linkAccount(page: Page) {
 
 async function propose(page: Page, path: string) {
   await page.goto(path);
-  const generated = page.waitForResponse(response => response.url().endsWith("/assistant-api/v1/me/proposals") && response.request().method() === "POST", { timeout: 180000 });
+  const generated = page.waitForResponse(response => response.url().endsWith("/assistant-api/v1/me/proposals") && response.request().method() === "POST", { timeout: 60000 });
   await page.getByRole("button", { name: "Tạo đề xuất", exact: true }).click();
   const response = await generated;
   expect(response.status()).toBe(200);
@@ -30,15 +30,15 @@ async function propose(page: Page, path: string) {
 
 test("a suggestion is written to Core only after its owner confirms", async ({ page }) => {
   const path = process.env.E2E_ASSISTANT_RECORD_PATH;
-  test.skip(!path, "Requires an operator-provisioned AI task, sources and self-host inference");
-  test.setTimeout(240000);
+  test.skip(!path, "Requires the assistant and a record chosen by the operator");
+  test.setTimeout(120000);
   await linkAccount(page);
   const writes: string[] = [];
   page.on("request", request => {
     if (request.method() === "PATCH" && request.url().includes("/api/v1/data/")) writes.push(request.url());
   });
   const proposal = await propose(page, path!);
-  expect(proposal.snapshot.sources.length).toBeGreaterThan(0);
+  expect(proposal.snapshot.evidence.length).toBeGreaterThan(0);
   expect(writes).toEqual([]);
   const confirmed = page.waitForResponse(response => response.url().endsWith(`/proposals/${proposal.id}/confirm`) && response.request().method() === "POST");
   await page.getByRole("button", { name: "Xác nhận lưu", exact: true }).click();
@@ -51,8 +51,8 @@ test("a suggestion is written to Core only after its owner confirms", async ({ p
 
 test("confirming a value the record already has changes nothing in Core", async ({ page }) => {
   const path = process.env.E2E_ASSISTANT_UNCHANGED_RECORD_PATH;
-  test.skip(!path, "Requires an operator-provisioned AI task, sources and self-host inference");
-  test.setTimeout(240000);
+  test.skip(!path, "Requires the assistant and a record chosen by the operator");
+  test.setTimeout(120000);
   await linkAccount(page);
   const proposal = await propose(page, path!);
   expect(proposal.snapshot.value).toEqual(proposal.snapshot.previousValue);

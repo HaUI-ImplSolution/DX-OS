@@ -34,7 +34,7 @@ Mỗi nhiệm vụ có thêm lớp `TU_CHOI` theo [định nghĩa nhãn](labels.
 Công cụ huấn luyện năm mô hình hồi quy logistic đa lớp bằng SGD có L2, 28 vòng với seed 210.
 Văn bản được chuẩn hóa NFC và chuyển chữ thường, sau đó đặc trưng ký tự có dấu và bỏ dấu cùng đặc trưng từ 1–2 được băm vào 8.192 vị trí.
 Phạm vi n-gram ký tự, cách bỏ dấu ở đặc trưng từ và hệ số L2 được chọn từ lưới khai trong `train.py`.
-Tập chỉnh gồm 420 câu do Claude viết với công cụ AI và chỉ dùng để chọn ngưỡng và siêu tham số.
+Tập chỉnh gồm 420 câu do Claude viết, chưa có người duyệt, và chỉ dùng để chọn ngưỡng và siêu tham số.
 Bộ nghiệm thu là một bộ riêng do đội tự viết.
 Bộ chọn tối đa hóa độ phủ, với ít nhất 90% đúng trên đề xuất và ít nhất 97% từ chối đúng trong từng loại `lac_de`, `mo_ho`, `hai_y` và `chen_lenh`.
 Mặc định, công cụ đọc tập chỉnh ở `tools/classifier/eval/tuning/`.

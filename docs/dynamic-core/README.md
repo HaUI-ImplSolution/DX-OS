@@ -11,7 +11,7 @@ Việc chưa làm, chưa kiểm và giới hạn đã biết nằm ở [`BACKLOG
 - **Miền phục vụ:** quy trình chung cho bản ghi có vòng đời và có người tham gia (hồ sơ, ticket, đặt chỗ, mượn trả...), đổi được mô hình và quy trình an toàn khi hệ thống đang chạy; xem [Miền phục vụ](#miền-phục-vụ).
 - **Người dùng chính:** người triển khai hệ thống cho một tổ chức, làm việc qua [bảng điều khiển](#bảng-điều-khiển).
 - **Cách xây:** lõi headless, ghép từ các dịch vụ nguồn mở; đội tự viết một dịch vụ Java gồm phần điều khiển và API chung đọc mô hình lúc chạy.
-- **Ba tính năng đào sâu:** GitOps cho nghiệp vụ, quy trình không lách được, trợ lý AI tùy chọn có người xác nhận.
+- **Ba tính năng đào sâu:** GitOps cho nghiệp vụ, quy trình không lách được, trợ lý AI có người xác nhận.
 - **Mở rộng:** người dùng có thể viết thêm API và giao diện, luôn nằm ngoài lõi.
 - **Nguồn mở:** mọi thành phần của bản phát hành đều mở, kể cả công cụ, dữ liệu và mô hình AI; mô hình AI là bộ phân loại hồ sơ do đội tự huấn luyện.
 - **Hạn gửi bài:** 17:00 ngày 2026-12-06.
@@ -91,7 +91,7 @@ Các hàm ý sau là suy luận từ cách đề viết, người ra đề khôn
 | Điều chỉnh quy trình không cần sửa mã nguồn, BPMN | Họ mẫu quy trình trên Flowable, hoặc tự khai báo trạng thái và hành động; BPMN sinh từ tệp mô hình |
 | GitOps, tự phục hồi                                                  | Triển khai hạ tầng và nghiệp vụ kéo từ git (`dxos gitops`), tệp sai bị chặn, áp dụng dở được hoàn tất hoặc hủy bỏ, `dxos reconcile` tự phục hồi |
 | Kiến trúc hướng sự kiện | Trục sự kiện bằng bảng outbox: webhook có chữ ký, API kéo theo `eventId`, kênh báo cho hộp việc đang mở |
-| Tác tử AI, Human-in-the-loop, RAG                                     | Trợ lý tùy chọn đề xuất giá trị một trường bằng bộ phân loại tự huấn luyện, người xác nhận trước khi ghi; hỏi đáp kèm nguồn và tác tử nghe sự kiện không làm |
+| Tác tử AI, Human-in-the-loop, RAG                                     | Trợ lý đề xuất giá trị một trường bằng bộ phân loại tự huấn luyện, người xác nhận trước khi ghi; hỏi đáp kèm nguồn và tác tử nghe sự kiện không làm |
 | Chống nguyên khối, chủ quyền số                                   | Thành phần thay được, dữ liệu trong PostgreSQL thuần                               |
 | Chống ốc đảo dữ liệu | Một định danh, một cơ sở dữ liệu, mô hình là danh mục dữ liệu và trang Danh mục dữ liệu đọc từ đó; hồ sơ đã đóng ghi ra kho Parquet |
 
@@ -465,8 +465,8 @@ Mô hình của trợ lý là bộ phân loại hồ sơ tiếng Việt do độ
 Trọng số theo Apache-2.0; mã huấn luyện, dữ liệu đội biên soạn và cách lấy dữ liệu ngoài công bố theo [cam kết nguồn mở](#cam-kết-nguồn-mở), xem [`tools/classifier/`](../../tools/classifier/README.md).
 Hộp việc rà được hồ sơ đang chờ và đánh dấu hồ sơ có giá trị khác gợi ý.
 
-Trợ lý là dịch vụ tùy chọn, tắt mặc định, nối vào lõi qua API; lõi và mọi nghiệp vụ chạy đủ khi không có nó.
-Cách bật, giới hạn và gỡ ở [`assistant/README.md`](../../assistant/README.md).
+Trợ lý là dịch vụ của tầng ứng dụng, chạy cùng stack ở chế độ full, nối vào lõi qua API; lõi và mọi nghiệp vụ chạy đủ khi không có nó.
+Cách cấu hình, giới hạn và gỡ ở [`assistant/README.md`](../../assistant/README.md).
 Hỏi đáp có nguồn, tìm kiếm tri thức và tác tử nghe sự kiện không nằm trong phạm vi; lý do ở mục "Phạm vi AI" của [`BACKLOG.md`](./BACKLOG.md).
 
 ## Điểm mở rộng

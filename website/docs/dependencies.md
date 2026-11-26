@@ -37,10 +37,9 @@ Hai nơi đó được máy kiểm ở mỗi pull request, tài liệu này ch�
 | Monaco Editor, monaco-yaml | MIT | Trình soạn mô hình | Gợi ý và báo lỗi YAML theo JSON Schema của tệp mô hình | Chạy trong trình duyệt |
 | React Flow, Dagre, Smart Edge | MIT | Sơ đồ quy trình vẽ từ tệp đang soạn | Chỉ để xem quy trình, không để thiết kế | `frontend/src/console/` |
 | FullCalendar | MIT | Lịch đặt chỗ | Kéo thả để đổi giờ | |
-| Fastify, @fastify/swagger, jose | MIT | Dịch vụ trợ lý tùy chọn | Tách khỏi API lõi, chỉ chạy khi bật | `assistant/`, không đưa vào module Java Core |
+| Fastify, @fastify/swagger, jose | MIT | Dịch vụ trợ lý | Tách khỏi API lõi, chạy ở chế độ full | `assistant/`, không đưa vào module Java Core |
 | Bộ phân loại hồ sơ tiếng Việt (đội tự huấn luyện) | Apache-2.0 (mã, trọng số), CC-BY-4.0 (dữ liệu đội biên soạn) | Mô hình AI của trợ lý | Chạy trên CPU ngay trong trợ lý; mã huấn luyện, dữ liệu và trọng số công khai, tái tạo được | `tools/classifier/`; ba tệp trọng số nằm trong image trợ lý |
-| MASSIVE 1.0, tập train vi-VN (Amazon) | CC-BY-4.0 | Câu lạc đề khi huấn luyện bộ phân loại | Dữ liệu mở có sẵn, không phải tự soạn câu ngoài phạm vi | Tải lúc huấn luyện, kiểm SHA-256; không nằm trong repository hay image |
-| Mô hình ngôn ngữ (không đóng gói), llama.cpp | Theo model đã chọn, MIT | Model và runtime suy luận self-host của trợ lý | Endpoint do người vận hành cố định, người dùng không nhập | Do người vận hành cấp, không đóng gói trong repository; xem `assistant/README.md` |
+| MASSIVE 1.0, tập train vi-VN (Amazon), gồm dữ liệu SLURP | CC-BY-4.0 | Câu lạc đề khi huấn luyện bộ phân loại | Dữ liệu mở có sẵn, không phải tự soạn câu ngoài phạm vi | Tải lúc huấn luyện, kiểm SHA-256; không nằm trong repository hay image |
 | restic | BSD-2-Clause | Sao lưu có mã hóa | Chạy trong container nên chỉ cần Docker | `deploy/backup.sh` |
 | Trivy, gitleaks, CycloneDX | Apache-2.0, MIT | Quét lỗ hổng, bí mật và lập SBOM trong CI | Công cụ nguồn mở, chạy ở mọi pull request | `.github/workflows/` |
 | reuse | Apache-2.0, GPL-3.0-or-later (mã); CC0-1.0, CC-BY-SA-4.0 (tài liệu) | Kiểm giấy phép và bản quyền của từng tệp theo chuẩn REUSE trong CI | Công cụ nguồn mở, chạy bằng `pipx run`, không đóng gói vào sản phẩm | `.github/workflows/ci-compliance.yml` |

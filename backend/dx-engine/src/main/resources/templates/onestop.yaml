@@ -28,16 +28,8 @@ entities:
       evidence: {type: file, label: Minh chứng}
     ai:
       tasks:
-        classify:
-          label: Phân loại và kiểm tra hồ sơ
-          input_fields: [reason, department]
-          output_field: kind
-          instruction: "Chọn loại hồ sơ theo lý do. Với đơn vị xử lý, chọn mã nơi tiếp nhận theo hướng dẫn trong checks, không sao chép đơn vị hiện tại. Trả null nếu lý do chưa đủ căn cứ."
-          sources: [demo_onestop_v1]
-          max_length: 100
         classify_kind:
           label: Gợi ý loại hồ sơ
-          engine: classifier
           classifier: onestop
           input_fields: [reason]
           output_field: kind

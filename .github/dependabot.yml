@@ -139,7 +139,7 @@ updates:
       compose-images:
         patterns: ["*"]
 
-  # The optional assistant (Node 24 image and npm packages): delete both entries below with assistant/.
+  # The assistant (Node 24 image and npm packages): delete both entries below with assistant/.
   - package-ecosystem: docker
     directory: /assistant
     target-branch: Khuong/main

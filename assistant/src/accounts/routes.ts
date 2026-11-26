@@ -55,13 +55,11 @@ export function fieldRoutes(app: FastifyInstance, services: {
   });
   app.post<{ Body: Target & { task: string } }>('/assistant-api/v1/me/proposals', {
     schema: { body: createBody, description: [
-      'Create one field proposal using the task engine in entity metadata. Confirmation writes only the proposed output field.',
-      'LLM proposals cite supplied sources and can include read-only warnings about declared input fields.',
-      'Local classifier proposals have an empty snapshot.sources array, snapshot.evidence with one to three excerpts of the declared record fields, and snapshot.confidence with the probability of the suggested label.',
+      'Create one field proposal with the classifier of the task. Confirmation writes only the proposed output field.',
+      'A proposal has snapshot.evidence with one to three excerpts of the declared record fields, and snapshot.confidence with the probability of the suggested label.',
       'A classifier can abstain, returning insufficient=true and proposal=null.',
       '409 ERR_CLASSIFIER_UNAVAILABLE means the task weights could not be loaded.',
       '409 ERR_CLASSIFIER_LABELS means the output options differ from the labels of the classifier.',
-      '409 ERR_INFERENCE_REQUIRED means an LLM task has no inference endpoint.',
     ].join(' '), response: { 200: {
       type: 'object', required: ['success', 'message', 'data'], properties: {
         success: { type: 'boolean' }, message: { type: 'string' },
@@ -79,13 +77,7 @@ export function fieldRoutes(app: FastifyInstance, services: {
         data: { type: 'object', nullable: true, properties: { reason: { type: 'string' } } },
       },
     } } },
-  }, async (request, reply) => {
-    const identity = await owner(request); const controller = new AbortController();
-    const close = () => { if (!reply.raw.writableFinished) controller.abort(); };
-    reply.raw.on('close', close);
-    try { return ok(await services.fields.create(identity, request.body, request.body.task, controller.signal)); }
-    finally { reply.raw.off('close', close); }
-  });
+  }, async request => ok(await services.fields.create(await owner(request), request.body, request.body.task)));
   app.get<{ Querystring: { page?: number; size?: number } }>('/assistant-api/v1/me/proposals', {
     schema: { querystring: { type: 'object', additionalProperties: false, properties: {
       page: { type: 'integer', minimum: 0, maximum: 10000 }, size: { type: 'integer', minimum: 1, maximum: 5 },

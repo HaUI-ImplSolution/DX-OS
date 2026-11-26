@@ -17,18 +17,25 @@ import { loadClassifiers } from '../dist/classifier/index.js';
 import { createServer } from '../dist/server.js';
 const a = { issuer: 'https://identity.invalid', subject: 'A' }, b = { ...a, subject: 'B' };
 const target = { model: 'demo', entity: 'request', id: 1 };
-const source = { id: 'guide_v1', title: 'Synthetic guide', revision: '1', text: 'Synthetic network incidents use network.', license: 'CC0-1.0' };
+const supportWeights = new URL('../../tools/classifier/model/support.json', import.meta.url);
+const parityFixture = JSON.parse(readFileSync(new URL('./fixtures/classifier.json', import.meta.url), 'utf8'));
 function setup(t) {
   const dir = mkdtempSync(join(tmpdir(), 'dxos-fields-'));
   const store = new Store(join(dir, 'private/state.sqlite'), randomBytes(32));
   let close = () => store.close();
   t.after(async () => { await close(); rmSync(dir, { recursive: true, force: true }); });
+  const support = loadClassifiers(fileURLToPath(new URL('../../tools/classifier/model/', import.meta.url)));
+  const model = support.get('support');
+  const example = parityFixture.support.cases.find(row => row.label && row.inputs.every(Boolean));
+  const confidence = model.predict(example.inputs).probability;
   const entity = { name: 'request', label: 'Request', canRead: true, canWrite: true, canAssign: false,
-    modelVersion: 1, fields: [{ name: 'detail', label: 'Detail', type: 'text' },
-      { name: 'category', label: 'Category', type: 'choice', options: ['network','device','other'] }],
-    aiTasks: { classify: { label: 'Classify', inputFields: ['detail'], outputField: 'category',
-      instruction: 'Classify from source', sources: ['guide_v1'], maxLength: 100 } } };
-  const record = { version: 0, status: 'open', detail: 'Wi-Fi unavailable', category: 'device' };
+    modelVersion: 1, fields: [{ name: 'title', label: 'Title', type: 'text' }, { name: 'detail', label: 'Detail', type: 'text' },
+      { name: 'category', label: 'Category', type: 'choice', options: [...model.labels].reverse() }],
+    aiTasks: { classify: { label: 'Classify', classifier: 'support', inputFields: ['title', 'detail'], outputField: 'category' } } };
+  const record = { version: 0, status: 'open', title: example.inputs[0], detail: example.inputs[1],
+    category: model.labels.find(label => label !== example.label) };
+  // A label that is neither the suggestion nor the current value.
+  const other = model.labels.find(label => label !== example.label && label !== record.category);
   let writes = 0; let failure;
   const core = {
     async read(owner, path) {
@@ -45,37 +52,45 @@ function setup(t) {
       return structuredClone(record);
     },
   };
-  let response = { status: 'proposed', checks: {}, value: 'network', sources: ['guide_v1'] }, infer;
-  const inference = { revision: 'synthetic-model-1', async suggest(...args) {
-    if (infer) return infer(...args); return structuredClone(response);
-  } };
   const records = new Records(core, store);
-  const fields = new FieldProposals(records, core, store, inference, [source]);
-  return { dir, store, entity, record, core, records, fields, inference,
+  const fields = new FieldProposals(records, core, store, support);
+  return { dir, store, entity, record, core, records, fields, support, example, confidence, other,
     useServer: app => { close = () => app.close(); },
-    writes: () => writes, setFailure: value => { failure = value; }, setResponse: value => { response = value; },
-    onInfer: value => { infer = value; } };
+    writes: () => writes, setFailure: value => { failure = value; } };
+}
+// The loaded support classifier with its prediction replaced.
+function stubbed(f, predict) {
+  const model = f.support.get('support');
+  return new FieldProposals(f.records, f.core, f.store,
+    new Map([['support', { labels: model.labels, revision: model.revision, predict }]]));
 }
 test('field suggestions remain private and do not write until one explicit confirmation', async t => {
   const f = setup(t), result = await f.fields.create(a, target, 'classify'), id = result.proposal.id;
-  assert.equal(f.writes(), 0); assert.equal(result.proposal.snapshot.value, 'network');
-  assert.deepEqual(result.proposal.snapshot.sources, [source]);
+  assert.equal(f.writes(), 0); assert.equal(result.proposal.snapshot.value, f.example.label);
+  assert.deepEqual(result.proposal.snapshot.evidence, f.example.evidence);
+  assert.equal(result.proposal.snapshot.confidence, f.confidence);
   assert.throws(() => f.store.proposal(b, id), { status: 404 });
   await assert.rejects(f.fields.execute(b, id), { status: 404 });
   const results = await Promise.allSettled([f.fields.execute(a, id), f.fields.execute(a, id)]);
   assert.equal(results.filter(x => x.status === 'fulfilled').length, 1);
   assert.equal(f.writes(), 1); assert.equal(f.store.proposal(a, id).state, 'succeeded');
 });
-test('record, model, task, source and model revision changes invalidate a pending suggestion', async t => {
-  for (const change of ['record','model','task','source','inference']) {
+test('record, model, task and weights changes invalidate a pending suggestion', async t => {
+  for (const change of ['record','model','task','weights']) {
     const f = setup(t), p = (await f.fields.create(a, target, 'classify')).proposal;
     let service = f.fields;
     if (change === 'record') f.record.version++;
     if (change === 'model') f.entity.modelVersion++;
-    if (change === 'task') f.entity.aiTasks.classify.instruction = 'Changed';
-    if (change === 'source') service = new FieldProposals(f.records, f.core, f.store, f.inference, [{ ...source, text: 'Changed' }]);
-    if (change === 'inference') f.inference.revision = 'synthetic-model-2';
-    await assert.rejects(service.execute(a, p.id), { errorCode: 'ERR_PROPOSAL_STALE' });
+    if (change === 'task') f.entity.aiTasks.classify.label = 'Changed';
+    if (change === 'weights') {
+      const path = join(f.dir, 'support.json');
+      writeFileSync(path, readFileSync(supportWeights, 'utf8') + '\n');
+      const replaced = loadClassifiers(f.dir);
+      assert.notEqual(replaced.get('support').revision, f.support.get('support').revision);
+      service = new FieldProposals(f.records, f.core, f.store, replaced);
+      await assert.rejects(service.revise(a, p.id, f.example.label), { status: 409, errorCode: 'ERR_PROPOSAL_STALE' });
+    }
+    await assert.rejects(service.execute(a, p.id), { status: 409, errorCode: 'ERR_PROPOSAL_STALE' });
     assert.equal(f.writes(), 0);
   }
 });
@@ -94,35 +109,27 @@ test('loss of access, terminal state, cancellation and expiry prevent writes', a
 });
 test('an edited suggestion replaces the old one and only the edit can be saved', async t => {
   const f = setup(t), p = (await f.fields.create(a, target, 'classify')).proposal;
-  const revised = await f.fields.revise(a, p.id, 'other');
+  const revised = await f.fields.revise(a, p.id, f.other);
   assert.equal(f.store.proposal(a, p.id).state, 'cancelled');
   assert.notEqual(revised.id, p.id); assert.equal(f.writes(), 0);
-  await f.fields.execute(a, revised.id); assert.equal(f.record.category, 'other');
+  assert.equal(revised.snapshot.value, f.other);
+  assert.equal(revised.snapshot.confidence, undefined);
+  assert.equal(f.store.proposal(a, p.id).snapshot.confidence, f.confidence);
+  await f.fields.execute(a, revised.id); assert.equal(f.record.category, f.other);
 });
-test('output that is not a valid suggestion never becomes confirmable', async t => {
-  const f = setup(t);
-  for (const response of [null, { status: 'proposed', checks: {}, value: 'unknown', sources: ['guide_v1'] },
-    { status: 'proposed', checks: {}, value: 'network', sources: ['invented'] }]) {
-    f.setResponse(response);
-    await assert.rejects(f.fields.create(a, target, 'classify'), { errorCode: 'ERR_INFERENCE_OUTPUT' });
-  }
-  assert.equal(f.store.proposals(a, 0, 5).length, 0); assert.equal(f.writes(), 0);
+test('a value outside the field options never becomes confirmable', async t => {
+  const f = setup(t), p = (await f.fields.create(a, target, 'classify')).proposal;
+  await assert.rejects(f.fields.revise(a, p.id, 'unknown'), { errorCode: 'ERR_PROPOSAL_VALUE' });
+  const fields = stubbed(f, () => ({ label: 'unknown', probability: 1, evidence: f.example.evidence }));
+  await assert.rejects(fields.create(a, target, 'classify'), { errorCode: 'ERR_PROPOSAL_VALUE' });
+  assert.equal(f.store.proposals(a, 0, 5).length, 1); assert.equal(f.writes(), 0);
 });
-test('the model is given only the declared record fields', async t => {
-  const f = setup(t); f.record.secret = 'must-not-leave-core';
-  f.onInfer(async (_instruction, input) => {
-    assert.deepEqual(input.record, { detail: 'Wi-Fi unavailable' });
-    assert.equal(JSON.stringify(input).includes('must-not-leave-core'), false);
-    return { status: 'insufficient', checks: {}, value: null, sources: ['guide_v1'] };
-  });
-  assert.deepEqual(await f.fields.create(a, target, 'classify'), { insufficient: true, proposal: null });
-  assert.equal(f.store.proposals(a, 0, 5).length, 0);
-});
-test('a record changed while inference runs cannot receive its old suggestion', async t => {
-  const f = setup(t); f.onInfer(async () => {
-    f.record.version++; return { status: 'proposed', checks: {}, value: 'network', sources: ['guide_v1'] };
-  });
-  await assert.rejects(f.fields.create(a, target, 'classify'), { errorCode: 'ERR_PROPOSAL_STALE' });
+test('the classifier is given only the declared record fields', async t => {
+  const f = setup(t); f.record.secret = 'must-not-be-read';
+  let seen;
+  const fields = stubbed(f, input => { seen = input; return { label: null, probability: 0, evidence: [] }; });
+  assert.deepEqual(await fields.create(a, target, 'classify'), { insufficient: true, proposal: null });
+  assert.deepEqual(seen, f.example.inputs);
   assert.equal(f.store.proposals(a, 0, 5).length, 0);
 });
 test('a timeout after dispatch remains uncertain and cannot be retried', async t => {
@@ -141,28 +148,8 @@ test('a Core receipt without an advanced version is uncertain rather than report
   await assert.rejects(f.fields.execute(a, p.id)); assert.equal(calls, 1);
 });
 
-const supportWeights = new URL('../../tools/classifier/model/support.json', import.meta.url);
-const parityFixture = JSON.parse(readFileSync(new URL('./fixtures/classifier.json', import.meta.url), 'utf8'));
-
-function setupClassifier(t) {
-  const f = setup(t);
-  const classifiers = loadClassifiers(fileURLToPath(new URL('../../tools/classifier/model/', import.meta.url)));
-  const model = classifiers.get('support');
-  const support = new Map([['support', model]]);
-  const example = parityFixture.support.cases.find(row => row.label && row.inputs.every(Boolean));
-  const confidence = model.predict(example.inputs).probability;
-  f.entity.fields.push({ name: 'title', label: 'Title', type: 'text' });
-  f.entity.fields[1].options = [...model.labels].reverse();
-  f.entity.aiTasks.local = { label: 'Classify locally', engine: 'classifier', classifier: 'support',
-    inputFields: ['title', 'detail'], outputField: 'category' };
-  Object.assign(f.record, { title: example.inputs[0], detail: example.inputs[1],
-    category: model.labels.find(label => label !== example.label) });
-  const fields = new FieldProposals(f.records, f.core, f.store, undefined, [], support);
-  return { ...f, fields, example, confidence, support };
-}
-
 async function setupReviews(t) {
-  const f = setupClassifier(t);
+  const f = setup(t);
   const publicUrl = new URL('http://dxos.invalid');
   const verify = async authorization => {
     if (authorization !== 'Bearer owner') throw new ApiError(401, 'ERR_UNAUTHORIZED', 'Unauthorized');
@@ -223,7 +210,7 @@ test('batch review uses the caller and omits failed, read-only and closed record
   assert.equal(response.statusCode, 200, response.body);
   assert.equal(response.headers['cache-control'], 'no-store');
   assert.equal(response.json().data.skipped, 3);
-  assert.deepEqual(response.json().data.items, [{ ...target, task: 'local', field: 'category', current: f.record.category,
+  assert.deepEqual(response.json().data.items, [{ ...target, task: 'classify', field: 'category', current: f.record.category,
     suggested: f.example.label, confidence: f.confidence, evidence: f.example.evidence, mismatch: true }]);
   assert.equal(f.writes(), 0);
   assert.equal(f.store.proposals(a, 0, 5).length, 0);
@@ -268,29 +255,30 @@ test('batch review accepts at most 25 records and publishes its schemas', async 
 test('batch review omits incompatible tasks and reports matches and abstentions without flags', async t => {
   const f = await setupReviews(t);
   f.entity.fields.push({ name: 'other', type: 'choice', options: ['unrelated'] });
-  f.entity.aiTasks.incompatible = { ...f.entity.aiTasks.local, outputField: 'other' };
-  f.entity.aiTasks.unloaded = { ...f.entity.aiTasks.local, classifier: 'missing' };
+  f.entity.aiTasks.incompatible = { ...f.entity.aiTasks.classify, outputField: 'other' };
+  f.entity.aiTasks.unloaded = { ...f.entity.aiTasks.classify, classifier: 'missing' };
   f.record.category = f.example.label;
   const match = await f.review([target]);
   assert.equal(match.statusCode, 200, match.body);
-  assert.deepEqual(match.json().data.items, [{ ...target, task: 'local', field: 'category', current: f.example.label,
+  assert.deepEqual(match.json().data.items, [{ ...target, task: 'classify', field: 'category', current: f.example.label,
     suggested: f.example.label, confidence: f.confidence, evidence: f.example.evidence, mismatch: false }]);
   Object.assign(f.record, { title: '', detail: '' });
   delete f.record.category;
   const abstention = await f.review([target]);
   assert.equal(abstention.statusCode, 200, abstention.body);
-  assert.deepEqual(abstention.json().data.items, [{ ...target, task: 'local', field: 'category', current: null,
+  assert.deepEqual(abstention.json().data.items, [{ ...target, task: 'classify', field: 'category', current: null,
     suggested: null, evidence: [], mismatch: false }]);
 });
 
-test('a classifier can propose and confirm through the API without LLM or a source catalog', async t => {
-  const f = setupClassifier(t);
+test('a proposal is created and confirmed through the API', async t => {
+  const f = setup(t);
   const publicUrl = new URL('http://dxos.invalid');
   const app = await createServer(f.store, async () => ({ ...a, admin: false }),
     { publicUrl, session: {}, fields: f.fields, records: f.records });
   f.useServer(app);
   const me = await app.inject({ method: 'GET', url: '/assistant-api/v1/me' });
-  assert.deepEqual(me.json().data.model, { configured: true, llmConfigured: false, classifiers: ['support'] });
+  assert.deepEqual(me.json().data.model, { configured: true,
+    classifiers: ['clinic', 'itaccess', 'onestop', 'retail', 'support'] });
   const api = await app.inject({ method: 'GET', url: '/assistant-api/v1/openapi.json' });
   assert.match(api.json().info.description, /ASSISTANT_CLASSIFIERS_DIR/);
   const responses = api.json().paths['/assistant-api/v1/me/proposals'].post.responses;
@@ -298,17 +286,12 @@ test('a classifier can propose and confirm through the API without LLM or a sour
   const snapshot = responses[200].content['application/json'].schema.properties.data.properties.proposal.properties.snapshot;
   assert.equal(snapshot.properties.confidence.type, 'number');
   const headers = { origin: publicUrl.origin };
-  const llm = await app.inject({ method: 'POST', url: '/assistant-api/v1/me/proposals',
-    headers, payload: { ...target, task: 'classify' } });
-  assert.equal(llm.statusCode, 409, llm.body);
-  assert.equal(llm.json().errorCode, 'ERR_INFERENCE_REQUIRED');
   const created = await app.inject({ method: 'POST', url: '/assistant-api/v1/me/proposals',
-    headers, payload: { ...target, task: 'local' } });
+    headers, payload: { ...target, task: 'classify' } });
   assert.equal(created.statusCode, 200, created.body);
   const p = created.json().data.proposal;
   assert.equal(p.snapshot.value, f.example.label);
   assert.deepEqual(p.snapshot.evidence, f.example.evidence);
-  assert.deepEqual(p.snapshot.sources, []);
   assert.equal(p.snapshot.confidence, f.confidence);
   assert.equal(f.store.proposal(a, p.id).snapshot.confidence, f.confidence);
   assert.equal(f.writes(), 0);
@@ -319,82 +302,39 @@ test('a classifier can propose and confirm through the API without LLM or a sour
   assert.equal(f.writes(), 1);
   Object.assign(f.record, { title: '', detail: '' });
   const abstention = await app.inject({ method: 'POST', url: '/assistant-api/v1/me/proposals',
-    headers, payload: { ...target, task: 'local' } });
+    headers, payload: { ...target, task: 'classify' } });
   assert.equal(abstention.statusCode, 200, abstention.body);
   assert.deepEqual(abstention.json().data, { insufficient: true, proposal: null });
 });
 
-test('a revised classifier label does not inherit the original label confidence', async t => {
-  const f = setupClassifier(t);
-  const { proposal } = await f.fields.create(a, target, 'local');
-  const revised = await f.fields.revise(a, proposal.id, f.record.category);
-  assert.equal(revised.snapshot.value, f.record.category);
-  assert.equal(revised.snapshot.confidence, undefined);
-  assert.equal(f.store.proposal(a, proposal.id).snapshot.confidence, f.confidence);
-});
-
 test('missing or invalid weights, mismatched labels and abstentions affect only their task', async t => {
-  const f = setupClassifier(t);
-  await assert.rejects(f.fields.create(a, target, 'classify'), { status: 409, errorCode: 'ERR_INFERENCE_REQUIRED' });
-  f.entity.aiTasks.missing = { ...f.entity.aiTasks.local, classifier: 'missing' };
+  const f = setup(t);
+  f.entity.aiTasks.missing = { ...f.entity.aiTasks.classify, classifier: 'missing' };
   await assert.rejects(f.fields.create(a, target, 'missing'), { status: 409, errorCode: 'ERR_CLASSIFIER_UNAVAILABLE' });
-  const options = f.entity.fields[1].options;
+  const field = f.entity.fields.find(x => x.name === 'category');
+  const options = field.options;
   for (const invalid of [options.slice(1), [...options, 'other'], [...options.slice(1), 'wrong']]) {
-    f.entity.fields[1].options = invalid;
-    await assert.rejects(f.fields.create(a, target, 'local'), { status: 409, errorCode: 'ERR_CLASSIFIER_LABELS' });
+    field.options = invalid;
+    await assert.rejects(f.fields.create(a, target, 'classify'), { status: 409, errorCode: 'ERR_CLASSIFIER_LABELS' });
   }
-  f.entity.fields[1].options = options;
+  field.options = options;
   const path = join(f.dir, 'support.json');
   writeFileSync(path, readFileSync(supportWeights));
   writeFileSync(join(f.dir, 'broken.json'), '{}');
   const fromDisk = loadClassifiers(f.dir);
   assert.deepEqual([...fromDisk.keys()], ['support']);
-  const fields = new FieldProposals(f.records, f.core, f.store, undefined, [], fromDisk);
+  const fields = new FieldProposals(f.records, f.core, f.store, fromDisk);
   await assert.rejects(fields.create(a, target, 'missing'), { status: 409, errorCode: 'ERR_CLASSIFIER_UNAVAILABLE' });
-  assert.equal((await fields.create(a, target, 'local')).proposal.snapshot.value, f.example.label);
+  assert.equal((await fields.create(a, target, 'classify')).proposal.snapshot.value, f.example.label);
   Object.assign(f.record, { title: '', detail: null });
-  assert.deepEqual(await fields.create(a, target, 'local'), { insufficient: true, proposal: null });
+  assert.deepEqual(await fields.create(a, target, 'classify'), { insufficient: true, proposal: null });
   assert.equal(f.writes(), 0);
 });
 
 test('evidence from another field is rejected', async t => {
-  const f = setupClassifier(t);
+  const f = setup(t);
   f.record.private_note = 'undeclared source';
-  const model = f.support.get('support');
-  const stub = { labels: model.labels, revision: model.revision,
-    predict: () => ({ label: f.example.label, evidence: [f.record.private_note] }) };
-  const fields = new FieldProposals(f.records, f.core, f.store, undefined, [], new Map([['support', stub]]));
-  await assert.rejects(fields.create(a, target, 'local'), { errorCode: 'ERR_INFERENCE_OUTPUT' });
+  const fields = stubbed(f, () => ({ label: f.example.label, probability: 1, evidence: [f.record.private_note] }));
+  await assert.rejects(fields.create(a, target, 'classify'), { errorCode: 'ERR_CLASSIFIER_OUTPUT' });
   assert.equal(f.store.proposals(a, 0, 5).length, 0);
 });
-
-test('a different weights SHA-256 makes a classifier proposal stale on revise and confirm', async t => {
-  const f = setupClassifier(t);
-  const p = (await f.fields.create(a, target, 'local')).proposal;
-  const path = join(f.dir, 'support.json');
-  writeFileSync(path, readFileSync(supportWeights, 'utf8') + '\n');
-  const replaced = loadClassifiers(f.dir);
-  assert.notEqual(replaced.get('support').revision, f.support.get('support').revision);
-  const fields = new FieldProposals(f.records, f.core, f.store, undefined, [], replaced);
-  await assert.rejects(fields.revise(a, p.id, f.example.label), { status: 409, errorCode: 'ERR_PROPOSAL_STALE' });
-  await assert.rejects(fields.execute(a, p.id), { status: 409, errorCode: 'ERR_PROPOSAL_STALE' });
-  assert.equal(f.writes(), 0);
-});
-
-test('explicit LLM metadata retains the revision of a proposal created without engine metadata', async t => {
-  const f = setup(t);
-  const publicUrl = new URL('http://dxos.invalid');
-  const app = await createServer(f.store, async () => ({ ...a, admin: false }),
-    { publicUrl, session: {}, fields: f.fields, records: f.records });
-  f.useServer(app);
-  const response = await app.inject({ method: 'POST', url: '/assistant-api/v1/me/proposals',
-    headers: { origin: publicUrl.origin }, payload: { ...target, task: 'classify' } });
-  assert.equal(response.statusCode, 200, response.body);
-  const p = response.json().data.proposal;
-  assert.deepEqual(p.snapshot.sources, [source]);
-  assert.equal(p.snapshot.confidence, undefined);
-  Object.assign(f.entity.aiTasks.classify, { engine: 'llm', classifier: null });
-  await f.fields.execute(a, p.id);
-  assert.equal(f.writes(), 1);
-});
-

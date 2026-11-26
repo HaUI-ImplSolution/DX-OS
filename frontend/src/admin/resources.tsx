@@ -392,7 +392,7 @@ function ShowBody({ model, entity, catalog }: { model: string; entity: EntityMet
         </Box>
         <Box sx={{ display: "grid", gap: 2 }}>
           {entity.hasProcess && <AssignPanel model={model} entity={entity} />}
-          <RecordAssistant key={`${model}/${entity.name}/${record.id}`} model={model} entity={entity} units={catalog.units} />
+          <RecordAssistant key={`${model}/${entity.name}/${record.id}`} model={model} entity={entity} />
           <FilesPanel model={model} entity={entity} />
         </Box>
       </Box>

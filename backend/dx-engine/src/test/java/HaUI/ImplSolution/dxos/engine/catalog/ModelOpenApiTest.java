@@ -46,8 +46,7 @@ class ModelOpenApiTest {
             scan: {type: file, label: Tệp}
           ai:
             tasks:
-              classify: {engine: classifier, classifier: orders, input_fields: [title], output_field: kind}
-              summarize: {input_fields: [title], output_field: title, instruction: Summarize, sources: [guide]}
+              classify: {classifier: orders, input_fields: [title], output_field: kind}
           access: {BUYER: own, SELLER: all}
           process: {family: approval, handler: SELLER}
         note:
@@ -81,7 +80,7 @@ class ModelOpenApiTest {
   }
 
   @Test
-  void entityMetadataExposesTheEngineAndClassifier() {
+  void entityMetadataExposesTheClassifierOfATask() {
     var order =
         metadata(ModelParser.parse(MODEL)).stream()
             .filter(entity -> entity.name().equals("order"))
@@ -89,10 +88,8 @@ class ModelOpenApiTest {
             .orElseThrow();
     JsonNode tasks = new ObjectMapper().valueToTree(order.aiTasks());
 
-    assertEquals("classifier", tasks.at("/classify/engine").asText());
     assertEquals("orders", tasks.at("/classify/classifier").asText());
-    assertEquals("llm", tasks.at("/summarize/engine").asText());
-    assertTrue(tasks.at("/summarize/classifier").isNull());
+    assertEquals("kind", tasks.at("/classify/outputField").asText());
   }
 
   @Test

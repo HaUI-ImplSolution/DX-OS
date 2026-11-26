@@ -74,9 +74,7 @@ export interface ProcessInfo {
 }
 
 export interface AiTask {
-  label: string; inputFields: string[]; outputField: string;
-  engine?: "llm" | "classifier"; classifier?: string | null;
-  instruction: string; sources: string[]; maxLength: number | null;
+  label: string; inputFields: string[]; outputField: string; classifier: string;
 }
 
 export interface EntityMeta {

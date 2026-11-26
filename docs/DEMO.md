@@ -118,7 +118,7 @@ Sự cố: lần chạy `dxos archive` đầu cần tải extension DuckDB từ 
 
 Nói thẳng phần chưa có, theo [Việc tồn đọng](./dynamic-core/BACKLOG.md):
 
-- Phần AI là trợ lý tùy chọn đề xuất giá trị một trường bằng bộ phân loại tiếng Việt do đội tự huấn luyện, chạy trên CPU; người dùng xác nhận trước khi lưu; không có hỏi đáp trên tri thức nội bộ và tác tử nghe sự kiện.
+- Phần AI là trợ lý đề xuất giá trị một trường bằng bộ phân loại tiếng Việt do đội tự huấn luyện, chạy trên CPU; người dùng xác nhận trước khi lưu; không có hỏi đáp trên tri thức nội bộ và tác tử nghe sự kiện.
 - Hồ dữ liệu là kho Parquet trong SeaweedFS; `dxos archive query` đọc một lần chạy bằng DuckDB mà không cần cấp quyền cơ sở dữ liệu.
 - Không có bản sao số: số đo của thiết bị vào lõi thành hồ sơ sự cố, lõi không giữ trạng thái thời gian thực của thiết bị.
 

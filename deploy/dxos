@@ -7,7 +7,7 @@
 #                              start the stack, wait until it is ready, create the first ADMIN account;
 #                              with a model file, the backend applies it on start when it is new;
 #                              --core runs only tier 1 (API, Keycloak, core service, PostgreSQL, file store),
-#                              --full also runs the web app, the portal and the monitor; the mode is kept
+#                              --full also runs the web app, the portal, the monitor and the assistant; the mode is kept
 #   dxos stop                  stop the stack, keeping the data
 #   dxos status                state of every service and the addresses to open
 #   dxos logs [service]        follow the logs
@@ -123,7 +123,7 @@ from_caller() { if [[ "$1" == /* ]]; then printf '%s\n' "$1"; else printf '%s\n'
 env_value() { grep -E "^$1=" "$DEPLOY_DIR/.env" | tail -n1 | cut -d= -f2- || true; }
 compose() { docker compose "$@"; }
 
-# The mode of the stack: core runs tier 1 only, full (the default) also runs the web app, the portal and the monitor.
+# The mode of the stack: core runs tier 1 only, full (the default) also runs the web app, the portal, the monitor and the assistant.
 stack_mode() { local mode; mode="$(env_value DXOS_MODE)"; echo "${mode:-full}"; }
 
 # Keeps DXOS_MODE and COMPOSE_PROFILES in line: tier 2 is the profile app.
@@ -140,7 +140,7 @@ switch_mode() {
   local mode="$1" running=false
   [[ -n "$(compose ps -q --status running apisix)" ]] && running=true
   if [[ "$mode" == core ]]; then
-    compose --profile app rm -sf frontend portal monitor monitor-init >/dev/null 2>&1 || true
+    compose --profile app rm -sf frontend portal monitor monitor-init assistant-control assistant-sso assistant-init >/dev/null 2>&1 || true
   fi
   set_mode "$mode"
   if $running; then
@@ -208,7 +208,7 @@ pending_services() {
     [[ -n "$id" ]] || continue
     read -r service name status health exit_code <<<"$(docker inspect -f \
       '{{index .Config.Labels "com.docker.compose.service"}} {{.Name}} {{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{else}}-{{end}} {{.State.ExitCode}}' "$id")"
-    # The optional assistant never holds the start of the platform.
+    # The assistant never holds the start of the platform.
     [[ "$service" == assistant-* ]] && continue
     case "$status:$health:$exit_code" in
       running:healthy:*|running:-:*|exited:*:0) ;;

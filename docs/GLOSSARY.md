@@ -20,7 +20,7 @@ Mỗi từ được giải thích trong một hoặc hai dòng, kèm tài liệu
 | `dx-monitor` | Dịch vụ giám sát chạy riêng, không phụ thuộc các module còn lại | [`docs/MONITORING.md`](MONITORING.md) |
 | Bảng điều khiển | Trang `/console` của người triển khai (ADMIN): thư viện mẫu, soạn mô hình, xem kế hoạch, áp dụng, người dùng, ứng dụng ngoài, danh mục dữ liệu, dự án | [`TESTING.md`](./TESTING.md) |
 | Portal | Trang `/portal/` liệt kê các địa chỉ và trạng thái dịch vụ | [`README.md`](../README.md) |
-| Chế độ chỉ lõi | `dxos start --core` chỉ chạy Tầng 1, không có ứng dụng web, portal và giám sát | [`OPERATIONS.md`](OPERATIONS.md#chế-độ-chỉ-lõi) |
+| Chế độ chỉ lõi | `dxos start --core` chỉ chạy Tầng 1, không có ứng dụng web, portal, giám sát và trợ lý | [`OPERATIONS.md`](OPERATIONS.md#chế-độ-chỉ-lõi) |
 | Điểm mở rộng | Chỗ để người dùng viết thêm dịch vụ, bên nhận webhook, giao diện riêng hay route riêng ở ngoài lõi | [`EXTENSIONS.md`](./EXTENSIONS.md) |
 
 ## 2. Tệp mô hình

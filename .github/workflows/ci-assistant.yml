@@ -2,8 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 name: Assistant
 
-# Checks of the optional business assistant and nothing else: its service, its SBOM, its Compose file and its gateway route.
-# The other workflows do not depend on it; delete this file together with assistant/ to take the assistant out.
+# Checks of the business assistant: its service, its SBOM, its Compose services and its gateway route.
 on:
   push:
     branches:
@@ -12,7 +11,7 @@ on:
     paths:
       - 'assistant/**'
       - 'tools/classifier/**'
-      - 'deploy/docker-compose.assistant.yml'
+      - 'deploy/docker-compose.yml'
       - 'deploy/assistant-sso.sh'
       - 'deploy/assistant.env.example'
       - 'sbom/assistant.cdx.json'
@@ -27,7 +26,7 @@ on:
     paths:
       - 'assistant/**'
       - 'tools/classifier/**'
-      - 'deploy/docker-compose.assistant.yml'
+      - 'deploy/docker-compose.yml'
       - 'deploy/assistant-sso.sh'
       - 'deploy/assistant.env.example'
       - 'sbom/assistant.cdx.json'
@@ -42,7 +41,7 @@ concurrency:
 
 jobs:
   service:
-    name: Check the optional assistant
+    name: Check the assistant
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -56,7 +55,7 @@ jobs:
           cache: 'npm'
           cache-dependency-path: assistant/package-lock.json
 
-      - name: Build and test without inference credentials
+      - name: Build and test
         working-directory: assistant
         run: |
           npm ci --no-audit --no-fund --ignore-scripts
@@ -68,8 +67,8 @@ jobs:
           python3 .github/scripts/check_sbom_fresh.py sbom sbom/assistant.cdx.json "$RUNNER_TEMP/assistant.cdx.json"
           python3 .github/scripts/check_licenses.py sbom "$RUNNER_TEMP/assistant.cdx.json"
 
-  overlay:
-    name: Validate the assistant Compose file and route
+  stack:
+    name: Validate the assistant Compose services and route
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -79,17 +78,17 @@ jobs:
       - name: Fill every blank variable of .env.example with a placeholder
         run: sed -E 's/^([A-Z0-9_]+)=$/\1=ci-placeholder/' deploy/.env.example > deploy/.env
 
-      - name: The Compose file with the assistant is valid, with and without its settings file
+      - name: The Compose file is valid, with and without the assistant settings file
         run: |
-          docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.assistant.yml config --quiet
+          docker compose -f deploy/docker-compose.yml config --quiet
           cp deploy/assistant.env.example deploy/assistant.env
-          docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.assistant.yml config --quiet
+          docker compose -f deploy/docker-compose.yml config --quiet
 
-      - name: The gateway renders the assistant route in every mode
+      - name: The gateway renders the routes in every mode
         run: |
           for mode in full core; do
             for admin in false true; do
-              args=(--mode "$mode" --env DXOS_ASSISTANT=true)
+              args=(--mode "$mode")
               if [[ "$admin" == true ]]; then args+=(--admin-console); fi
               python3 e2e/api/check_routes.py "${args[@]}"
             done

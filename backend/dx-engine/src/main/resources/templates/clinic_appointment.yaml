@@ -27,7 +27,6 @@ entities:
       tasks:
         classify_service:
           label: Gợi ý dịch vụ khám
-          engine: classifier
           classifier: clinic
           input_fields: [note]
           output_field: service

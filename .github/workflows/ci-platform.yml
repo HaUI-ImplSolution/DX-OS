@@ -225,7 +225,7 @@ jobs:
 
       - name: Name the images by the files they are built from
         id: key
-        run: echo "key=dxos-images-${{ hashFiles('backend/**', '!backend/**/src/test/**', '!backend/**/target/**', 'frontend/**', 'portal/**', 'sso/**', 'deploy/docker-compose.yml') }}" >> "$GITHUB_OUTPUT"
+        run: echo "key=dxos-images-${{ hashFiles('backend/**', '!backend/**/src/test/**', '!backend/**/target/**', 'frontend/**', 'portal/**', 'sso/**', 'assistant/**', 'tools/classifier/model/**', 'deploy/docker-compose.yml') }}" >> "$GITHUB_OUTPUT"
 
       - name: Look for the images of these files in the cache
         id: cache

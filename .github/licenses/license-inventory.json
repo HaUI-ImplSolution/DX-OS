@@ -238,13 +238,6 @@
       "note": "font embedded in the PDF of the print templates"
     },
     {
-      "name": "llama.cpp",
-      "version": "b12387",
-      "license": "MIT",
-      "scope": "optional",
-      "note": "reference runtime of the optional assistant, not in the repository"
-    },
-    {
       "name": "Codicons (codicon.ttf in monaco-editor)",
       "version": "0.57.0",
       "license": "CC-BY-4.0",
@@ -299,6 +292,13 @@
       "license": "CC-BY-4.0",
       "scope": "build",
       "note": "downloaded when the classifier is trained; not in the repository or an image"
+    },
+    {
+      "name": "SLURP",
+      "version": "as included in MASSIVE 1.0",
+      "license": "CC-BY-4.0",
+      "scope": "build",
+      "note": "English source text that MASSIVE localizes; downloaded only as part of MASSIVE"
     }
   ],
   "actions": {

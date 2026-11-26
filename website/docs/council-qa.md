@@ -76,12 +76,12 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - **H, môi trường số chung:** một lần đăng nhập, vai và đơn vị khai trong mô hình; sinh viên chỉ thấy hồ sơ của mình, cán bộ chỉ thấy hồ sơ của đơn vị mình hoặc được giao, và xử lý từ hộp việc.
 - **P, rào chắn và luồng tự động:** trạng thái chỉ đổi qua quy trình (gọi thẳng API để đổi bị chặn); từ chối và trả lại bắt buộc có lý do; người tạo không tự quyết hồ sơ của mình; hạn xử lý, quá hạn lên đầu hộp việc; việc sau khi duyệt chạy qua hàng đợi và được thử lại.
 - **D, một nguồn sự thật:** dữ liệu nghiệp vụ, lịch sử và hàng đợi cùng nằm ở PostgreSQL; lịch sử hồ sơ nối thành chuỗi hash; mọi thay đổi báo ra ngoài bằng webhook có chữ ký.
-- **I, trí tuệ:** một thành phần, trợ lý tùy chọn đề xuất giá trị một trường bằng bộ phân loại tự huấn luyện, người xác nhận trước khi ghi (xem câu 6 và 11).
+- **I, trí tuệ:** một thành phần, trợ lý đề xuất giá trị một trường bằng bộ phân loại tự huấn luyện, người xác nhận trước khi ghi (xem câu 6 và 11).
 - **Bằng chứng:** `python3 e2e/api/check_demo.py` (tám tiêu chí của kịch bản trình diễn); `check_case.py`, `check_process.py`, `check_events.py`.
 
 ## 6. AI nằm ở đâu, dữ liệu và giới hạn là gì?
 
-- Trợ lý nghiệp vụ tùy chọn đề xuất giá trị một trường của hồ sơ và rà hồ sơ ở Hộp việc; người dùng sửa, hủy hoặc xác nhận trước khi ghi qua API Core.
+- Trợ lý nghiệp vụ đề xuất giá trị một trường của hồ sơ và rà hồ sơ ở Hộp việc; người dùng sửa, hủy hoặc xác nhận trước khi ghi qua API Core.
 - Mô hình do đội tự huấn luyện: bộ phân loại hồ sơ tiếng Việt chạy trên CPU ngay trong trợ lý, không cần mô hình ngoài; đề xuất kèm cụm chữ của hồ sơ làm căn cứ, và từ chối khi không đủ căn cứ.
 - Dữ liệu: câu huấn luyện là bản nháp viết với công cụ AI, đội biên soạn và duyệt, theo CC-BY-4.0; tập chỉnh ngưỡng viết với công cụ AI; câu lạc đề lấy từ MASSIVE; bộ nghiệm thu do đội viết tay.
   Mã, trọng số, tập chỉnh và bộ nghiệm thu nằm trong repository.
@@ -204,7 +204,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 
 ## 19. Mã có phần do công cụ AI viết, đội kiểm soát thế nào?
 
-- Đội dùng Claude (Anthropic) và Codex (OpenAI) để viết nháp mã và tài liệu; 442 trong 1229 commit trên `Khuong/main` (ngày 25/11/2026) mang dòng `Co-Authored-By` của công cụ, và GitHub hiện chúng ở trang thống kê người đóng góp.
+- Đội dùng Claude (Anthropic) và Codex (OpenAI) để viết nháp mã và tài liệu; 442 trong 1229 commit trên `Khuong/main` (ngày 25/11/2026) mang dòng `Co-Authored-By` của công cụ, và GitHub hiện chúng ở trang thống kê người đóng góp; không phải commit nào có dùng công cụ cũng mang dòng đó.
 - Người gửi pull request đọc, chạy và chịu trách nhiệm về từng thay đổi; công cụ không tự gộp vào nhánh nào.
 - Mọi thay đổi đi qua cùng kiểm tra của CI: biên dịch, định dạng, kiểm đầu-cuối trên stack thật, kiểm giấy phép và quét bí mật; mã do công cụ viết không có đường tắt.
 - Giấy phép của phần đóng góp do người gửi bảo đảm; thư viện mới qua kiểm OSI trước khi thêm, nên mã sinh ra không kéo theo thành phần ngoài danh sách.

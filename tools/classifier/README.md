@@ -29,7 +29,7 @@ python3 tools/classifier/fetch.py && python3 tools/classifier/train.py && sha256
 `train.py` ghi năm tệp trọng số và hỗ trợ `--task` khi cần huấn luyện một nhiệm vụ.
 Mặc định, công cụ đọc `tools/classifier/eval/tuning/<task>.csv`.
 Có thể truyền thư mục chứa các CSV qua `--tune`.
-Tập chỉnh gồm 420 câu do Claude viết với công cụ AI và chỉ dùng để chọn ngưỡng và siêu tham số.
+Tập chỉnh gồm 420 câu do Claude viết, chưa có người duyệt, và chỉ dùng để chọn ngưỡng và siêu tham số.
 Trọng số ghi đường dẫn CSV tính từ thư mục gốc repo ở `tuning_source` và SHA-256 của toàn bộ CSV ở `tuning_sha256`.
 Bộ chọn tối đa hóa độ phủ trên tập chỉnh, với ít nhất 90% đúng trên đề xuất và ít nhất 97% từ chối đúng trong từng loại `lac_de`, `mo_ho`, `hai_y` và `chen_lenh`.
 Bộ nghiệm thu do đội viết tay nằm ở `tools/classifier/eval/acceptance/`. [Kaggle](https://www.kaggle.com/datasets/hittungtran/dx-os-vietnamese-record-classification-data) là nơi công bố cùng dữ liệu do đội biên soạn, gồm tập chỉnh và bộ nghiệm thu.

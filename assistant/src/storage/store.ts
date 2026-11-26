@@ -9,9 +9,7 @@ import { ApiError } from '../errors.js';
 export type Owner = { issuer: string; subject: string };
 export type Proposal = {
   model: string; entity: string; recordId: number; operation: 'action' | 'assign' | 'field';
-  warnings?: { field: string; expected: string; actual: string | null }[];
   task?: string; field?: string; value?: string; previousValue?: unknown; taskRevision?: string;
-  sources?: { id: string; title: string; revision: string; text: string; license: string }[];
   evidence?: string[];
   confidence?: number;
   action?: string; assignee?: string | null; note?: string;

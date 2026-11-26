@@ -19,11 +19,14 @@
    in .github/licenses/component-catalog.json with an allowed license, and DEPENDENCIES.txt names each entry.
 5. Every license that REUSE.toml gives to a file of the repository, and every text in LICENSES/, is an allowed one
    (or OFL-1.1 for Noto Sans or CC-BY-4.0 for the declared classifier data paths).
+6. Every weight file that assistant/Dockerfile copies into the image is listed in DEPENDENCIES.txt with the SHA-256
+   of the file, and each listed SHA-256 is the one of the file as it is in the repository.
 
 Several license entries on one package are alternatives, as in an SPDX OR expression.
 The exit status is 1 when anything fails.
 """
 import fnmatch
+import hashlib
 import json
 import re
 import subprocess
@@ -311,6 +314,26 @@ def check_catalog() -> list[str]:
     return problems
 
 
+WEIGHT_PATH = re.compile(r"tools/classifier/model/[a-z0-9_]+\.json")
+LISTED_WEIGHT = re.compile(r"^\s*- (tools/classifier/model/[a-z0-9_]+\.json): ([0-9a-f]{64})\s*$", re.M)
+
+
+def check_weight_hashes() -> list[str]:
+    """DEPENDENCIES.txt gives the SHA-256 of each weight file of the assistant image, and it is the file's own."""
+    shipped = set(WEIGHT_PATH.findall((ROOT / "assistant/Dockerfile").read_text(encoding="utf-8")))
+    listed = dict(LISTED_WEIGHT.findall((ROOT / "DEPENDENCIES.txt").read_text(encoding="utf-8")))
+    problems = []
+    for rel in sorted(shipped - listed.keys()):
+        problems.append(f"DEPENDENCIES.txt does not list the SHA-256 of {rel}, which the assistant image holds")
+    for rel in sorted(listed.keys() - shipped):
+        problems.append(f"DEPENDENCIES.txt lists {rel}, which the assistant image does not hold")
+    for rel in sorted(shipped & listed.keys()):
+        actual = hashlib.sha256((ROOT / rel).read_bytes()).hexdigest()
+        if actual != listed[rel]:
+            problems.append(f"DEPENDENCIES.txt gives {listed[rel]} for {rel}, but the file is {actual}: update the line")
+    return problems
+
+
 def check_bundled() -> list[str]:
     """Third-party code is declared as a dependency, never committed into the repository."""
     return [f"{rel}: bundled third-party code is not allowed" for rel in tracked_files()
@@ -376,7 +399,7 @@ def main() -> int:
             print(problem)
         print(f"{len(problems)} problem(s)")
         return 1 if problems else 0
-    problems = check_headers() + check_own_licenses() + check_sboms() + check_catalog() + check_bundled() + check_legal_copies() + check_declared_licenses()
+    problems = check_headers() + check_own_licenses() + check_sboms() + check_catalog() + check_weight_hashes() + check_bundled() + check_legal_copies() + check_declared_licenses()
     for problem in problems:
         print(problem)
     print(f"{len(problems)} problem(s)")

@@ -222,6 +222,7 @@ The `dxos` commands used most:
 |---|---|
 | A component has stopped | `dxos status`, then `dxos reconcile`; every long-running service restarts on its own when its process exits |
 | The machine cannot run the stack | `dxos doctor` is read-only and reports missing variables in `.env`, ports in use, too little RAM or disk |
+| `dxos start` says a port is not available | Another program holds the port, including a program on the Windows side. `dxos doctor` and `dxos start` name the key `APISIX_HOST_PORT` or `POSTGRES_HOST_PORT` to change in `deploy/.env` |
 | Every upload is refused | The virus scan is on but ClamAV is not running; `dxos doctor` reports `FAIL`, run `dxos av on` or `dxos av off` |
 | Cannot sign in with a trial account | `dxos demo` resets the password and prints the new one |
 | After an apply, one `backend` copy answers 404 | Run a single `backend` copy, or restart both |
@@ -266,7 +267,7 @@ The shortest way to check DX-OS:
 - An install runs on one machine with Docker Compose; the core does not run as several replicas.
 - Device readings enter the core through the common API; the core keeps no device state.
 - There is no digital signature, secret vault, multi-tenancy across organizations or full-text search.
-- Installing on Windows has not been tried; Windows users run the Linux version in WSL2.
+- Windows users run the Linux version in WSL2 with Docker Desktop; there is no version that runs directly on Windows.
 - Most of the documentation is in Vietnamese only.
 
 The full list and the reasons are in [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md) (Vietnamese).

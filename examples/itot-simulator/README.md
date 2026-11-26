@@ -8,7 +8,7 @@ Sự cố đã xử lý xong được simulator xác nhận khi chỉ số trở
 
 Simulator chỉ cần Python 3.9 trở lên, không cần thư viện ngoài.
 Quy trình chung để cấp quyền, kiểm thử, đóng gói và nâng cấp dịch vụ ngoài nằm ở [`docs/EXTENSIONS.md`](../../docs/EXTENSIONS.md#dịch-vụ-riêng-gọi-api).
-Lệnh `setup` dưới đây gọi thẳng Keycloak để ví dụ tự chạy; bản triển khai thật nên đăng ký client bằng `dxos client add`.
+Lệnh `setup` dưới đây gọi thẳng Keycloak để ví dụ tự chạy, nên cần `KEYCLOAK_ADMIN_CONSOLE=true` trong `deploy/.env` (xem [Keycloak Admin Console](../../docs/OPERATIONS.md#keycloak-admin-console)); bản triển khai thật nên đăng ký client bằng `dxos client add`.
 
 ## Chạy thử
 

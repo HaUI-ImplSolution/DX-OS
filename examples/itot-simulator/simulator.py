@@ -70,7 +70,7 @@ def load_state(model):
     path = state_path(model)
     if not os.path.exists(path):
         sys.exit(f"No state file {path}; run 'setup' first")
-    with open(path) as handle:
+    with open(path, encoding="utf-8") as handle:
         return json.load(handle)
 
 
@@ -78,7 +78,7 @@ def save_state(model, state):
     path = state_path(model)
     os.makedirs(os.path.dirname(path), exist_ok=True)
     descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
-    with os.fdopen(descriptor, "w") as handle:
+    with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
         json.dump(state, handle, indent=2)
 
 
@@ -86,7 +86,7 @@ def save_state(model, state):
 
 def read_env(path=None):
     path = path or os.environ.get("DXOS_ENV_FILE", os.path.join(REPO, "deploy", ".env"))
-    with open(path) as handle:
+    with open(path, encoding="utf-8") as handle:
         return dict(line.split("=", 1) for line in handle.read().splitlines()
                     if "=" in line and not line.startswith("#"))
 
@@ -104,7 +104,10 @@ def setup(args):
         return http(method, f"{BASE}/admin/realms/dxos{path}", payload, admin)
 
     status, models = kc("GET", f"/clients?clientId=dxos-m-{args.model}")
-    if status != 200 or not models:
+    if status != 200:
+        sys.exit(f"The Keycloak Admin API answered {status}: setup needs KEYCLOAK_ADMIN_CONSOLE=true in deploy/.env "
+                 "and a restarted gateway")
+    if not models:
         sys.exit(f"Model {args.model} is not applied: no client dxos-m-{args.model}")
     model_client = models[0]["id"]
     status, role = kc("GET", f"/clients/{model_client}/roles/{args.role}")

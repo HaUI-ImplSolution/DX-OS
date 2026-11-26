@@ -199,12 +199,13 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - Mỗi bản phát hành có gói `.tar.gz` kèm `.sha256` và SBOM CycloneDX; không dùng định dạng đóng.
 - Job `Check licenses` của workflow `Compliance` chạy ở mọi pull request: kiểm header, giấy phép của từng gói trong SBOM, danh mục image, và `docs/DEPENDENCY_INVENTORY.md` liệt kê mọi gói kể cả gói dev, test và plugin build; mỗi image phát hành kèm `LICENSE`, `NOTICE` và giấy phép của thư viện ở `/licenses`, và `docs/IMAGE_PACKAGES.md` liệt kê gói bên trong các image bên thứ ba.
 - Cam kết của đội chặt hơn thể lệ: cả công cụ, mô hình AI và dữ liệu đều phải mở; thành phần không đạt đã gỡ khỏi bản phát hành.
-- Mọi ngoại lệ ngoài danh sách OSI nêu tên kèm lý do ở phần "Giấy phép ngoài danh sách OSI" của `DEPENDENCIES.txt` và ở `docs/DEPENDENCY_INVENTORY.md`: dữ liệu chỉ đọc lúc dựng trang tài liệu, công cụ dựng và công cụ không phân phối, phông biểu tượng Codicons (CC-BY-4.0) trong bản build web, dữ liệu đóng trong thư viện PDFBox của image backend (tệp số đo phông của Adobe, hình Font Awesome theo CC-BY-4.0, hồ sơ màu theo CC0-1.0), dữ liệu của bộ phân loại hồ sơ (CC-BY-4.0), một mô-đun Go (phạm vi công cộng) trong tệp chạy pgschema, và vài thành phần nằm sẵn trong image bên thứ ba mà dự án kéo nguyên bản hoặc dùng làm lớp nền của image phát hành, như gói hệ điều hành của image Debian, Ubuntu; image ClamAV của dự án đã bỏ `libclamunrar` (giấy phép UnRAR).
+- Mọi ngoại lệ ngoài danh sách OSI nêu tên kèm lý do ở phần "Giấy phép ngoài danh sách OSI" của `DEPENDENCIES.txt` và ở `docs/DEPENDENCY_INVENTORY.md`: dữ liệu (kể cả dữ liệu của bộ phân loại hồ sơ, CC-BY-4.0), phông, công cụ dựng và gói có sẵn trong image bên thứ ba.
+  Image ClamAV của dự án đã bỏ `libclamunrar` (giấy phép UnRAR).
 - **Bằng chứng:** `LICENSE`, `NOTICE`, `DEPENDENCIES.txt`; `python3 .github/scripts/check_licenses.py`; `python3 .github/scripts/check_license_inventory.py check`; [Thành phần được chọn và không chọn](./dependencies.md); [Rà soát PoF](./pof-audit.md).
 
 ## 19. Mã có phần do công cụ AI viết, đội kiểm soát thế nào?
 
-- Đội dùng Claude (Anthropic) và Codex (OpenAI) để viết nháp mã và tài liệu; 442 trong 1229 commit trên `Khuong/main` (ngày 25/11/2026) mang dòng `Co-Authored-By` của công cụ, và GitHub hiện chúng ở trang thống kê người đóng góp; không phải commit nào có dùng công cụ cũng mang dòng đó.
+- Đội dùng Claude (Anthropic) và Codex (OpenAI) để viết nháp mã và tài liệu; 442 trong 1230 commit trên `Khuong/main` (tính đến hết ngày 25/11/2026) mang dòng `Co-Authored-By` của công cụ, và GitHub hiện chúng ở trang thống kê người đóng góp; không phải commit nào có dùng công cụ cũng mang dòng đó.
 - Người gửi pull request đọc, chạy và chịu trách nhiệm về từng thay đổi; công cụ không tự gộp vào nhánh nào.
 - Mọi thay đổi đi qua cùng kiểm tra của CI: biên dịch, định dạng, kiểm đầu-cuối trên stack thật, kiểm giấy phép và quét bí mật; mã do công cụ viết không có đường tắt.
 - Giấy phép của phần đóng góp do người gửi bảo đảm; thư viện mới qua kiểm OSI trước khi thêm, nên mã sinh ra không kéo theo thành phần ngoài danh sách.

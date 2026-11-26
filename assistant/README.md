@@ -25,7 +25,7 @@ Xem `docker compose logs assistant-sso`, sửa `deploy/.env` rồi chạy lại 
 `dxos update` kéo cả image trợ lý ở chế độ full.
 Image có sau khi chạy workflow `Release Images` (cùng `services=all`).
 Image chạy bằng Node.js và chứa mã trợ lý cùng các trọng số phân loại.
-Dựng image từ mã nguồn bằng `docker compose build assistant-init` trong `deploy/` trong chế độ full.
+Dựng image từ mã nguồn bằng `docker compose build assistant-init` trong `deploy/`.
 Dựng thẳng bằng `docker build -f assistant/Dockerfile .` ở gốc repo thì cần BuildKit.
 
 ## Bộ phân loại
@@ -43,7 +43,6 @@ Tệp mô hình chỉ chọn được bộ phân loại đã có trọng số; n
 
 Trợ lý nạp trọng số từ `/app/classifiers` khi khởi động.
 Đặt `ASSISTANT_CLASSIFIERS_DIR` để nạp từ thư mục khác bên trong container, ví dụ `/run/secrets/classifiers` nếu đặt tệp dưới `deploy/data/assistant/private/classifiers`.
-Thư mục đặt ở biến này thay cho thư mục mặc định.
 Mỗi tệp có tên `<classifier>.json`, với `<classifier>` khớp tên nhiệm vụ trong tệp trọng số.
 Trợ lý báo `configured` khi nạp được ít nhất một bộ phân loại.
 `GET /me` trả `model.classifiers` gồm các tên đã nạp.

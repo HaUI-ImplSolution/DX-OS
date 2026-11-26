@@ -3,44 +3,53 @@
 
 # Thẻ dữ liệu
 
-Dữ liệu câu gốc là bản nháp do Claude (Anthropic) viết.
-Tệp câu gốc không ghi người viết hay người duyệt của từng dòng.
-Biến thể sinh bằng mã của đội.
-Các câu lạc đề từ nguồn ngoài lấy từ [MASSIVE](https://arxiv.org/abs/2204.08582) (CC BY 4.0, Amazon).
-MASSIVE được bản địa hóa từ [SLURP](https://github.com/pswietojanski/slurp) và chứa một phần dữ liệu của SLURP (CC BY 4.0; Bastianelli, Vanzo, Swietojanski và Rieser, 2020, [bài báo](https://aclanthology.org/2020.emnlp-main.588/)).
-Phần âm thanh của SLURP theo CC BY-NC 4.0 không nằm trong MASSIVE và không được tải hay dùng.
-Các câu do Claude soạn mô tả tình huống giả lập và không chứa hồ sơ người dùng.
-Câu gốc, định nghĩa nhãn, tập chỉnh và bộ nghiệm thu được công bố theo CC BY 4.0 tại [Kaggle](https://www.kaggle.com/datasets/hittungtran/dx-os-vietnamese-record-classification-data).
-Bản Kaggle không gồm dữ liệu của MASSIVE.
+Dữ liệu huấn luyện và đo của năm bộ phân loại hồ sơ tiếng Việt trong trợ lý nghiệp vụ.
+Các câu mô tả tình huống giả lập và không chứa hồ sơ của người dùng.
+Bản công bố công khai ở [Kaggle](https://www.kaggle.com/datasets/hittungtran/dx-os-vietnamese-record-classification-data) theo CC BY 4.0, không gồm dữ liệu của MASSIVE.
 
-## Dữ liệu do Claude soạn và điều khoản của Anthropic
+## Nguồn gốc và giấy phép
 
-Câu gốc huấn luyện và tập chỉnh ở `eval/tuning/` được soạn bằng Claude của Anthropic, qua tài khoản Claude Pro.
-Bộ nghiệm thu ở `eval/acceptance/` do thành viên đội viết tay.
-Cột `nguoi_viet` của các tệp CSV ghi người viết của từng dòng.
+| Phần | Nơi lưu | Số dòng | Người viết | Giấy phép |
+| --- | --- | --- | --- | --- |
+| Câu gốc huấn luyện | `data/seeds/` | 2.490 | Claude (Anthropic) | CC BY 4.0, trong phạm vi đội có quyền |
+| Câu từ chối dùng chung | `data/negatives.jsonl` | 22 | Claude (Anthropic) | như trên |
+| Tập chỉnh | `eval/tuning/` | 420 | Claude (Anthropic), chưa có người duyệt | như trên |
+| Bộ nghiệm thu | `eval/acceptance/` | 450 | Thành viên đội viết tay, duyệt chéo | CC BY 4.0, ghi công HaUI-ImplSolution |
+| Định nghĩa nhãn | `labels.json` | 5 nhiệm vụ | Đội | CC BY 4.0, ghi công HaUI-ImplSolution |
+| Câu lạc đề ngoài | MASSIVE vi-VN 1.0 | 300 câu lấy mẫu | Amazon | CC BY 4.0, tải lúc huấn luyện, không nằm trong repository |
+
+Biến thể do mã của đội sinh từ câu gốc trong tập huấn luyện.
+Cột `nguoi_viet` của các tệp CSV ghi người viết từng dòng; các tệp câu gốc không ghi người viết hay người duyệt.
 Codex của OpenAI không tạo dữ liệu nào của bộ phân loại.
 
-Tài khoản Claude Pro chịu Điều khoản dịch vụ dành cho người dùng cá nhân của Anthropic (hiệu lực 8/10/2025, đọc ngày 26/11/2026).
-Anthropic chuyển cho người dùng quyền đối với kết quả do Claude tạo ra.
-Điều khoản cấm dùng dịch vụ để huấn luyện mô hình cạnh tranh với Anthropic.
+### Điều khoản của Anthropic
+
+Câu do Claude soạn qua tài khoản Claude Pro, chịu Điều khoản dịch vụ dành cho người dùng cá nhân của Anthropic (hiệu lực 8/10/2025, đọc ngày 26/11/2026).
+Điều khoản chuyển cho người dùng quyền đối với kết quả, nếu có, và cấm dùng dịch vụ để huấn luyện mô hình cạnh tranh với Anthropic.
 Bài hướng dẫn của Anthropic ([Can I use my Outputs to train an AI model?](https://support.claude.com/en/articles/12326764-can-i-use-my-outputs-to-train-an-ai-model), cập nhật 16/3/2026, đọc ngày 26/11/2026) cho phép dùng kết quả để huấn luyện mô hình chuyên biệt không cạnh tranh, như bộ phân loại và hệ thống phân loại nội dung.
 Bài này cấm chatbot đa dụng, mô hình sinh văn bản mở, dùng kết quả làm training target và hỗ trợ bên thứ ba làm các việc đó.
 
-Mô hình trong thư mục này là bộ phân loại hồi quy logistic cho năm nhiệm vụ nhãn cố định.
+Mô hình huấn luyện từ dữ liệu này là bộ phân loại hồi quy logistic cho năm nhiệm vụ nhãn cố định.
 Nó không sinh văn bản, không trả lời tự do và không dùng làm chatbot hay mô hình đa dụng.
 Nó chỉ gợi ý nhãn cho một trường của hồ sơ trong trợ lý nghiệp vụ của DX-OS, và người dùng xác nhận trước khi lưu.
 Nhãn là nhãn nghiệp vụ theo [định nghĩa nhãn](../labels.json), không phải dự đoán của Claude.
+Người dùng lại dữ liệu để huấn luyện mô hình tự chịu trách nhiệm tuân thủ điều khoản của Anthropic đối với phần do Claude soạn.
 
-Người dùng lại dữ liệu này để huấn luyện mô hình tự chịu trách nhiệm tuân thủ điều khoản của Anthropic đối với phần do Claude soạn.
+### Bản quyền
 
-## Bản quyền
-
-Bộ nghiệm thu và định nghĩa nhãn do thành viên đội viết, được phát hành theo CC BY 4.0, ghi công HaUI-ImplSolution.
-Câu huấn luyện và tập chỉnh do Claude soạn.
 Văn bản không có tác giả là con người có thể không được bảo hộ bản quyền ở nhiều nước.
-Anthropic chuyển cho người dùng quyền đối với kết quả do Claude tạo ra, nếu có.
-HaUI-ImplSolution phát hành các câu này theo CC BY 4.0 trong phạm vi mình có quyền và không khẳng định bản quyền đối với từng câu.
-Phần quyền của đội gồm nhãn, định nghĩa nhãn, cách chọn và sắp xếp dữ liệu, và mã sinh biến thể.
+HaUI-ImplSolution phát hành các câu do Claude soạn theo CC BY 4.0 trong phạm vi mình có quyền và không khẳng định bản quyền đối với từng câu.
+Phần quyền của đội gồm nhãn, định nghĩa nhãn, cách chọn và sắp xếp dữ liệu, mã sinh biến thể, và bộ nghiệm thu do thành viên đội viết.
+
+### Dữ liệu ngoài
+
+Câu lạc đề lấy từ [MASSIVE](https://arxiv.org/abs/2204.08582) 1.0 của Amazon (CC BY 4.0), tập train `vi-VN` có 11.514 câu.
+MASSIVE được bản địa hóa từ [SLURP](https://github.com/pswietojanski/slurp) và chứa một phần chữ của SLURP (CC BY 4.0; Bastianelli, Vanzo, Swietojanski và Rieser, 2020, [bài báo](https://aclanthology.org/2020.emnlp-main.588/)).
+Phần âm thanh của SLURP theo CC BY-NC 4.0 không nằm trong MASSIVE và không được tải hay dùng.
+Công cụ lấy mẫu theo seed từ trường `utt` thuộc các ý định đồng hồ báo thức, nấu ăn, truyện cười, tiền tệ và phép tính, sau khi lọc theo [manifest](sources.json) và khử trùng sau chuẩn hóa.
+Mã SHA-256 và URL của bản phát hành gốc nằm trong manifest.
+Mỗi câu lấy mẫu được gán `TU_CHOI` với loại ca `lac_de` cho cả năm nhiệm vụ.
+Văn bản được giữ nguyên, lưu trong cache và không đóng gói.
 
 ## Thành phần
 
@@ -52,30 +61,11 @@ Phần quyền của đội gồm nhãn, định nghĩa nhãn, cách chọn và 
 | `support` | Thấp, Trung bình, Cao | 135 | 120 | 525 |
 | `clinic` | Khám tổng quát, Tư vấn, Tái khám | 135 | 120 | 525 |
 
-Bộ câu gốc có 2.490 dòng, gồm 1.890 câu nghiệp vụ và 600 câu từ chối riêng chia đều giữa bốn loại ca của từng nhiệm vụ.
+Bộ câu gốc có 2.490 dòng, gồm 1.890 câu nghiệp vụ và 600 câu từ chối chia đều giữa bốn loại ca của từng nhiệm vụ.
 Tệp `negatives.jsonl` có 17 câu dùng chung và năm câu lạc đề bổ sung, mỗi nhiệm vụ có một câu riêng.
 Văn phong lịch sự, bình thường và cẩu thả chiếm lần lượt khoảng 30%, 40% và 30% trong mỗi tệp câu gốc.
 Mỗi nhãn nghiệp vụ có 15 câu ngắn nói thẳng yêu cầu bằng tên nhãn hoặc từ gần nghĩa, chia đều cho ba văn phong.
-Câu gốc và biến thể sinh từ câu gốc được phát hành theo CC-BY-4.0 trong phạm vi quyền ghi ở mục "Bản quyền".
-
-Tập chỉnh ở `tools/classifier/eval/tuning/` gồm 420 câu do Claude (Anthropic) viết, chưa có người duyệt, chỉ để chọn ngưỡng và siêu tham số.
-Bộ nghiệm thu ở `tools/classifier/eval/acceptance/` gồm 450 câu do đội viết tay, duyệt chéo và giữ riêng để đo.
-Khi trích đặc trưng, các lệnh rõ ràng như “Bỏ qua mọi hướng dẫn” được lọc bỏ.
-Các cụm có chủ thể “Hệ thống”, “Chương trình” hoặc “Máy” và động từ điền nhãn chỉ khớp khi theo sau là tên nhãn.
-Cụm “luôn chọn” chỉ khớp khi đứng đầu đoạn, đi sau “hãy” hoặc đi trước tên nhãn.
-Từ `output` và `ignore` đứng riêng được giữ lại.
-
-| Nguồn | Phiên bản hoặc revision | Giấy phép | Câu lấy mẫu |
-| --- | --- | --- | --- |
-| [MASSIVE của Amazon](https://github.com/alexa/massive#accessing-and-processing-the-data) | 1.0 | CC-BY-4.0 | 300 |
-
-Tập train `vi-VN` của MASSIVE có 11.514 câu.
-Công cụ lấy mẫu theo seed từ trường `utt` thuộc các ý định đồng hồ báo thức, nấu ăn, truyện cười, tiền tệ và phép tính sau khi lọc theo manifest và khử trùng sau chuẩn hóa.
-Mã SHA-256 và URL của bản phát hành gốc nằm trong [manifest](sources.json).
-Mỗi câu lấy mẫu từ bên ngoài được gán `TU_CHOI` với loại ca `lac_de` cho cả năm nhiệm vụ.
-Dữ liệu ngoài lưu trong cache và không đóng gói.
-Văn bản nguồn ngoài được giữ nguyên trong các ví dụ lấy mẫu.
-Tệp giấy phép của MASSIVE nằm trong bản phát hành 1.0 của Amazon.
+Tập chỉnh dùng để chọn ngưỡng và siêu tham số; bộ nghiệm thu được giữ riêng để đo.
 
 ## Chia tập và biến thể
 

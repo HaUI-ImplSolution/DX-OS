@@ -341,7 +341,7 @@ The documents on writing a model file, the API, operation, monitoring, integrati
 ## License
 
 The source code, documents, screenshots, videos and diagrams are under the Apache License 2.0, see [`LICENSE`](./LICENSE).
-Every license of the project and of the components it uses is approved by the OSI, except the exceptions named with the reason in the section on licenses outside the OSI list of [`DEPENDENCIES.txt`](./DEPENDENCIES.txt): data read only while the docs site is built, build tools and tools that are not distributed, the Codicons icon font (CC-BY-4.0) in the web build, data packed inside the PDFBox library of the backend image (Adobe font metric files, Font Awesome shapes under CC-BY-4.0, a color profile under CC0-1.0), the data of the record classifier (CC-BY-4.0), one Go module (public domain) in the pgschema binary, and a few components inside third-party images that the project pulls unmodified or uses as the base layers of its released images (for example operating-system packages of Debian and Ubuntu images).
+Every license of the project and of the components it uses is approved by the OSI, except data (including the data of the record classifier, CC-BY-4.0), fonts, build tools and packages already inside third-party images; each exception is named with its reason in the section on licenses outside the OSI list of [`DEPENDENCIES.txt`](./DEPENDENCIES.txt).
 The license of each third-party component is in [`DEPENDENCIES.txt`](./DEPENDENCIES.txt).
 
 References: [contest topic](https://vfossa.vn/tin-tuc/gioi-thieu-mo-hinh-dx-os-va-chu-de-cuoc-thi-phan-mem-nguon-mo-olp-2026-761.html) · [DX-OS textbook](https://opendigitransform.gitbook.io/dx-os)

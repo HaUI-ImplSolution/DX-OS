@@ -7,27 +7,9 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ## [Unreleased]
 
-### Trợ lý nghiệp vụ
-
-- Trợ lý dùng bộ phân loại hồ sơ tiếng Việt do đội tự huấn luyện, chạy trên CPU trong chính dịch vụ, để gợi ý loại hồ sơ, mức ưu tiên hoặc dịch vụ trong các mẫu `onestop`, `support_desk` và `clinic_appointment`, kèm cụm chữ của hồ sơ làm căn cứ.
-- Hộp việc có nút **Rà loại hồ sơ** để rà tối đa 25 hồ sơ mỗi lượt (`POST /assistant-api/v1/me/reviews`) và mở đề xuất từng hồ sơ được đánh dấu **Cần rà**, kèm độ tự tin của từng gợi ý.
-- `ASSISTANT_CLASSIFIERS_DIR` chọn thư mục trọng số khác, và `GET /assistant-api/v1/me` trả thêm `model.classifiers`.
-- Mã huấn luyện, dữ liệu, thẻ mô hình và trọng số ở `tools/classifier/`; trọng số theo Apache-2.0, dữ liệu theo CC-BY-4.0 trong phạm vi đội có quyền (câu huấn luyện và tập chỉnh do Claude soạn), câu lạc đề từ MASSIVE (gồm dữ liệu SLURP) được tải lúc huấn luyện.
-
-### Tệp mô hình
-
-- Nhiệm vụ `ai.tasks` khai `classifier`, `input_fields` (các trường `text`) và `output_field` (một trường `choice` đơn trị).
-- Mẫu `onestop` và `support_desk` chỉ có nhiệm vụ phân loại.
-
-### Giấy phép
-
-- Danh sách ngoại lệ nêu cả dữ liệu đóng trong thư viện PDFBox của image `backend` và lớp nền được phân phối lại của các image phát hành.
-- Ghi công SLURP, nguồn của một phần câu trong MASSIVE.
-- `third-party-licenses.txt` của web và trang docs kèm cả tệp thông báo bên thứ ba của thư viện, và văn bản chuẩn của giấy phép cho gói không kèm tệp giấy phép.
-
 ## [2.1.0] - 2026-11-26
 
-Thêm và sửa sau bản `2.0.2`: dự án gom mô hình và ứng dụng ngoài kèm quản trị theo dự án, `dxos connect` và `webUrl` để nối ứng dụng ngoài, ứng dụng mẫu `appliance-store`, kế hoạch đổi mô hình báo tác động lên hồ sơ đang chờ, ghi có điều kiện theo phiên bản, tìm hồ sơ theo chữ, `dxos import` nhập hồ sơ từ tệp CSV, thời gian ở từng trạng thái, cầu nối MQTT và bộ Prometheus với Grafana tùy chọn, trình dựng mô hình ở bảng điều khiển, văn bản giấy phép đi kèm mọi image, và trợ lý nghiệp vụ tùy chọn.
+Thêm và sửa sau bản `2.0.2`: dự án gom mô hình và ứng dụng ngoài kèm quản trị theo dự án, `dxos connect` và `webUrl` để nối ứng dụng ngoài, ứng dụng mẫu `appliance-store`, kế hoạch đổi mô hình báo tác động lên hồ sơ đang chờ, ghi có điều kiện theo phiên bản, tìm hồ sơ theo chữ, `dxos import` nhập hồ sơ từ tệp CSV, thời gian ở từng trạng thái, cầu nối MQTT và bộ Prometheus với Grafana tùy chọn, trình dựng mô hình ở bảng điều khiển, văn bản giấy phép đi kèm mọi image, và trợ lý nghiệp vụ dùng bộ phân loại tự huấn luyện, chạy cùng stack.
 Nâng cấp từ `2.0.2` giữ nguyên dữ liệu; hai migration mới thêm bảng dự án và thành viên dự án.
 
 ### Lõi chạy ngầm
@@ -56,7 +38,7 @@ Nâng cấp từ `2.0.2` giữ nguyên dữ liệu; hai migration mới thêm b�
 - `dxos project member list|add|remove`; `add` nhận `--admin`.
 - Ghi có điều kiện: `PATCH` một hồ sơ, hành động và giao việc nhận thêm `version` và `modelVersion`; hồ sơ hoặc mô hình đã đổi thì trả 409, `data.reason` là `MODEL_VERSION_CHANGED` khi mô hình đổi; `PATCH` kèm `version` cũ trả 409 kể cả khi giá trị không đổi.
 - `GET /api/v1/meta/models` trả `modelVersion` của từng mô hình và thực thể, `process.effects` (việc hoàn tất xếp vào hàng đợi, `asynchronous: true`) và `aiTasks`.
-- Thực thể khai báo được khối `ai.tasks` trong tệp mô hình: trường đầu vào, trường đề xuất, hướng dẫn và mã nguồn tham khảo; lõi chỉ kiểm khai báo, không gọi model.
+- Thực thể khai báo được khối `ai.tasks` trong tệp mô hình: tên bộ phân loại, các trường `text` đầu vào và một trường `choice` đơn trị nhận đề xuất; lõi chỉ kiểm khai báo, không gọi model.
 - `dxos connect <mô hình> --role R [--role R ...]` đăng ký một client cho mỗi vai và ghi `DXOS_BASE_URL` cùng các biến của chúng vào `.env` của ứng dụng, đăng nhập thử rồi in hai dòng cần thêm vào `docker-compose.yml`; chạy lại thì giữ nguyên secret đã có, và client mất secret cần `--rotate`.
 - Ứng dụng chạy cùng máy với DX-OS không cần đổi `PUBLIC_HOST`: container gọi DX-OS qua `host.docker.internal` với `extra_hosts`; `docs/QUICKSTART.md` đường 2 và `examples/order_approval` theo cách này.
 - `examples/appliance-store`: ứng dụng bán hàng của một cửa hàng điện máy, không liên quan đến dự án, thêm quy trình đổi trả (mẫu `retail_return` dùng nguyên) và bảo hành (`extends: support_desk`).
@@ -111,10 +93,14 @@ Nâng cấp từ `2.0.2` giữ nguyên dữ liệu; hai migration mới thêm b�
 ### Tệp mô hình
 
 - Mẫu Một cửa in "Kết quả xử lý hồ sơ" sau khi duyệt, nên cùng một mẫu không gọi hồ sơ Hoãn thi hoặc Phúc khảo là giấy xác nhận.
+- Mẫu `onestop`, `support_desk` và `clinic_appointment` khai sẵn nhiệm vụ phân loại.
 
 ### Trợ lý nghiệp vụ
 
-- Trợ lý đề xuất một giá trị trường từ hồ sơ; người dùng sửa, hủy hoặc xác nhận, Core kiểm quyền và phiên bản trước khi ghi.
+- Trợ lý dùng bộ phân loại hồ sơ tiếng Việt do đội tự huấn luyện, chạy trên CPU trong chính dịch vụ, để gợi ý loại hồ sơ, mức ưu tiên hoặc dịch vụ trong các mẫu `onestop`, `support_desk` và `clinic_appointment`, kèm cụm chữ của hồ sơ làm căn cứ; người dùng sửa, hủy hoặc xác nhận, Core kiểm quyền và phiên bản trước khi ghi.
+- Hộp việc có nút **Rà loại hồ sơ** để rà tối đa 25 hồ sơ mỗi lượt (`POST /assistant-api/v1/me/reviews`) và mở đề xuất từng hồ sơ được đánh dấu **Cần rà**, kèm độ tự tin của từng gợi ý.
+- `ASSISTANT_CLASSIFIERS_DIR` chọn thư mục trọng số khác, và `GET /assistant-api/v1/me` trả thêm `model.classifiers`.
+- Mã huấn luyện, dữ liệu, thẻ mô hình và trọng số ở `tools/classifier/`; trọng số theo Apache-2.0, dữ liệu theo CC-BY-4.0 trong phạm vi đội có quyền (câu huấn luyện và tập chỉnh do Claude soạn), câu lạc đề từ MASSIVE (gồm dữ liệu SLURP) được tải lúc huấn luyện.
 - Trợ lý chạy cùng stack ở chế độ full (nhóm `app` của `deploy/docker-compose.yml`) và `dxos update` kéo image của nó; chế độ core không có trợ lý.
 - Cấu hình tùy chọn ở `deploy/assistant.env`, kiểm tra ở workflow `Assistant`, và `assistant/README.md` có danh sách các chỗ cần xóa để gỡ trợ lý.
 - Image trợ lý chỉ chứa Node.js và mã của trợ lý, không có npm, corepack và yarn.
@@ -133,6 +119,9 @@ Nâng cấp từ `2.0.2` giữ nguyên dữ liệu; hai migration mới thêm b�
 - `LICENSE` và `NOTICE` đi kèm GitHub Release cùng `dxos-install.sh` và `dxos-lint.jar`; SBOM của web và trang docs khai Apache-2.0 cho gói gốc; README của mỗi ví dụ nêu giấy phép; `check_licenses.py` kiểm mọi nơi dự án khai giấy phép (`package.json`, `pom.xml`, `CITATION.cff`, chân trang trang docs) đều là Apache-2.0.
 - `dxos-lint.jar` kèm `LICENSE`, `NOTICE` và giấy phép của SnakeYAML ở `META-INF`; `pom.xml` và `package.json` khai Apache-2.0; phông Codicons (CC-BY-4.0) trong bản build web có ghi công ở `third-party-licenses.txt`.
 - Mọi câu về giấy phép ở README, NOTICE, `DEPENDENCIES.txt` và trang docs nêu cùng danh sách ngoại lệ ngoài OSI.
+- Danh sách ngoại lệ nêu cả dữ liệu đóng trong thư viện PDFBox của image `backend` và lớp nền được phân phối lại của các image phát hành.
+- Ghi công MASSIVE và SLURP, nguồn của câu lạc đề khi huấn luyện bộ phân loại.
+- `third-party-licenses.txt` của web và trang docs kèm cả tệp thông báo bên thứ ba của thư viện, và văn bản chuẩn của giấy phép cho gói không kèm tệp giấy phép.
 
 ### Phát hành
 

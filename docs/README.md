@@ -23,7 +23,7 @@ Tự cài và nối vào ứng dụng của bạn thì theo [`QUICKSTART.md`](./
 |---|---|
 | [`QUICKSTART.md`](./QUICKSTART.md) | Từ máy sạch đến một quy trình chạy được: không có code (giao diện web) hoặc có code (ứng dụng của bạn gọi API) |
 | [`MODEL.md`](./MODEL.md) | Cách viết tệp mô hình: trường, ràng buộc, quyền, quy trình, tài liệu in |
-| [`API.md`](./API.md) | Đường dẫn API Core và liên kết đến ví dụ gọi API trợ lý |
+| [`API.md`](./API.md) | Đường dẫn API Core và API trợ lý nghiệp vụ |
 | [`AI.md`](./AI.md) | Trợ lý phân loại hồ sơ, rào chắn, thống kê dữ liệu, giấy phép, nghiệm thu và cách đo lại |
 | [`EXTENSIONS.md`](./EXTENSIONS.md) | Viết dịch vụ riêng, bên nhận webhook, giao diện ngoài và route riêng ở ngoài lõi |
 | [`OPERATIONS.md`](./OPERATIONS.md) | Cài đặt, các lệnh `dxos`, tên miền và HTTPS, biến `.env`, sao lưu, ứng phó sự cố, quản trị người dùng và dự án |

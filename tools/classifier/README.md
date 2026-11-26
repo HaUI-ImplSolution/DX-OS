@@ -56,7 +56,7 @@ Bản công bố [Kaggle phiên bản 2](https://www.kaggle.com/datasets/hittung
 5. Trong tệp mô hình, khai nhiệm vụ dưới `entities.<thực_thể>.ai.tasks` với `classifier: <task>`, `input_fields` theo thứ tự dùng khi huấn luyện và `output_field` đã chọn.
    Áp dụng tệp mô hình.
    Thử hồ sơ đúng nhãn, hồ sơ thiếu căn cứ và xác nhận đề xuất bằng tài khoản có quyền.
-   Xem [khai báo mô hình](../../docs/MODEL.md#nhiệm-vụ-trợ-lý-nghiệp-vụ) và [ví dụ API](../../assistant/README.md#rà-loại-hồ-sơ-ở-hộp-việc).
+   Xem [khai báo mô hình](../../docs/MODEL.md#nhiệm-vụ-trợ-lý-nghiệp-vụ) và [API trợ lý](../../docs/API.md).
 
 ## Đo dev và nghiệm thu
 

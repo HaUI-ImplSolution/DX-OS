@@ -85,7 +85,7 @@ Bấm dấu **Cần rà** mở khối trợ lý trên trang chi tiết và gọi
 Giao diện giữ kết quả rà trong bộ nhớ tối đa 120 giây mỗi lượt, còn nguyên khi chuyển trang trong ứng dụng, và xóa khi đăng xuất hoặc hết phiên.
 Hồ sơ không đọc được được đếm riêng và rà lại được ở lượt sau.
 
-`POST /assistant-api/v1/me/reviews` nhận từ 1 đến 25 hồ sơ.
+`POST /assistant-api/v1/me/reviews` nhận `{"items":[{"model":"onestop","entity":"request","id":1}]}` với từ 1 đến 25 hồ sơ.
 Trợ lý đọc hồ sơ bằng phiên Core của người gọi, đọc metadata một lần cho mỗi thực thể, gửi tối đa 5 yêu cầu đồng thời và chỉ rà hồ sơ còn mở thuộc thực thể người gọi được sửa.
 Hồ sơ gặp lỗi riêng (không có quyền, không tồn tại, bị giới hạn tốc độ, lỗi máy chủ hoặc quá thời gian chờ) được đếm ở `data.skipped`.
 Lỗi phiên (chưa liên kết, liên kết hết hạn, Core trả 401) làm cả lượt trả lỗi.
@@ -95,105 +95,7 @@ Khi bộ phân loại từ chối, `suggested` là `null` và `mismatch` là `fa
 Lượt rà chỉ đọc, không tạo đề xuất và không ghi nội dung hồ sơ vào nhật ký.
 API dùng cùng giới hạn 120 yêu cầu mỗi phút theo địa chỉ IP tại cổng của trợ lý.
 
-Các ví dụ dùng mẫu Một cửa sinh viên ở chế độ full.
-Đặt `DXOS_URL` là URL công khai của cổng, không có dấu gạch chéo cuối, và `DXOS_TOKEN` là access token có audience `dxos-api` của cán bộ đã liên kết Core trong giao diện trợ lý.
-Gửi `Origin` trùng origin công khai và chọn mã ID nội bộ của một hồ sơ thử đang mở mà cán bộ có quyền sửa.
-Các phản hồi bên dưới là ví dụ với hồ sơ `17`, lý do “xin xem lại bài thi môn CSDL” và loại hiện tại “Hoãn thi”.
-
-```sh
-curl --fail-with-body "$DXOS_URL/assistant-api/v1/me/reviews" \
-  -H "Authorization: Bearer $DXOS_TOKEN" -H "Origin: $DXOS_URL" \
-  --json '{"items":[{"model":"onestop","entity":"request","id":17}]}'
-```
-
-```json
-{
-  "success": true,
-  "message": "OK",
-  "data": {
-    "items": [{
-      "model": "onestop",
-      "entity": "request",
-      "id": 17,
-      "task": "classify_kind",
-      "field": "kind",
-      "current": "Hoãn thi",
-      "suggested": "Phúc khảo",
-      "confidence": 0.9791523993616698,
-      "evidence": ["xem lại bài", "thi môn CSDL"],
-      "mismatch": true
-    }],
-    "skipped": 0
-  }
-}
-```
-
-Tạo đề xuất cho hồ sơ trên bằng nhiệm vụ trả về trong kết quả rà.
-
-```sh
-curl --fail-with-body "$DXOS_URL/assistant-api/v1/me/proposals" \
-  -H "Authorization: Bearer $DXOS_TOKEN" -H "Origin: $DXOS_URL" \
-  --json '{"model":"onestop","entity":"request","id":17,"task":"classify_kind"}'
-```
-
-Phản hồi rút gọn để thấy mã đề xuất, giá trị và căn cứ.
-
-```json
-{
-  "success": true,
-  "message": "OK",
-  "data": {
-    "insufficient": false,
-    "proposal": {
-      "id": "3ead3b5e-0b2a-4f71-8c20-acc442fc00b1",
-      "state": "pending",
-      "snapshot": {
-        "field": "kind",
-        "previousValue": "Hoãn thi",
-        "value": "Phúc khảo",
-        "evidence": ["xem lại bài", "thi môn CSDL"],
-        "confidence": 0.9791523993616698
-      }
-    }
-  }
-}
-```
-
-Nếu `insufficient` là `true`, `proposal` là `null`.
-Sau khi cán bộ kiểm tra và đồng ý với giá trị, đặt `PROPOSAL_ID` bằng `data.proposal.id` rồi gửi xác nhận.
-
-```sh
-curl --fail-with-body "$DXOS_URL/assistant-api/v1/me/proposals/$PROPOSAL_ID/confirm" \
-  -H "Authorization: Bearer $DXOS_TOKEN" -H "Origin: $DXOS_URL" \
-  --json '{}'
-```
-
-Phản hồi thành công gồm bản ghi sau khi Core lưu, dưới đây là dạng rút gọn.
-
-```json
-{
-  "success": true,
-  "message": "OK",
-  "data": {
-    "coreCommitted": true,
-    "changed": true,
-    "record": {"id": 17, "kind": "Phúc khảo", "version": 4}
-  }
-}
-```
-
-| Endpoint dưới `/assistant-api/v1` | Chức năng |
-|---|---|
-| `GET /features` | Trạng thái bật dịch vụ |
-| `GET /openapi.json` | OpenAPI, cần đăng nhập |
-| `GET /me` | Trạng thái liên kết và danh sách bộ phân loại đã nạp |
-| `POST /me/core/link`, `GET /oauth/callback` | Liên kết Core bằng SSO |
-| `DELETE /me/core/link` | Hủy liên kết: thu hồi refresh token ở Keycloak, xóa token đã lưu, hủy các đề xuất đang chờ; trả `revoked` cho biết Keycloak có xác nhận không, kiểm Origin và danh tính |
-| `POST /me/reviews` | Rà tối đa 25 hồ sơ bằng các nhiệm vụ phân loại đủ điều kiện |
-| `POST /me/proposals` | Tạo đề xuất từ model, entity, id và nhiệm vụ |
-| `GET /me/proposals`, `GET /me/proposals/{id}` | Lịch sử và chi tiết của chủ còn quyền đọc hồ sơ |
-| `POST /me/proposals/{id}/revise` | Sửa giá trị, tạo đề xuất mới |
-| `POST /me/proposals/{id}/confirm`, `/cancel` | Xác nhận hoặc hủy, kiểm Origin và danh tính |
+Đường dẫn, thân yêu cầu và phản hồi của các endpoint nằm ở [`docs/API.md`](../docs/API.md).
 
 ## Mạng
 

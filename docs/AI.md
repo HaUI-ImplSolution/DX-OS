@@ -22,7 +22,7 @@ Cùng một cơ chế dùng cho nhiều nghiệp vụ qua `ai.tasks`; mỗi nghi
    [Mã bộ lọc](../assistant/src/classifier/features.ts) · [Mã bộ phân loại](../assistant/src/classifier/index.ts)
 3. **Xác nhận.** Người dùng duyệt giá trị đề xuất.
    Trợ lý kiểm lại quyền, trạng thái và phiên bản hồ sơ trước khi ghi qua API Core.
-   [Mã kiểm và ghi đề xuất](../assistant/src/tools/fields.ts) · [Luồng rà và ví dụ API](../assistant/README.md#rà-loại-hồ-sơ-ở-hộp-việc)
+   [Mã kiểm và ghi đề xuất](../assistant/src/tools/fields.ts) · [Luồng rà](../assistant/README.md#rà-loại-hồ-sơ-ở-hộp-việc) · [API trợ lý](./API.md)
 
 Trợ lý chạy trong mạng nội bộ, không có đường ra Internet.
 Trong bản cài full, có thể dừng `assistant-control` và tiếp tục nhập, sửa và xử lý hồ sơ trên giao diện chuẩn.

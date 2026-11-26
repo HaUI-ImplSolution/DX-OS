@@ -1,10 +1,8 @@
 # API
 
-Bảng dưới liệt kê các đường dẫn chính dưới `/api/v1`; đặc tả đầy đủ ở OpenAPI (`/v3/api-docs`) của backend đang chạy; backend không kèm giao diện thử gọi, đưa đặc tả vào công cụ của bạn (Postman, Insomnia hay trình sinh mã).
+Bảng dưới liệt kê các đường dẫn chính dưới `/api/v1` và `/assistant-api/v1`; đặc tả đầy đủ ở OpenAPI (`/v3/api-docs`) của backend đang chạy; backend không kèm giao diện thử gọi, đưa đặc tả vào công cụ của bạn (Postman, Insomnia hay trình sinh mã).
 Mọi phản hồi bọc trong `ApiResponse`, và lỗi có `errorCode` ổn định.
 Script `e2e/api/check_docs.py` kiểm các đường dẫn của Core trong bảng có trong OpenAPI.
-
-Ví dụ gọi API của trợ lý và phản hồi mẫu nằm trong [hướng dẫn rà loại hồ sơ](../assistant/README.md#rà-loại-hồ-sơ-ở-hộp-việc).
 
 | Đường dẫn | Việc |
 |---|---|
@@ -44,3 +42,13 @@ Ví dụ gọi API của trợ lý và phản hồi mẫu nằm trong [hướng 
 | `PUT`, `DELETE /api/v1/users/{id}/roles/{model}/{role}`, `/units/{unit}` | Gán và gỡ vai của một mô hình, và đơn vị (ADMIN). Quản trị viên của dự án gán và gỡ vai của mô hình thuộc dự án mình cho thành viên của dự án đó; đơn vị và mô hình chưa phân loại chỉ ADMIN, ngoài phạm vi trả 403 |
 | `POST /api/v1/users`, `PUT /{id}/enabled`, `POST /{id}/password` | Tạo người dùng với mật khẩu tạm, khóa và mở, đặt lại mật khẩu (chỉ ADMIN) |
 | `GET /api/v1/audit-logs` | Nhật ký lần truy cập bị từ chối, lỗi, thay đổi về tài khoản và việc áp dụng mô hình; lọc theo `actor`, `action`, `targetType`, `targetId`, `outcome`, `from`, `to` (ADMIN) |
+| `GET /assistant-api/v1/features` | Trạng thái bật dịch vụ, không cần đăng nhập |
+| `GET /assistant-api/v1/openapi.json` | OpenAPI của trợ lý, cần đăng nhập |
+| `GET /assistant-api/v1/me` | Người gọi đã liên kết Core chưa (`linked`), có phải ADMIN không (`admin`) và các bộ phân loại đã nạp (`model.classifiers`) |
+| `POST /assistant-api/v1/me/core/link`, `GET /assistant-api/v1/oauth/callback` | Liên kết với Core bằng SSO: `POST` trả `data.url` để chuyển trình duyệt đi, `callback` nhận `code` và `state` rồi chuyển về trang `/assistant` |
+| `DELETE /assistant-api/v1/me/core/link` | Hủy liên kết: thu hồi refresh token ở Keycloak, xóa token đã lưu và hủy các đề xuất đang chờ; `revoked` cho biết Keycloak có xác nhận không |
+| `POST /assistant-api/v1/me/reviews` | Rà từ 1 đến 25 hồ sơ, thân `{"items": [{"model", "entity", "id"}]}`, chỉ đọc và không tạo đề xuất. `data.items` có một kết quả cho mỗi nhiệm vụ đủ điều kiện: `model`, `entity`, `id`, `task`, `field`, `current`, `suggested`, `evidence` (tối đa 3 cụm chữ), `mismatch`, và `confidence` khi có gợi ý; bộ phân loại từ chối thì `suggested` là `null` và `mismatch` là `false`. `data.skipped` đếm hồ sơ gặp lỗi riêng (không có quyền, không tồn tại, bị giới hạn tốc độ, quá thời gian chờ); lỗi phiên (chưa liên kết, liên kết hết hạn) làm cả lượt trả lỗi |
+| `POST /assistant-api/v1/me/proposals` | Tạo đề xuất cho một hồ sơ, thân `{"model", "entity", "id", "task"}`. `data.proposal.snapshot` có `field`, `previousValue`, `value`, `evidence` và `confidence`; bộ phân loại từ chối thì `data.insufficient` là `true` và `proposal` là `null`. 409 `ERR_CLASSIFIER_UNAVAILABLE` khi thiếu trọng số của nhiệm vụ, 409 `ERR_CLASSIFIER_LABELS` khi lựa chọn của trường đầu ra khác tập nhãn |
+| `GET /assistant-api/v1/me/proposals`, `/me/proposals/{id}` | Lịch sử (phân trang `page` và `size` tối đa 5) và chi tiết đề xuất của chính người gọi, khi người gọi còn quyền đọc hồ sơ |
+| `POST /assistant-api/v1/me/proposals/{id}/revise` | Sửa giá trị, thân `{"value": "..."}`; tạo đề xuất mới và vô hiệu đề xuất cũ |
+| `POST /assistant-api/v1/me/proposals/{id}/confirm`, `/cancel` | Xác nhận hoặc hủy, thân `{}`. Đề xuất hết hạn sau 120 giây. Xác nhận đọc lại hồ sơ và gửi `PATCH` một trường kèm `version` và `modelVersion` tới Core: hồ sơ, mô hình, nhiệm vụ hoặc trọng số đã đổi thì 409 `ERR_PROPOSAL_STALE`, giá trị trùng hồ sơ thì 409 `ERR_PROPOSAL_NO_CHANGE`; thành công trả `coreCommitted`, `changed` và `record` |

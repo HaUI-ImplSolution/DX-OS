@@ -7,7 +7,7 @@
 #                              start the stack, wait until it is ready, create the first ADMIN account;
 #                              with a model file, the backend applies it on start when it is new;
 #                              --core runs only tier 1 (API, Keycloak, core service, PostgreSQL, file store),
-#                              --full also runs the web app, the portal and the monitor; the mode is kept
+#                              --full also runs the web app, the portal, the monitor and the assistant; the mode is kept
 #   dxos stop                  stop the stack, keeping the data
 #   dxos status                state of every service and the addresses to open
 #   dxos logs [service]        follow the logs
@@ -145,7 +145,20 @@ recreate_backend() {
   compose restart apisix
 }
 
-# The mode of the stack: core runs tier 1 only, full (the default) also runs the web app, the portal and the monitor.
+# Starts the platform first and the assistant after it, so a failure of the assistant is a warning and never holds the platform.
+up_stack() {
+  local platform=() assistant=() service
+  while read -r service; do
+    if [[ "$service" == assistant-* ]]; then assistant+=("$service"); else platform+=("$service"); fi
+  done < <(compose config --services)
+  compose up -d --no-build --pull missing "${platform[@]}" || return
+  if ((${#assistant[@]} > 0)); then
+    compose up -d --no-build --pull missing "${assistant[@]}" \
+      || echo "WARNING: the assistant did not start; the platform is not affected (see: docker compose logs assistant-init assistant-sso assistant-control)." >&2
+  fi
+}
+
+# The mode of the stack: core runs tier 1 only, full (the default) also runs the web app, the portal, the monitor and the assistant.
 stack_mode() { local mode; mode="$(env_value DXOS_MODE)"; echo "${mode:-full}"; }
 
 # Keeps DXOS_MODE and COMPOSE_PROFILES in line: tier 2 is the profile app.
@@ -162,7 +175,7 @@ switch_mode() {
   local mode="$1" running=false
   [[ -n "$(compose ps -q --status running apisix)" ]] && running=true
   if [[ "$mode" == core ]]; then
-    compose --profile app rm -sf frontend portal monitor monitor-init >/dev/null 2>&1 || true
+    compose --profile app rm -sf frontend portal monitor monitor-init assistant-control assistant-sso assistant-init >/dev/null 2>&1 || true
   fi
   set_mode "$mode"
   if $running; then
@@ -230,7 +243,7 @@ pending_services() {
     [[ -n "$id" ]] || continue
     read -r service name status health exit_code <<<"$(docker inspect -f \
       '{{index .Config.Labels "com.docker.compose.service"}} {{.Name}} {{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{else}}-{{end}} {{.State.ExitCode}}' "$id")"
-    # The optional assistant never holds the start of the platform.
+    # The assistant never holds the start of the platform.
     [[ "$service" == assistant-* ]] && continue
     case "$status:$health:$exit_code" in
       running:healthy:*|running:-:*|exited:*:0) ;;
@@ -381,7 +394,7 @@ cmd_start() {
   since_epoch="$(date +%s)"
   echo "==> Starting DX-OS $(env_value DXOS_IMAGE_TAG), $(stack_mode) mode (images are downloaded on the first start)"
   log="$(mktemp)"
-  if ! compose up -d --no-build --pull missing 2>&1 | tee "$log"; then
+  if ! up_stack 2>&1 | tee "$log"; then
     port_conflict_hint "$log"
     rm -f "$log"
     die "docker compose could not start the stack"
@@ -1396,7 +1409,7 @@ reconcile_once() {
   if command -v flock >/dev/null 2>&1 && ! flock -n 9; then
     return 0
   fi
-  if ! compose up -d --no-build --pull missing >"$out" 2>&1; then
+  if ! up_stack >"$out" 2>&1; then
     echo "$(date -Iseconds) failed: $(tail -n1 "$out")" >>"$log"
     return 1
   fi

@@ -19,6 +19,7 @@ export const DOCS = {
   'docs/QUICKSTART.md': {page: 'bat-dau-nhanh', label: 'Bắt đầu nhanh'},
   'docs/MODEL.md': {page: 'viet-mo-hinh', label: 'Viết tệp mô hình'},
   'docs/API.md': {page: 'api', label: 'API'},
+  'docs/AI.md': {page: 'tri-tue-nhan-tao', label: 'Trí tuệ nhân tạo'},
   'docs/OPERATIONS.md': {page: 'van-hanh', label: 'Cài đặt và vận hành'},
   'docs/MONITORING.md': {page: 'giam-sat', label: 'Giám sát và nhật ký'},
   'docs/INTEGRATIONS.md': {page: 'tich-hop', label: 'Tích hợp với hệ thống ngoài'},

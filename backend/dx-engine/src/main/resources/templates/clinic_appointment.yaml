@@ -23,6 +23,13 @@ entities:
       starts_at: {type: datetime, label: Bắt đầu, required: true}
       ends_at: {type: datetime, label: Kết thúc, required: true}
       note: {type: text, label: Ghi chú}
+    ai:
+      tasks:
+        classify_service:
+          label: Gợi ý dịch vụ khám
+          classifier: clinic
+          input_fields: [note]
+          output_field: service
     access: {PATIENT: own, RECEPTIONIST: all}
     process:
       family: reservation

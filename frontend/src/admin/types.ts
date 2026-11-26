@@ -74,8 +74,7 @@ export interface ProcessInfo {
 }
 
 export interface AiTask {
-  label: string; inputFields: string[]; outputField: string;
-  instruction: string; sources: string[]; maxLength: number;
+  label: string; inputFields: string[]; outputField: string; classifier: string;
 }
 
 export interface EntityMeta {

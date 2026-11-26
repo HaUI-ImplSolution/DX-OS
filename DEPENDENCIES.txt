@@ -6,13 +6,14 @@ phát triển tại Trường Công nghệ Thông tin và Truyền thông, Đạ
 
 Bản quyền và giấy phép của mã nguồn, thành phần bên thứ ba, mô hình và dữ liệu dùng trong sản phẩm.
 Văn bản giấy phép đầy đủ: LICENSE (Apache-2.0); thông báo ghi công: NOTICE.
-Danh mục từng gói, kể cả gói dev, gói test, plugin build và gói kéo theo, mỗi gói có phiên bản và giấy phép: docs/DEPENDENCY_INVENTORY.md, do .github/scripts/check_license_inventory.py sinh và kiểm ở mỗi pull request.
+Danh mục từng gói kèm phiên bản và giấy phép: docs/DEPENDENCY_INVENTORY.md, do .github/scripts/check_license_inventory.py sinh.
 SBOM CycloneDX của phần chạy thật: thư mục sbom/.
-Gói bên trong các image bên thứ ba mà stack chạy, kèm giấy phép của từng gói: docs/IMAGE_PACKAGES.md, do .github/scripts/check_image_packages.py sinh.
-Mỗi image do dự án phát hành kèm LICENSE, NOTICE, SOURCES.txt (nơi lấy nguồn của gói hệ điều hành và của thành phần GPL trong image nền) và văn bản giấy phép của thư viện nó chứa ở thư mục /licenses; các tệp nằm ở thư mục licenses/ của backend, frontend, portal, sso, assistant và clamav, và .github/scripts/check_third_party_notices.py giữ phần của hai image Java và của pgschema.
+Gói bên trong các image bên thứ ba mà stack chạy: docs/IMAGE_PACKAGES.md, do .github/scripts/check_image_packages.py sinh.
+Mỗi image do dự án phát hành kèm LICENSE, NOTICE, SOURCES.txt và giấy phép của thư viện nó chứa ở /licenses.
+Các tệp nằm ở thư mục licenses/ của từng image; .github/scripts/check_third_party_notices.py giữ phần của hai image Java và của pgschema.
 Bản build của ứng dụng web và của trang tài liệu kèm third-party-licenses.txt, chép thông báo bản quyền của từng thư viện npm đóng gói trong đó.
-Image khai báo ở .github/licenses/component-catalog.json; .github/scripts/check_licenses.py kiểm danh mục này ở mỗi pull request,
-và .github/scripts/check_upstream_licenses.py đọc giấy phép của dự án gốc ở đúng phiên bản đang dùng của từng image và bản tải về.
+Image khai báo ở .github/licenses/component-catalog.json, do .github/scripts/check_licenses.py kiểm;
+.github/scripts/check_upstream_licenses.py đọc giấy phép của dự án gốc ở đúng phiên bản đang dùng.
 Danh sách giấy phép được OSI công nhận: https://opensource.org/licenses; bản máy đọc, đối chiếu với danh sách SPDX, ở .github/licenses/osi-approved.json.
 
 1. GIẤY PHÉP CỦA DỰ ÁN
@@ -26,20 +27,29 @@ Danh sách giấy phép được OSI công nhận: https://opensource.org/licens
 +---------------------------------------------+-----------------------+----------------------------------------------+
 | docs, tệp .md, ảnh, video, sơ đồ            | Apache-2.0 (LICENSE)  | Khai ở REUSE.toml vì tệp không có dòng SPDX  |
 +---------------------------------------------+-----------------------+----------------------------------------------+
-| tệp của GitHub Release: dxos-install.sh,    | Apache-2.0 (LICENSE)  | LICENSE và NOTICE là tệp của Release; dxos-  |
-| dxos-lint.jar, LICENSE, NOTICE, SBOM        |                       | lint.jar mang LICENSE, NOTICE và giấy phép   |
-|                                             |                       | SnakeYAML ở META-INF                         |
+| tệp của GitHub Release: dxos-install.sh,    | Apache-2.0 (LICENSE)  | dxos-lint.jar mang LICENSE, NOTICE và        |
+| dxos-lint.jar, LICENSE, NOTICE, SBOM        |                       | giấy phép SnakeYAML ở META-INF               |
+|                                             |                       |                                              |
 +---------------------------------------------+-----------------------+----------------------------------------------+
-| image phát hành: backend, monitor,          | Apache-2.0 (LICENSE)  | Nhãn org.opencontainers.image.licenses;      |
-| frontend, portal, sso, assistant, clamav    |                       | LICENSE, NOTICE và giấy phép thư viện ở      |
-|                                             |                       | /licenses                                    |
+| image phát hành: backend, monitor,          | Apache-2.0 (LICENSE)  | Nhãn OCI licenses; LICENSE, NOTICE và        |
+| frontend, portal, sso, assistant, clamav    |                       | giấy phép thư viện ở /licenses               |
+|                                             |                       |                                              |
 +---------------------------------------------+-----------------------+----------------------------------------------+
-| khai báo trong pom.xml, package.json,       | Apache-2.0            | check_licenses.py kiểm khớp một loại giấy    |
-| CITATION.cff, chân trang trang docs         |                       | phép                                         |
+| khai báo trong pom.xml, package.json,       | Apache-2.0            | check_licenses.py kiểm khớp một loại         |
+| CITATION.cff, chân trang trang docs         |                       | giấy phép                                    |
++---------------------------------------------+-----------------------+----------------------------------------------+
+| trọng số bộ phân loại hồ sơ                 | Apache-2.0 (LICENSE)  | Do đội huấn luyện; image trợ lý chứa         |
+| (tools/classifier/model)                    |                       | onestop.json, support.json và clinic.json    |
+|                                             |                       | SHA-256 của chúng: ghi chú [12]              |
++---------------------------------------------+-----------------------+----------------------------------------------+
+| dữ liệu bộ phân loại: câu gốc, định nghĩa   | CC-BY-4.0             | Giấy phép dữ liệu, khai ở REUSE.toml; xem    |
+| nhãn, tập chỉnh, bộ nghiệm thu, tệp đối     |                       | mục 7                                        |
+| chiếu Python-Node                           |                       |                                              |
 +---------------------------------------------+-----------------------+----------------------------------------------+
 
 Header của file mã nguồn gồm dòng SPDX-FileCopyrightText với chủ bản quyền và dòng SPDX-License-Identifier với giá trị Apache-2.0; `reuse lint` kiểm toàn bộ cây theo chuẩn REUSE.
-Dòng header nằm ở đầu file Java, TypeScript, JavaScript, Python, shell, YAML, CSS, HTML, SQL, XML, nginx.conf, Dockerfile, .env.example và .toml; file không chèn được chú thích (tài liệu, JSON, ảnh, tệp cấu hình của git) và hai nhóm file đặc biệt khai trong REUSE.toml: file của bên thứ ba và migration SQL đã phát hành.
+Header nằm ở đầu file mã nguồn (Java, TypeScript, JavaScript, Python, shell, YAML, CSS, HTML, SQL, XML, nginx.conf, Dockerfile, .env.example, .toml).
+File không chèn được chú thích (tài liệu, JSON, ảnh, tệp cấu hình của git), file của bên thứ ba và migration SQL đã phát hành khai trong REUSE.toml.
 .github/scripts/check_licenses.py kiểm header, giấy phép của từng dependency trong sbom/ và danh mục image, mô hình, tệp dữ liệu ở mỗi pull request;
 ngoại lệ, nếu có, ghi kèm lý do ở .github/licenses/dependency-exceptions.json.
 
@@ -99,14 +109,14 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/licenses/dependency-excepti
 |                                        | Apache-2.0, MIT, BSD-3-Clause,   |                                        |
 |                                        | EPL-2.0                          |                                        |
 +----------------------------------------+----------------------------------+----------------------------------------+
-| spotless-maven-plugin [5]              | Apache-2.0; thư viện kèm theo:   | Chỉ khi build, kiểm định dạng mã Java  |
-|                                        | Apache-2.0, EPL-2.0,             |                                        |
-|                                        | BSD-3-Clause                     |                                        |
+| spotless-maven-plugin [5]              | Apache-2.0 (thư viện kèm: [5])   | Chỉ khi build, kiểm định dạng mã Java  |
+|                                        |                                  |                                        |
+|                                        |                                  |                                        |
 +----------------------------------------+----------------------------------+----------------------------------------+
-| SpotBugs (spotbugs-maven-plugin        | LGPL-2.1; plugin Apache-2.0      | Chỉ khi build, phân tích tĩnh mã Java  |
+| SpotBugs (spotbugs-maven-plugin        | LGPL-2.1-only; plugin Apache-2.0 | Chỉ khi build, phân tích tĩnh mã Java  |
 | 4.10.5.0)                              |                                  |                                        |
 +----------------------------------------+----------------------------------+----------------------------------------+
-| find-sec-bugs 1.14.0                   | LGPL-3.0                         | Chỉ khi build, luật bảo mật của        |
+| find-sec-bugs 1.14.0                   | LGPL-3.0-or-later                | Chỉ khi build, luật bảo mật của        |
 |                                        |                                  | SpotBugs                               |
 +----------------------------------------+----------------------------------+----------------------------------------+
 | google-java-format                     | Apache-2.0                       | Chỉ khi build, bộ định dạng mã Java    |
@@ -145,7 +155,7 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/licenses/dependency-excepti
 | dompurify (qua monaco-editor)                                | MPL-2.0 OR   | Làm sạch nội dung hiển thị           |
 |                                                              | Apache-2.0   | [3]                                  |
 +--------------------------------------------------------------+--------------+--------------------------------------+
-| TypeScript                                                   | Apache-2.0   | Chỉ khi build web và trợ lý           |
+| TypeScript                                                   | Apache-2.0   | Chỉ khi build web và trợ lý          |
 +--------------------------------------------------------------+--------------+--------------------------------------+
 | css-mediaquery (qua react-admin)                             | BSD-3-Clause | Truy vấn media của MUI               |
 +--------------------------------------------------------------+--------------+--------------------------------------+
@@ -194,30 +204,29 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/licenses/dependency-excepti
 | SeaweedFS (image                     | Apache-2.0                           | Lưu tệp đính kèm; chạy nguyên bản,   |
 | chrislusf/seaweedfs:4.51)            |                                      | không sửa mã                         |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| ClamAV 1.5.4 (image clamav của dự án,| GPL-2.0                              | Quét mã độc tệp tải lên; dịch vụ     |
-| dựng trên clamav/clamav) [1]         |                                      | riêng ở profile av, bật mặc định     |
+| ClamAV 1.5.4 (image clamav của dự án,| GPL-2.0                              | Quét mã độc tệp tải lên (profile av, |
+| dựng trên clamav/clamav) [1]         |                                      | bật mặc định)                        |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | Alpine Linux 3.24 (alpine:3.24)      | MIT, GPL-2.0 (nhiều gói)             | Image phụ trợ chạy script khi dựng   |
 |                                      |                                      | stack                                |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| Eclipse Mosquitto 2.0.23 (image      | EPL-2.0 hoặc EDL-1.0; dùng EPL-2.0   | Broker MQTT của cầu nối MQTT tùy     |
-| eclipse-mosquitto) [12]              |                                      | chọn, dịch vụ riêng, không sửa mã    |
+| Eclipse Mosquitto 2.0.23 (image      | EPL-2.0 hoặc EDL-1.0; dùng EPL-2.0   | Broker MQTT của cầu nối tùy chọn,    |
+| eclipse-mosquitto) [10]              |                                      | không sửa mã                         |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | Python 3.13.18 (image python:        | Python-2.0, giấy phép của các gói    | Chạy cầu nối MQTT tùy chọn, chỉ dùng |
-| 3.13.18-alpine3.24) [12]             | Alpine của image                     | thư viện chuẩn                       |
+| 3.13.18-alpine3.24) [10]             | Alpine của image                     | thư viện chuẩn                       |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| Prometheus 3.13.5 (image             | Apache-2.0                           | Đọc số đo dxos_* của lõi, dịch vụ    |
-| prom/prometheus) [13]                |                                      | riêng tùy chọn, không sửa mã         |
+| Prometheus 3.13.5 (image             | Apache-2.0                           | Đọc số đo dxos_* của lõi; tùy chọn,  |
+| prom/prometheus) [11]                |                                      | không sửa mã                         |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| Grafana 12.4.15 (image               | AGPL-3.0-only (một số gói Apache-2.0)| Vẽ dashboard số đo của lõi, dịch vụ  |
-| grafana/grafana, bản OSS) [13]       |                                      | riêng tùy chọn, không sửa mã         |
+| Grafana 12.4.15 (image               | AGPL-3.0-only (một số gói Apache-2.0)| Vẽ dashboard số đo của lõi; tùy      |
+| grafana/grafana, bản OSS) [11]       |                                      | chọn, không sửa mã                   |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | Maven Wrapper 3.3.4 [7] (mvnw,       | Apache-2.0                           | Chạy Maven ở phiên bản đã ghim;      |
 | mvnw.cmd, maven-wrapper.properties)  |                                      | chép nguyên từ Apache Maven          |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| Debian, Ubuntu (image nền)           | Giấy phép tự do của từng gói         | Nền của image APISIX (Debian), trợ   |
-|                                      |                                      | lý (node:24-bookworm-slim, không có  |
-|                                      |                                      | npm, corepack, yarn) và sso (Ubuntu) |
+| Debian, Ubuntu (image nền)           | Giấy phép tự do của từng gói         | Nền của image APISIX và PostgreSQL   |
+|                                      |                                      | (Debian) và image sso (Ubuntu)       |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | gitleaks v8.30.1                     | MIT                                  | Quét secret trong CI, chạy trong     |
 |                                      |                                      | container                            |
@@ -225,43 +234,50 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/licenses/dependency-excepti
 | actionlint 1.7.12                    | MIT                                  | Kiểm cú pháp workflow trong CI, chạy |
 |                                      |                                      | trong container                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| Playwright (@playwright/test) 1.65   | Apache-2.0                           | Kiểm giao diện web trên trình duyệt  |
-|                                      |                                      | trong CI, chỉ là công cụ dev;        |
-|                                      |                                      | tải Chromium lúc chạy                |
+| Playwright (@playwright/test) 1.65   | Apache-2.0                           | Kiểm giao diện web trong CI; tải     |
+|                                      |                                      | Chromium lúc chạy                    |
+|                                      |                                      |                                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | Trivy 0.58.1                         | Apache-2.0                           | Quét lỗ hổng phụ thuộc trong CI,     |
 |                                      |                                      | chạy trong container                 |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| restic 0.17.3                        | BSD-2-Clause                         | Sao lưu mã hóa của deploy/backup.sh, |
-|                                      |                                      | chạy trong container, không đóng gói |
-|                                      |                                      | trong runtime                        |
+| restic 0.17.3                        | BSD-2-Clause                         | Sao lưu mã hóa (deploy/backup.sh),   |
+|                                      |                                      | chạy trong container                 |
+|                                      |                                      |                                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| DuckDB 1.4.1 (duckdb/duckdb)         | MIT                                  | dxos archive: xuất và truy vấn       |
-|                                      |                                      | Parquet trong container; tải         |
-|                                      |                                      | postgres và httpfs từ mạng lần đầu   |
+| DuckDB 1.4.1 (duckdb/duckdb)         | MIT                                  | dxos archive: xuất, truy vấn Parquet,|
+|                                      |                                      | chạy trong container                 |
+|                                      |                                      |                                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| DuckDB httpfs (duckdb/duckdb-httpfs) | MIT                                  | Extension của DuckDB đọc kho đối     |
-|                                      |                                      | tượng S3; tải từ mạng lần đầu, không |
-|                                      |                                      | đóng gói trong repository            |
+| DuckDB httpfs (duckdb/duckdb-httpfs) | MIT                                  | Extension DuckDB đọc kho S3; tải lúc |
+|                                      |                                      | chạy lần đầu                         |
+|                                      |                                      |                                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| DuckDB postgres (duckdb/duckdb-      | MIT                                  | Extension của DuckDB đọc PostgreSQL  |
-| postgres)                            |                                      | để xuất bảng ra Parquet; tải từ mạng |
-|                                      |                                      | lần đầu, không đóng gói trong        |
-|                                      |                                      | repository                           |
+| DuckDB postgres (duckdb/duckdb-      | MIT                                  | Extension DuckDB đọc PostgreSQL; tải |
+| postgres)                            |                                      | lúc chạy lần đầu                     |
+|                                      |                                      |                                      |
+|                                      |                                      |                                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | CycloneDX (@cyclonedx/cyclonedx-npm, | Apache-2.0                           | Sinh SBOM                            |
 | cyclonedx-maven-plugin)              |                                      |                                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | Biome (@biomejs/biome)               | MIT OR Apache-2.0                    | Phân tích tĩnh mã web (npm run lint) |
-|                                      |                                      | trong CI; devDependency, không đóng  |
-|                                      |                                      | gói vào sản phẩm                     |
+|                                      |                                      | trong CI                             |
+|                                      |                                      |                                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | Vitest (vitest)                      | MIT                                  | Test đơn vị mã web (npm test) trong  |
-|                                      |                                      | CI; devDependency, không đóng gói    |
-|                                      |                                      | vào sản phẩm                         |
+|                                      |                                      | CI                                   |
+|                                      |                                      |                                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | reuse 6.3.0 (pipx run)               | Apache-2.0, GPL-3.0-or-later (mã);   | Kiểm chuẩn REUSE (reuse lint) trong  |
-|                                      | CC0-1.0, CC-BY-SA-4.0 (tài liệu)     | CI; không đóng gói vào sản phẩm      |
+|                                      | CC0-1.0, CC-BY-SA-4.0 (tài liệu)     | CI                                   |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| Marp CLI                             | MIT                                  | Xuất slide docs/TRINH_BAY.md trên    |
+|                                      |                                      | máy của người phát triển             |
++--------------------------------------+--------------------------------------+--------------------------------------+
+| FFmpeg                               | GPL-2.0-or-later (bản có libx264)    | Mã hóa video của trang docs, chỉ     |
+|                                      |                                      | trên máy người phát triển            |
+|                                      |                                      |                                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | Docker Engine, Docker Compose v2 [8] | Apache-2.0                           | Chạy stack; cần trên máy chạy        |
 +--------------------------------------+--------------------------------------+--------------------------------------+
@@ -280,13 +296,7 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/licenses/dependency-excepti
 | GitHub Actions (actions/*, docker/*, | MIT, Apache-2.0, ISC, 0BSD,          | Chỉ trong CI, ghim theo SHA          |
 | github/*, ossf/*)                    | BlueOak-1.0.0                        |                                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| Model suy luận [9]                   | Do người vận hành chọn               | Không đóng gói, không chọn model;    |
-|                                      |                                      | người vận hành tự cấp                |
-+--------------------------------------+--------------------------------------+--------------------------------------+
-| llama.cpp b12387 [10]                | MIT                                  | Runtime inference self-host do       |
-|                                      |                                      | người vận hành cấp riêng             |
-+--------------------------------------+--------------------------------------+--------------------------------------+
-| OpenAPI Generator 7.27.0 [11]        | Apache-2.0                           | Sinh client từ OpenAPI của mô hình;  |
+| OpenAPI Generator 7.27.0 [9]         | Apache-2.0                           | Sinh client từ OpenAPI của mô hình;  |
 |                                      |                                      | người vận hành tự cấp                |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 
@@ -299,14 +309,12 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/licenses/dependency-excepti
     Thiếu thư viện đó thì ClamAV không mở được tệp RAR, nên backend từ chối tệp có chữ ký RAR dù tên tệp đổi đuôi.
     Image phát hành kèm GPL-2.0 của ClamAV và giấy phép của các phần bên thứ ba dựng sẵn trong nó ở /licenses/THIRD-PARTY-LICENSES-clamav.txt; nguồn ở github.com/Cisco-Talos/clamav tag clamav-1.5.4.
     Bộ chữ ký virus trong image mang văn bản GPL-2.0 ở tệp COPYING trong mỗi tệp .cvd, và được giữ nguyên.
-    Chữ ký virus do image tự tải về từ mạng phân phối chính thức của ClamAV, qua freshclam trong container, và nằm trong volume `clamav_data` của từng bản cài.
-    Dự án không mirror, không cache chung và không đóng gói chữ ký.
+    Chữ ký virus do freshclam trong container tải từ mạng phân phối chính thức của ClamAV vào volume `clamav_data` của từng bản cài; dự án không mirror, không cache chung và không đóng gói chữ ký.
     Tài liệu chính thức không có văn bản điều khoản riêng cho kho chữ ký; điều kiện sử dụng nằm ở các trang sau (đọc ngày 2026-11-11):
-    - Chỉ freshclam và cvdupdate là hai cách tải được hỗ trợ, tải bằng wget, curl hay script khác có thể bị giới hạn hoặc chặn (https://docs.clamav.net/faq/faq-freshclam.html).
-    - Mã 429 là bị giới hạn tốc độ, thường gặp ở IP dùng chung như máy chủ đám mây; mã 403, 503 và 1020 là bị chặn hoặc dùng bản đã hết hỗ trợ (cùng trang).
-    - Image chính thức chạy freshclam mặc định một lần mỗi ngày (`FRESHCLAM_CHECKS`) (https://docs.clamav.net/manual/Installing/Docker.html).
+    - Chỉ freshclam và cvdupdate là cách tải được hỗ trợ; mã 429 là bị giới hạn tốc độ, mã 403, 503 và 1020 là bị chặn hoặc dùng bản đã hết hỗ trợ (https://docs.clamav.net/faq/faq-freshclam.html).
+    - Image chính thức chạy freshclam mặc định một lần mỗi ngày (https://docs.clamav.net/manual/Installing/Docker.html).
     - Mirror riêng chỉ nên dựng khi cần, và phải dùng freshclam hoặc cvdupdate (https://docs.clamav.net/appendix/CvdPrivateMirror.html).
-    - Bản hết hỗ trợ có thể bị chặn tải chữ ký: bản không phải LTS còn được tải thêm ít nhất bốn tháng sau khi bản "next-next" ra mắt (https://docs.clamav.net/faq/faq-eol.html).
+    - Bản không phải LTS còn được tải chữ ký thêm ít nhất bốn tháng sau khi bản "next-next" ra mắt (https://docs.clamav.net/faq/faq-eol.html).
     Image đang ghim 1.5.4 nên phải nâng khi bản của nó hết thời hạn tải chữ ký.
     Đây là đọc tài liệu của dự án, không phải tư vấn pháp lý.
 
@@ -323,12 +331,14 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/licenses/dependency-excepti
 [5] Spotless chạy google-java-format; cả hai chỉ dùng lúc dựng và không nằm trong image chạy.
     Thư viện kèm theo: JGit (BSD-3-Clause), Eclipse OSGi và Solstice (EPL-2.0), concurrent-trees, durian, plexus (Apache-2.0).
 
-[6] Noto Sans 2.015, bản TTF đã hint, lấy nguyên và không sửa từ github.com/notofonts/notofonts.github.io, commit 28b15b4b43b7bed62b5cf6e6b0b5ff5846270535 (2024-11-21), thư mục fonts/NotoSans/hinted/ttf; nguồn của phông ở github.com/notofonts/latin-greek-cyrillic.
+[6] Noto Sans 2.015, bản TTF đã hint, lấy nguyên từ github.com/notofonts/notofonts.github.io, commit 28b15b4b43b7bed62b5cf6e6b0b5ff5846270535, thư mục fonts/NotoSans/hinted/ttf.
+    Nguồn của phông ở github.com/notofonts/latin-greek-cyrillic.
     SHA-256 của backend/dx-engine/src/main/resources/fonts/NotoSans-Regular.ttf: 478c558ea716033cd60c03438f628dfa75694dcf6b5f6d505a2f05fd2b4f3823
     SHA-256 của backend/dx-engine/src/main/resources/fonts/NotoSans-Bold.ttf: 1df075a380fc7cb898acf64c1f7b3b4dd780de3caa860178bf929de35817a913
     Hai mã này trùng với mã của tệp cùng tên ở commit trên.
-    OFL-1.1 là giấy phép được OSI công nhận; phông không khai tên bảo lưu, nên nhúng và phân phối cùng phần mềm được khi kèm thông báo bản quyền và giấy phép (có trong tệp phông, LICENSES/OFL-1.1.txt và NOTICE).
-    Phông không được bán riêng, và bản sửa đổi phải giữ OFL; PDF chỉ nhúng một phần chữ của phông nên không chịu giấy phép này.
+    OFL-1.1 được OSI công nhận; phông không khai tên bảo lưu, nên nhúng và phân phối cùng phần mềm được khi kèm thông báo bản quyền và giấy phép (trong tệp phông, LICENSES/OFL-1.1.txt và NOTICE).
+    Phông không được bán riêng và bản sửa đổi phải giữ OFL.
+    PDF chỉ nhúng một phần chữ của phông nên không chịu giấy phép này.
 
 [7] Maven Wrapper 3.3.4: backend/mvnw, backend/mvnw.cmd và backend/.mvn/wrapper/maven-wrapper.properties lấy nguyên từ Apache Maven và không sửa.
     Bản quyền thuộc The Apache Software Foundation, khai ở REUSE.toml; giấy phép là Apache-2.0, giống giấy phép của dự án.
@@ -338,43 +348,44 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/licenses/dependency-excepti
     Docker Desktop là sản phẩm riêng theo điều khoản thương mại của Docker, không thuộc OSI; DX-OS không cần nó, và trên Linux dùng Docker Engine.
     Các công cụ ở dòng này là phần mềm cài sẵn trên máy chạy, DX-OS không đóng gói hay phân phối lại chúng.
 
-[9] Model suy luận: repository không đóng gói trọng số và không chọn model nào.
-    Model có điều khoản sử dụng riêng của bên phát hành, nên người vận hành tự chọn, tự tải và tự chịu trách nhiệm với các điều khoản đó.
+[9] OpenAPI Generator 7.27.0: Apache-2.0.
+    Giấy phép đúng tag: https://github.com/OpenAPITools/openapi-generator/blob/v7.27.0/LICENSE.
+    Công cụ dòng lệnh do người vận hành hoặc nhà phát triển ứng dụng ngoài chạy, không nằm trong image hay SBOM của DX-OS.
+    Các thư viện nhúng trong JAR của nó theo Apache-2.0, MIT, BSD, EDL-1.0 (văn bản của BSD-3-Clause), EPL-2.0 hoặc LGPL; mã client sinh ra thuộc người dùng.
 
-[10] llama.cpp b12387: MIT, Copyright (c) 2023-2026 The ggml authors.
-     Giấy phép đúng tag: https://github.com/ggml-org/llama.cpp/blob/b12387/LICENSE.
-     Runtime local được người vận hành cấp, không nằm trong image trợ lý hoặc SBOM npm.
-     Thư viện hệ thống và mã vendor của runtime giữ giấy phép riêng; người vận hành giữ thông báo đi kèm bản runtime mình dùng.
-
-[11] OpenAPI Generator 7.27.0: Apache-2.0.
-     Giấy phép đúng tag: https://github.com/OpenAPITools/openapi-generator/blob/v7.27.0/LICENSE.
-     Công cụ dòng lệnh do người vận hành hoặc nhà phát triển ứng dụng ngoài chạy, không nằm trong image hay SBOM của DX-OS.
-     Các thư viện nhúng trong JAR của nó theo Apache-2.0, MIT, BSD, EDL-1.0 (văn bản của BSD-3-Clause), EPL-2.0 hoặc LGPL; mã client sinh ra thuộc người dùng.
-
-[12] Cầu nối MQTT tùy chọn chạy hai image nguyên bản, không sửa và không phân phối lại; chúng chỉ được kéo khi bật deploy/docker-compose.mqtt.yml.
+[10] Cầu nối MQTT tùy chọn chạy hai image nguyên bản, không sửa và không phân phối lại; chúng chỉ được kéo khi bật deploy/docker-compose.mqtt.yml.
     Giấy phép của dự án nguồn được kiểm ở đúng phiên bản bằng .github/scripts/check_upstream_licenses.py: Mosquitto 2.0.23 (EPL-2.0 hoặc EDL-1.0, LICENSE.txt) và CPython 3.13.18 (Python-2.0, PSF License Version 2).
-    Thành phần của image eclipse-mosquitto (Alpine 3.24.4), đọc ngày 2026-11-24 từ metadata apk và từ tệp giấy phép của dự án gốc ở đúng phiên bản:
-    - Mosquitto liên kết với OpenSSL 3.5.9 (Apache-2.0), libwebsockets 4.3.5 (MIT, vài tệp BSD-3-Clause, ZLIB hoặc CC0) và musl 1.2.6 (MIT); cJSON 1.7.19 (MIT) và zlib 1.3.2 (Zlib) đi kèm.
-    - Gói nền Alpine: BusyBox 1.37.0, apk-tools 3.0.9, alpine-baselayout, scanelf, ssl_client (GPL-2.0-only), musl-utils (MIT, BSD-2-Clause, GPL-2.0-or-later), ca-certificates (MPL-2.0, MIT), alpine-keys (MIT), tzdata 2026f (phạm vi công cộng).
-    Thành phần của image python (Alpine 3.24.4):
-    - CPython 3.13.18 (Python-2.0) kèm pip 26.2.2 (MIT, không dùng), OpenSSL 3.5.9 (Apache-2.0), libffi 3.5.2 (MIT), gdbm 1.26 và readline 8.3.3 (GPL-3.0-or-later), ncurses 6.6 (X11), libuuid 2.42.3 (BSD-3-Clause), xz-libs 5.8.4 (liblzma theo 0BSD), zlib 1.3.2 (Zlib), cùng các gói nền Alpine như trên.
+    Thành phần của hai image (Alpine 3.24.4), đọc ngày 2026-11-24 từ metadata apk và từ tệp giấy phép của dự án gốc ở đúng phiên bản; đầy đủ từng gói ở docs/IMAGE_PACKAGES.md:
+    - eclipse-mosquitto: Mosquitto liên kết với OpenSSL 3.5.9 (Apache-2.0), libwebsockets 4.3.5 (MIT) và musl 1.2.6 (MIT); cJSON 1.7.19 (MIT) và zlib 1.3.2 (Zlib) đi kèm.
+    - python: CPython 3.13.18 (Python-2.0) cùng OpenSSL 3.5.9, libffi 3.5.2 (MIT), gdbm 1.26 và readline 8.3.3 (GPL-3.0-or-later), ncurses 6.6 (X11), libuuid, xz-libs (0BSD) và zlib.
+    - Cả hai có gói nền Alpine: BusyBox, apk-tools, ssl_client (GPL-2.0-only), musl-utils, ca-certificates (MPL-2.0, MIT), alpine-keys (MIT) và tzdata (phạm vi công cộng).
     Ba thành phần có giấy phép mà OSI không liệt kê: libbz2 1.0.8 theo giấy phép bzip2 (kiểu BSD), sqlite-libs 3.53.4 ở phạm vi công cộng (lời chúc "blessing" của SQLite), và tzdata ở phạm vi công cộng (cùng phần phạm vi công cộng của xz-libs).
     Cầu nối chỉ dùng thư viện chuẩn của Python và không gọi các thư viện này; chúng có mặt vì image Python chính thức dựng CPython cùng chúng.
     Các thành phần GPL của hai image chạy như tiến trình riêng, không sửa và không liên kết với mã của dự án.
     Mã của dự án ở deploy/mqtt/ và examples/itot-simulator theo Apache-2.0 và chỉ dùng thư viện chuẩn của Python.
     Đây là đọc metadata và tài liệu của các dự án, không phải tư vấn pháp lý.
 
-[13] Prometheus và Grafana tùy chọn chạy hai image nguyên bản, không sửa và không phân phối lại; chúng chỉ được kéo khi bật deploy/docker-compose.grafana.yml.
+[11] Prometheus và Grafana tùy chọn chạy hai image nguyên bản, không sửa và không phân phối lại; chúng chỉ được kéo khi bật deploy/docker-compose.grafana.yml.
     Giấy phép của dự án nguồn được kiểm ở đúng phiên bản bằng .github/scripts/check_upstream_licenses.py: Prometheus v3.13.5 (Apache-2.0) và Grafana v12.4.15 (AGPL-3.0-only).
     Grafana theo AGPL-3.0-only, đúng như dự án khai ở LICENSING.md; AGPL là giấy phép OSI công nhận và chỉ buộc mở mã nguồn khi sửa chương trình rồi cho người khác dùng qua mạng.
     Dự án chạy Grafana nguyên bản ở dịch vụ riêng, và chỉ thêm tệp cấu hình, nguồn dữ liệu và dashboard của chính mình (Apache-2.0).
     Image grafana/grafana là bản OSS; deploy/docker-compose.grafana.yml đặt GF_PLUGINS_PREINSTALL_DISABLED nên Grafana không tải thêm plugin nào lúc chạy, và dự án không dùng bản Enterprise.
-    Thành phần của image prometheus, đọc ngày 2026-11-24: Prometheus 3.13.5 cùng 234 mô-đun Go biên dịch vào tệp chạy (tra giấy phép của từng mô-đun ở đúng phiên bản bằng deps.dev: Apache-2.0, MIT, BSD-2-Clause, BSD-3-Clause, ISC và MPL-2.0; github.com/opencontainers/go-digest v1.0.0 khai Apache-2.0 cho mã và CC-BY-SA-4.0 cho tài liệu), BusyBox 1.38.0 (GPL-2.0-only) và bộ chứng chỉ CA (dữ liệu của Mozilla, MPL-2.0).
-    Thành phần của image grafana (Alpine 3.24.3): Grafana 12.4.15 cùng 510 mô-đun Go biên dịch vào tệp chạy (cùng cách tra: Apache-2.0, MIT, BSD, ISC, MPL-2.0, MIT-0 và AGPL-3.0 cho github.com/grafana/alerting, loki và tempo là mã của chính Grafana Labs; github.com/apparentlymart/go-textseg v15.0.0 khai MIT, Apache-2.0 và Unicode-DFS-2016), các gói nền Alpine (BusyBox, apk-tools, bash, readline, bubblewrap, curl, libidn2, libunistring, zstd và các gói tương tự theo GPL, LGPL, MIT, BSD-3-Clause, X11, Zlib hoặc Apache-2.0 như OpenSSL 3.5.9; curl theo giấy phép curl; tzdata ở phạm vi công cộng).
+    Thành phần của image prometheus, đọc ngày 2026-11-24: Prometheus 3.13.5 cùng 234 mô-đun Go biên dịch vào tệp chạy, BusyBox 1.38.0 (GPL-2.0-only) và bộ chứng chỉ CA (MPL-2.0).
+    Giấy phép của từng mô-đun Go tra ở đúng phiên bản bằng deps.dev: Apache-2.0, MIT, BSD-2-Clause, BSD-3-Clause, ISC và MPL-2.0; github.com/opencontainers/go-digest v1.0.0 khai Apache-2.0 cho mã và CC-BY-SA-4.0 cho tài liệu.
+    Thành phần của image grafana (Alpine 3.24.3): Grafana 12.4.15 cùng 510 mô-đun Go biên dịch vào tệp chạy, và các gói nền Alpine theo GPL, LGPL, MIT, BSD-3-Clause, X11, Zlib hoặc Apache-2.0 (như OpenSSL 3.5.9); curl theo giấy phép curl.
+    Mô-đun Go của Grafana tra cùng cách: Apache-2.0, MIT, BSD, ISC, MPL-2.0, MIT-0; AGPL-3.0 cho github.com/grafana/alerting, loki và tempo là mã của chính Grafana Labs; github.com/apparentlymart/go-textseg v15.0.0 khai MIT, Apache-2.0 và Unicode-DFS-2016.
     Giấy phép OSI không liệt kê trong hai image: tzdata ở phạm vi công cộng và tài liệu CC-BY-SA-4.0 của go-digest; giấy phép curl của curl 8.23.0 do OSI công nhận.
     Phần giao diện web của Grafana đóng gói sẵn các thư viện npm mà dự án nguồn không liệt kê theo phiên bản cho image; dự án chưa kiểm từng thư viện đó và dựa vào khai báo giấy phép của Grafana (AGPL-3.0-only, vài thư mục Apache-2.0).
     Các gói GPL của hai image chạy như tiến trình riêng, không sửa và không liên kết với mã của dự án.
     Đây là đọc metadata và tài liệu của các dự án, không phải tư vấn pháp lý.
+
+[12] Trọng số của bộ phân loại hồ sơ là tệp JSON do đội huấn luyện, theo Apache-2.0.
+    Image trợ lý chứa ba tệp mặc định; SHA-256 tính trên tệp JSON gốc trong repository:
+    - tools/classifier/model/onestop.json: 8817b7fc0a8f1a1a62ac2f4a5a3a2850f8cdc540a759d1e2e668accfe76b4272
+    - tools/classifier/model/support.json: f203d2444a47266a141578622a3aff5cd84f0d72f8aced76c9c0a96173dce771
+    - tools/classifier/model/clinic.json: 96a48d3ebb8e06d8ddf3afadedf9d4a154c7f0cc681936389984688d44bb51cc
+    .github/scripts/check_licenses.py kiểm mỗi tệp trọng số mà assistant/Dockerfile copy vào image có một dòng ở đây và mã băm khớp tệp thật; huấn luyện lại thì cập nhật dòng.
+    Dữ liệu huấn luyện theo CC-BY-4.0, nêu ở mục 7.
 
 6. TRANG CHỦ VÀ NGUỒN
 =====================
@@ -383,7 +394,6 @@ Trang chủ và mã nguồn của các thành phần không nằm trong SBOM (im
 Gói Maven và npm: trang chủ và mã nguồn của từng gói nằm trong sbom/*.cdx.json (mục externalReferences).
 
 Thành phần       Trang chủ | Mã nguồn
-llama.cpp        https://github.com/ggml-org/llama.cpp | https://github.com/ggml-org/llama.cpp/tree/b12387
 OpenAPI Generator https://openapi-generator.tech | https://github.com/OpenAPITools/openapi-generator/tree/v7.27.0
 PostgreSQL       https://www.postgresql.org/ | https://github.com/postgres/postgres
 Keycloak         https://www.keycloak.org | https://github.com/keycloak/keycloak
@@ -426,15 +436,30 @@ find-sec-bugs    https://find-sec-bugs.github.io/ | https://github.com/find-sec-
 ================================
 
 Mọi giấy phép của dự án và của thành phần dùng đều thuộc danh sách của OSI (https://opensource.org/licenses), trừ các trường hợp dưới đây.
-.github/scripts/check_licenses.py chỉ nhận một giấy phép ngoài danh sách khi gói được nêu tên kèm lý do ở .github/licenses/dependency-exceptions.json, và chặn mọi giấy phép ngoài danh sách trong REUSE.toml.
+.github/scripts/check_licenses.py chỉ nhận một gói ngoài danh sách khi gói được nêu tên kèm lý do ở .github/licenses/dependency-exceptions.json.
+Với REUSE.toml, script chặn mọi giấy phép ngoài danh sách, trừ CC-BY-4.0 ở đúng các đường dẫn dữ liệu của bộ phân loại.
 .github/scripts/check_license_inventory.py áp cùng luật cho mọi gói ở docs/DEPENDENCY_INVENTORY.md, kể cả gói dev, gói test và plugin build.
 
 Dữ liệu chỉ đọc lúc dựng trang tài liệu, không có trong trang đã dựng:
   - caniuse-lite: CC-BY-4.0.
   - mdn-data: CC0-1.0.
 
+Dữ liệu ngoài dùng lúc huấn luyện bộ phân loại tiếng Việt, lưu ở cache ngoài repo và không đóng gói:
+  - MASSIVE 1.0, tập train vi-VN (CC-BY-4.0), Amazon: https://github.com/alexa/massive.
+    MASSIVE chứa một phần dữ liệu SLURP (CC-BY-4.0), Bastianelli, Vanzo, Swietojanski và Rieser: https://github.com/pswietojanski/slurp.
+    Phần âm thanh của SLURP (CC-BY-NC-4.0) không nằm trong MASSIVE, không được tải hay dùng.
+
+Dữ liệu của bộ phân loại, kể cả định nghĩa nhãn, tập chỉnh và bộ nghiệm thu ở tools/classifier/eval, được phát hành theo CC-BY-4.0 trong phạm vi HaUI-ImplSolution có quyền, theo phạm vi khai trong REUSE.toml.
+Bộ nghiệm thu và định nghĩa nhãn do thành viên đội viết; câu huấn luyện và tập chỉnh do Claude soạn, nên đội không khẳng định bản quyền đối với từng câu đó.
+Tệp kiểm đối chiếu Python–Node trích từ dữ liệu này và dùng cùng giấy phép CC-BY-4.0.
+
 Phông biểu tượng nằm trong gói thư viện, phát hành cùng bản build web:
   - Codicons (codicon.ttf trong monaco-editor 0.57.0): CC-BY-4.0, phông của Microsoft; ghi công và liên kết giấy phép ở third-party-licenses.txt của bản build web và ở /licenses của image frontend.
+
+Dữ liệu đóng trong thư viện Apache PDFBox 3.0.8 (Apache-2.0), nằm trong jar của image backend; thư viện được dùng nguyên bản, và văn bản giấy phép kèm ghi công ở /licenses/THIRD-PARTY-LICENSES-backend.txt của image:
+  - Số đo của 14 phông chuẩn PDF (tệp AFM): điều khoản riêng của Adobe (SPDX APAFML), cho dùng, sao chép và phân phối không thu phí khi giữ thông báo.
+  - Hình ký hiệu lấy từ Font Awesome: CC-BY-4.0.
+  - Hồ sơ màu CMYK (ICC): CC0-1.0.
 
 Công cụ dựng backend (plugin Maven), không có trong image hay jar của sản phẩm:
   - org.jdom:jdom2 2.0.6.1: giấy phép JDOM, văn bản của Apache-1.1 bỏ điều khoản ghi nhận, kiểu BSD; do SpotBugs dùng.
@@ -450,7 +475,16 @@ Công cụ không phân phối:
   - reuse (pipx run, chỉ trong CI): mã theo Apache-2.0 và GPL-3.0-or-later; tài liệu của công cụ theo CC0-1.0 và CC-BY-SA-4.0, không dùng và không phân phối.
   - Docker Desktop: sản phẩm riêng, không thuộc OSI, DX-OS không cần (xem [8]).
 
-Gói hệ điều hành và gói ngôn ngữ nằm sẵn trong image bên thứ ba mà dự án kéo nguyên bản, không đóng gói, không sửa và không phân phối lại; giấy phép ngoài OSI của chúng hiện ở cột Ngoài OSI của docs/IMAGE_PACKAGES.md, và các ví dụ nổi bật ở các ghi chú về ClamAV, cầu nối MQTT, Prometheus và Grafana:
+Lớp nền của image dự án phát hành lên GHCR được phân phối lại cùng image:
+  - backend, monitor: eclipse-temurin:21-jre-alpine, không sửa.
+  - sso: eclipse-temurin:21-jre-jammy (Ubuntu), không sửa.
+  - frontend, portal: nginx:1.30-alpine-slim, không sửa.
+  - assistant: node:24.16.0-alpine, đã xóa npm, corepack và yarn.
+  - clamav: clamav/clamav:1.5.4, đã xóa libclamunrar.
+Gói ngoài OSI trong các lớp đó hiện ở cột Ngoài OSI của docs/IMAGE_PACKAGES.md; nơi lấy nguồn của gói hệ điều hành và thành phần GPL ở /licenses/SOURCES.txt của từng image.
+
+Gói hệ điều hành và gói ngôn ngữ trong image bên thứ ba (kéo nguyên bản hoặc làm lớp nền ở trên) giữ giấy phép của nhà phân phối.
+Giấy phép ngoài OSI của chúng ở cột Ngoài OSI của docs/IMAGE_PACKAGES.md; ví dụ nổi bật:
   - libbz2 1.0.8 (giấy phép bzip2, kiểu BSD), sqlite-libs 3.53.4 (phạm vi công cộng) và ncurses 6.6 (giấy phép X11): image python của cầu nối MQTT.
   - tzdata (phạm vi công cộng): các image eclipse-mosquitto, python và grafana.
   - Tài liệu của go-digest (CC-BY-SA-4.0), mô-đun Go biên dịch vào image prometheus; mã của nó theo Apache-2.0.

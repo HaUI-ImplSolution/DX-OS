@@ -40,15 +40,13 @@ if command -v flock >/dev/null 2>&1 && ! flock -w 300 9; then
   exit 1
 fi
 
-# In core mode the web app, the portal and the monitor are not part of the stack, so they are neither pulled nor checked.
+# In core mode the web app, the portal, the monitor and the assistant are not part of the stack, so they are neither pulled nor checked.
 if [[ "$(grep -E '^DXOS_MODE=' .env | tail -n1 | cut -d= -f2-)" == core ]]; then
   SERVICES=(backend keycloak)
 else
-  SERVICES=(backend monitor frontend portal keycloak)
+  SERVICES=(backend monitor frontend portal assistant-control keycloak)
 fi
-# The optional assistant is part of the project only when COMPOSE_FILE names its file.
 PROJECT_SERVICES="$(docker compose config --services)"
-if grep -qx assistant-control <<<"$PROJECT_SERVICES"; then SERVICES+=(assistant-control); fi
 BEHIND_GATEWAY=("${SERVICES[@]}")
 # The virus scan is pulled with the others when it is part of the project (the av profile).
 PULLED=("${SERVICES[@]}")
@@ -63,11 +61,25 @@ docker compose run --rm --no-deps apisix-config --check
 
 echo "==> Pulling images"
 for service in "${PULLED[@]}"; do
-  docker compose pull "$service"
+  if [[ "$service" == assistant-control ]]; then
+    docker compose pull "$service" || echo "WARNING: the assistant image was not pulled; the platform is updated without it." >&2
+  else
+    docker compose pull "$service"
+  fi
 done
 
+# The assistant is started after the platform, so a failure of the assistant never holds the update.
 echo "==> Recreating the services whose image changed"
-docker compose up -d --no-build
+PLATFORM=()
+ASSISTANT=()
+while read -r service; do
+  if [[ "$service" == assistant-* ]]; then ASSISTANT+=("$service"); else PLATFORM+=("$service"); fi
+done < <(docker compose config --services)
+docker compose up -d --no-build "${PLATFORM[@]}"
+if ((${#ASSISTANT[@]} > 0)); then
+  docker compose up -d --no-build "${ASSISTANT[@]}" \
+    || echo "WARNING: the assistant did not start; the platform is updated and running." >&2
+fi
 
 REPLACED=false
 for service in "${BEHIND_GATEWAY[@]}"; do

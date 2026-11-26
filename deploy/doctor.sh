@@ -138,9 +138,9 @@ else
   elif [[ "$mode" != core && "$mode" != full ]]; then
     fail "DXOS_MODE is '$mode' (it is core or full)"
   elif [[ "$mode" == full && "$profiles" != *,app,* ]]; then
-    fail "DXOS_MODE=full but COMPOSE_PROFILES has no app: the web app, the portal and the monitor would not start (dxos start --full sets both)"
+    fail "DXOS_MODE=full but COMPOSE_PROFILES has no app: the web app, the portal, the monitor and the assistant would not start (dxos start --full sets both)"
   elif [[ "$mode" == core && "$profiles" == *,app,* ]]; then
-    fail "DXOS_MODE=core but COMPOSE_PROFILES has app: the web app, the portal and the monitor would start (dxos start --core sets both)"
+    fail "DXOS_MODE=core but COMPOSE_PROFILES has app: the web app, the portal, the monitor and the assistant would start (dxos start --core sets both)"
   else
     ok "mode $mode"
   fi

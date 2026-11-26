@@ -175,7 +175,7 @@ Từng bước ở mục 8 của `docs/DEMO.md`.
 
 ## 14. Chưa có, và nói thẳng
 
-- AI là trợ lý tùy chọn đề xuất giá trị một trường, người dùng xác nhận trước khi lưu; không có hỏi đáp trên tri thức nội bộ.
+- AI là trợ lý, dùng bộ phân loại hồ sơ đội tự huấn luyện để đề xuất giá trị một trường; người dùng xác nhận trước khi lưu; không có hỏi đáp trên tri thức nội bộ.
 - Một bản cài là Compose một máy; chưa chạy nhiều bản sao của lõi.
 - Chưa có chữ ký số, đa thuê giữa các tổ chức, tìm kiếm toàn văn.
 - Chưa nói chuyện với khách hàng thật.
@@ -187,7 +187,7 @@ Danh sách đầy đủ ở `docs/dynamic-core/BACKLOG.md`.
 ## 15. Định hướng
 
 - Thêm họ quy trình và lĩnh vực chạy bằng tham số, giữ lõi không biết lĩnh vực nào.
-- Mở rộng phần AI khi có mô hình đạt định nghĩa Open Source AI của OSI.
+- Bật bộ phân loại tự huấn luyện cho thêm nghiệp vụ khi đạt điều kiện nghiệm thu.
 - Thử với đơn vị thật để kiểm các giả thuyết về nhu cầu.
 
 **Đổi nghiệp vụ là đổi tệp, không đổi mã.**

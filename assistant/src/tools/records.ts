@@ -13,8 +13,7 @@ export type Entity = { name: string; label: string; canRead: boolean; canWrite?:
     effects?: Record<string, Effect[]> } };
 export type Model = { name: string; modelVersion?: number; held: boolean; entities: Entity[] };
 type RecordData = Record<string, unknown> & { version: number; status: string };
-export type AiTask = { label: string; inputFields: string[]; outputField: string; instruction: string;
-  sources: string[]; maxLength: number };
+export type AiTask = { label: string; inputFields: string[]; outputField: string; classifier: string };
 
 export class Records {
   constructor(private readonly core: CoreClient, private readonly store: Store) {}
@@ -31,8 +30,8 @@ export class Records {
     return entity;
   }
 
-  async record(owner: Owner, target: Target) {
-    const entity = await this.entity(owner, target);
+  async record(owner: Owner, target: Target, metadata?: Entity) {
+    const entity = metadata ?? await this.entity(owner, target);
     const record = await this.core.read<RecordData>(owner, targetPath(target));
     return { target, entity, record, retrievedAt: new Date().toISOString() };
   }

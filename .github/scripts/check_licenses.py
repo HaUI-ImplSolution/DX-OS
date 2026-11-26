@@ -18,11 +18,15 @@
    and every tracked weight, archive or document file is declared
    in .github/licenses/component-catalog.json with an allowed license, and DEPENDENCIES.txt names each entry.
 5. Every license that REUSE.toml gives to a file of the repository, and every text in LICENSES/, is an allowed one
-   (or OFL-1.1, the license of the Noto Sans files), so no file of the project is under a license outside the OSI list.
+   (or OFL-1.1 for Noto Sans or CC-BY-4.0 for the declared classifier data paths).
+6. Every weight file that assistant/Dockerfile copies into the image is listed in DEPENDENCIES.txt with the SHA-256
+   of the file, and each listed SHA-256 is the one of the file as it is in the repository.
 
 Several license entries on one package are alternatives, as in an SPDX OR expression.
 The exit status is 1 when anything fails.
 """
+import fnmatch
+import hashlib
 import json
 import re
 import subprocess
@@ -141,6 +145,15 @@ def check_headers() -> list[str]:
 
 # The licenses a file of the repository may carry: the allowed ones and the license of the Noto Sans files.
 OWN_LICENSES = ALLOWED | {"OFL-1.1"}
+# The classifier data files may also carry CC-BY-4.0.
+CLASSIFIER_DATA_PATHS = {
+    "tools/classifier/labels.json",
+    "tools/classifier/data/seeds/*.jsonl",
+    "tools/classifier/data/negatives.jsonl",
+    "tools/classifier/eval/tuning/*.csv",
+    "tools/classifier/eval/acceptance/*.csv",
+    "assistant/test/fixtures/classifier.json",
+}
 
 
 def check_own_licenses() -> list[str]:
@@ -148,10 +161,14 @@ def check_own_licenses() -> list[str]:
     annotations = tomllib.loads((ROOT / "REUSE.toml").read_text(encoding="utf-8")).get("annotations", [])
     for annotation in annotations:
         expression = annotation.get("SPDX-License-Identifier", "")
+        patterns = annotation.get("path", [])
+        paths = {patterns} if isinstance(patterns, str) else set(patterns)
+        if expression == "CC-BY-4.0" and paths and paths <= CLASSIFIER_DATA_PATHS:
+            continue
         if not expression_allowed(expression, OWN_LICENSES):
             problems.append(f"REUSE.toml: {annotation.get('path')} is under {expression}, which is not an allowed license")
     for text in sorted((ROOT / "LICENSES").glob("*.txt")):
-        if text.stem not in OWN_LICENSES:
+        if text.stem not in OWN_LICENSES | {"CC-BY-4.0"}:
             problems.append(f"LICENSES/{text.name}: {text.stem} is not an allowed license")
     return problems
 
@@ -285,13 +302,35 @@ def check_catalog() -> list[str]:
             problems.append(f"{rel}: download from {name} is not in component-catalog.json")
     declared = {entry["path"]: entry for entry in catalog.get("files", [])}
     for entry in declared.values():
-        if entry.get("license") not in ALLOWED or not entry.get("note"):
+        classifier_data = entry.get("license") == "CC-BY-4.0" and any(
+            fnmatch.fnmatch(entry["path"], pattern) for pattern in CLASSIFIER_DATA_PATHS)
+        if (entry.get("license") not in ALLOWED and not classifier_data) or not entry.get("note"):
             problems.append(f"component-catalog file {entry['path']}: license and note are required")
         if not (ROOT / entry["path"]).is_file():
             problems.append(f"component-catalog file {entry['path']} does not exist")
     for rel in tracked_files():
         if rel.rsplit(".", 1)[-1].lower() in ARTIFACT_EXTENSIONS and (ROOT / rel).is_file() and rel not in declared:
             problems.append(f"{rel}: weights, archives and documents must be declared in component-catalog.json")
+    return problems
+
+
+WEIGHT_PATH = re.compile(r"tools/classifier/model/[a-z0-9_]+\.json")
+LISTED_WEIGHT = re.compile(r"^\s*- (tools/classifier/model/[a-z0-9_]+\.json): ([0-9a-f]{64})\s*$", re.M)
+
+
+def check_weight_hashes() -> list[str]:
+    """DEPENDENCIES.txt gives the SHA-256 of each weight file of the assistant image, and it is the file's own."""
+    shipped = set(WEIGHT_PATH.findall((ROOT / "assistant/Dockerfile").read_text(encoding="utf-8")))
+    listed = dict(LISTED_WEIGHT.findall((ROOT / "DEPENDENCIES.txt").read_text(encoding="utf-8")))
+    problems = []
+    for rel in sorted(shipped - listed.keys()):
+        problems.append(f"DEPENDENCIES.txt does not list the SHA-256 of {rel}, which the assistant image holds")
+    for rel in sorted(listed.keys() - shipped):
+        problems.append(f"DEPENDENCIES.txt lists {rel}, which the assistant image does not hold")
+    for rel in sorted(shipped & listed.keys()):
+        actual = hashlib.sha256((ROOT / rel).read_bytes()).hexdigest()
+        if actual != listed[rel]:
+            problems.append(f"DEPENDENCIES.txt gives {listed[rel]} for {rel}, but the file is {actual}: update the line")
     return problems
 
 
@@ -360,7 +399,7 @@ def main() -> int:
             print(problem)
         print(f"{len(problems)} problem(s)")
         return 1 if problems else 0
-    problems = check_headers() + check_own_licenses() + check_sboms() + check_catalog() + check_bundled() + check_legal_copies() + check_declared_licenses()
+    problems = check_headers() + check_own_licenses() + check_sboms() + check_catalog() + check_weight_hashes() + check_bundled() + check_legal_copies() + check_declared_licenses()
     for problem in problems:
         print(problem)
     print(f"{len(problems)} problem(s)")

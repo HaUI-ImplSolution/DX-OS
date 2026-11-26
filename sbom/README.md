@@ -11,7 +11,7 @@ Giấy phép của từng thành phần ở [`DEPENDENCIES.txt`](../DEPENDENCIES
 | `backend.cdx.json` | Maven, `backend` (gốc `dx-os-parent`, cả ba module `dx-core`, `dx-engine`, `dx-monitor`) |
 | `frontend.cdx.json` | npm, `frontend` |
 | `website.cdx.json` | npm, `website` (trang tài liệu) |
-| `assistant.cdx.json` | npm, `assistant` (dịch vụ tùy chọn) |
+| `assistant.cdx.json` | npm, `assistant` |
 
 Các tệp chỉ gồm thư viện của mã do nhóm viết.
 Image bên thứ ba khai báo ở [`.github/licenses/component-catalog.json`](../.github/licenses/component-catalog.json), giấy phép của chúng ở phần Hạ tầng và công cụ của [`DEPENDENCIES.txt`](../DEPENDENCIES.txt), và `deploy/docker-compose.yml` ghim phiên bản và digest.
@@ -32,7 +32,7 @@ cd frontend && npx @cyclonedx/cyclonedx-npm --omit dev --output-format JSON --ou
 # Website
 cd website && npx @cyclonedx/cyclonedx-npm --omit dev --output-format JSON --output-file ../sbom/website.cdx.json
 
-# Assistant (tùy chọn)
+# Assistant
 cd assistant && npx @cyclonedx/cyclonedx-npm --omit dev --output-format JSON --output-file ../sbom/assistant.cdx.json
 ```
 
@@ -43,10 +43,10 @@ Backend sinh lại bằng Maven vì `pom.xml` không ghi phiên bản của các
 | Kiểm gì | Ở đâu | Khi nào |
 |---|---|---|
 | Mọi thành phần có giấy phép nằm trong danh sách OSI; ngoại lệ có lý do ở `.github/licenses/dependency-exceptions.json` | `.github/scripts/check_licenses.py`, job `Check licenses` của workflow `Compliance` | Mỗi pull request |
-| Giấy phép của gói trong SBOM sinh lại từ pull request, trước khi `sbom/` được sinh lại | `check_licenses.py sbom <tệp>`, job `Check SBOMs against lockfiles` của `Compliance` (frontend, website), `Check the optional assistant` của `Assistant` (assistant) và `Scan the backend SBOM` của `Dependencies` (backend) | Mỗi pull request |
+| Giấy phép của gói trong SBOM sinh lại từ pull request, trước khi `sbom/` được sinh lại | `check_licenses.py sbom <tệp>`, job `Check SBOMs against lockfiles` của `Compliance` (frontend, website), `Check the assistant` của `Assistant` (assistant) và `Scan the backend SBOM` của `Dependencies` (backend) | Mỗi pull request |
 | `docs/DEPENDENCY_INVENTORY.md` liệt kê mọi gói của lockfile, của Maven, action và công cụ, mỗi gói có giấy phép OSI hoặc ngoại lệ có lý do | `.github/scripts/check_license_inventory.py check`, job `Check licenses` của `Compliance` (npm) và `Scan the backend SBOM` của `Dependencies` (Maven, thêm `--maven`) | Mỗi pull request |
 | SBOM của `frontend` và `website` khớp tệp khóa | `.github/scripts/check_sbom_fresh.py`, job `Check SBOMs against lockfiles` của `Compliance` | Mỗi pull request |
-| SBOM của `assistant` khớp tệp khóa | `.github/scripts/check_sbom_fresh.py`, job `Check the optional assistant` của `Assistant` | Khi đổi `assistant/` |
+| SBOM của `assistant` khớp tệp khóa | `.github/scripts/check_sbom_fresh.py`, job `Check the assistant` của `Assistant` | Khi đổi `assistant/` |
 | SBOM của `backend` khớp các gói Maven đã giải | `check_sbom_fresh.py`, job `Scan the backend SBOM` của workflow `Dependencies`, sinh lại SBOM rồi so | Khi file khai báo đổi và mỗi tuần |
 | Lỗ hổng HIGH hoặc CRITICAL đã có bản vá chặn CI | Trivy, job `Scan dependencies` và `Scan the backend SBOM` của `Dependencies` | Khi file khai báo đổi và mỗi tuần |
 | Lỗ hổng của image bên thứ ba trong `deploy/docker-compose.yml`, chỉ báo bằng cảnh báo | Job `Scan third-party images` của `Dependencies` | Khi file khai báo đổi và mỗi tuần |

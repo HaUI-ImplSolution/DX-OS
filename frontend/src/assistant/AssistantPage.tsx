@@ -4,17 +4,17 @@ import { useEffect, useState } from "react";
 import { Title } from "react-admin";
 import { Alert, Button, Card, Stack, Typography } from "@mui/material";
 import PageHeader from "../shell/PageHeader";
-import { assistantRequest, type Proposal } from "./api";
+import { assistantRequest, type AssistantAccount, type Proposal } from "./api";
 import { t } from "../shell/t";
 
 export default function AssistantPage() {
-  const [me, setMe] = useState<{ linked: boolean; model: { configured: boolean } } | null>(null);
+  const [me, setMe] = useState<AssistantAccount | null>(null);
   const [items, setItems] = useState<Proposal[]>([]); const [page, setPage] = useState(0);
   const [error, setError] = useState(""); const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   useEffect(() => {
     let active = true; setError("");
-    void assistantRequest<typeof me>("/me").then(async result => {
+    void assistantRequest<AssistantAccount>("/me").then(async result => {
       if (!active) return; setMe(result);
       if (result?.linked) {
         const proposals = await assistantRequest<Proposal[]>(`/me/proposals?page=${page}&size=5`);
@@ -32,7 +32,7 @@ export default function AssistantPage() {
     {notice && <Alert severity="info">{notice}</Alert>}
     <Card sx={{ p: 2 }}><Stack spacing={2}>
       <Typography>{me?.linked ? t("Đã liên kết tài khoản DX-OS.") : t("Liên kết tài khoản DX-OS để trợ lý truy cập đúng quyền của bạn.")}</Typography>
-      <Typography>{me?.model.configured ? t("Bản cài đã cấu hình model self-host.") : t("Người vận hành chưa cấu hình model self-host.")}</Typography>
+      {me && <Typography>{me.model.configured ? t("Trợ lý đã sẵn sàng tạo đề xuất.") : t("Trợ lý chưa được cấu hình để tạo đề xuất.")}</Typography>}
       <Button disabled={busy} variant="outlined" onClick={() => {
         setBusy(true); setError("");
         void assistantRequest<{ url: string }>("/me/core/link", "POST", {}).then(result => {

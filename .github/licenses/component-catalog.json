@@ -1,7 +1,7 @@
 {
   "images": {
     "eclipse-temurin": {"license": "GPL-2.0-with-classpath-exception", "use": "Base image of backend, monitor and sso", "source": "https://adoptium.net", "unverified": "OpenJDK build by Adoptium: GPL-2.0 with the Classpath exception, published as an image and not as one project at a version"},
-    "node": {"license": "MIT", "use": "Builds the web and runs the optional business assistant", "source": "https://github.com/nodejs/node", "upstream": "nodejs/node", "refs": ["v{major}.x"], "text": {"path": "LICENSE", "contains": ["Node.js is licensed for use as follows", "Permission is hereby granted, free of charge, to any person obtaining a copy"]}},
+    "node": {"license": "MIT", "use": "Builds the web and runs the business assistant", "source": "https://github.com/nodejs/node", "upstream": "nodejs/node", "refs": ["v{major}.x"], "text": {"path": "LICENSE", "contains": ["Node.js is licensed for use as follows", "Permission is hereby granted, free of charge, to any person obtaining a copy"]}},
     "nginx": {"license": "BSD-2-Clause", "use": "Serves the web and the portal", "source": "https://nginx.org", "upstream": "nginx/nginx", "refs": ["release-{version}.0", "stable-{version}"]},
     "alpine": {"license": "MIT", "use": "Runs setup scripts when the stack is built", "source": "https://alpinelinux.org", "unverified": "Alpine Linux and the packages of its image carry their own licenses, with no single upstream project at a version"},
     "postgres": {"license": "PostgreSQL", "use": "Business data", "source": "https://www.postgresql.org", "upstream": "postgres/postgres", "refs": ["REL_{major}_STABLE"], "text": {"path": "COPYRIGHT", "contains": ["Permission to use, copy, modify, and distribute this software and its", "without fee, and without a written agreement"]}},
@@ -21,5 +21,22 @@
   },
   "downloads": {
     "keycloak/keycloak": {"license": "Apache-2.0", "use": "Identity and single sign-on; the release archive is unpacked into the sso image", "source": "https://github.com/keycloak/keycloak"}
-  }
+  },
+  "files": [
+    {"path": "tools/classifier/model/onestop.json", "license": "Apache-2.0", "note": "DX-OS classifier weights for one-stop requests, packaged in the assistant image"},
+    {"path": "tools/classifier/model/support.json", "license": "Apache-2.0", "note": "DX-OS classifier weights for support tickets, packaged in the assistant image"},
+    {"path": "tools/classifier/model/clinic.json", "license": "Apache-2.0", "note": "DX-OS classifier weights for appointments, packaged in the assistant image"},
+    {"path": "tools/classifier/model/itaccess.json", "license": "Apache-2.0", "note": "DX-OS classifier weights for IT access requests, used in parity tests"},
+    {"path": "tools/classifier/model/retail.json", "license": "Apache-2.0", "note": "DX-OS classifier weights for returns, used in parity tests"},
+    {"path": "tools/classifier/eval/tuning/onestop.csv", "license": "CC-BY-4.0", "note": "DX-OS classifier tuning set written with an AI tool, used to choose thresholds, one-stop requests"},
+    {"path": "tools/classifier/eval/tuning/itaccess.csv", "license": "CC-BY-4.0", "note": "DX-OS classifier tuning set written with an AI tool, used to choose thresholds, IT access requests"},
+    {"path": "tools/classifier/eval/tuning/retail.csv", "license": "CC-BY-4.0", "note": "DX-OS classifier tuning set written with an AI tool, used to choose thresholds, returns"},
+    {"path": "tools/classifier/eval/tuning/support.csv", "license": "CC-BY-4.0", "note": "DX-OS classifier tuning set written with an AI tool, used to choose thresholds, support tickets"},
+    {"path": "tools/classifier/eval/tuning/clinic.csv", "license": "CC-BY-4.0", "note": "DX-OS classifier tuning set written with an AI tool, used to choose thresholds, appointments"},
+    {"path": "tools/classifier/eval/acceptance/onestop.csv", "license": "CC-BY-4.0", "note": "DX-OS classifier acceptance set written by the team, used to measure releases, one-stop requests"},
+    {"path": "tools/classifier/eval/acceptance/itaccess.csv", "license": "CC-BY-4.0", "note": "DX-OS classifier acceptance set written by the team, used to measure releases, IT access requests"},
+    {"path": "tools/classifier/eval/acceptance/retail.csv", "license": "CC-BY-4.0", "note": "DX-OS classifier acceptance set written by the team, used to measure releases, returns"},
+    {"path": "tools/classifier/eval/acceptance/support.csv", "license": "CC-BY-4.0", "note": "DX-OS classifier acceptance set written by the team, used to measure releases, support tickets"},
+    {"path": "tools/classifier/eval/acceptance/clinic.csv", "license": "CC-BY-4.0", "note": "DX-OS classifier acceptance set written by the team, used to measure releases, appointments"}
+  ]
 }

@@ -19,7 +19,7 @@ Mức hoàn thiện của từng tính năng và bài kiểm của nó ở [`web
 | Loại | Lệnh | Chạy ở CI |
 |---|---|---|
 | Định dạng, biên dịch, test của backend | `cd backend && ./mvnw verify` | Workflow `Backend` |
-| Trợ lý tùy chọn, không cần key | `cd assistant && npm ci && npm test` (Node 24.16) | Workflow `Assistant` |
+| Trợ lý, không cần key | `cd assistant && npm ci && npm test` (Node 24.16) | Workflow `Assistant` |
 | Kiểu của web | `cd frontend && npx tsc --noEmit` | Workflow `Frontend` |
 | Phân tích tĩnh của web | `cd frontend && npm run lint` | Workflow `Frontend` |
 | Test đơn vị của web (Vitest, 58 test: `body()` của nhà cung cấp dữ liệu, điều kiện, xuất CSV, định dạng số và thời gian, điều hướng của bộ dựng mô hình, nơi dùng và đổi tên của trường và vai trò, hàng của quy trình) | `cd frontend && npm test` | Workflow `Frontend` |
@@ -342,13 +342,19 @@ Kiểm bằng đúng các lệnh và thao tác trong tài liệu.
     - `./reset.sh --keep-dxos` xóa container, ảnh, dữ liệu và `.env` của ứng dụng, đưa `docker-compose.yml` về như cũ và gỡ hai tài khoản máy; `./reset.sh` còn gỡ DX-OS cùng dữ liệu.
     - Ba phép thử của mục "Vì sao không tự viết vòng duyệt": 403 khi tài khoản máy gọi `approve`, `dxos history verify` báo dòng bị sửa rồi nguyên vẹn sau khi khôi phục, `LOSS` cần `--accept LOSS` và đổi hạn bị từ chối khi còn phiếu mở.
 
-### Trợ lý (tùy chọn)
+### Trợ lý
 
-48. Theo [`assistant/README.md`](../assistant/README.md), liên kết SSO, cấu hình inference/nguồn của bản cài và khai báo nhiệm vụ `ai.tasks`.
-    Mở hồ sơ, tạo đề xuất, xem nguồn, sửa hoặc hủy, rồi xác nhận và đối chiếu phiên bản/lịch sử Core.
-    Kiểm hai chủ không đọc/ghi chéo; giá trị trùng không tạo lịch sử sửa và model tắt không cản nghiệp vụ.
-    Kiểm container trợ lý không ra được Internet và chỉ `assistant-egress` tới được endpoint inference; "Hủy liên kết" làm trợ lý không đọc được hồ sơ nữa và xóa phiên của Keycloak; `dist/rotate.js` giữ nguyên liên kết sau khi thay master key.
+54. Theo [`assistant/README.md`](../assistant/README.md), chạy stack ở chế độ full, áp dụng một mẫu có nhiệm vụ phân loại, rồi liên kết tài khoản cán bộ.
+    Bấm "Rà loại hồ sơ" ở Hộp việc và kiểm hồ sơ cần rà lên đầu, có màu nổi bật.
+    Kiểm mỗi hồ sơ cần rà có độ tự tin theo phần trăm, và tài khoản chưa liên kết bấm rà thì được nhắc liên kết.
+    Bấm "Cần rà" để mở hồ sơ, xem "Căn cứ trong hồ sơ" và xác nhận lưu đề xuất.
+    Rà lại và kiểm số hồ sơ cần rà giảm.
+    Kiểm ghi chú phòng khám chỉ nêu triệu chứng không có đề xuất.
+    Kiểm hai chủ không đọc/ghi chéo, giá trị trùng không tạo lịch sử sửa và tắt trợ lý không cản nghiệp vụ, và chế độ core không có trợ lý.
+    Kiểm "Hủy liên kết" làm trợ lý không đọc được hồ sơ nữa và xóa phiên của Keycloak; `dist/rotate.js` giữ nguyên liên kết sau khi thay master key.
     Kiểm nâng cấp giữ liên kết SSO và lịch sử, không thực thi lại đề xuất cũ; sau khôi phục từ sao lưu, người dùng liên kết lại tài khoản.
+
+55. Kiểm container `assistant-control` không ra được Internet, và tắt trợ lý bằng bước 4 của `assistant/README.md` không để lại container hay route.
 
 ## 7. Hồi quy
 

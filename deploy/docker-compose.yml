@@ -83,6 +83,8 @@ services:
     logging: *default-logging
     image: ${DXOS_IMAGE_PREFIX:-dxos}-backend:${DXOS_IMAGE_TAG:-local}
     restart: unless-stopped
+    # The assistant network lets the assistant reach this service; it has no way out of the stack.
+    networks: [default, assistant]
     build:
       context: ../backend
       dockerfile: Dockerfile
@@ -159,7 +161,7 @@ services:
       retries: 12
       start_period: 30s
 
-  # Tier 2 (frontend, portal, monitor-init, monitor) is the profile app: DXOS_MODE=core leaves it out of COMPOSE_PROFILES.
+  # Tier 2 (frontend, portal, monitor-init, monitor, assistant) is the profile app: DXOS_MODE=core leaves it out of COMPOSE_PROFILES.
   frontend:
     profiles:
       - app
@@ -245,6 +247,8 @@ services:
       postgres:
         condition: service_healthy
     restart: unless-stopped
+    # The assistant network lets the assistant reach this service; it has no way out of the stack.
+    networks: [default, assistant]
     environment:
       KEYCLOAK_HOSTNAME: ${KEYCLOAK_HOSTNAME:-}
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:?}
@@ -346,6 +350,99 @@ services:
       start_period: 30s
 
   # ---------------------------------------------------------------------------
+  # Business assistant (profile app)
+  # ---------------------------------------------------------------------------
+  # A classifier that runs on the CPU inside the service. It sits on an internal network: it reaches Core, the identity
+  # service and the gateway, and nothing outside the stack. It never holds the start of the platform.
+  # Prepares the state directory and the keys of the assistant.
+  assistant-init:
+    profiles:
+      - app
+    <<: *hardened
+    logging: *default-logging
+    image: ${DXOS_IMAGE_PREFIX:-dxos}-assistant:${DXOS_IMAGE_TAG:-local}
+    build:
+      context: ..
+      dockerfile: assistant/Dockerfile
+    user: "0:0"
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER]
+    network_mode: none
+    read_only: true
+    command: [dist/setup.js, prepare, /bootstrap]
+    environment:
+      ASSISTANT_PUBLIC_URL: ${GATEWAY_PUBLIC_URL:?}
+    volumes:
+      - ./data/assistant:/bootstrap
+    tmpfs: ["/tmp:rw,nosuid,nodev,noexec,size=64m"]
+
+  # Registers the sign-in client of the assistant; a failure is only a warning, Core is not affected.
+  assistant-sso:
+    profiles:
+      - app
+    <<: *hardened
+    logging: *default-logging
+    image: ${DXOS_IMAGE_PREFIX:-dxos}-sso:${DXOS_IMAGE_TAG:-local}
+    read_only: true
+    depends_on:
+      assistant-init:
+        condition: service_completed_successfully
+      keycloak:
+        condition: service_healthy
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:?}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?}
+    volumes:
+      - ./assistant-sso.sh:/assistant-sso.sh:ro
+      - ./data/assistant/sso:/bootstrap:ro
+    entrypoint: [bash, -c, "bash /assistant-sso.sh || echo 'WARNING: the assistant sign-in client was not set up; Core is not affected.' >&2"]
+    tmpfs: ["/tmp:rw,nosuid,nodev,noexec,size=64m,mode=1777"]
+
+  assistant-control:
+    profiles:
+      - app
+    <<: *hardened
+    logging: *default-logging
+    image: ${DXOS_IMAGE_PREFIX:-dxos}-assistant:${DXOS_IMAGE_TAG:-local}
+    user: "1000:1000"
+    restart: unless-stopped
+    read_only: true
+    mem_limit: 256m
+    cpus: 0.5
+    pids_limit: 128
+    networks: [assistant]
+    depends_on:
+      backend:
+        condition: service_healthy
+      assistant-init:
+        condition: service_completed_successfully
+      assistant-sso:
+        condition: service_completed_successfully
+    environment:
+      ASSISTANT_HOST: 0.0.0.0
+      ASSISTANT_PORT: 18790
+      ASSISTANT_STATE_DIR: /state
+      ASSISTANT_MASTER_KEY_FILE: /run/secrets/master.key
+      ASSISTANT_PUBLIC_URL: ${GATEWAY_PUBLIC_URL:?}
+      ASSISTANT_CORE_URL: http://backend:8081
+      ASSISTANT_OIDC_ISSUER: ${GATEWAY_PUBLIC_URL:?}/realms/dxos
+      ASSISTANT_OIDC_AUDIENCE: dxos-api
+      ASSISTANT_CORE_AUDIENCE: dxos-api
+      ASSISTANT_OIDC_JWKS_URL: http://keycloak:8080/realms/dxos/protocol/openid-connect/certs
+      ASSISTANT_OIDC_TOKEN_URL: http://keycloak:8080/realms/dxos/protocol/openid-connect/token
+      ASSISTANT_OIDC_CLIENT_ID: dxos-assistant
+      ASSISTANT_OIDC_REVOKE_URL: ${ASSISTANT_OIDC_REVOKE_URL:-http://keycloak:8080/realms/dxos/protocol/openid-connect/revoke}
+      ASSISTANT_CLASSIFIERS_DIR: ${ASSISTANT_CLASSIFIERS_DIR:-/app/classifiers}
+    volumes:
+      - ./data/assistant/control:/state
+      - ./data/assistant/private:/run/secrets:ro
+    tmpfs: ["/tmp:rw,nosuid,nodev,noexec,size=64m"]
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:18790/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 4
+
+  # ---------------------------------------------------------------------------
   # Gateway
   # ---------------------------------------------------------------------------
   # Validates and merges the core routes and optional installation routes.
@@ -376,6 +473,8 @@ services:
     entrypoint: ["/bin/sh", "/dxos-apisix-entrypoint.sh"]
     command: ["docker-start"]
     restart: unless-stopped
+    # The assistant network lets the assistant reach this service; it has no way out of the stack.
+    networks: [default, assistant]
     depends_on:
       apisix-config:
         condition: service_completed_successfully
@@ -410,6 +509,10 @@ services:
       interval: 10s
       timeout: 5s
       retries: 6
+
+networks:
+  assistant:
+    internal: true
 
 volumes:
   clamav_data:

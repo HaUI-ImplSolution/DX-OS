@@ -88,7 +88,7 @@ Mười mẫu có sẵn, chọn được ngay ở bảng điều khiển: một 
 | | **Dùng thử ngay:** một lệnh tạo tài khoản thử cho từng vai cùng hồ sơ mẫu ở nhiều trạng thái, để người xem đăng nhập là thấy hệ thống có việc đang chạy. |
 | | **Cài và vận hành đơn giản:** một lệnh cài, một lệnh chạy; có sao lưu kiểm được, tự khởi động lại dịch vụ, quét mã độc cho tệp đính kèm và số đo vận hành đọc được bằng công cụ giám sát có sẵn của bạn. |
 | | **Đăng nhập một lần:** qua Keycloak, có thể bắt quản trị viên nhập thêm mã một lần. |
-| | **[Trợ lý nghiệp vụ (tùy chọn)](./assistant/README.md):** AI chạy tại máy chủ của bản cài đề xuất nội dung từ hồ sơ và nguồn tham khảo, người dùng xác nhận trước khi lưu. |
+| | **[Trợ lý nghiệp vụ](./assistant/README.md):** mô hình AI do đội tự huấn luyện, chạy cùng bản cài trên máy chủ của bạn, đọc nội dung hồ sơ để gợi ý cách điền kèm câu chữ làm căn cứ và chỉ ra hồ sơ nên xem lại; người dùng xác nhận trước khi lưu. |
 
 Bảng đối chiếu từng tính năng với bài kiểm của nó ở [ma trận bằng chứng](https://haui-implsolution.github.io/DX-OS/docs/evidence-matrix).
 
@@ -143,7 +143,7 @@ Lý do đọc hoặc không dùng làm nền với Supabase, Strapi và Directus
 | Hệ điều hành | Linux, hoặc Windows 10/11 qua WSL2 | Có Docker và Docker Compose v2; trên Windows dùng Docker Desktop và chạy lệnh trong WSL, xem [Windows (WSL2)](./docs/OPERATIONS.md#windows-wsl2) |
 | Mã nguồn | Không cần khi dùng bộ cài | Chỉ cần khi tự build |
 | JDK, Node | 21, 22 | Chỉ cần để build và kiểm thử ngoài Docker |
-| RAM | Khoảng 1,8 GiB cho tám service lúc rảnh | Số đo thật ở [`docs/OPERATIONS.md`](./docs/OPERATIONS.md#tài-nguyên-và-số-bản-sao); ClamAV thêm khoảng 1 GB, tắt bằng `dxos av off` |
+| RAM | Khoảng 1,8 GiB cho tám service lúc rảnh, trợ lý thêm tối đa 256 MB | Số đo thật ở [`docs/OPERATIONS.md`](./docs/OPERATIONS.md#tài-nguyên-và-số-bản-sao); ClamAV thêm khoảng 1 GB, tắt bằng `dxos av off` |
 | Đĩa | Khoảng 3,5 GiB cho image | Cơ sở dữ liệu và tệp đính kèm tăng theo dữ liệu |
 
 `dxos doctor` (hoặc `deploy/doctor.sh`) kiểm Docker, RAM, ổ đĩa, `deploy/.env` và các cổng trước khi chạy.
@@ -163,7 +163,7 @@ Bộ cài tải bản phát hành mới nhất, kiểm SHA-256 rồi cài vào `
 Đăng nhập `http://localhost:9080/console` bằng `admin`, đổi mật khẩu, chọn một mẫu ở tab Thư viện mẫu, xem kế hoạch rồi áp dụng.
 Đã có tệp mô hình thì `dxos start <tệp>` đưa tệp vào luôn; có nhiều tệp thì liệt kê hết sau `dxos start`.
 Muốn nối DX-OS vào ứng dụng của mình, theo [hướng dẫn bắt đầu nhanh](./docs/QUICKSTART.md): hai đường, không có code và có code, đi từ máy sạch đến quy trình chạy được.
-Chỉ cần nền tảng API cho ứng dụng bên ngoài thì chạy `dxos start --core`: không có ứng dụng web, portal và giám sát, xem [Chế độ chỉ lõi](./docs/OPERATIONS.md#chế-độ-chỉ-lõi).
+Chỉ cần nền tảng API cho ứng dụng bên ngoài thì chạy `dxos start --core`: không có ứng dụng web, portal, giám sát và trợ lý, xem [Chế độ chỉ lõi](./docs/OPERATIONS.md#chế-độ-chỉ-lõi).
 
 ### Từ mã nguồn
 
@@ -238,7 +238,7 @@ DX-OS ở Tầng 1 là lõi không giao diện, ở Tầng 2 là giao diện web
 | H, môi trường số chung | Một lần đăng nhập; vai và đơn vị khai trong mô hình; mỗi người chỉ thấy phần việc của mình trong hộp việc, bảng theo trạng thái và lịch | Có |
 | P, rào chắn và luồng tự động | Trạng thái chỉ đổi qua quy trình; từ chối và trả lại bắt buộc có lý do; người tạo không tự duyệt hồ sơ của mình; hạn xử lý, quá hạn và leo thang lên vai khác; việc sau khi duyệt chạy qua hàng đợi và được thử lại | Có |
 | D, một nguồn sự thật | Dữ liệu, lịch sử và hàng đợi cùng nằm ở một cơ sở dữ liệu; lịch sử nối thành chuỗi chống sửa; mọi thay đổi báo ra ngoài bằng webhook có chữ ký; thống kê và danh mục dữ liệu | Có |
-| I, trí tuệ nhân tạo | Trợ lý nghiệp vụ tùy chọn đề xuất giá trị một trường từ hồ sơ và nguồn tham khảo, người dùng xác nhận trước khi lưu; chạy self-host với endpoint suy luận do người vận hành cấu hình | Có, một thành phần |
+| I, trí tuệ nhân tạo | Trợ lý nghiệp vụ dùng bộ phân loại hồ sơ tiếng Việt do đội tự huấn luyện, chạy trên CPU mà không cần model ngoài, để đề xuất giá trị một trường kèm căn cứ từ hồ sơ; người dùng xác nhận trước khi lưu; mã, trọng số, dữ liệu huấn luyện và cách tải dữ liệu ngoài được công bố | Có, một thành phần |
 
 Đề cũng nêu bốn nguyên lý kỹ thuật; cách chạy từng việc ở [`docs/DEMO.md`](./docs/DEMO.md#8-bốn-nguyên-lý-của-đề-tùy-chọn).
 
@@ -262,7 +262,7 @@ Cách tính các giao diện đi kèm và đối chiếu chi tiết từng ý c�
 
 ## Giới hạn đã biết
 
-- Phần AI là một trợ lý tùy chọn đề xuất giá trị một trường, người dùng xác nhận trước khi lưu; chưa có hỏi đáp trên tri thức nội bộ.
+- Phần AI là một trợ lý đề xuất giá trị một trường, người dùng xác nhận trước khi lưu; trợ lý mới dùng được cho vài mẫu có sẵn, nghiệp vụ mới cần dữ liệu và huấn luyện riêng; chưa có hỏi đáp trên tri thức nội bộ.
 - Một bản cài chạy trên một máy bằng Docker Compose; chưa chạy nhiều bản sao của lõi.
 - Số đo của thiết bị vào lõi qua API chung; lõi không giữ trạng thái thiết bị.
 - Chưa có chữ ký số, két bí mật, đa thuê giữa các tổ chức và tìm kiếm toàn văn.
@@ -313,8 +313,8 @@ Các tài liệu về viết tệp mô hình, API, vận hành, giám sát, tíc
 | `sso` | Lõi | Keycloak realm |
 | `portal` | Ứng dụng | Trang liên kết các địa chỉ và trạng thái dịch vụ |
 | `examples` | Ngoài lõi | Chương trình mẫu: bên nhận sự kiện giữ hash lịch sử ([`history-witness`](./examples/history-witness/README.md)), giả lập hệ thống IT/OT ([`itot-simulator`](./examples/itot-simulator/README.md)), ứng dụng duyệt đơn và tệp mô hình đi kèm ([`order_approval`](./examples/order_approval/README.md)), ứng dụng bán hàng ngoài thêm quy trình đổi trả và bảo hành làm trên Console ([`appliance-store`](./examples/appliance-store/README.md)), kho tệp mô hình trong git ([`model-repo`](./examples/model-repo/README.md)), so sánh công sức với viết tay ([`effort-benchmark`](./examples/effort-benchmark/README.md)) |
-| `assistant` | Tùy chọn | Trợ lý nghiệp vụ: dịch vụ Node.js đề xuất giá trị một trường, chỉ nạp khi bật ([`assistant/README.md`](./assistant/README.md)) |
-| `tools` | Công cụ | Công cụ của người phát triển, như đếm mã tự viết |
+| `assistant` | Ứng dụng | Trợ lý nghiệp vụ: dịch vụ Node.js đề xuất giá trị một trường bằng bộ phân loại tự huấn luyện ([`assistant/README.md`](./assistant/README.md)) |
+| `tools` | Công cụ | Công cụ của người phát triển, như đếm mã tự viết và huấn luyện bộ phân loại hồ sơ ([`classifier`](./tools/classifier/README.md)) |
 | `e2e` | Kiểm thử | Kiểm tự động trên stack đang chạy: API (`api/`), giao diện web bằng Playwright (`web/`) và tệp mô hình sai mẫu (`fixtures/`) |
 | `website` | Tài liệu | Trang tài liệu (Docusaurus), đăng lên GitHub Pages |
 | `docs` | Tài liệu | Hướng dẫn kiểm thử, tệp mô hình, API, vận hành, giám sát, tích hợp, báo cáo, lưu trữ tệp; hướng thiết kế ở `dynamic-core/` |
@@ -340,7 +340,7 @@ Các tài liệu về viết tệp mô hình, API, vận hành, giám sát, tíc
 ## Giấy phép
 
 Mã nguồn, tài liệu, ảnh chụp màn hình, video và sơ đồ theo Apache License 2.0, xem [`LICENSE`](./LICENSE).
-Mọi giấy phép của dự án và của thành phần dùng đều được OSI công nhận, trừ các ngoại lệ nêu tên và lý do ở phần "Giấy phép ngoài danh sách OSI" của [`DEPENDENCIES.txt`](./DEPENDENCIES.txt): dữ liệu chỉ đọc lúc dựng trang tài liệu, công cụ dựng và công cụ không phân phối, phông biểu tượng Codicons (CC-BY-4.0) trong bản build web, một mô-đun Go (phạm vi công cộng) trong tệp chạy pgschema, và vài thành phần nằm sẵn trong image bên thứ ba mà dự án kéo nguyên bản (ví dụ gói hệ điều hành của image Debian).
+Mọi giấy phép của dự án và của thành phần dùng đều được OSI công nhận, trừ các ngoại lệ gồm dữ liệu (kể cả dữ liệu của bộ phân loại hồ sơ, CC-BY-4.0), phông, công cụ dựng và gói có sẵn trong image bên thứ ba; từng ngoại lệ nêu tên và lý do ở phần "Giấy phép ngoài danh sách OSI" của [`DEPENDENCIES.txt`](./DEPENDENCIES.txt).
 Giấy phép của từng thành phần bên thứ ba ở [`DEPENDENCIES.txt`](./DEPENDENCIES.txt).
 
 Tham khảo: [chủ đề cuộc thi](https://vfossa.vn/tin-tuc/gioi-thieu-mo-hinh-dx-os-va-chu-de-cuoc-thi-phan-mem-nguon-mo-olp-2026-761.html) · [giáo trình DX-OS](https://opendigitransform.gitbook.io/dx-os)

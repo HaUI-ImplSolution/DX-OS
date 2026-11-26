@@ -6,6 +6,7 @@ phát triển tại Trường Công nghệ Thông tin và Truyền thông, Đạ
 
 Mã nguồn do nhóm tự viết được cấp phép theo Apache License 2.0 (xem LICENSE).
 Tài liệu, ảnh chụp màn hình, video và sơ đồ do nhóm tạo cũng được cấp phép theo Apache License 2.0.
+Dữ liệu của bộ phân loại hồ sơ tiếng Việt (tools/classifier và assistant/test/fixtures) được HaUI-ImplSolution phát hành theo CC-BY-4.0 trong phạm vi đội có quyền: bộ nghiệm thu và định nghĩa nhãn do thành viên đội viết; câu huấn luyện và tập chỉnh do Claude (Anthropic) soạn nên đội không khẳng định bản quyền đối với từng câu đó và chỉ phát hành phần quyền mình có (nhãn, cách chọn và sắp xếp, mã sinh biến thể).
 
 MỤC ĐÍCH CỦA GIẤY PHÉP
 ----------------------
@@ -33,16 +34,16 @@ Sản phẩm này sử dụng phần mềm của bên thứ ba, giữ nguyên gi
 - PostgreSQL (PostgreSQL License).
 - React, react-admin, Material UI (MIT).
 - Fastify, jose và Node.js (MIT).
-- llama.cpp b12387 (MIT; Copyright (c) 2023-2026 The ggml authors), runtime inference do người vận hành cấp riêng.
-  Nguồn giấy phép và phạm vi kiểm runtime ở ghi chú về llama.cpp của DEPENDENCIES.txt.
 - OpenAPI Generator 7.27.0 (Apache-2.0), công cụ sinh client do người dùng tự chạy, không đóng gói trong sản phẩm; ghi chú về OpenAPI Generator của DEPENDENCIES.txt.
 - caniuse-lite, dữ liệu của Can I Use (CC-BY-4.0), chỉ dùng lúc dựng trang tài liệu.
+- MASSIVE 1.0 (CC-BY-4.0; Copyright Amazon.com Inc. or its affiliates; https://creativecommons.org/licenses/by/4.0/), một phần câu tiếng Việt dùng làm câu lạc đề khi huấn luyện trọng số của bộ phân loại, giữ nguyên văn khi lấy mẫu; dữ liệu được tải lúc huấn luyện, không nằm trong repository hay image.
+  MASSIVE được bản địa hóa từ SLURP và chứa một phần dữ liệu của SLURP (CC-BY-4.0; Bastianelli, Vanzo, Swietojanski và Rieser, 2020; https://github.com/pswietojanski/slurp).
 - ClamAV (GPL-2.0), chạy thành dịch vụ riêng để quét mã độc, trong image của dự án dựng trên image chính thức; image đã bỏ libclamunrar (giấy phép UnRAR, không phải OSI) và kèm giấy phép của ClamAV ở /licenses.
 
 Ảnh chụp màn hình, video và sơ đồ trong repository do nhóm tạo từ hệ thống đang chạy với dữ liệu giả, và được cấp phép Apache-2.0.
 Ảnh có thể hiện giao diện của phần mềm bên thứ ba, ví dụ trang đăng nhập của Keycloak (Apache-2.0); phần đó thuộc giấy phép và nhãn hiệu của chủ sở hữu, và chỉ dùng để minh họa.
 
-Mọi giấy phép của dự án và của thành phần dùng trong sản phẩm được OSI công nhận; ngoại lệ là dữ liệu chỉ đọc lúc dựng trang tài liệu, công cụ dựng và công cụ không phân phối, phông biểu tượng Codicons (CC-BY-4.0) trong bản build web, một mô-đun Go (phạm vi công cộng) trong tệp chạy pgschema, và vài thành phần nằm sẵn trong image bên thứ ba mà dự án kéo nguyên bản, nêu tên và lý do ở phần "Giấy phép ngoài danh sách OSI" của DEPENDENCIES.txt.
+Mọi giấy phép của dự án và của thành phần dùng trong sản phẩm được OSI công nhận; ngoại lệ là dữ liệu chỉ đọc lúc dựng trang tài liệu, công cụ dựng và công cụ không phân phối, phông biểu tượng Codicons (CC-BY-4.0) trong bản build web, dữ liệu đóng trong thư viện PDFBox của image backend (tệp số đo phông của Adobe, hình Font Awesome theo CC-BY-4.0, hồ sơ màu theo CC0-1.0), dữ liệu của bộ phân loại (CC-BY-4.0), một mô-đun Go (phạm vi công cộng) trong tệp chạy pgschema, và vài thành phần nằm sẵn trong image bên thứ ba mà dự án kéo nguyên bản hoặc dùng làm lớp nền của image phát hành, nêu tên và lý do ở phần "Giấy phép ngoài danh sách OSI" của DEPENDENCIES.txt.
 
 Thư viện theo giấy phép copyleft nhẹ (EPL-2.0, MPL-2.0) được dùng nguyên bản, không sửa; mã nguồn của chúng có ở trang dự án ghi trong docs/DEPENDENCY_INVENTORY.md, ở Maven Central và ở npm.
 

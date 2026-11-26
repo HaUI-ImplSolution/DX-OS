@@ -23,7 +23,8 @@ Tự cài và nối vào ứng dụng của bạn thì theo [`QUICKSTART.md`](./
 |---|---|
 | [`QUICKSTART.md`](./QUICKSTART.md) | Từ máy sạch đến một quy trình chạy được: không có code (giao diện web) hoặc có code (ứng dụng của bạn gọi API) |
 | [`MODEL.md`](./MODEL.md) | Cách viết tệp mô hình: trường, ràng buộc, quyền, quy trình, tài liệu in |
-| [`API.md`](./API.md) | Bảng đường dẫn của API chung; đặc tả đầy đủ là OpenAPI của backend đang chạy |
+| [`API.md`](./API.md) | Đường dẫn API Core và API trợ lý nghiệp vụ |
+| [`AI.md`](./AI.md) | Trợ lý phân loại hồ sơ, rào chắn, thống kê dữ liệu, giấy phép, nghiệm thu và cách đo lại |
 | [`EXTENSIONS.md`](./EXTENSIONS.md) | Viết dịch vụ riêng, bên nhận webhook, giao diện ngoài và route riêng ở ngoài lõi |
 | [`OPERATIONS.md`](./OPERATIONS.md) | Cài đặt, các lệnh `dxos`, tên miền và HTTPS, biến `.env`, sao lưu, ứng phó sự cố, quản trị người dùng và dự án |
 | [`MONITORING.md`](./MONITORING.md) | Số đo, nhật ký, màn hình giám sát, Prometheus và Grafana tùy chọn |
@@ -50,4 +51,4 @@ Các tài liệu sản phẩm cũng đọc được trên [trang docs](https://h
 
 Việc chưa làm và giới hạn chấp nhận ở [`BACKLOG.md`](./dynamic-core/BACKLOG.md).
 Giới hạn của từng tính năng ở [ma trận bằng chứng](https://haui-implsolution.github.io/DX-OS/docs/evidence-matrix).
-Phần trí tuệ nhân tạo (chữ I của H-P-D-I) mới có trợ lý tùy chọn đề xuất giá trị một trường, xem [`assistant/README.md`](../assistant/README.md) và mục Đối chiếu với đề thi ở [`README.md`](../README.md#đối-chiếu-với-đề-thi).
+Phần trí tuệ nhân tạo (chữ I của H-P-D-I) mới có trợ lý đề xuất giá trị một trường bằng bộ phân loại tự huấn luyện, xem [`assistant/README.md`](../assistant/README.md) và mục Đối chiếu với đề thi ở [`README.md`](../README.md#đối-chiếu-với-đề-thi).

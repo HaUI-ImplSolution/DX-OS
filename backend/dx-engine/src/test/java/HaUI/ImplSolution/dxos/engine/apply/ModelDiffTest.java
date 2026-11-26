@@ -78,6 +78,20 @@ class ModelDiffTest {
   }
 
   @Test
+  void addingOrChangingAClassifierTaskMakesASafeTaskChange() {
+    String plain = fields(FIELDS + "      kind: {type: choice, options: [A, B]}\n");
+    String task =
+        plain
+            + "    ai:\n      tasks:\n        classify:\n          classifier: onestop\n"
+            + "          input_fields: [a]\n          output_field: kind\n";
+
+    assertEquals(Level.SAFE, change(diff(plain, task), "CHANGE_AI_TASKS").level());
+    assertEquals(
+        Level.SAFE,
+        change(diff(task, task.replace("onestop", "support")), "CHANGE_AI_TASKS").level());
+  }
+
+  @Test
   void aFirstModelAddsItsRolesAndEntities() {
     ModelDiff diff = diff(null, fields(FIELDS));
 

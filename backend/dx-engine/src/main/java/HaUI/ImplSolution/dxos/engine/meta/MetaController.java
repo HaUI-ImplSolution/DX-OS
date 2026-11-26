@@ -65,6 +65,7 @@ public class MetaController {
       List<String> handlerActions,
       Model.Ui ui,
       List<DocumentMeta> documents,
+      // The parsed tasks expose their resolved engine and classifier name to assistant clients.
       Map<String, Model.AiTask> aiTasks) {}
 
   // A print template as the screens need it: when is empty for a template of any state.

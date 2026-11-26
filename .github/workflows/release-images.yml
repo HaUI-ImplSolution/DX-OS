@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       services:
-        description: "Images to build: all, or a comma list of backend,monitor,frontend,portal,sso,clamav, or an optional image such as assistant"
+        description: "Images to build: all, or a comma list of backend,monitor,frontend,portal,sso,clamav,assistant"
         required: true
         default: all
 
@@ -31,15 +31,13 @@ jobs:
         env:
           REQUESTED: ${{ inputs.services }}
         run: |
-          ALL="backend monitor frontend portal sso clamav"
-          # Optional images are built only when named.
-          OPTIONAL="assistant"
+          ALL="backend monitor frontend portal sso clamav assistant"
           if [[ "$REQUESTED" == "all" ]]; then
             PICKED="$ALL"
           else
             PICKED="$(echo "$REQUESTED" | tr ',' ' ')"
             for name in $PICKED; do
-              [[ " $ALL $OPTIONAL " == *" $name "* ]] || { echo "Unknown image: $name"; exit 1; }
+              [[ " $ALL " == *" $name "* ]] || { echo "Unknown image: $name"; exit 1; }
             done
           fi
           # The names are split on purpose.
@@ -80,11 +78,11 @@ jobs:
           if [[ "${{ matrix.name }}" == "clamav" ]]; then echo "license=GPL-2.0-only" >> "$GITHUB_OUTPUT"; else echo "license=Apache-2.0" >> "$GITHUB_OUTPUT"; fi
           # The monitor is built from the backend sources, with its own target of the same Dockerfile.
           if [[ "${{ matrix.name }}" == "monitor" ]]; then
-            echo "context=backend" >> "$GITHUB_OUTPUT"
-            echo "target=monitor" >> "$GITHUB_OUTPUT"
+            { echo "context=backend"; echo "dockerfile=backend/Dockerfile"; echo "target=monitor"; } >> "$GITHUB_OUTPUT"
           else
-            echo "context=${{ matrix.name }}" >> "$GITHUB_OUTPUT"
-            echo "target=" >> "$GITHUB_OUTPUT"
+            context="${{ matrix.name }}"
+            if [[ "$context" == "assistant" ]]; then context="."; fi
+            { echo "context=$context"; echo "dockerfile=${{ matrix.name }}/Dockerfile"; echo "target="; } >> "$GITHUB_OUTPUT"
           fi
           {
             echo "args<<EOF"
@@ -116,7 +114,7 @@ jobs:
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: ${{ steps.image.outputs.context }}
-          file: ${{ steps.image.outputs.context }}/Dockerfile
+          file: ${{ steps.image.outputs.dockerfile }}
           target: ${{ steps.image.outputs.target }}
           load: true
           push: false
@@ -141,7 +139,7 @@ jobs:
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: ${{ steps.image.outputs.context }}
-          file: ${{ steps.image.outputs.context }}/Dockerfile
+          file: ${{ steps.image.outputs.dockerfile }}
           target: ${{ steps.image.outputs.target }}
           push: true
           sbom: true

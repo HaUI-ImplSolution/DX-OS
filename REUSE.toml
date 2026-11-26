@@ -11,6 +11,27 @@ precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 HaUI-ImplSolution"
 SPDX-License-Identifier = "Apache-2.0"
 
+# Classifier data is released under CC-BY-4.0 to the extent HaUI-ImplSolution holds rights; see tools/classifier/data/DATA_CARD.md.
+[[annotations]]
+path = [
+    "tools/classifier/labels.json",
+    "tools/classifier/data/seeds/*.jsonl",
+    "tools/classifier/data/negatives.jsonl",
+    "tools/classifier/eval/tuning/*.csv",
+    "tools/classifier/eval/acceptance/*.csv",
+    "assistant/test/fixtures/classifier.json",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "2026 HaUI-ImplSolution"
+SPDX-License-Identifier = "CC-BY-4.0"
+
+# Classifier source metadata and model weights carry the project's license.
+[[annotations]]
+path = ["tools/classifier/data/sources.json", "tools/classifier/model/*.json"]
+precedence = "override"
+SPDX-FileCopyrightText = "2026 HaUI-ImplSolution"
+SPDX-License-Identifier = "Apache-2.0"
+
 # Maven Wrapper, copied unchanged from Apache Maven.
 [[annotations]]
 path = ["backend/mvnw", "backend/mvnw.cmd", "backend/.mvn/wrapper/maven-wrapper.properties"]

@@ -104,8 +104,8 @@ routes:
         "assistant-control:18790": 1
       timeout:
         connect: 5
-        send: 120
-        read: 240
+        send: 60
+        read: 60
     plugins:
       limit-count:
         count: 120

@@ -44,6 +44,9 @@ class ModelOpenApiTest {
             amount: {type: number, label: Số tiền, min: 0}
             kind: {type: choice, label: Loại, options: [Lẻ, Sỉ]}
             scan: {type: file, label: Tệp}
+          ai:
+            tasks:
+              classify: {classifier: orders, input_fields: [title], output_field: kind}
           access: {BUYER: own, SELLER: all}
           process: {family: approval, handler: SELLER}
         note:
@@ -54,8 +57,7 @@ class ModelOpenApiTest {
 
   private final ModelOpenApi openApi = new ModelOpenApi();
 
-  private JsonNode document() throws Exception {
-    Model model = ModelParser.parse(MODEL);
+  private List<EntityMeta> metadata(Model model) {
     ModelRegistry registry = mock(ModelRegistry.class);
     when(registry.require("shop")).thenReturn(model);
     when(registry.version("shop")).thenReturn(4L);
@@ -66,10 +68,28 @@ class ModelOpenApiTest {
     UserContext user = mock(UserContext.class);
     when(user.clientRoles(anyString())).thenReturn(Set.of("SELLER"));
     MetaController meta = new MetaController(registry, data, user);
-    List<EntityMeta> entities =
-        model.entities().keySet().stream().map(name -> meta.entity("shop", name).data()).toList();
-    OpenAPI api = openApi.build(model, entities);
+    return model.entities().keySet().stream()
+        .map(name -> meta.entity("shop", name).data())
+        .toList();
+  }
+
+  private JsonNode document() throws Exception {
+    Model model = ModelParser.parse(MODEL);
+    OpenAPI api = openApi.build(model, metadata(model));
     return new ObjectMapper().readTree(openApi.toJson(api));
+  }
+
+  @Test
+  void entityMetadataExposesTheClassifierOfATask() {
+    var order =
+        metadata(ModelParser.parse(MODEL)).stream()
+            .filter(entity -> entity.name().equals("order"))
+            .findFirst()
+            .orElseThrow();
+    JsonNode tasks = new ObjectMapper().valueToTree(order.aiTasks());
+
+    assertEquals("orders", tasks.at("/classify/classifier").asText());
+    assertEquals("kind", tasks.at("/classify/outputField").asText());
   }
 
   @Test

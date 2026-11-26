@@ -4,7 +4,8 @@ Tệp này do `.github/scripts/check_image_packages.py generate` sinh, không s�
 Mỗi bảng liệt kê gói của một image mà stack chạy, ở đúng tag và digest repository ghim, kèm giấy phép mà bản phân phối của gói ghi lại.
 Danh sách do Trivy đọc từ cơ sở dữ liệu gói của image; một gói có nhiều tệp thì cột giấy phép gộp giấy phép của các tệp đó.
 Cột Ngoài OSI nêu các giấy phép chưa nằm trong `.github/licenses/osi-approved.json`; chúng không bị ẩn.
-Dự án kéo image nguyên bản khi chạy, không đóng gói, không sửa và không phân phối lại; các gói này do nhà phân phối hệ điều hành của image giữ giấy phép.
+Image bên thứ ba chạy trong stack được kéo nguyên bản; image dự án phát hành chứa lớp nền của `eclipse-temurin`, `nginx`, `node` và `clamav/clamav`, nên các lớp đó được phân phối lại.
+Các gói này giữ giấy phép do nhà phân phối hệ điều hành của image ghi.
 Mô-đun Go biên dịch vào tệp chạy và gói npm không ghi giấy phép trong image; giấy phép của chúng lấy từ deps.dev theo đúng phiên bản, và `(not recorded)` nghĩa là deps.dev không ghi giấy phép nào.
 Image `clamav/clamav` là nền của image `clamav` của dự án, chỉ xóa libclamunrar, nên bảng gói của nó vẫn đúng.
 Giấy phép của từng thành phần cấp cao và của từng gói thư viện của dự án ở [`DEPENDENCY_INVENTORY.md`](./DEPENDENCY_INVENTORY.md).

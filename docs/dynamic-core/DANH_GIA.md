@@ -18,7 +18,7 @@ Nguồn: [đề thi](https://vfossa.vn/tin-tuc/de-thi-phan-mem-nguon-mo-olp-2026
 | Dữ liệu có cấu trúc | PostgreSQL; lược đồ, ràng buộc và API có quyền theo dòng sinh từ mô hình | Đạt |
 | Dữ liệu phi cấu trúc | SeaweedFS, tệp đính kèm theo quyền của hồ sơ, ClamAV; quét mã độc bật mặc định, tệp EICAR bị chặn trong CI | Đạt |
 | Động cơ luồng công việc | Flowable nhúng, BPMN sinh từ mô hình, ba họ mẫu | Đạt |
-| Ít nhất một ứng dụng Tầng 2 trong H-P-D-I | Ứng dụng web dựng từ metadata và bảng điều khiển, chạm H, P và D; chữ I có một thành phần là trợ lý đề xuất giá trị trường từ hồ sơ và nguồn tham khảo, chạy self-host qua endpoint suy luận chuẩn mở, tắt mặc định, người dùng xác nhận trước khi lưu; thiếu tìm kiếm toàn văn và theo ngữ nghĩa, quản trị tác tử AI, OCR và hỏi đáp trên tri thức nội bộ (đề không nêu số thành phần phải làm); `README.md` có mục đối chiếu với đề | Đạt một phần |
+| Ít nhất một ứng dụng Tầng 2 trong H-P-D-I | Ứng dụng web dựng từ metadata và bảng điều khiển, chạm H, P và D; chữ I có một thành phần là trợ lý đề xuất giá trị trường bằng bộ phân loại tiếng Việt do đội tự huấn luyện (mã, trọng số và dữ liệu mở), chạy trên CPU, kèm cụm chữ của hồ sơ làm căn cứ và rà hồ sơ ở Hộp việc, người dùng xác nhận trước khi lưu; thiếu tìm kiếm toàn văn và theo ngữ nghĩa, quản trị tác tử AI, OCR và hỏi đáp trên tri thức nội bộ (đề không nêu số thành phần phải làm); `README.md` có mục đối chiếu với đề | Đạt một phần |
 | Giấy phép OSI, mã công khai, có bản phát hành trước khi nộp | Apache-2.0; mười bản `v1.0.0` đến `v2.1.0` | Đạt |
 
 Các giao diện đi kèm được tính như sau.
@@ -33,7 +33,7 @@ Keycloak Admin Console là giao diện của dịch vụ nguồn mở đi kèm c
 | (i) Tách theo vòng đời dữ liệu, đẩy lịch sử xuống hồ dữ liệu | Hồ sơ đã đóng tự ghi ra Parquet trong kho đối tượng theo lịch (kho lạnh; PostgreSQL là kho ấm), kèm manifest và hash; `dxos archive query` truy vấn chỉ đọc từng lần chạy bằng DuckDB; phạm vi là kho hồ sơ, ghi ra tệp Parquet không kèm lớp bảng | Đạt |
 | (ii) Hội tụ IT và OT, bản sao số | Số đo của thiết bị giả lập thành hồ sơ sự cố qua API chung hoặc qua cầu nối MQTT tùy chọn, đi cùng quy trình và quyền với hồ sơ hành chính; lõi không giữ trạng thái thiết bị nên không có bản sao số | Đạt một phần |
 | (iii) Dòng chảy, phả hệ, chất lượng dữ liệu | Mô hình là danh mục dữ liệu, tab Danh mục dữ liệu kèm phả hệ từng trường, lịch sử nối chuỗi hash | Đạt |
-| (iv) Zero-Trust, GitOps, kiểm dịch mã độc, tự phục hồi | Token kiểm ở cổng và ở lõi; trợ lý chạy trên network nội bộ, chỉ ra được tới endpoint inference qua một proxy; mô hình áp dụng theo kế hoạch, phần lệch được sửa khi áp dụng lại; container bị xóa được chạy lại; hạ tầng và mô hình kéo từ git bằng `dxos gitops`; quét mã độc bật mặc định, và nhóm chế độ lõi của CI kiểm tệp EICAR bị chặn; phạm vi là một máy chạy Compose, GitOps và tự phục hồi chạy trên Compose | Đạt |
+| (iv) Zero-Trust, GitOps, kiểm dịch mã độc, tự phục hồi | Token kiểm ở cổng và ở lõi; trợ lý chạy trên network nội bộ không có đường ra Internet; mô hình áp dụng theo kế hoạch, phần lệch được sửa khi áp dụng lại; container bị xóa được chạy lại; hạ tầng và mô hình kéo từ git bằng `dxos gitops`; quét mã độc bật mặc định, và nhóm chế độ lõi của CI kiểm tệp EICAR bị chặn; phạm vi là một máy chạy Compose, GitOps và tự phục hồi chạy trên Compose | Đạt |
 
 ## 3. Bảy cụm dịch vụ của Tầng 1
 
@@ -71,7 +71,7 @@ Phần này do Ban giám khảo chấm ở buổi chung kết; bảng ghi điể
 | Tiêu chí | Điểm tựa | Điểm yếu |
 |---|---|---|
 | Tính nguyên gốc | Đổi mô hình an toàn trên hệ thống đang chạy: kế hoạch, mức rủi ro, dòng vi phạm, quay lui; quy tắc bất biến nằm trong engine; lịch sử nối chuỗi hash | Đề không hỏi trực tiếp, nên phải giải thích được giá trị trong vài phút; các đội cùng dùng Keycloak, APISIX, PostgreSQL, Flowable nên phần riêng chỉ là vòng đời mô hình; chưa nói chuyện với khách hàng nào (#231) |
-| Mức hoàn thiện | Mười mẫu mô hình trên ba họ quy trình; 20 kiểm tra của CI trên stack thật, kể cả trình duyệt; bộ kiểm chung cho mô hình mới | Phần AI chỉ có một thành phần, trợ lý đề xuất giá trị trường (tùy chọn); trợ lý phục vụ nhiều người nhưng chỉ đề xuất, không tự hành động |
+| Mức hoàn thiện | Mười mẫu mô hình trên ba họ quy trình; 20 kiểm tra của CI trên stack thật, kể cả trình duyệt; bộ kiểm chung cho mô hình mới | Phần AI chỉ có một thành phần, trợ lý đề xuất giá trị trường; trợ lý phục vụ nhiều người nhưng chỉ đề xuất, không tự hành động |
 | Thân thiện | Cài một lệnh, bảng điều khiển, thư viện mẫu, tài khoản và hồ sơ thử, mã hồ sơ đọc được, giao diện điện thoại, tiếng Việt và tiếng Anh | Giao diện sinh từ metadata dễ trông chung chung; chữ do mô hình định nghĩa không được dịch (`BACKLOG.md`, mục 4) |
 | Phát triển bền vững | Tài liệu kiến trúc, tệp mô hình, API và vận hành; mục ứng phó sự cố; lệnh `dxos`; bộ kiểm chung cho mô hình; SBOM; ứng dụng mẫu của bên ngoài ở `examples/appliance-store` | Đóng góp tập trung vào một người |
 | Trình diễn, thu hút cộng đồng | Kịch bản 15 phút ở `docs/DEMO.md`, hai video và ảnh động kiến trúc | Bài trình bày chung kết ở `docs/TRINH_BAY.md` (slide Marp, chưa xuất PDF); buổi thi kéo DX-OS vào một web đã được deploy sẵn |
@@ -129,31 +129,32 @@ Cột Trạng thái ghi quyết định của đội: đề xuất đã chốt l
 ## 8. Đối chiếu với chuẩn repository nguồn mở
 
 Đối chiếu với hồ sơ cộng đồng của GitHub, tiêu chí của huy hiệu OpenSSF Best Practices và Scorecard, và tệp có ở sáu dự án khác (Keycloak, APISIX, Supabase, Directus, Frappe, Strapi).
+Các số về sáu dự án đó đếm ngày 26/11/2026 trên nhánh mặc định của từng repository.
 Huy hiệu OpenSSF Best Practices mức passing đã được cấp; workflow `Scorecard` chạy hằng tuần và khi đẩy lên `main`; kết quả ở tab Security.
 GitHub chấm hồ sơ cộng đồng của repository là 100 trên 100; mẫu issue có thật dù API ghi `issue_template: false`.
 
-| Hạng mục | DX-OS | Các dự án khác | Mức |
+| Hạng mục | DX-OS | Sáu dự án khác | Mức |
 |---|---|---|---|
-| README, LICENSE, quy tắc ứng xử, hướng dẫn đóng góp, mẫu pull request | Có | Phần lớn có | Đạt |
-| Mẫu issue | Có `.github/ISSUE_TEMPLATE` (hai mẫu và `config.yml`); API hồ sơ cộng đồng ghi `false` dù mẫu có thật nên không phải điểm trừ | Phần lớn có | Đạt |
-| `SECURITY.md`, quy trình báo lỗ hổng | Có, kèm mốc phản hồi và quy tắc thử trên bản trực tuyến; private vulnerability reporting đang bật (API trả `enabled: true`) | Một nửa có | Đạt |
-| `CHANGELOG`, `ROADMAP`, `NOTICE` | Có cả ba | Rất ít dự án có đủ | Đạt |
-| Giấy phép đọc được bằng máy | `reuse lint` đạt ở mọi tệp (ngày 25/11/2026); SBOM kèm mỗi bản phát hành | Ít dự án có | Đạt |
-| Cập nhật và quét phụ thuộc | Dependabot, Trivy, gitleaks; tab Security ngày 18/11 có 5 cảnh báo Dependabot mở (1 cao, 4 vừa), đều ở thư viện npm gián tiếp (`decode-uri-component`, `react-router` trong web; `uuid` trong trang docs) và đều mở từ 6 đến 11/11, chưa cái nào quá 60 ngày; quét độc lập ngày 14/11 bằng Trivy 0.58.1 (cùng image với CI) trên các tệp khóa thấy 0 lỗ hổng cao hoặc nghiêm trọng, và các lỗ hổng mức vừa bị giới hạn bởi phiên bản mà `react-admin` và Docusaurus cho phép | Phần lớn có công cụ cập nhật | Đạt một phần |
+| README, LICENSE, quy tắc ứng xử, hướng dẫn đóng góp, mẫu pull request | Có | README, LICENSE, hướng dẫn đóng góp: 6 trên 6; quy tắc ứng xử: 4 trên 6; mẫu pull request: 5 trên 6 | Đạt |
+| Mẫu issue | Có `.github/ISSUE_TEMPLATE` (hai mẫu và `config.yml`); API hồ sơ cộng đồng ghi `false` dù mẫu có thật nên không phải điểm trừ | 5 trên 6 có | Đạt |
+| `SECURITY.md`, quy trình báo lỗ hổng | Có, kèm mốc phản hồi và quy tắc thử trên bản trực tuyến; private vulnerability reporting đang bật (API trả `enabled: true`) | 5 trên 6 có | Đạt |
+| `CHANGELOG`, `ROADMAP`, `NOTICE` | Có cả ba | Không dự án nào có đủ cả ba; APISIX có `CHANGELOG` và `NOTICE` | Đạt |
+| Giấy phép đọc được bằng máy | `reuse lint` đạt ở mọi tệp (ngày 25/11/2026); SBOM kèm mỗi bản phát hành | Không dự án nào có | Đạt |
+| Cập nhật và quét phụ thuộc | Dependabot, Trivy, gitleaks; tab Security ngày 18/11 có 5 cảnh báo Dependabot mở (1 cao, 4 vừa), đều ở thư viện npm gián tiếp (`decode-uri-component`, `react-router` trong web; `uuid` trong trang docs) và đều mở từ 6 đến 11/11, chưa cái nào quá 60 ngày; quét độc lập ngày 14/11 bằng Trivy 0.58.1 (cùng image với CI) trên các tệp khóa thấy 0 lỗ hổng cao hoặc nghiêm trọng, và các lỗ hổng mức vừa bị giới hạn bởi phiên bản mà `react-admin` và Docusaurus cho phép | 5 trên 6 có cấu hình Dependabot | Đạt một phần |
 | Bảo vệ nhánh và tag | Hai ruleset đang `active`: `main` (bắt buộc pull request, 16 kiểm tra phải xanh, một đối tượng được bỏ qua) và tag `v*` bất biến | Không đo được từ ngoài | Đạt |
-| `.editorconfig` | Thêm ngày 14/11 | 6 trên 7 dự án có | Đạt |
-| `CODEOWNERS` | `.github/CODEOWNERS` nêu ba thành viên là chủ sở hữu của mọi đường dẫn, và ruleset của `main` đòi một chủ sở hữu duyệt pull request | 4 trên 7 có | Đạt |
-| Phân tích tĩnh (SAST) | Mã web chạy Biome (`npm run lint`) ở workflow `Frontend`; SpotBugs với find-sec-bugs chạy ở bước `verify` của backend và làm hỏng build khi có phát hiện chưa được giải thích; ngày 14/11 đã duyệt 67 phát hiện còn lại sau khi lọc cảnh báo lộ tham chiếu của record và DTO: 37 về SQL (tên bảng và cột đều qua `Sql.ident`, giá trị qua tham số `?`), 7 về giá trị có thể null, 5 về đa luồng và 18 khác, không phát hiện chỗ nào khai thác được; mỗi nhóm có lý do ở `backend/spotbugs-exclude.xml` | 2 trên 7 có CodeQL | Đạt |
-| Bản phát hành có chữ ký | Tệp phát hành và image được workflow ký bằng Sigstore, kiểm bằng `gh attestation verify`; áp dụng từ bản `2.0.2` | Không có trong khảo sát | Đạt |
+| `.editorconfig` | Thêm ngày 14/11 | 5 trên 6 có | Đạt |
+| `CODEOWNERS` | `.github/CODEOWNERS` nêu ba thành viên là chủ sở hữu của mọi đường dẫn, và ruleset của `main` đòi một chủ sở hữu duyệt pull request | 4 trên 6 có | Đạt |
+| Phân tích tĩnh (SAST) | Mã web chạy Biome (`npm run lint`) ở workflow `Frontend`; SpotBugs với find-sec-bugs chạy ở bước `verify` của backend và làm hỏng build khi có phát hiện chưa được giải thích; ngày 14/11 đã duyệt 67 phát hiện còn lại sau khi lọc cảnh báo lộ tham chiếu của record và DTO: 37 về SQL (tên bảng và cột đều qua `Sql.ident`, giá trị qua tham số `?`), 7 về giá trị có thể null, 5 về đa luồng và 18 khác, không phát hiện chỗ nào khai thác được; mỗi nhóm có lý do ở `backend/spotbugs-exclude.xml` | 2 trên 6 có CodeQL | Đạt |
+| Bản phát hành có chữ ký | Tệp phát hành và image được workflow ký bằng Sigstore, kiểm bằng `gh attestation verify`; áp dụng từ bản `2.0.2` | 1 trên 6 ký image (Directus, bằng cosign) | Đạt |
 | `GOVERNANCE.md`, `MAINTAINERS` | Chưa có | Chỉ Keycloak có | Chưa cần với nhóm ba người |
-| Huy hiệu OpenSSF Best Practices, Scorecard | Huy hiệu mức passing đã cấp ngày 14/11 ([hồ sơ](https://www.bestpractices.dev/projects/16682)): 57 tiêu chí Met, 7 N/A và 3 Unmet ở mức khuyến nghị (`test_most`, `warnings_strict`, `dynamic_analysis`); workflow `Scorecard` đưa kết quả vào tab Security, và việc còn lại là 5 lỗ hổng trong phụ thuộc gián tiếp, ghi ở `BACKLOG.md` | Không có dự án nào trong khảo sát chạy Scorecard | Đạt |
+| Huy hiệu OpenSSF Best Practices, Scorecard | Huy hiệu mức passing đã cấp ngày 14/11 ([hồ sơ](https://www.bestpractices.dev/projects/16682)): 57 tiêu chí Met, 7 N/A và 3 Unmet ở mức khuyến nghị (`test_most`, `warnings_strict`, `dynamic_analysis`); workflow `Scorecard` đưa kết quả vào tab Security, và việc còn lại là 5 lỗ hổng trong phụ thuộc gián tiếp, ghi ở `BACKLOG.md` | Không dự án nào chạy Scorecard | Đạt |
 
 Về phân tích tĩnh, CodeQL không hợp nguyên tắc công cụ phải có giấy phép OSI của dự án vì điều khoản của công cụ dòng lệnh không thuộc OSI.
 Backend dùng SpotBugs và web dùng Biome (ESLint không chạy được với TypeScript 7), cả hai đều là phần mềm nguồn mở.
 
 ## 9. Kết luận
 
-Điểm vững: lõi đáp ứng đủ các thành phần bắt buộc của đề và được kiểm tự động trên stack thật; giấy phép của dự án và của mọi thành phần dùng đều thuộc danh sách OSI, trừ hai gói dữ liệu có ngoại lệ ghi rõ; kho mã có nhiều tệp chuẩn hơn phần lớn dự án trong khảo sát.
+Điểm vững: lõi đáp ứng đủ các thành phần bắt buộc của đề và được kiểm tự động trên stack thật; giấy phép của dự án và của mọi thành phần dùng đều thuộc danh sách OSI, trừ các ngoại lệ nêu tên và lý do ở phần "Giấy phép ngoài danh sách OSI" của `DEPENDENCIES.txt`; trong sáu dự án đối chiếu, không dự án nào có đủ `CHANGELOG`, `ROADMAP` và `NOTICE` hay giấy phép đọc được bằng máy, còn kho này có.
 
 Điểm yếu, theo mức nặng giảm dần:
 

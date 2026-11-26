@@ -266,7 +266,7 @@ Cách tính các giao diện đi kèm và đối chiếu chi tiết từng ý c�
 - Một bản cài chạy trên một máy bằng Docker Compose; chưa chạy nhiều bản sao của lõi.
 - Số đo của thiết bị vào lõi qua API chung; lõi không giữ trạng thái thiết bị.
 - Chưa có chữ ký số, két bí mật, đa thuê giữa các tổ chức và tìm kiếm toàn văn.
-- Chưa thử cài trên Windows; người dùng Windows chạy bản Linux trong WSL2.
+- Người dùng Windows chạy bản Linux trong WSL2 với Docker Desktop; không có bản chạy thẳng trên Windows.
 - Phần lớn tài liệu chỉ có tiếng Việt.
 
 Danh sách đầy đủ và lý do ở [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md).

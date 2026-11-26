@@ -267,7 +267,7 @@ The shortest way to check DX-OS:
 - An install runs on one machine with Docker Compose; the core does not run as several replicas.
 - Device readings enter the core through the common API; the core keeps no device state.
 - There is no digital signature, secret vault, multi-tenancy across organizations or full-text search.
-- Installing on Windows has not been tried; Windows users run the Linux version in WSL2.
+- Windows users run the Linux version in WSL2 with Docker Desktop; there is no version that runs directly on Windows.
 - Most of the documentation is in Vietnamese only.
 
 The full list and the reasons are in [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md) (Vietnamese).

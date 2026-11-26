@@ -35,7 +35,12 @@ Mô hình huấn luyện từ dữ liệu này là bộ phân loại hồi quy l
 Nó không sinh văn bản, không trả lời tự do và không dùng làm chatbot hay mô hình đa dụng.
 Nó chỉ gợi ý nhãn cho một trường của hồ sơ trong trợ lý nghiệp vụ của DX-OS, và người dùng xác nhận trước khi lưu.
 Nhãn là nhãn nghiệp vụ theo [định nghĩa nhãn](../labels.json), không phải dự đoán của Claude.
-Người dùng lại dữ liệu để huấn luyện mô hình tự chịu trách nhiệm tuân thủ điều khoản của Anthropic đối với phần do Claude soạn.
+
+Phần do Claude soạn được công bố công khai theo CC-BY-4.0, giấy phép này không cho đội thêm hạn chế nào.
+Điều khoản của Anthropic cấm dùng kết quả của Claude để huấn luyện chatbot đa dụng hoặc mô hình sinh văn bản, và cấm hỗ trợ bên thứ ba làm việc đó.
+Vì bộ dữ liệu công khai, một bên thứ ba có thể tải phần này về để huấn luyện mô hình như vậy, và đội không kiểm soát được việc đó.
+Đội đề nghị chỉ dùng phần do Claude soạn để huấn luyện bộ phân loại hoặc mô hình chuyên biệt không cạnh tranh; đề nghị này không phải điều kiện của giấy phép.
+Người dùng lại dữ liệu tự chịu trách nhiệm tuân thủ điều khoản của Anthropic đối với phần do Claude soạn.
 
 ### Bản quyền
 

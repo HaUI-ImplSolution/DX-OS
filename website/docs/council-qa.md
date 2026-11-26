@@ -83,7 +83,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 
 - Trợ lý nghiệp vụ đề xuất giá trị một trường của hồ sơ và rà hồ sơ ở Hộp việc; người dùng sửa, hủy hoặc xác nhận trước khi ghi qua API Core.
 - Mô hình do đội tự huấn luyện: bộ phân loại hồ sơ tiếng Việt chạy trên CPU ngay trong trợ lý, không cần mô hình ngoài; đề xuất kèm cụm chữ của hồ sơ làm căn cứ, và từ chối khi không đủ căn cứ.
-- Dữ liệu: câu huấn luyện là bản nháp do Claude (Anthropic) viết, theo CC-BY-4.0 trong phạm vi đội có quyền; tập chỉnh ngưỡng do Claude viết; Codex không tạo dữ liệu nào; câu lạc đề lấy từ MASSIVE; bộ nghiệm thu do đội viết tay.
+- Dữ liệu: câu huấn luyện là bản nháp do Claude (Anthropic) viết, theo CC-BY-4.0 trong phạm vi đội có quyền; tập chỉnh ngưỡng do Claude viết; điều khoản của Anthropic cấm dùng phần do Claude soạn để huấn luyện chatbot hoặc mô hình sinh văn bản, và dữ liệu công khai nên bên thứ ba có thể làm vậy, ghi ở thẻ dữ liệu; Codex không tạo dữ liệu nào; câu lạc đề lấy từ MASSIVE; bộ nghiệm thu do đội viết tay.
   Mã, trọng số, tập chỉnh và bộ nghiệm thu nằm trong repository.
 - Giới hạn: số đo lấy trên câu do đội viết, chưa trên hồ sơ thật, và bộ nghiệm thu đã được đo ba lần; bộ phân loại mới bật cho ba mẫu; hỏi đáp có trích nguồn, tìm kiếm tri thức và tác tử nghe sự kiện nằm ngoài phạm vi.
 - Lõi đã có sẵn chỗ để nối: hàng đợi sự kiện, webhook có chữ ký và `GET /api/v1/events` cho tác tử đọc việc mới, còn ghi lại vẫn đi qua API chung nên quyền, quy tắc và quy trình vẫn áp dụng.
@@ -205,7 +205,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 
 ## 19. Mã có phần do công cụ AI viết, đội kiểm soát thế nào?
 
-- Đội dùng Claude (Anthropic) và Codex (OpenAI) để viết nháp mã và tài liệu; 442 trong 1230 commit trên `Khuong/main` (tính đến hết ngày 25/11/2026) mang dòng `Co-Authored-By` của công cụ, và GitHub hiện chúng ở trang thống kê người đóng góp; không phải commit nào có dùng công cụ cũng mang dòng đó.
+- Đội dùng Claude (Anthropic) và Codex (OpenAI) để viết nháp mã và tài liệu; 443 trong 1254 commit trên `Khuong/main` (tính đến hết ngày 26/11/2026) mang dòng `Co-Authored-By` của công cụ, và GitHub hiện chúng ở trang thống kê người đóng góp; không phải commit nào có dùng công cụ cũng mang dòng đó.
 - Người gửi pull request đọc, chạy và chịu trách nhiệm về từng thay đổi; công cụ không tự gộp vào nhánh nào.
 - Mọi thay đổi đi qua cùng kiểm tra của CI: biên dịch, định dạng, kiểm đầu-cuối trên stack thật, kiểm giấy phép và quét bí mật; mã do công cụ viết không có đường tắt.
 - Giấy phép của phần đóng góp do người gửi bảo đảm; thư viện mới qua kiểm OSI trước khi thêm, nên mã sinh ra không kéo theo thành phần ngoài danh sách.

@@ -159,7 +159,7 @@
       "version": "machine",
       "license": "GPL-2.0-or-later",
       "scope": "dev",
-      "note": "encodes the videos of website/docs/images/video on a developer machine; a build with libx264 is GPL"
+      "note": "encodes the videos of website/docs/images/video to WebM (VP9) on a developer machine; the Ubuntu build is GPL"
     }
   ],
   "system": [

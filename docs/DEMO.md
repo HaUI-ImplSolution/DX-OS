@@ -42,7 +42,7 @@ Nói ba ý, không mở máy:
 - Mỗi lần có nghiệp vụ mới, người ta dựng lại đăng nhập, phân quyền, lưu tệp và luồng duyệt.
 - DX-OS làm phần dùng chung đó một lần, nghiệp vụ nằm trong một tệp mô hình.
 
-Nếu còn thời gian, thêm ba ý sau và nói rõ đây là giả thuyết, vì đội chưa nói chuyện với khách hàng nào ([#231](https://github.com/HaUI-ImplSolution/DX-OS/issues/231)):
+Nếu còn thời gian, thêm ba ý sau và nói rõ đây là giả thuyết, vì đội không phỏng vấn khách hàng:
 
 - **Nỗi đau:** đơn vị nhỏ cần quy trình duyệt có phân quyền và lịch sử, nhưng không đủ người để dựng và giữ một hệ thống riêng.
 - **Thị trường:** các đơn vị đã có phần mềm chạy sẵn và chỉ thiếu một quy trình; họ cần thêm quy trình vào đó, không cần thay phần mềm.

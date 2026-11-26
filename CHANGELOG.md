@@ -115,6 +115,7 @@ Nâng cấp từ `2.0.2` giữ nguyên dữ liệu; hai migration mới thêm b�
 - Trợ lý chạy trên network nội bộ riêng, không có đường ra ngoài stack.
 - Người dùng hủy liên kết ở trang Trợ lý nghiệp vụ (`DELETE /assistant-api/v1/me/core/link`): refresh token bị thu hồi ở Keycloak, token đã lưu bị xóa và các đề xuất đang chờ bị hủy.
 - `docker compose run --rm assistant-init dist/rotate.js /bootstrap` thay master key và mã hóa lại state.
+- `docs/AI.md` tổng hợp phần AI: luồng xử lý, dữ liệu và giấy phép, kết quả nghiệm thu và cách đo lại; `docs/API.md` liệt kê các đường dẫn `/assistant-api/v1`.
 
 ### Giấy phép
 
@@ -130,6 +131,9 @@ Nâng cấp từ `2.0.2` giữ nguyên dữ liệu; hai migration mới thêm b�
 - Danh sách ngoại lệ nêu cả dữ liệu đóng trong thư viện PDFBox của image `backend` và lớp nền được phân phối lại của các image phát hành.
 - Ghi công MASSIVE và SLURP, nguồn của câu lạc đề khi huấn luyện bộ phân loại.
 - `third-party-licenses.txt` của web và trang docs kèm cả tệp thông báo bên thứ ba của thư viện, và văn bản chuẩn của giấy phép cho gói không kèm tệp giấy phép.
+- `check_licenses.py` kiểm `DEPENDENCIES.txt` nêu SHA-256 của từng tệp trọng số trong image trợ lý và mã băm khớp tệp thật.
+- Thẻ dữ liệu của bộ phân loại nêu rằng điều khoản của Anthropic cấm dùng phần do Claude soạn để huấn luyện chatbot hoặc mô hình sinh văn bản, và bên thứ ba có thể tải dữ liệu công khai về làm vậy.
+- Hai video của trang Hình ảnh dùng WebM (VP9) thay cho MP4 (H.264), định dạng có bằng sáng chế.
 
 ### Phát hành
 

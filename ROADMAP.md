@@ -11,7 +11,7 @@ Mọi việc dưới đây giữ hướng đó: thêm nghiệp vụ là thêm t�
 
 ## Tiếp theo
 
-- **Thử với đơn vị thật:** đưa DX-OS cho một đơn vị có quy trình duyệt để kiểm các giả thuyết về nhu cầu, vì đội chưa nói chuyện với khách hàng nào.
+- **Thử với đơn vị thật:** đưa DX-OS cho một đơn vị có quy trình duyệt để kiểm các giả thuyết về nhu cầu, vì nhu cầu hiện là giả thuyết.
 - **Tài liệu tiếng Anh:** `README_EN.md` đã có; các tài liệu còn lại chỉ có tiếng Việt.
 
 ## Sau đó

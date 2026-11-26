@@ -275,7 +275,7 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/licenses/dependency-excepti
 | Marp CLI                             | MIT                                  | Xuất slide docs/TRINH_BAY.md trên    |
 |                                      |                                      | máy của người phát triển             |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| FFmpeg                               | GPL-2.0-or-later (bản có libx264)    | Mã hóa video của trang docs, chỉ     |
+| FFmpeg                               | GPL-2.0-or-later (bản của Ubuntu)    | Mã hóa video của trang docs, chỉ     |
 |                                      |                                      | trên máy người phát triển            |
 |                                      |                                      |                                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+

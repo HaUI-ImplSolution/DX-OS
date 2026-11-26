@@ -19,28 +19,14 @@ Việc còn lại trước hạn nằm ở mục 2.
 | Kiểm lại khi có bản phát hành mới | Cài bằng `dxos-install.sh` của bản mới rồi làm theo `docs/QUICKSTART.md` (`client add --env`, `client test` và gợi ý sau `dxos start` phải có; liên kết `raw.githubusercontent.com/.../main/examples/order_approval/dxos.yaml` phải hết 404 sau khi gộp vào `main`); chạy `dxos update` từ `v2.0.2` lên `v2.1.0` ở locale `en_US.UTF-8` |
 | Gửi bài | Thư tới `olpvietnam@vaip.vn` và `thuky@vfossa.vn` trước 17:00 ngày 06/12/2026, tiêu đề `BÀI THI PMNM 2026 - [Tên Đội] - [Tên Trường]`, nội dung gồm thành viên đội, người hướng dẫn, đường dẫn kho mã nguồn và cam kết bản quyền theo mẫu trong đề; trước đó xác nhận với trường rằng đội đã có trong danh sách đăng ký gửi BTC, và ghi người hướng dẫn vào mục Nhóm phát triển của `README.md` |
 
-## 3. Giới hạn đã biết
-
-Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm ở mục 3.2.
-
-### 3.1. Đã có issue
-
-| Việc | Issue | Ghi chú |
-|---|---|---|
-| Khách hàng | #231 | Chưa nói chuyện với khách hàng nào; mục Khách hàng và giá trị của `README.md` là giả thuyết |
-
-### 3.2. Chưa có issue
+## 3. Việc cần xử lý
 
 | Việc | Ghi chú |
 |---|---|
 | Tài liệu tiếng Anh | Phần lớn tài liệu chỉ có tiếng Việt; `README_EN.md` đã có, các tài liệu còn lại chưa |
-| Đóng góp tập trung | Một thành viên giữ khoảng hai phần ba commit; `CODEOWNERS` nêu ba thành viên cho mọi đường dẫn, chưa chia người phụ trách theo vùng; chia hay không là quyết định của nhóm |
-| Cảnh báo Scorecard và huy hiệu | Tab Security có 8 cảnh báo của Scorecard chưa duyệt (Maintained, CodeReview, Vulnerabilities, Fuzzing, SAST, TokenPermissions hai cảnh báo, BranchProtection); huy hiệu OpenSSF Best Practices mức passing còn ba tiêu chí khuyến nghị chưa đạt (`test_most`, `warnings_strict`, `dynamic_analysis`), và lời giải thích từng tiêu chí trỏ về tệp trên `main` nên chỉ khớp khi nhánh tích hợp vào `main` |
+| Cảnh báo Scorecard và huy hiệu | Tab Security có 5 cảnh báo của Scorecard chưa duyệt (Maintained, CodeReview, Vulnerabilities, TokenPermissions hai cảnh báo); huy hiệu OpenSSF Best Practices mức passing còn ba tiêu chí khuyến nghị chưa đạt (`test_most`, `warnings_strict`, `dynamic_analysis`), và lời giải thích từng tiêu chí trỏ về tệp trên `main` nên chỉ khớp khi nhánh tích hợp vào `main` |
 | Bản chạy công khai | Chưa được CI kiểm hằng ngày (`deploy/online-check.sh` chạy tay hoặc theo cron), và chưa có phương án chạy tại chỗ nếu mạng ở buổi thi có sự cố vì bản công khai chạy trên một máy chủ EC2 qua Internet |
-| Cài trên Windows | Chưa thử lại trên WSL2 với Docker Desktop bằng `dxos-install.sh` của `v2.1.0`, và chưa chạy `examples/appliance-store` trên giao diện web cùng `./reset.sh` ở đó |
 | Dữ liệu bộ phân loại do Claude soạn | Tập chỉnh 420 câu chưa có người duyệt; chưa có bằng chứng đội đã duyệt các câu gốc huấn luyện; còn phải duyệt hoặc viết lại dữ liệu rồi huấn luyện lại |
-| Điều khoản Anthropic và CC-BY-4.0 của dữ liệu | Câu do Claude soạn được phát hành theo CC-BY-4.0, nhưng điều khoản của Anthropic cấm dùng kết quả để huấn luyện chatbot đa dụng hoặc mô hình sinh văn bản, và CC-BY không cho thêm hạn chế nào ở người dùng sau; thẻ dữ liệu đang để người dùng lại tự chịu trách nhiệm; còn phải chọn một hướng: thay phần do Claude soạn bằng câu đội viết, hoặc hỏi Anthropic về phạm vi cho phép rồi ghi rõ ở thẻ dữ liệu |
-| Video MP4 mã hóa H.264 | Hai video ở `website/docs/images/video` dùng H.264, định dạng có bằng sáng chế; đã có bản GIF; còn phải chuyển sang WebM (VP9 hoặc AV1) hoặc bỏ tệp MP4 |
 
 ## 4. Giới hạn chấp nhận
 
@@ -48,6 +34,9 @@ Cột Issue ghi số issue đang mở trên GitHub; việc chưa có issue nằm
 
 | Việc | Ghi chú |
 |---|---|
+| Đóng góp tập trung | Một thành viên giữ khoảng hai phần ba commit; lịch sử commit không sửa được, và `CODEOWNERS` đã nêu ba thành viên cho mọi đường dẫn |
+| Phỏng vấn khách hàng | Không làm; mục Khách hàng và giá trị của `docs/dynamic-core/README.md` là giả thuyết, chưa kiểm chứng với khách hàng thật |
+| Bên thứ ba dùng dữ liệu Claude soạn | Phần do Claude soạn công bố công khai theo CC-BY-4.0, giấy phép này không cho đội cấm bên thứ ba huấn luyện chatbot hoặc mô hình sinh văn bản, điều mà điều khoản của Anthropic cấm; thẻ dữ liệu nêu rõ rủi ro, và mô hình của đội là bộ phân loại nên không vi phạm; chỉ hết khi thay phần do Claude soạn bằng câu đội viết (xem dòng "Dữ liệu bộ phân loại do Claude soạn" ở mục 3) |
 | Phạm vi AI | Chỉ có trợ lý đề xuất giá trị một trường có người duyệt, bằng bộ phân loại tự huấn luyện; không có hỏi đáp RAG, tác tử theo sự kiện, embedding và reranker; đề không nêu số thành phần của nhóm I phải làm, và ứng dụng minh họa không cần có AI |
 | Chất lượng đề xuất trợ lý | Bộ phân loại có thể từ chối câu hợp lệ hoặc gợi ý sai với cách nói chưa gặp, số đo nghiệm thu lấy trên câu do đội viết, chưa trên hồ sơ thật, và bộ nghiệm thu đã được đo ba lần; người dùng đối chiếu căn cứ rồi mới xác nhận; image và vòng đời trợ lý (bật, tắt, cập nhật) chưa chạy trong CI |
 | Bộ phân loại cho nghiệp vụ mới | Tệp mô hình chỉ chọn được bộ phân loại đã có trọng số; nghiệp vụ khác cần soạn dữ liệu, huấn luyện bằng `tools/classifier/` và nạp tệp trọng số, chưa chỉ khai tệp mô hình là có |

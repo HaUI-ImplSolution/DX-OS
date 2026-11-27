@@ -1,0 +1,147 @@
+---
+title: Images and videos
+---
+
+# Images and videos
+
+The screens below were captured from the running system with sample data; the names of people, records, equipment and rooms are all made up.
+The screenshots are in the English interface; a few (the sign-in page, the monitoring screen, the dark theme, the printout and the phone detail) exist only in the Vietnamese interface, and the videos show the Vietnamese interface.
+The text that a model file defines (entity names, field labels, the content of print templates) stays as the file declares it, which is why some labels stay in Vietnamese.
+
+## Videos
+
+From a request being sent to the record being approved and printed: the officer opens the record in the inbox, approves it, then prints the result.
+
+<video controls muted loop playsInline width="100%" poster={require('@site/docs/images/en/inbox.png').default}>
+  <source src={require('@site/docs/images/video/request-flow.webm').default} type="video/webm" />
+</video>
+
+Changing a business: edit the model file, preview the plan, apply it; the system moves to the new version and the old data is still there.
+
+<video controls muted loop playsInline width="100%" poster={require('@site/docs/images/en/plan.png').default}>
+  <source src={require('@site/docs/images/video/model-change.webm').default} type="video/webm" />
+</video>
+
+## Sign in
+
+Every application shares one sign-in page; one sign-in gives access to whatever the role of the account allows.
+
+![Sign-in page (Vietnamese interface)](@site/docs/images/vi/login.png)
+
+## For the deployer
+
+The control panel: the running models, the template library, write and apply, the event queue, users, outside applications and the data catalog.
+
+![Control panel](@site/docs/images/en/console.png)
+
+The template library lets you pick a ready model and keep changing it.
+
+![Template library](@site/docs/images/en/templates.png)
+
+Writing with the form: the tree on the left shows the whole model, clicking a status or an arrow on the workflow diagram goes to the place to edit it; only the parts you change are edited, and the comment lines in the file are kept.
+
+![Writing with the form](@site/docs/images/en/editor-form.png)
+
+Writing the model file, previewing the plan (the safety level, the entities and fields affected, the SQL statements that will run) and the workflow diagram drawn from the file being edited.
+
+![Write, preview the plan and apply](@site/docs/images/en/plan.png)
+
+Opening a template while the draft has changes that are not applied makes a dialog ask before replacing it.
+Cancel keeps the draft and the current tab; Replace opens the template.
+
+![Asking before the draft is replaced](@site/docs/images/en/console-replace-draft.png)
+
+The event queue: the messages sent to outside systems after each saved change.
+A failed message is retried gradually, with the latest error and a button to retry at once.
+
+![Event queue, a failed message](@site/docs/images/en/outbox-error.png)
+
+![Event queue, a sent message](@site/docs/images/en/outbox-sent.png)
+
+Users: find, create and manage accounts, roles and units.
+
+![Users](@site/docs/images/en/users.png)
+
+Outside applications: each application has its own identifier and holds exactly one role of one model.
+
+![Outside applications](@site/docs/images/en/apps.png)
+
+![Registering an outside application](@site/docs/images/en/apps-dialog.png)
+
+The data catalog: where the data of each model lives, who may see it, which fields are generated, and where the data comes from.
+
+![Data catalog](@site/docs/images/en/data-catalog.png)
+
+The lineage of each field: where the value comes from, which rules read it and where it goes.
+
+![Lineage of each field](@site/docs/images/en/catalog-lineage.png)
+
+Data quality: how completely each field is filled and how fresh the records are.
+
+![Data quality](@site/docs/images/en/catalog-quality.png)
+
+The monitoring screen: the state of the services, failed sign-ins and anomalies (Vietnamese interface).
+
+![Monitoring screen](@site/docs/images/vi/monitor.png)
+
+## For the handler and the submitter
+
+The handler's inbox; the dark theme is switched on with a button in the top bar.
+
+![Inbox](@site/docs/images/en/inbox.png)
+
+![Inbox, dark theme (Vietnamese interface)](@site/docs/images/vi/inbox-dark.png)
+
+The submitter creates a record with a form; the required fields, the lists of choices and the handling unit come from the model file.
+
+![Create a record](@site/docs/images/en/create.png)
+
+The list of records, and the detail page of one record with the history of each step and a button to print the document.
+
+![List of records](@site/docs/images/en/list.png)
+
+The board by status arranges records in columns; a button on the toolbar switches between the list and the board.
+
+![Board by status](@site/docs/images/en/board.png)
+
+![Record detail](@site/docs/images/en/detail.png)
+
+The printout is built from the template of the entity and filled with the data of the approved record (Vietnamese interface).
+
+![Printout](@site/docs/images/vi/print-form.png)
+
+The statistics page, the room booking calendar and the report by field.
+
+![Statistics](@site/docs/images/en/stats.png)
+
+![Booking calendar](@site/docs/images/en/calendar.png)
+
+![Report by field](@site/docs/images/en/report.png)
+
+The portal gathers the applications of the system.
+
+![Portal](@site/docs/images/en/portal.png)
+
+## Business assistant
+
+The handler links their DX-OS account once on the Business assistant page, which also lists the suggestions that were made.
+
+![Business assistant page](@site/docs/images/en/assistant.png)
+
+The Review record classifications button in the Inbox reviews the waiting records; a record whose kind differs from the suggestion shows Needs review with the suggested kind, the confidence and the words used as evidence.
+
+![Inbox after reviewing record classifications](@site/docs/images/en/assistant-inbox.png)
+
+On the record page, the assistant makes a suggestion with evidence taken from the content of the record; the value is written only after the user clicks Confirm save.
+
+![The assistant's suggestion on the record page](@site/docs/images/en/assistant-record.png)
+
+## On a phone
+
+The interface shrinks into cards on a narrow screen.
+
+![Inbox on a phone](@site/docs/images/en/phone-inbox.png)
+
+![List on a phone (Vietnamese interface)](@site/docs/images/vi/phone-list.png)
+
+![Detail on a phone (Vietnamese interface)](@site/docs/images/vi/phone-detail.png)

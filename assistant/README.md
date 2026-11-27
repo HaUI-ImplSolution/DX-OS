@@ -5,7 +5,18 @@ Mô hình của trợ lý là bộ phân loại hồ sơ tiếng Việt do độ
 Người dùng xem căn cứ, sửa hoặc xác nhận trên giao diện hồ sơ.
 Core kiểm quyền, quy tắc và phiên bản trước khi ghi, nên model không có đường ghi trực tiếp.
 
+| Cần | Xem |
+|---|---|
+| Bật, tắt, cấu hình, dựng image | [Chạy, cấu hình và tắt](#chạy-cấu-hình-và-tắt) |
+| Bộ phân loại và trọng số | [Bộ phân loại](#bộ-phân-loại) |
+| Một đề xuất đi từ tạo đến ghi | [Đề xuất và xác nhận](#đề-xuất-và-xác-nhận) |
+| Mạng, dữ liệu lưu, thu hồi, thay khóa | [Vận hành](#vận-hành) |
+| Kiểm trợ lý | [Kiểm tra](#kiểm-tra) |
+| Gỡ trợ lý khỏi mã nguồn | [Gỡ trợ lý](#gỡ-trợ-lý) |
+
 ## Chạy, cấu hình và tắt
+
+### Chạy và tắt
 
 Trợ lý chạy cùng stack ở chế độ full (nhóm `app`), nhẹ vì suy luận bằng CPU trong tiến trình; chế độ core không có container hay route của trợ lý.
 
@@ -19,11 +30,15 @@ Trợ lý chạy cùng stack ở chế độ full (nhóm `app`), nhẹ vì suy l
 Trợ lý không giữ nền tảng: `dxos start`, `dxos update` và `reset.sh` khởi động nó sau nền tảng, nên trợ lý lỗi hay bị dừng chỉ có cảnh báo, Core và ứng dụng vẫn chạy bình thường.
 Giao diện chỉ hiện mục Trợ lý khi dịch vụ trả lời, nên dừng `assistant-control` là ẩn mục đó.
 
-Trợ lý chạy được không cần tệp cấu hình riêng; hai biến tùy chọn `ASSISTANT_CLASSIFIERS_DIR` và `ASSISTANT_OIDC_REVOKE_URL` ở mục 6 của [`deploy/.env.example`](../deploy/.env.example).
+### Cấu hình
+
+Trợ lý chạy được không cần tệp cấu hình riêng; hai biến tùy chọn `ASSISTANT_CLASSIFIERS_DIR` và `ASSISTANT_OIDC_REVOKE_URL` ở mục 8 của [`deploy/.env.example`](../deploy/.env.example).
 Giới hạn RAM và CPU của container nằm ở dịch vụ `assistant-control` trong `deploy/docker-compose.yml`.
 
 Nếu mật khẩu quản trị Keycloak trong `deploy/.env` không còn đúng, `assistant-sso` chỉ ghi cảnh báo và trợ lý không liên kết được tài khoản.
 Xem `docker compose logs assistant-sso`, sửa `deploy/.env` rồi chạy lại `docker compose up -d`.
+
+### Image
 
 `dxos update` kéo cả image trợ lý ở chế độ full.
 Image có sau khi chạy workflow `Release Images` (cùng `services=all`).
@@ -32,6 +47,8 @@ Dựng image từ mã nguồn bằng `docker compose build assistant-init` trong
 Dựng thẳng bằng `docker build -f assistant/Dockerfile .` ở gốc repo thì cần BuildKit.
 
 ## Bộ phân loại
+
+### Ba bộ phân loại có sẵn
 
 Image đóng gói ba bộ phân loại mà các mẫu dùng, đều đạt điều kiện phát hành:
 
@@ -44,11 +61,18 @@ Image đóng gói ba bộ phân loại mà các mẫu dùng, đều đạt đi�
 Dữ liệu, cách huấn luyện và trọng số ở [`tools/classifier/`](../tools/classifier/README.md); số đo và giới hạn ở [thẻ mô hình](../tools/classifier/MODEL_CARD.md).
 Tệp mô hình chỉ chọn được bộ phân loại đã có trọng số; nghiệp vụ khác cần dữ liệu và huấn luyện riêng.
 
+### Nạp trọng số
+
 Trợ lý nạp trọng số từ `/app/classifiers` khi khởi động.
 Đặt `ASSISTANT_CLASSIFIERS_DIR` để nạp từ thư mục khác bên trong container, ví dụ `/run/secrets/classifiers` nếu đặt tệp dưới `deploy/data/assistant/private/classifiers`.
 Mỗi tệp có tên `<classifier>.json`, với `<classifier>` khớp tên nhiệm vụ trong tệp trọng số.
 Trợ lý báo `configured` khi nạp được ít nhất một bộ phân loại.
 `GET /me` trả `model.classifiers` gồm các tên đã nạp.
+
+Revision của nhiệm vụ bao gồm SHA-256 của tệp trọng số.
+Thay tệp và khởi động lại trợ lý làm các đề xuất dùng trọng số cũ hết hiệu lực.
+
+### Kết quả và căn cứ
 
 Nhiệm vụ đọc các trường chữ theo thứ tự `input_fields`.
 Mẫu hỗ trợ kỹ thuật khai `title` rồi `detail` theo thứ tự huấn luyện.
@@ -57,24 +81,34 @@ Kết quả từ chối trả `insufficient: true` và `proposal: null`.
 Giao diện hiển thị các cụm chữ trong mục **Căn cứ trong hồ sơ** kèm độ tự tin theo phần trăm.
 Sửa giá trị khác gợi ý thì đề xuất mới không còn `confidence`.
 
-Thiếu hoặc không đọc được trọng số của nhiệm vụ thì API trả 409 `ERR_CLASSIFIER_UNAVAILABLE` cho nhiệm vụ đó.
-Các lựa chọn của trường đầu ra phải khớp tập nhãn nghiệp vụ của tệp trọng số, nếu sai thì API trả 409 `ERR_CLASSIFIER_LABELS`.
-Revision của nhiệm vụ bao gồm SHA-256 của tệp trọng số.
-Thay tệp và khởi động lại trợ lý làm các đề xuất dùng trọng số cũ hết hiệu lực.
+### Lỗi thường gặp
+
+| Mã | Khi nào |
+|---|---|
+| 409 `ERR_CLASSIFIER_UNAVAILABLE` | Thiếu hoặc không đọc được trọng số của nhiệm vụ; chỉ nhiệm vụ đó bị ảnh hưởng |
+| 409 `ERR_CLASSIFIER_LABELS` | Các lựa chọn của trường đầu ra không khớp tập nhãn nghiệp vụ của tệp trọng số |
 
 ## Đề xuất và xác nhận
+
+### Vòng đời một đề xuất
 
 Đề xuất thuộc về một chủ, hết hạn sau 120 giây và được xóa sau 30 ngày.
 Đề xuất ghi lại hồ sơ, nhiệm vụ, giá trị, căn cứ, phiên bản hồ sơ, phiên bản mô hình và revision của nhiệm vụ.
 Sửa nội dung tạo đề xuất mới và vô hiệu đề xuất cũ.
-Khi xác nhận, trợ lý đọc lại hồ sơ và cấu hình, rồi chỉ gửi `PATCH` một trường kèm `version` và `modelVersion`.
-Hồ sơ, mô hình, nhiệm vụ hoặc trọng số đã đổi thì API trả 409 `ERR_PROPOSAL_STALE`.
-Giá trị trùng hồ sơ trả 409 `ERR_PROPOSAL_NO_CHANGE` và không gọi Core.
-Timeout hoặc dừng tiến trình khi ghi giữ kết quả `uncertain` và không tự gửi lại; người dùng đối chiếu lịch sử hồ sơ.
 
 Trạng thái đi từ `pending` qua `executing` tới `succeeded`, `failed` hoặc `uncertain`.
 Danh tính lấy từ JWT đã kiểm issuer và audience, không nhận từ body hay model.
 Liên kết với Core dùng PKCE và state dùng một lần.
+
+### Khi xác nhận
+
+Trợ lý đọc lại hồ sơ và cấu hình, rồi chỉ gửi `PATCH` một trường kèm `version` và `modelVersion`.
+
+| Tình huống | Kết quả |
+|---|---|
+| Hồ sơ, mô hình, nhiệm vụ hoặc trọng số đã đổi | 409 `ERR_PROPOSAL_STALE` |
+| Giá trị trùng hồ sơ | 409 `ERR_PROPOSAL_NO_CHANGE`, không gọi Core |
+| Timeout hoặc dừng tiến trình khi ghi | Trạng thái `uncertain`, không tự gửi lại; người dùng đối chiếu lịch sử hồ sơ |
 
 ### Rà loại hồ sơ ở Hộp việc
 
@@ -97,13 +131,15 @@ API dùng cùng giới hạn 120 yêu cầu mỗi phút theo địa chỉ IP t�
 
 Đường dẫn, thân yêu cầu và phản hồi của các endpoint nằm ở [`docs/API.md`](../docs/API.md).
 
-## Mạng
+## Vận hành
+
+### Mạng
 
 Container `assistant-control` chạy trên network nội bộ `assistant`, không có đường ra Internet và không thấy các dịch vụ khác của stack.
 Chỉ `backend`, `keycloak` và `apisix` nằm chung network đó.
 Bộ phân loại tính ngay trong tiến trình của trợ lý, nên nội dung hồ sơ không được gửi tới dịch vụ nào khác.
 
-## State và giới hạn
+### State và giới hạn
 
 State là một SQLite chứa token liên kết đã mã hóa theo chủ, đề xuất và phiên liên kết đang chờ.
 Master key ở `deploy/data/assistant/private/master.key` chỉ giải mã state trên máy này.
@@ -114,7 +150,7 @@ Một trợ lý phục vụ nhiều người, mỗi người có state riêng; k
 Số đo nghiệm thu của bộ phân loại lấy trên câu do đội viết, chưa trên hồ sơ thật.
 Hỏi đáp mở, embedding, reranker và tác tử tự tạo đề xuất theo sự kiện chưa có.
 
-## Thu hồi và thay khóa
+### Thu hồi và thay khóa
 
 - **Hủy liên kết của một người:** nút "Hủy liên kết" ở trang Trợ lý nghiệp vụ, hoặc `DELETE /assistant-api/v1/me/core/link`.
   Khóa hoặc xóa tài khoản ở Keycloak cũng chặn trợ lý: lần làm mới token kế tiếp bị từ chối và token đã lưu bị xóa.
@@ -130,62 +166,17 @@ Hỏi đáp mở, embedding, reranker và tác tử tự tạo đề xuất theo
 
 ## Kiểm tra
 
-Workflow `Assistant` (`.github/workflows/ci-assistant.yml`) chạy khi đổi `assistant/`, `tools/classifier/`, tệp compose, tệp SSO hay SBOM của trợ lý.
+Workflow `Assistant` chạy khi đổi `assistant/`, `tools/classifier/`, tệp compose, tệp SSO hay SBOM của trợ lý.
 Nó build và test dịch vụ, so SBOM với tệp khóa, kiểm tệp compose, và kiểm route cổng ở mọi chế độ.
 Workflow `Platform` dựng image trợ lý cùng các image khác.
-Chạy `PYTHONDONTWRITEBYTECODE=1 python3 tools/classifier/make_parity_fixture.py` từ gốc repo để sinh lại bộ đối chiếu khi đổi trọng số hoặc dữ liệu huấn luyện.
-Tệp đối chiếu `assistant/test/fixtures/classifier.json` lấy câu gốc và biến thể đã dùng để huấn luyện, phát hành theo CC-BY-4.0 như thẻ dữ liệu nêu.
-Lệnh `npm test` trong thư mục `assistant` kiểm nhãn, xác suất và cụm chữ của Node với Python.
-Hai bài kiểm trình duyệt ở `e2e/web/tests/assistant.spec.ts` tự bỏ qua khi không đặt `E2E_ASSISTANT_RECORD_PATH` (hồ sơ mà đề xuất khác giá trị hiện tại) hoặc `E2E_ASSISTANT_UNCHANGED_RECORD_PATH` (hồ sơ mà đề xuất trùng giá trị hiện tại).
+
+- **Test của dịch vụ:** `npm test` trong thư mục `assistant` kiểm nhãn, xác suất và cụm chữ của Node với Python, dựa trên tệp đối chiếu `test/fixtures/classifier.json`.
+  Tệp này lấy câu gốc và biến thể đã dùng để huấn luyện, phát hành theo CC-BY-4.0 như thẻ dữ liệu nêu.
+- **Sinh lại tệp đối chiếu:** khi đổi trọng số hoặc dữ liệu huấn luyện, chạy `PYTHONDONTWRITEBYTECODE=1 python3 tools/classifier/make_parity_fixture.py` từ gốc repo.
+- **Kiểm trình duyệt:** hai bài ở `e2e/web/tests/assistant.spec.ts` tự bỏ qua khi không đặt biến môi trường của hồ sơ thử.
+  `E2E_ASSISTANT_RECORD_PATH` là hồ sơ mà đề xuất khác giá trị hiện tại, và `E2E_ASSISTANT_UNCHANGED_RECORD_PATH` là hồ sơ mà đề xuất trùng giá trị hiện tại.
 
 ## Gỡ trợ lý
 
-Chạy chế độ core như bước 4 ở trên thì Core, sao lưu và cập nhật chạy như bình thường.
-Gỡ hẳn khỏi mã nguồn thì làm theo ba nhóm sau.
-
-**Xóa cả tệp hoặc thư mục**
-
-- `assistant/`, `sbom/assistant.cdx.json`
-- `tools/classifier/` (dữ liệu, huấn luyện và trọng số của bộ phân loại) và `LICENSES/CC-BY-4.0.txt`
-- `deploy/assistant-sso.sh`
-- `.github/workflows/ci-assistant.yml`
-- `frontend/src/assistant/`
-- `e2e/web/tests/assistant.spec.ts`
-
-**Xóa một khối hoặc một dòng trong tệp chung**
-
-- `.github/dependabot.yml`: mục "The assistant".
-- `deploy/.env.example`: hai biến `ASSISTANT_*` ở mục 6.
-- `.github/workflows/release-images.yml`: chữ `assistant` ở phần mô tả, ở `ALL` và nhánh đặt build context gốc repo cho `assistant`.
-- `.github/workflows/ci-platform.yml`: `assistant/**` và `tools/classifier/model/**` trong khóa cache của job `images`.
-- `deploy/docker-compose.yml`: các dịch vụ `assistant-init`, `assistant-sso`, `assistant-control`, mạng `assistant` và dòng `networks` của `backend`, `keycloak`, `apisix`.
-- `deploy/apisix/common.yaml`: khối giữa `# assistant:begin` và `# assistant:end`.
-- `deploy/apisix/render.lua`: mục `assistant-api` trong `public` và mục `assistant` trong `excluded`.
-- `deploy/dxos`: hàm `up_stack`, đoạn bỏ qua `assistant-*` trong `pending_services` và các tên `assistant-*` trong `switch_mode`.
-- `deploy/update.sh`: `assistant-control` trong `SERVICES`, và phần tách `PLATFORM`/`ASSISTANT` khi khởi động lại.
-- `deploy/reset.sh`: phần tách `PLATFORM`/`ASSISTANT` khi khởi động và đoạn bỏ qua `assistant-*` ở `pending_services`.
-- `frontend/src/admin/AdminApp.tsx`: import, `useAssistantEnabled`, mục menu, route và `lazy`.
-- `frontend/src/admin/resources.tsx`: `RecordAssistant`.
-- `frontend/src/admin/InboxPage.tsx`: nút "Rà loại hồ sơ" và phần làm nổi hồ sơ cần rà.
-- `frontend/src/shell/en/index.ts`: `assistantEn`.
-- `frontend/src/shell/auth.ts`: `clearInboxReviews` và dòng import của nó.
-- Giấy phép, văn bản: `DEPENDENCIES.txt`, `NOTICE` (cả bản trong `*/licenses/`), hai khối bộ phân loại trong `REUSE.toml`, `sbom/README.md`, `website/docs/dependencies.md`, `website/docs/pof-audit.md`, `CONTRIBUTING.md` và `.github/PULL_REQUEST_TEMPLATE.md`.
-- Giấy phép, dữ liệu máy đọc trong `.github/licenses/`: `component-catalog.json` (mô tả của `node` và các tệp trọng số), `license-inventory.json` (các mục `DX-OS record classifier weights`, `DX-OS record classifier data`, `MASSIVE vi-VN` và `SLURP`) và `dependency-exceptions.json` (các mục `DX-OS record classifier data`, `MASSIVE vi-VN` và `SLURP`).
-- `.github/scripts/check_licenses.py`: `CLASSIFIER_DATA_PATHS`, và `assistant` trong danh sách dự án của `check_declared_licenses`, `LEGAL_CONTEXTS`, `SHIPPED_BASES` và `COPIED_SCRIPTS`.
-- `.github/scripts/check_license_inventory.py`: `assistant` trong `NPM_PROJECTS`, rồi chạy script với `generate` để sinh lại `docs/DEPENDENCY_INVENTORY.md`.
-- `.github/scripts/check_image_packages.py`: chữ `node` trong câu về lớp nền được phân phối lại, rồi chạy script với `generate` để sinh lại `docs/IMAGE_PACKAGES.md`.
-- Tài liệu: hai `README`, `ARCHITECTURE.md`, `CHANGELOG.md`, `ROADMAP.md`, `docs/OPERATIONS.md`, `docs/TESTING.md`, `docs/DEMO.md`, `docs/TRINH_BAY.md`, `docs/README.md`, `docs/DX_OS_TEXTBOOK.md`, `docs/dynamic-core/README.md`, `docs/dynamic-core/BACKLOG.md`, `docs/dynamic-core/DANH_GIA.md`, `website/docs/council-qa.md`, `website/docs/evidence-matrix.md` và `website/docs/huong-dan/nguoi-xu-ly.md`.
-- Dữ liệu còn lại: `deploy/data/assistant` và client `dxos-assistant` trong Keycloak.
-
-**Khai báo `ai:` trong mô hình (thuộc lõi, có thể giữ)**
-
-Khối `ai.tasks` là một phần của định dạng mô hình; không có trợ lý thì nó không làm gì.
-Muốn gỡ luôn thì xóa:
-
-- `dx-model`: `Model.AiTask`, `ModelParser.readAiTasks`, lược đồ `ai` và phần `ai` trong `ModelUpgraderTest`.
-- `dx-engine`: `CHANGE_AI_TASKS` ở `ModelDiff`, `aiTasks` ở `MetaController`, khối `ai:` của ba mẫu `onestop`, `support_desk` và `clinic_appointment`.
-- `frontend`: tab trợ lý trong `ModelForm`, các mục `ai` trong `formGuide`, `labels` và `backendMessages`, `AiTask` trong `admin/types.ts`.
-- `e2e`: `ai_task_changes` ở `check_process.py` và dòng `input_fields` ở `check_demo.py`.
-- Docs: mục "Nhiệm vụ trợ lý nghiệp vụ" của `docs/MODEL.md`.
-
-Ghi có điều kiện bằng `version` và `modelVersion` là tính năng chung của API, không thuộc phần gỡ này.
+Chạy chế độ core như bước 4 ở [Chạy và tắt](#chạy-và-tắt) thì Core, sao lưu và cập nhật chạy như bình thường.
+Gỡ hẳn khỏi mã nguồn thì làm theo danh sách ở [`REMOVAL.md`](./REMOVAL.md): các tệp cần xóa, các dòng cần sửa trong tệp chung và phần khai báo `ai:` của mô hình có thể giữ.

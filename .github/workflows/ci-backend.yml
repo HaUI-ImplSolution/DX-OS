@@ -8,6 +8,7 @@ on:
       - Khuong/main
     paths:
       - 'backend/**'
+      - '.github/scripts/check_coverage.py'
       - '.github/workflows/ci-backend.yml'
   pull_request:
     types:
@@ -26,7 +27,7 @@ concurrency:
 
 jobs:
   build:
-    name: Build and test the backend
+    name: Test the backend
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     defaults:
@@ -49,6 +50,10 @@ jobs:
       # Persistence tests start PostgreSQL through Testcontainers (Docker is available on the runner).
       - name: Build and Test
         run: mvn --batch-mode verify
+
+      - name: Report the test coverage
+        working-directory: .
+        run: python3 .github/scripts/check_coverage.py backend | tee -a "$GITHUB_STEP_SUMMARY"
 
       # SpotBugs with find-sec-bugs runs in the verify phase and fails the build on a finding that backend/spotbugs-exclude.xml does not explain.
       - name: Summarize the SpotBugs findings

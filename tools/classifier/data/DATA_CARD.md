@@ -15,10 +15,13 @@ Dữ liệu MASSIVE được tải riêng khi tái tạo trọng số.
 | --- | --- | --- | --- | --- |
 | Câu gốc huấn luyện | `data/seeds/` | 2.490 | Claude (Anthropic) | CC BY 4.0, trong phạm vi đội có quyền |
 | Câu từ chối dùng chung | `data/negatives.jsonl` | 22 | Claude (Anthropic) | như trên |
-| Tập chỉnh | `eval/tuning/` | 420 | Claude (Anthropic), chưa có người duyệt | như trên |
+| Tập chỉnh | `eval/tuning/` | 420 | Claude (Anthropic), đã được đội DX-OS duyệt | như trên |
 | Bộ nghiệm thu | `eval/acceptance/` | 450 | Thành viên đội viết tay, duyệt chéo | CC BY 4.0, ghi công HaUI-ImplSolution |
 | Định nghĩa nhãn | `labels.json` | 5 nhiệm vụ | Đội | CC BY 4.0, ghi công HaUI-ImplSolution |
 | Câu lạc đề ngoài | MASSIVE vi-VN 1.0 | 300 câu lấy mẫu | Amazon | CC BY 4.0, tải lúc huấn luyện, không nằm trong repository |
+
+Đội DX-OS đã duyệt nội dung và nhãn nghiệp vụ của toàn bộ 2.490 câu gốc huấn luyện.
+Đội DX-OS đã duyệt nội dung và nhãn kỳ vọng của toàn bộ 420 câu trong tập chỉnh.
 
 Biến thể do mã của đội sinh từ câu gốc trong tập huấn luyện.
 Cột `nguoi_viet` của các tệp CSV ghi người viết từng dòng; các tệp câu gốc không ghi người viết hay người duyệt.
@@ -26,16 +29,21 @@ Codex của OpenAI không tạo dữ liệu nào của bộ phân loại.
 
 ### Điều khoản của Anthropic
 
-Câu do Claude soạn qua tài khoản Claude Pro, chịu Điều khoản dịch vụ dành cho người dùng cá nhân của Anthropic (hiệu lực 8/10/2025, đọc ngày 26/11/2026).
+Câu do Claude soạn qua tài khoản Claude Pro, chịu Điều khoản dịch vụ dành cho người dùng cá nhân của Anthropic (hiệu lực 8/10/2025).
 Điều khoản chuyển cho người dùng quyền đối với kết quả, nếu có, và cấm dùng dịch vụ để huấn luyện mô hình cạnh tranh với Anthropic.
-Bài hướng dẫn của Anthropic ([Can I use my Outputs to train an AI model?](https://support.claude.com/en/articles/12326764-can-i-use-my-outputs-to-train-an-ai-model), cập nhật 16/3/2026, đọc ngày 26/11/2026) cho phép dùng kết quả để huấn luyện mô hình chuyên biệt không cạnh tranh, như bộ phân loại và hệ thống phân loại nội dung.
+Bài hướng dẫn của Anthropic ([Can I use my Outputs to train an AI model?](https://support.claude.com/en/articles/12326764-can-i-use-my-outputs-to-train-an-ai-model), cập nhật 16/3/2026) cho phép dùng kết quả để huấn luyện mô hình chuyên biệt không cạnh tranh, như bộ phân loại và hệ thống phân loại nội dung.
 Bài này cấm chatbot đa dụng, mô hình sinh văn bản mở, dùng kết quả làm training target và hỗ trợ bên thứ ba làm các việc đó.
 
 Mô hình huấn luyện từ dữ liệu này là bộ phân loại hồi quy logistic cho năm nhiệm vụ nhãn cố định.
 Nó không sinh văn bản, không trả lời tự do và không dùng làm chatbot hay mô hình đa dụng.
 Nó chỉ gợi ý nhãn cho một trường của hồ sơ trong trợ lý nghiệp vụ của DX-OS, và người dùng xác nhận trước khi lưu.
 Nhãn là nhãn nghiệp vụ theo [định nghĩa nhãn](../labels.json), không phải dự đoán của Claude.
-Người dùng lại dữ liệu để huấn luyện mô hình tự chịu trách nhiệm tuân thủ điều khoản của Anthropic đối với phần do Claude soạn.
+
+Phần do Claude soạn được công bố công khai theo CC-BY-4.0, giấy phép này không cho đội thêm hạn chế nào.
+Điều khoản của Anthropic cấm dùng kết quả của Claude để huấn luyện chatbot đa dụng hoặc mô hình sinh văn bản, và cấm hỗ trợ bên thứ ba làm việc đó.
+Vì bộ dữ liệu công khai, một bên thứ ba có thể tải phần này về để huấn luyện mô hình như vậy, và đội không kiểm soát được việc đó.
+Đội đề nghị chỉ dùng phần do Claude soạn để huấn luyện bộ phân loại hoặc mô hình chuyên biệt không cạnh tranh; đề nghị này không phải điều kiện của giấy phép.
+Người dùng lại dữ liệu tự chịu trách nhiệm tuân thủ điều khoản của Anthropic đối với phần do Claude soạn.
 
 ### Bản quyền
 

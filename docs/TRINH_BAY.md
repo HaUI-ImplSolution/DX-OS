@@ -30,7 +30,7 @@ Kịch bản demo từng bước ở docs/DEMO.md; slide này chỉ là phần n
 Nghiệp vụ nằm trong một tệp mô hình.
 
 <!--
-Nói rõ đây là giả thuyết: đội chưa nói chuyện với khách hàng nào (issue #231).
+Nói rõ đây là giả thuyết: đội không phỏng vấn khách hàng.
 -->
 
 ---
@@ -178,7 +178,7 @@ Từng bước ở mục 8 của `docs/DEMO.md`.
 - AI là trợ lý, dùng bộ phân loại hồ sơ đội tự huấn luyện để đề xuất giá trị một trường; người dùng xác nhận trước khi lưu; không có hỏi đáp trên tri thức nội bộ.
 - Một bản cài là Compose một máy; chưa chạy nhiều bản sao của lõi.
 - Chưa có chữ ký số, đa thuê giữa các tổ chức, tìm kiếm toàn văn.
-- Chưa nói chuyện với khách hàng thật.
+- Không phỏng vấn khách hàng thật.
 
 Danh sách đầy đủ ở `docs/dynamic-core/BACKLOG.md`.
 

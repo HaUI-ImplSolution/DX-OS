@@ -12,6 +12,8 @@
 set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
+ENV_VALUE_FILE=.env
+source lib/env.sh
 
 if [[ ! -f .env ]]; then
   echo "deploy/.env not found. Run: ./make_env.sh (random secrets), or cp .env.example .env and fill every blank variable." >&2
@@ -41,7 +43,7 @@ if command -v flock >/dev/null 2>&1 && ! flock -w 300 9; then
 fi
 
 # In core mode the web app, the portal, the monitor and the assistant are not part of the stack, so they are neither pulled nor checked.
-if [[ "$(grep -E '^DXOS_MODE=' .env | tail -n1 | cut -d= -f2-)" == core ]]; then
+if [[ "$(env_value DXOS_MODE)" == core ]]; then
   SERVICES=(backend keycloak)
 else
   SERVICES=(backend monitor frontend portal assistant-control keycloak)
@@ -92,7 +94,7 @@ fi
 
 # Keycloak 26.8 refuses Admin API calls from a client that lacks this scope; a realm imported earlier does not have it.
 echo "==> Checking the Keycloak admin client"
-./keycloak-admin-scope.sh || echo "WARNING: model apply stays refused until this works; run ./keycloak-admin-scope.sh once Keycloak is up." >&2
+lib/keycloak-admin-scope.sh || echo "WARNING: model apply stays refused until this works; run lib/keycloak-admin-scope.sh once Keycloak is up." >&2
 
 docker image prune -f >/dev/null
 echo "==> Up to date. Check: docker compose ps"

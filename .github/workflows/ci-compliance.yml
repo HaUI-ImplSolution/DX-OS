@@ -59,6 +59,9 @@ jobs:
       - name: DEPENDENCIES.txt lists every package of the lockfiles, each with a license the OSI approves
         run: python3 .github/scripts/check_license_inventory.py check
 
+      - name: The license files inside the shipped packages restrict nothing
+        run: python3 .github/scripts/check_license_texts.py
+
       - name: Every image the stack runs has its table of packages
         run: python3 .github/scripts/check_image_packages.py check
 
@@ -93,7 +96,7 @@ jobs:
           done
 
   files:
-    name: Check required files and scripts
+    name: Check required files
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -126,6 +129,9 @@ jobs:
         run: >
           docker run --rm -v "$PWD:/repo" -w /repo
           rhysd/actionlint:1.7.12@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667
+
+      - name: Check the job names
+        run: python3 .github/scripts/check_workflow_names.py
 
   upstream-licenses:
     name: Check upstream licenses
@@ -162,7 +168,7 @@ jobs:
 
   # The images are pulled and read again, so this runs every week and on request, not on every pull request.
   image-packages:
-    name: Check the packages inside the images
+    name: Check image packages
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
     timeout-minutes: 90

@@ -9,6 +9,7 @@
 set -uo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
+source lib/env.sh
 source lib/web-url.sh
 source lib/windows-ports.sh
 
@@ -19,7 +20,7 @@ warn() { printf '  [WARN] %s\n' "$*"; WARNS=$((WARNS + 1)); }
 fail() { printf '  [FAIL] %s\n' "$*"; FAILS=$((FAILS + 1)); }
 
 # Value of KEY in .env (last assignment), empty when absent or blank.
-env_value() { grep -E "^$1=" .env | tail -n1 | cut -d= -f2-; }
+ENV_VALUE_FILE=.env
 # Port number of a *_HOST_PORT value such as 9080 or 127.0.0.1:9082.
 port_of() { printf '%s' "${1##*:}"; }
 
@@ -121,13 +122,11 @@ else
     ok "virus scan of uploads is on (clamd at $scan_host)"
   fi
 
-  if [[ ":$(env_value COMPOSE_FILE):" == *:docker-compose.grafana.yml:* ]]; then
+  if [[ ":$(env_value COMPOSE_FILE):" == *:docker-compose.prometheus.yml:* ]]; then
     if [[ -z "$(env_value METRICS_PASSWORD)" ]]; then
-      fail "COMPOSE_FILE has docker-compose.grafana.yml but METRICS_PASSWORD is empty: Prometheus would not start and dxos start would stop (set it, for example to openssl rand -hex 24)"
-    elif ! grep -qE '^GF_SECURITY_ADMIN_PASSWORD=.+' grafana.env 2>/dev/null; then
-      fail "COMPOSE_FILE has docker-compose.grafana.yml but GF_SECURITY_ADMIN_PASSWORD is empty or missing in deploy/grafana.env: Grafana would not start and dxos start would stop"
+      fail "COMPOSE_FILE has docker-compose.prometheus.yml but METRICS_PASSWORD is empty: Prometheus would not start and dxos start would stop (set it, for example to openssl rand -hex 24)"
     else
-      ok "Prometheus and Grafana have their passwords"
+      ok "Prometheus has its metrics password"
     fi
   fi
 

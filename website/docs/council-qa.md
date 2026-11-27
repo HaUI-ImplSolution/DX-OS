@@ -28,7 +28,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 | 17 | Bảo mật: gọi thẳng API để lách quy trình thì sao? |
 | 18 | Giấy phép tuân thủ thế nào? |
 | 19 | Mã có phần do công cụ AI viết, đội kiểm soát thế nào? |
-| 20 | Bảng giám sát dùng Grafana theo AGPL, có trái cam kết nguồn mở không? |
+| 20 | Sao không kèm Grafana cho số đo của lõi? |
 
 ## 1. Open-Core nằm ở đâu, thành phần nào chạy headless?
 
@@ -83,7 +83,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 
 - Trợ lý nghiệp vụ đề xuất giá trị một trường của hồ sơ và rà hồ sơ ở Hộp việc; người dùng sửa, hủy hoặc xác nhận trước khi ghi qua API Core.
 - Mô hình do đội tự huấn luyện: bộ phân loại hồ sơ tiếng Việt chạy trên CPU ngay trong trợ lý, không cần mô hình ngoài; đề xuất kèm cụm chữ của hồ sơ làm căn cứ, và từ chối khi không đủ căn cứ.
-- Dữ liệu: câu huấn luyện là bản nháp do Claude (Anthropic) viết, theo CC-BY-4.0 trong phạm vi đội có quyền; tập chỉnh ngưỡng do Claude viết; Codex không tạo dữ liệu nào; câu lạc đề lấy từ MASSIVE; bộ nghiệm thu do đội viết tay.
+- Dữ liệu: câu huấn luyện là bản nháp do Claude (Anthropic) viết, theo CC-BY-4.0 trong phạm vi đội có quyền; tập chỉnh ngưỡng do Claude viết; điều khoản của Anthropic cấm dùng phần do Claude soạn để huấn luyện chatbot hoặc mô hình sinh văn bản, và dữ liệu công khai nên bên thứ ba có thể làm vậy, ghi ở thẻ dữ liệu; Codex không tạo dữ liệu nào; câu lạc đề lấy từ MASSIVE; bộ nghiệm thu do đội viết tay.
   Mã, trọng số, tập chỉnh và bộ nghiệm thu nằm trong repository.
 - Giới hạn: số đo lấy trên câu do đội viết, chưa trên hồ sơ thật, và bộ nghiệm thu đã được đo ba lần; bộ phân loại mới bật cho ba mẫu; hỏi đáp có trích nguồn, tìm kiếm tri thức và tác tử nghe sự kiện nằm ngoài phạm vi.
 - Lõi đã có sẵn chỗ để nối: hàng đợi sự kiện, webhook có chữ ký và `GET /api/v1/events` cho tác tử đọc việc mới, còn ghi lại vẫn đi qua API chung nên quyền, quy tắc và quy trình vẫn áp dụng.
@@ -106,7 +106,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
   Không cần mã nguồn: `dxos-install.sh` của bản phát hành tải gói, kiểm SHA-256, cài vào `~/.dxos`; `dxos start <tệp mô hình>` lên đủ dịch vụ, áp dụng tệp và in tài khoản `admin`.
 - Mọi cấu hình nằm ở `deploy/.env`, không sửa tệp mã.
 - Đã kiểm: `dxos-install.sh` của release `v2.0.0` cài và `dxos start` kéo image `v2.0.0` từ GHCR trên máy chủ đã xóa stack cũ, rồi áp dụng một tệp mô hình.
-- **Bằng chứng:** `README.md` mục Chạy thử; các job `Install from the release archive` và `Validate the Compose file` của workflow `Platform` (gói sai SHA-256 bị từ chối, mọi tệp Compose mount đều có); `docs/TESTING.md` mục 3.
+- **Bằng chứng:** `README.md` mục Bắt đầu nhanh; các job `Test the install` và `Validate the Compose file` của workflow `Platform` (gói sai SHA-256 bị từ chối, mọi tệp Compose mount đều có); `docs/TESTING.md` mục 3.
 
 ## 9. Từ 100 lên 100.000 người dùng thì sao?
 
@@ -195,7 +195,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 ## 18. Giấy phép tuân thủ thế nào?
 
 - Mã của đội theo Apache-2.0, có `LICENSE` toàn văn, `NOTICE` và dòng SPDX ở đầu mỗi tệp mã.
-- Mã, tài liệu và ảnh của repository theo Apache-2.0, hai tệp phông theo OFL-1.1; không có thành phần AGPL nào trong cây mã; Grafana (AGPL-3.0) chỉ là image tùy chọn, chạy nguyên bản ở dịch vụ riêng.
+- Mã, tài liệu và ảnh của repository theo Apache-2.0, hai tệp phông theo OFL-1.1; không có thành phần AGPL nào trong cây mã.
 - Mỗi bản phát hành có gói `.tar.gz` kèm `.sha256` và SBOM CycloneDX; không dùng định dạng đóng.
 - Job `Check licenses` của workflow `Compliance` chạy ở mọi pull request: kiểm header, giấy phép của từng gói trong SBOM, danh mục image, và `docs/DEPENDENCY_INVENTORY.md` liệt kê mọi gói kể cả gói dev, test và plugin build; mỗi image phát hành kèm `LICENSE`, `NOTICE` và giấy phép của thư viện ở `/licenses`, và `docs/IMAGE_PACKAGES.md` liệt kê gói bên trong các image bên thứ ba.
 - Cam kết của đội chặt hơn thể lệ: cả công cụ, mô hình AI và dữ liệu đều phải mở; thành phần không đạt đã gỡ khỏi bản phát hành.
@@ -205,21 +205,18 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 
 ## 19. Mã có phần do công cụ AI viết, đội kiểm soát thế nào?
 
-- Đội dùng Claude (Anthropic) và Codex (OpenAI) để viết nháp mã và tài liệu; 442 trong 1230 commit trên `Khuong/main` (tính đến hết ngày 25/11/2026) mang dòng `Co-Authored-By` của công cụ, và GitHub hiện chúng ở trang thống kê người đóng góp; không phải commit nào có dùng công cụ cũng mang dòng đó.
+- Đội dùng Claude (Anthropic) và Codex (OpenAI) để viết nháp mã và tài liệu; 443 trong 1254 commit trên `Khuong/main` (tính đến hết ngày 26/11/2026) mang dòng `Co-Authored-By` của công cụ, và GitHub hiện chúng ở trang thống kê người đóng góp; không phải commit nào có dùng công cụ cũng mang dòng đó.
 - Người gửi pull request đọc, chạy và chịu trách nhiệm về từng thay đổi; công cụ không tự gộp vào nhánh nào.
 - Mọi thay đổi đi qua cùng kiểm tra của CI: biên dịch, định dạng, kiểm đầu-cuối trên stack thật, kiểm giấy phép và quét bí mật; mã do công cụ viết không có đường tắt.
 - Giấy phép của phần đóng góp do người gửi bảo đảm; thư viện mới qua kiểm OSI trước khi thêm, nên mã sinh ra không kéo theo thành phần ngoài danh sách.
 - Quy tắc nằm ở mục "Công cụ AI hỗ trợ" của `CONTRIBUTING.md`.
 - **Bằng chứng:** `git log --grep "Co-Authored-By"`; `CONTRIBUTING.md`; job `Check licenses` và `Scan for secrets` của workflow `Compliance`.
 
-## 20. Bảng giám sát dùng Grafana theo AGPL, có trái cam kết nguồn mở không?
+## 20. Sao không kèm Grafana cho số đo của lõi?
 
-- Không: AGPL-3.0 nằm trong danh sách giấy phép được OSI công nhận, đúng yêu cầu nguồn mở của thể lệ.
-- Grafana chỉ là image tùy chọn, tắt mặc định; chỉ chạy khi đặt `COMPOSE_FILE` có `docker-compose.grafana.yml`, lõi và cây mã không phụ thuộc vào nó.
-- Đội chạy image gốc như một dịch vụ riêng, nối với lõi qua HTTP; không sửa mã Grafana, không nhúng, không liên kết thư viện của nó.
-- Nghĩa vụ công bố mã của AGPL chỉ phát sinh khi sửa chương trình rồi cho người khác dùng qua mạng; đội không sửa nên không có nghĩa vụ thêm.
-- Repository chỉ chứa tệp cấu hình và dashboard của đội, theo Apache-2.0; không chứa mã của Grafana.
-- Lõi đã phát số đo theo chuẩn Prometheus nên Grafana đọc thẳng, đội không phải tự viết trang biểu đồ.
-- Dashboard là một tệp JSON chuẩn; ai không muốn dùng Grafana của đội thì nạp tệp đó vào Grafana của mình, hoặc chỉ dùng Prometheus (Apache-2.0).
-- Phiên bản và kết quả rà từng thành phần của image ghi ở ghi chú về Prometheus và Grafana của `DEPENDENCIES.txt`.
-- **Bằng chứng:** `deploy/docker-compose.grafana.yml`, `deploy/grafana/dashboards/dxos.json`, ghi chú về Prometheus và Grafana của `DEPENDENCIES.txt`; `python3 .github/scripts/check_licenses.py`; mục "Prometheus và Grafana kèm theo" của `docs/MONITORING.md`.
+- Vì giấy phép: image `grafana/grafana:12.4.15` đóng gói trong giao diện web hai gói `@locker/near-membrane-shared` và `@locker/near-membrane-shared-dom` 0.14.0.
+- `package.json` của hai gói ghi MIT, nhưng tệp `LICENSE.txt` phát hành kèm là Terms of Use của Salesforce.
+- Điều khoản đó cấm người dùng ở nước bị Mỹ cấm vận, buộc người dùng bồi thường cho Salesforce và cho Salesforce thu dữ liệu sử dụng; theo đội đọc, nó không đạt định nghĩa nguồn mở của OSI.
+- Mã của Grafana vẫn khai AGPL-3.0; phần không đạt là hai gói đi kèm, nên đội không đưa image này vào dự án.
+- Lõi phát số đo theo định dạng Prometheus: dự án kèm Prometheus (Apache-2.0) tùy chọn, và người triển khai nối công cụ giám sát của mình vào.
+- **Bằng chứng:** `npm pack @locker/near-membrane-shared@0.14.0` rồi mở `package/LICENSE.txt`; source map `public/build/*.js.map` trong image Grafana nêu hai gói; `deploy/docker-compose.prometheus.yml`.

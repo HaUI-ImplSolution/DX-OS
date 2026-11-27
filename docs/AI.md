@@ -37,7 +37,7 @@ Trong bản cài full, có thể dừng `assistant-control` và tiếp tục nh�
 - **Giấy phép.** Mã và trọng số theo Apache-2.0.
   Dữ liệu của đội công bố theo CC BY 4.0 trong phạm vi đội có quyền.
   MASSIVE vi-VN 1.0 theo CC BY 4.0 và có ghi công nguồn.
-  Phạm vi tái sử dụng phần do Claude soạn theo điều khoản Anthropic còn cần làm rõ trước khi kết luận toàn bộ chuỗi dữ liệu đạt OSAID.
+  Điều khoản Anthropic cấm dùng phần do Claude soạn để huấn luyện chatbot đa dụng hoặc mô hình sinh văn bản, nên bên thứ ba tải bộ dữ liệu công khai về dùng như vậy là rủi ro đội không kiểm soát được; xem thẻ dữ liệu.
 
 [Thẻ dữ liệu](../tools/classifier/data/DATA_CARD.md) · [Bộ dữ liệu trên Kaggle](https://www.kaggle.com/datasets/hittungtran/dx-os-vietnamese-record-classification-data) · [Danh mục giấy phép và SHA-256 của trọng số](../DEPENDENCIES.txt) · [Vấn đề đang theo dõi](./dynamic-core/BACKLOG.md#32-chưa-có-issue).
 

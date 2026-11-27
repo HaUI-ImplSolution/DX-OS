@@ -22,18 +22,20 @@ Mức hoàn thiện của từng tính năng và bài kiểm của nó ở [`web
 | Trợ lý, không cần key | `cd assistant && npm ci && npm test` (Node 24.16) | Workflow `Assistant` |
 | Kiểu của web | `cd frontend && npx tsc --noEmit` | Workflow `Frontend` |
 | Phân tích tĩnh của web | `cd frontend && npm run lint` | Workflow `Frontend` |
-| Test đơn vị của web (Vitest, 58 test: `body()` của nhà cung cấp dữ liệu, điều kiện, xuất CSV, định dạng số và thời gian, điều hướng của bộ dựng mô hình, nơi dùng và đổi tên của trường và vai trò, hàng của quy trình) | `cd frontend && npm test` | Workflow `Frontend` |
-| Giấy phép và header | `python3 .github/scripts/check_licenses.py`; `python3 .github/scripts/check_license_inventory.py check` (thêm `--maven` cho gói Maven, cần JDK 21); `pipx run --spec reuse==6.3.0 reuse lint` | `Check licenses` của `Compliance`; Maven ở `Scan the backend SBOM` của `Dependencies` |
-| Gói trong image và văn bản giấy phép của image | `python3 .github/scripts/check_image_packages.py check` (thêm `--full` để đọc lại image, cần Docker); `python3 .github/scripts/check_third_party_notices.py check` (cần JDK 21) | `Check licenses` của `Compliance`; `Check the packages inside the images` theo lịch; `Scan the backend SBOM` của `Dependencies` |
+| Test đơn vị của web (Vitest, 220 test: nhà cung cấp dữ liệu (`body()` và từng lời gọi), điều kiện, xuất CSV, định dạng số và thời gian, đường dẫn của mọi lời gọi API, sơ đồ quy trình, thông báo lỗi, điều hướng của bộ dựng mô hình, nơi dùng và đổi tên của trường và vai trò, hàng của quy trình, luồng sự kiện thay đổi trực tiếp, ngôn ngữ giao diện, phiên đăng nhập và vai trò, ghi đè tệp YAML giữ nguyên chú thích, chuỗi mô tả lịch sử hồ sơ và kế hoạch áp dụng) | `cd frontend && npm test`; kèm độ phủ: `npm run coverage` | Workflow `Frontend` |
+| Độ phủ | `python3 .github/scripts/check_coverage.py backend` sau `./mvnw verify`; `cd frontend && npm run coverage` | `Backend` (bảng ở tóm tắt của lượt chạy) và `Frontend` |
+| Giấy phép và header | `python3 .github/scripts/check_licenses.py`; `python3 .github/scripts/check_license_inventory.py check` (thêm `--maven` cho gói Maven, cần JDK 21); `pipx run --spec reuse==6.3.0 reuse lint` | `Check licenses` của `Compliance`; Maven ở `Scan backend SBOM` của `Dependencies` |
+| Văn bản giấy phép trong gói đi vào sản phẩm | `python3 .github/scripts/check_license_texts.py` (cần mạng) | `Check licenses` của `Compliance` |
+| Gói trong image và văn bản giấy phép của image | `python3 .github/scripts/check_image_packages.py check` (thêm `--full` để đọc lại image, cần Docker); `python3 .github/scripts/check_third_party_notices.py check` (cần JDK 21) | `Check licenses` của `Compliance`; `Check image packages` theo lịch; `Scan backend SBOM` của `Dependencies` |
 | Giấy phép của phiên bản đang dùng | `GITHUB_TOKEN=... python3 .github/scripts/check_upstream_licenses.py`; `python3 -m unittest discover -s .github/scripts/tests` | `Check upstream licenses` và `Check licenses` của `Compliance` |
 | SBOM khớp tệp khóa | `python3 .github/scripts/check_sbom_fresh.py` | `Check SBOMs against lockfiles` của `Compliance` |
-| Route của gateway | `python3 e2e/api/check_routes.py` | `Validate the gateway routes` của `Platform` |
+| Route của gateway | `python3 e2e/api/check_routes.py` | `Validate gateway routes` của `Platform` |
 | Compose hợp lệ, dừng khi thiếu bí mật | `docker compose config` trong `deploy/` | `Validate the Compose file` của `Platform` |
-| Gói phát hành và bộ cài | `.github/scripts/check_archive.sh <gói> <phiên bản>` | `Install from the release archive` của `Platform` |
-| Sao lưu và khôi phục | `deploy/backup.sh` rồi `verify` | `Back up and restore` của `Platform` |
-| API trên stack thật | Các script `e2e/api/check_*.py`, mục 4 | `API end-to-end` của `Platform`, ba nhóm, một nhóm chạy ở chế độ lõi và giữ quét mã độc |
-| Bề mặt của gateway | `python3 e2e/api/check_surface.py` | `Gateway surface` của `Platform`, hai chế độ |
-| Trình duyệt | Xem [`e2e/README.md`](../e2e/README.md) | `Browser end-to-end` của `Platform` |
+| Gói phát hành và bộ cài | `.github/scripts/check_archive.sh <gói> <phiên bản>` | `Test the install` của `Platform` |
+| Sao lưu và khôi phục | `deploy/backup.sh` rồi `verify` | `Test backup and restore` của `Platform` |
+| API trên stack thật | Các script `e2e/api/check_*.py`, mục 4 | `Test the API` của `Platform`, ba nhóm, một nhóm chạy ở chế độ lõi và giữ quét mã độc |
+| Bề mặt của gateway | `python3 e2e/api/check_surface.py` | `Test gateway surface` của `Platform`, hai chế độ |
+| Trình duyệt | Xem [`e2e/README.md`](../e2e/README.md) | `Test in a browser` của `Platform` |
 | Trích dẫn giữa các tài liệu | `python3 .github/scripts/check_doc_refs.py` | `Build the docs site` của `Docs` |
 | Trang tài liệu | `cd website && npm ci && npm run build` | `Build the docs site` của `Docs` |
 | Tải đồng thời và cấu hình nhỏ nhất | `python3 e2e/api/load_test.py` trên stack tạm; các bước và kết quả ở [`SIZING.md`](SIZING.md) | Không |
@@ -46,7 +48,7 @@ Test chậm gắn `@Tag("slow")`, bỏ qua bằng `-DexcludedGroups=slow`.
 
 ### Test của backend
 
-`./mvnw verify` chạy 388 test (ngày 24/11/2026), khoảng một phút ở máy dev.
+`./mvnw verify` chạy 466 test, khoảng một đến hai phút ở máy dev.
 Test không cần Docker:
 
 | Nhóm | Kiểm gì |
@@ -57,6 +59,8 @@ Test không cần Docker:
 | Sinh mã, SQL và BPMN | Mã hồ sơ từ bộ đếm và năm của ngày làm việc, hết số; tên đi vào SQL; bảng và ràng buộc sinh từ mô hình; BPMN của từng họ quy trình |
 | Mẫu đóng gói sẵn (`BundledTemplatesTest`) | Mỗi mẫu đọc được, sinh đủ bảng, so với chính nó không đổi gì |
 | Phần còn lại | Tìm không dấu và ký tự đại diện, chặn mẫu chuỗi chạy vô hạn, câu chữ gửi vào kênh chat, PDF của mẫu in, tài liệu OpenAPI, giới hạn tốc độ theo người dùng, cột của màn giám sát |
+| Bộ lọc yêu cầu (`RequestFiltersTest`) | Tài khoản bị giới hạn client, giới hạn tốc độ trả 429 kèm `Retry-After`, mật khẩu đọc số đo, mã yêu cầu và địa chỉ ghi vào nhật ký, giới hạn số dòng từ chối |
+| Client Keycloak (`KeycloakAdminClientTest`, `KeycloakApplicationRolesTest`) | Phân biệt bị từ chối với không liên lạc được; đổi vai của ứng dụng hỏng giữa chừng không để lại hai vai hay không vai nào; danh sách người đọc đủ mọi trang |
 
 Test cần Docker (PostgreSQL thật bằng Testcontainers, áp dụng migration của `engine`):
 
@@ -65,11 +69,34 @@ Test cần Docker (PostgreSQL thật bằng Testcontainers, áp dụng migration
 | `HistoryChainIntegrationTest` | Chuỗi băm của lịch sử: dòng bị sửa, bị xóa hay chen vào đều bị chỉ đúng chỗ; ghi chú không nằm trong chuỗi; không phụ thuộc múi giờ của phiên |
 | `DataServiceIntegrationTest` | Tạo, đọc, sửa, xóa trên bảng sinh từ mô hình: mã, mặc định, ràng buộc, quyền `own`, `all`, `read`, xung đột phiên bản, lọc, sắp xếp, phân trang, tìm không dấu, lịch sử |
 | `ModelRegistryIntegrationTest` | Kho mô hình đọc phiên bản mới nhất, loại mô hình hỏng kèm lý do, giữ mô hình đang áp dụng |
+| `WorkflowIntegrationTest` | Hồ sơ đi qua quy trình trên Flowable thật: ai làm được hành động nào ở trạng thái nào, quyền theo dòng và đơn vị, phân công, hạn xử lý, nhắc sắp đến hạn và quá hạn, tự đóng |
+| `ApplyIntegrationTest` | Kế hoạch và áp dụng tệp mô hình: mức rủi ro, dòng dữ liệu vi phạm, hồ sơ đang mở, tiến trình đang chạy, áp dụng dừng giữa chừng rồi chạy tiếp hay bỏ, quay lui, áp dụng lúc khởi động; công cụ lược đồ và Keycloak là bản thế |
+| `ProjectAdministrationTest` | Quản trị viên nền tảng, quản trị viên dự án và người ngoài làm được gì với dự án, tài khoản và ứng dụng ngoài |
+| `DeliveryIntegrationTest` | Hàng đợi gửi đi đúng thứ tự và thử lại, tệp đích webhook, kiểm tra trước khi chuyển trạng thái, khóa chống gửi trùng |
+| `MonitorIntegrationTest` (`dx-monitor`) | Dòng log của gateway thành số liệu của màn giám sát, khóa nhận log, gộp khi một địa chỉ gửi dồn, xóa dữ liệu cũ |
 
 Phần dựa vào chương trình ngoài (áp dụng mô hình qua `pgschema`, quy trình Flowable, Keycloak) do các script `e2e/api/check_*.py` ở mục 4 kiểm.
 
-Độ phủ chưa được đo trong CI và không có lệnh đo nào trong repository.
-Một lần đo bằng JaCoCo 0.8.13 chạy ngoài repository ngày 24/11/2026 cho: `dx-model` phủ 75% số dòng, `dx-engine` 38%, `dx-core` 23%, `dx-monitor` 9%, toàn backend 42%; các lớp thuần như `CodeFormat`, `ConditionText`, `BusinessCalendar`, `DdlGenerator`, `ModelDiff` phủ từ 96% đến 100%.
+### Độ phủ
+
+`./mvnw verify` ghi báo cáo JaCoCo của từng module ở `target/site/jacoco/`.
+Lệnh `python3 .github/scripts/check_coverage.py backend` (chạy ở thư mục gốc) cộng chúng lại; job `Test the backend` in bảng này vào phần tóm tắt của lượt chạy.
+`cd frontend && npm run coverage` in độ phủ của mã web, và job của workflow `Frontend` chạy lệnh đó.
+
+| Phần | Dòng | Nhánh |
+|---|---|---|
+| `dx-model` | 75,2% | 63,4% |
+| `dx-engine` | 64,3% | 58,9% |
+| `dx-core` | 52,1% | 44,3% |
+| `dx-monitor` | 64,0% | 50,9% |
+| Toàn backend | 64,8% | 58,9% |
+| Mã web | 28,9% | 21,4% |
+
+Số đo của backend không gồm các script `e2e/api/check_*.py` và kịch bản trình duyệt.
+
+Giao diện web được kiểm theo hai lớp.
+Test đơn vị của Vitest chỉ chạy trên phần logic thuần (nhà cung cấp dữ liệu, phiên đăng nhập, luồng sự kiện, ghi đè YAML, chuỗi mô tả), nên số đo của mã web chỉ tính phần này.
+Các thành phần React (MUI và react-admin) không có test đơn vị; chúng được kiểm bằng bài Playwright ở mục 5 và các script `e2e/api/check_*.py` trên stack thật, và độ phủ của hai lớp này không nằm trong bảng trên.
 
 ## 3. Dựng stack
 
@@ -139,7 +166,7 @@ Mỗi kiểm in một dòng `PASS` hoặc `FAIL` kèm nhãn, cuối script in `N
 Điều kiện đặc biệt:
 
 - Tiêu chí 3 của `check_demo.py` (tệp sạch, tệp EICAR bị chặn, tệp bị từ chối khi ClamAV dừng) chỉ chạy khi bật quét; khi tắt quét (`dxos av off`) script in `NOTE` rồi bỏ qua phần này.
-- Đặt `DXOS_REQUIRE_SCAN=1` thì stack không quét làm script báo `FAIL`; nhóm chế độ lõi của `API end-to-end` đặt biến này.
+- Đặt `DXOS_REQUIRE_SCAN=1` thì stack không quét làm script báo `FAIL`; nhóm chế độ lõi của `Test the API` đặt biến này.
 - Với quét bật, đợi `clamav` khỏe (`docker compose up -d --wait clamav`) trước khi chạy script, vì tệp tải lên bị từ chối khi ClamAV chưa nạp xong chữ ký.
 - Một số kiểm cần backend chạy với biến gây lỗi có chủ ý (`ENGINE_FAULT_AFTER_DECISION=true`, `ENGINE_FAULT_APPLY_STEP=ENSURE_CLIENT`); các script tự bật rồi tắt bằng cách tạo lại service `backend`.
 - Keycloak 26.8 trả 400 thay vì 401 cho mật khẩu sai; các kiểm về mật khẩu nhận cả hai.
@@ -149,7 +176,7 @@ Mỗi kiểm in một dòng `PASS` hoặc `FAIL` kèm nhãn, cuối script in `N
 Bài Playwright của bảng điều khiển nằm ở `e2e/web/`; cách chạy, biến cấu hình và nơi có ảnh chụp ở [`e2e/README.md`](../e2e/README.md).
 Bài `phone.spec.ts` chạy ở cỡ điện thoại 390 px và kiểm bảng điều khiển cùng hộp việc không rộng hơn màn hình.
 Bài `console-draft.spec.ts` kiểm bảng điều khiển hỏi trước khi bản đang soạn có thay đổi chưa áp dụng bị thay bằng một mẫu: Hủy giữ bản nháp, Thay thế mở mẫu.
-CI chạy bài này ở job `Browser end-to-end` của workflow `Platform`.
+CI chạy bài này ở job `Test in a browser` của workflow `Platform`.
 
 ## 6. Kiểm tay trước khi phát hành
 
@@ -216,7 +243,8 @@ Mỗi mục nêu điều phải thấy; lệnh và biến cấu hình chi tiết
     Mục Vai trò có ma trận vai trò × thực thể; ô báo đỏ khi vai trò xử lý quy trình mà không xem được hồ sơ.
     Xóa trường, vai trò hay thực thể đang được dùng thì hộp xác nhận liệt kê các chỗ dùng.
     Đổi tên một vai trò thì quyền, vai xử lý, `role` của hành động và `escalate.to` đổi theo; đổi tên một trường thì mọi chỗ hộp xác nhận liệt kê đều đổi theo, nên Xem kế hoạch không báo lỗi tham chiếu.
-    Ở chế độ form, bảng "Viết được gì trong tệp" nằm dưới khung chính và chỉ nêu phần đang sửa (mỗi trang một nhóm khóa; các bước của quy trình chỉ nêu khóa của bước đó); sơ đồ quy trình nằm ở Quy trình → Tổng quan và mở to được. Ở chế độ YAML bảng đầy đủ vẫn ở cột phải cùng thẻ sơ đồ.
+    Ở chế độ form, bảng "Viết được gì trong tệp" nằm dưới khung chính và chỉ nêu phần đang sửa (mỗi trang một nhóm khóa; các bước của quy trình chỉ nêu khóa của bước đó); sơ đồ quy trình nằm ở Quy trình → Tổng quan và mở to được.
+    Ở chế độ YAML bảng đầy đủ vẫn ở cột phải cùng thẻ sơ đồ.
     Mọi biểu tượng thùng rác trong form màu đỏ.
     Ở Quy trình → Tổng quan, bấm một trạng thái trên sơ đồ mở Trạng thái với dòng đó được chọn, bấm một mũi tên mở hành động đó, bấm mũi tên tự đóng mở Thời hạn.
     Thêm vai trò xử lý chưa có quyền xem hồ sơ thì cây và trang hiện cảnh báo màu cam; cho quyền thì hết.

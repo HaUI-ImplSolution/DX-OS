@@ -109,8 +109,10 @@ Kết quả: đề nghị 3 triệu được trưởng nhóm duyệt; đề ngh�
 
 Điểm vướng gặp phải:
 
-- Lần áp dụng đầu thất bại vì ví dụ nhiều cấp duyệt trong `MODEL.md` dùng trạng thái `lead_approved` mà không khai báo nó. Thông báo lỗi chỉ đúng dòng và cột nên sửa được; ví dụ đã được bổ sung phần `states`.
-- Lần thứ hai thất bại vì ghi đè hành động `approve` mà thiếu `from` và `to`, nên trạng thái `lead_approved` không có lối ra. Thông báo nói rõ trạng thái nào và ở dòng nào.
+- Lần áp dụng đầu thất bại vì ví dụ nhiều cấp duyệt trong `MODEL.md` dùng trạng thái `lead_approved` mà không khai báo nó.
+  Thông báo lỗi chỉ đúng dòng và cột nên sửa được; ví dụ đã được bổ sung phần `states`.
+- Lần thứ hai thất bại vì ghi đè hành động `approve` mà thiếu `from` và `to`, nên trạng thái `lead_approved` không có lối ra.
+  Thông báo nói rõ trạng thái nào và ở dòng nào.
 - Đổi tên một trường đòi `--accept MIGRATION`; thông báo nêu rõ mức và tham số cần thêm.
 - Tạo tài khoản cho ba vai và đăng nhập thử được làm bằng script chứ không qua bảng điều khiển, nên đường qua giao diện chưa được thử.
 

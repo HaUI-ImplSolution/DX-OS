@@ -12,7 +12,7 @@ on:
       - 'assistant/**'
       - 'tools/classifier/**'
       - 'deploy/docker-compose.yml'
-      - 'deploy/assistant-sso.sh'
+      - 'deploy/lib/assistant-sso.sh'
       - 'sbom/assistant.cdx.json'
       - '.github/workflows/ci-assistant.yml'
   pull_request:
@@ -26,7 +26,7 @@ on:
       - 'assistant/**'
       - 'tools/classifier/**'
       - 'deploy/docker-compose.yml'
-      - 'deploy/assistant-sso.sh'
+      - 'deploy/lib/assistant-sso.sh'
       - 'sbom/assistant.cdx.json'
       - '.github/workflows/ci-assistant.yml'
 
@@ -39,7 +39,7 @@ concurrency:
 
 jobs:
   service:
-    name: Check the assistant
+    name: Test the assistant
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -66,7 +66,7 @@ jobs:
           python3 .github/scripts/check_licenses.py sbom "$RUNNER_TEMP/assistant.cdx.json"
 
   stack:
-    name: Validate the assistant Compose services and route
+    name: Validate assistant Compose
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:

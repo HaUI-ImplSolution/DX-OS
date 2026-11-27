@@ -1,0 +1,62 @@
+<!-- SPDX-FileCopyrightText: 2026 HaUI-ImplSolution -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- Source of website/static/img/banner-en.png, the English twin of banner.html (1280x640 page, rendered at 1.5x with Chromium). -->
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{width:1280px;height:640px;overflow:hidden;font-family:"Noto Sans",sans-serif;color:#fff;
+    background:radial-gradient(900px 520px at 85% 20%,#2b3f9e 0%,rgba(43,63,158,0) 70%),
+               radial-gradient(700px 500px at 0% 100%,#143a5c 0%,rgba(20,58,92,0) 70%),#0e1220;position:relative}
+  .grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:40px 40px;
+    -webkit-mask-image:linear-gradient(100deg,#000 0%,rgba(0,0,0,.2) 60%,#000 100%)}
+  .left{position:absolute;left:72px;top:70px;width:600px}
+  .brand{display:flex;align-items:center;gap:22px}
+  .brand svg{width:84px;height:84px;flex:none}
+  .brand h1{font-size:92px;font-weight:800;letter-spacing:-2px;line-height:1}
+  .brand h1 span{color:#8da2fb}
+  .tag{margin-top:34px;font-size:35px;font-weight:700;line-height:1.28;letter-spacing:-.3px}
+  .sub{margin-top:20px;font-size:19px;line-height:1.5;color:#b9c3e6}
+  .sub b{color:#fff;font-weight:600}
+  .chips{position:absolute;left:72px;bottom:56px;display:flex;gap:12px}
+  .chip{font-size:16px;font-weight:600;padding:9px 16px;border-radius:999px;background:rgba(141,162,251,.14);border:1px solid rgba(141,162,251,.35);color:#dbe2ff}
+  .yaml{position:absolute;left:690px;top:56px;width:340px;border-radius:14px;background:#0a0e1c;border:1px solid #2c3558;box-shadow:0 24px 60px rgba(0,0,0,.5);
+    font-family:"JetBrains Mono","JetBrainsMono Nerd Font",monospace;font-size:14px;line-height:1.6;padding:12px 18px 14px;z-index:2}
+  .yaml .bar{display:flex;gap:7px;margin-bottom:10px}
+  .yaml .bar i{width:11px;height:11px;border-radius:50%;background:#3a4470;display:block}
+  .yaml .file{color:#7f8bb8;font-size:13px;margin-bottom:6px}
+  .k{color:#8da2fb}.v{color:#9be7c4}.s{color:#ffd28a}.c{color:#5d6a98}
+  .arrow{position:absolute;left:720px;top:318px;z-index:3;width:60px;height:60px;border-radius:50%;background:#3451d1;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(52,81,209,.55)}
+  .arrow svg{width:30px;height:30px}
+  .shot{position:absolute;left:770px;top:340px;width:510px;height:300px;border-radius:14px 0 0 14px;background:#fff;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.55);border:1px solid #2c3558;border-right:none}
+  .shot .top{height:30px;background:#eef1f8;display:flex;align-items:center;gap:7px;padding-left:14px}
+  .shot .top i{width:10px;height:10px;border-radius:50%;background:#c6cde0;display:block}
+  .shot img{display:block;width:510px}
+</style></head><body>
+<div class="grid"></div>
+<div class="left">
+  <div class="brand">
+    <svg viewBox="0 0 84 84"><g stroke="#8da2fb" stroke-width="3.5" stroke-linecap="round"><line x1="42" y1="42" x2="42" y2="10"/><line x1="42" y1="42" x2="72" y2="30"/><line x1="42" y1="42" x2="62" y2="70"/><line x1="42" y1="42" x2="22" y2="70"/><line x1="42" y1="42" x2="12" y2="30"/></g>
+      <g fill="#8da2fb"><circle cx="42" cy="10" r="7"/><circle cx="72" cy="30" r="7"/><circle cx="62" cy="70" r="7"/><circle cx="22" cy="70" r="7"/><circle cx="12" cy="30" r="7"/></g><circle cx="42" cy="42" r="13" fill="#fff"/><circle cx="42" cy="42" r="6" fill="#3451d1"/></svg>
+    <h1>DX<span>-</span>OS</h1>
+  </div>
+  <div class="tag">An open-source core for<br>record-and-workflow systems</div>
+  <div class="sub">One model file builds the <b>database</b>, <b>accounts and roles</b>, a <b>permissioned API</b>, the <b>approval workflow</b> and the <b>screens</b>.<br>Changing the business means changing the file, not the code.</div>
+</div>
+<div class="chips"><span class="chip">Apache-2.0</span><span class="chip">Self-hosted, your data stays with you</span><span class="chip">OLP Open Source 2026</span></div>
+<div class="yaml">
+  <div class="bar"><i></i><i></i><i></i></div>
+  <div class="file">leave.yaml</div>
+<span class="k">name:</span> <span class="v">leave</span><br>
+<span class="k">roles:</span><br>
+&nbsp;&nbsp;- <span class="k">name:</span> <span class="v">STAFF</span><br>
+&nbsp;&nbsp;- <span class="k">name:</span> <span class="v">MANAGER</span><br>
+<span class="k">entities:</span><br>
+&nbsp;&nbsp;<span class="k">request:</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">process:</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">family:</span> <span class="s">approval</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">deadline:</span> <span class="s">48h</span>
+</div>
+<div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+<div class="shot"><div class="top"><i></i><i></i><i></i></div><img src="../../website/docs/images/vi/inbox.png"></div>
+</body></html>

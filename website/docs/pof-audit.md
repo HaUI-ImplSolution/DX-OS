@@ -32,7 +32,7 @@ Không có lỗi loại trừ: repository công khai, có `LICENSE`, đã có re
 | 1 | Repository công khai, có web viewer | ✅ | `HaUI-ImplSolution/DX-OS`, `visibility: public`, API trả 200 không đăng nhập |
 | 2 | Giấy phép OSI, có `LICENSE` toàn văn, có thông báo | ✅ | `LICENSE` Apache-2.0, GitHub nhận đúng `Apache-2.0`; `NOTICE`; `DEPENDENCIES.txt` |
 | 3 | Có release hoặc tag trước hạn nộp, không dùng định dạng độc quyền | ✅ | 10 release `v1.0.0` đến `v2.1.0`, mỗi release có `.tar.gz` |
-| 4 | Có hướng dẫn build và cài, chạy lại được | ⚠️ | `README.md` mục Chạy thử; `dxos-install.sh` của `v2.0.0` đã chạy được trên máy sạch, còn bài dựng từ bản clone (`docker compose up -d --build`) chưa chạy lại trên máy sạch |
+| 4 | Có hướng dẫn build và cài, chạy lại được | ⚠️ | `README.md` mục Bắt đầu nhanh; `dxos-install.sh` của `v2.0.0` đã chạy được trên máy sạch, còn bài dựng từ bản clone (`docker compose up -d --build`) chưa chạy lại trên máy sạch |
 | 5 | Khai báo thư viện, phiên bản, nguồn, giấy phép | ✅ | `DEPENDENCIES.txt`, `sbom/`, `.github/licenses/component-catalog.json` |
 | 6 | README, CHANGELOG, bug tracker, tài liệu đúng trạng thái | ✅ | Xem tiêu chí 6 |
 | 7 | Không lộ bí mật hay dữ liệu cá nhân | ✅ | Xem mục 9 |
@@ -44,11 +44,11 @@ Không có lỗi loại trừ: repository công khai, có `LICENSE`, đã có re
 |---|---|---|---|
 | ✅ | Kho công khai trên Internet, có web viewer | GitHub: duyệt mã, lịch sử, blame trên trình duyệt | −3 |
 | ✅ | Truy cập mở, không cần đăng nhập | API không đăng nhập trả 200 cho repository, release, tag, `LICENSE` | −3 |
-| ✅ | Repository được dùng thật | 1229 commit trên nhánh làm việc; 261 pull request đã gộp (GitHub); CI chạy trên mọi pull request | −5 |
+| ✅ | Repository được dùng thật | 1254 commit trên nhánh làm việc; 264 pull request đã gộp (GitHub); CI chạy trên mọi pull request | −5 |
 | ✅ | Lịch sử trải đều | Mười ba tuần ISO liên tiếp từ W36 đến W48 đều có commit: 3, 80, 82, 53, 93, 97, 85, 84, 138, 119, 192, 127, 76 | |
-| ✅ | Nhiều người đóng góp | 3 sinh viên: `KhuongSpring` 903, `nddKhanh` 165, `tung51652-alt` 152 commit, cộng `dependabot` 7 và `Khuong-PlanB` 2 | |
+| ✅ | Nhiều người đóng góp | 3 sinh viên: `KhuongSpring` 922, `nddKhanh` 165, `tung51652-alt` 158 commit, cộng `dependabot` 7 và `Khuong-PlanB` 2 | |
 | ✅ | Nhận diện tác giả | `.mailmap` gom các danh tính về một tên mỗi người | |
-| ✅ | Bug tracker có lịch sử | 105 issue (69 đã đóng) và 261 pull request đã gộp | |
+| ✅ | Bug tracker có lịch sử | 113 issue (69 đã đóng) và 264 pull request đã gộp | |
 
 ```bash
 git log --pretty='%h %ad %an %s' --date=short | tail -20     # lịch sử có trải đều không
@@ -81,7 +81,7 @@ head -3 LICENSE                                # toàn văn, không phải liên
 | ✅ | Release là sản phẩm dự thi | `main` chứa mọi việc đã gộp và tag `v2.1.0` đặt trên `main` | −5 |
 | ✅ | Phát hành theo phiên bản | Thẻ SemVer; `CHANGELOG.md` theo Keep a Changelog có mục cho mọi bản và `[Unreleased]` | −3 |
 | ✅ | Định dạng mở cho gói phát hành | Workflow `Release Package` chạy khi đẩy tag `v*`, đính kèm `dx-os-X.Y.Z.tar.gz`, `.sha256` và SBOM `.cdx.json`; không có `.zip` | −3 |
-| ✅ | Gói được kiểm trước khi đăng | `check_archive.sh` kiểm gói có `LICENSE`, `NOTICE`, `DEPENDENCIES.txt`, `README.md`, `CHANGELOG.md` và không có tệp giống bí mật; chạy ở job `Install from the release archive` của workflow `Platform` của mọi pull request và trong `Release Package` trước khi đăng | |
+| ✅ | Gói được kiểm trước khi đăng | `check_archive.sh` kiểm gói có `LICENSE`, `NOTICE`, `DEPENDENCIES.txt`, `README.md`, `CHANGELOG.md` và không có tệp giống bí mật; chạy ở job `Test the install` của workflow `Platform` của mọi pull request và trong `Release Package` trước khi đăng | |
 | ✅ | Image theo phiên bản | Workflow `Release Images` đẩy image `vX.Y.Z` lên GHCR; `dxos-install.sh` kéo image này, bản `2.0.0` cài được bằng một lệnh | |
 
 GitHub tự đính kèm `Source code (zip)` vào mỗi release và không xóa được; phần mô tả release ghi rõ `dx-os-X.Y.Z.tar.gz` mới là gói phát hành chính thức.
@@ -90,12 +90,12 @@ GitHub tự đính kèm `Source code (zip)` vào mỗi release và không xóa �
 
 | Trạng thái | Yêu cầu | Bằng chứng | Mức trừ nếu thiếu |
 |---|---|---|---|
-| ✅ | Có hướng dẫn dịch từ mã nguồn | `README.md` mục Chạy thử, phần Từ mã nguồn; `README_EN.md` | −5 |
+| ✅ | Có hướng dẫn dịch từ mã nguồn | `README.md` mục Bắt đầu nhanh, mục từ mã nguồn; `README_EN.md` | −5 |
 | ✅ | Không cấu hình bằng cách sửa tay tệp mã | Mọi tham số ở `deploy/.env`, mẫu `deploy/.env.example`; `deploy/make_env.sh` sinh mật khẩu ngẫu nhiên; job `Validate the Compose file` của workflow `Platform` kiểm Compose dừng khi thiếu bí mật | −5 |
 | ✅ | Cấu hình được trước khi dịch | `deploy/make_env.sh` rồi mới `docker compose up -d --build` | −5 |
 | ✅ | Dịch bằng công cụ nguồn mở | Docker, Compose, Git, Maven wrapper, npm | −5 |
-| ✅ | Chạy được ngoài thư mục mã nguồn | `dxos-install.sh` cài vào `~/.dxos`, `install.sh` từ chối cài vào chính thư mục mã nguồn; job `Install from the release archive` của workflow `Platform` cài từ gói, gói sai SHA-256 bị từ chối, mọi tệp Compose mount đều có | −5 |
-| ✅ | Hệ thống dựng từ trạng thái rỗng dùng được qua trình duyệt | Job `Browser end-to-end`: dựng image của commit, khởi động stack rỗng, Playwright đăng nhập bằng Keycloak, áp dụng một mẫu và thấy mô hình chạy (`e2e/web/tests/console.spec.ts`) | |
+| ✅ | Chạy được ngoài thư mục mã nguồn | `dxos-install.sh` cài vào `~/.dxos`, `install.sh` từ chối cài vào chính thư mục mã nguồn; job `Test the install` của workflow `Platform` cài từ gói, gói sai SHA-256 bị từ chối, mọi tệp Compose mount đều có | −5 |
+| ✅ | Hệ thống dựng từ trạng thái rỗng dùng được qua trình duyệt | Job `Test in a browser`: dựng image của commit, khởi động stack rỗng, Playwright đăng nhập bằng Keycloak, áp dụng một mẫu và thấy mô hình chạy (`e2e/web/tests/console.spec.ts`) | |
 | ✅ | Chạy lại chuỗi trên máy sạch | `dxos-install.sh` của release `v2.0.0` cài vào `~/.dxos` trên máy chủ không còn stack cũ, `dxos start` kéo image từ GHCR, áp dụng `onestop.yaml` và `dxos demo` chạy được | |
 
 Bài kiểm tra bắt buộc làm trước ngày chấm, giả lập thao tác của giám khảo:
@@ -131,9 +131,9 @@ git ls-files | grep -E '(^|/)(vendor|third_party|node_modules)/|\.patch$' && ech
 
 | Trạng thái | Yêu cầu | Bằng chứng | Mức trừ nếu thiếu |
 |---|---|---|---|
-| ✅ | Có bug tracker | GitHub Issues đã bật; mẫu `bug_report.yml`, `feature_request.yml`; 105 issue | −5 |
+| ✅ | Có bug tracker | GitHub Issues đã bật; mẫu `bug_report.yml`, `feature_request.yml`; 113 issue | −5 |
 | ✅ | Có changelog | `CHANGELOG.md` theo Keep a Changelog, mục `[Unreleased]` và mục cho mọi bản đến `[2.1.0]` | −5 |
-| ✅ | Có README và hướng dẫn | `README.md`, `README_EN.md`; `ARCHITECTURE.md`; `docs/TESTING.md`; `docs/OPERATIONS.md`; API qua đặc tả OpenAPI và `check_docs.py` kiểm tài liệu khớp OpenAPI; job `Check required files and scripts` báo lỗi nếu thiếu một tài liệu bắt buộc hoặc `CHANGELOG.md` mất mục `[Unreleased]`; job `Build the docs site` dựng trang docs, trong đó có các tài liệu của `docs/` và `deploy/` chép lại mỗi lần dựng, và dừng khi có liên kết hỏng | −5 |
+| ✅ | Có README và hướng dẫn | `README.md`, `README_EN.md`; `ARCHITECTURE.md`; `docs/TESTING.md`; `docs/OPERATIONS.md`; API qua đặc tả OpenAPI và `check_docs.py` kiểm tài liệu khớp OpenAPI; job `Check required files` báo lỗi nếu thiếu một tài liệu bắt buộc hoặc `CHANGELOG.md` mất mục `[Unreleased]`; job `Build the docs site` dựng trang docs, trong đó có các tài liệu của `docs/` và `deploy/` chép lại mỗi lần dựng, và dừng khi có liên kết hỏng | −5 |
 | ✅ | Hướng dẫn đóng góp | `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, mẫu pull request | |
 | ✅ | Chính sách bảo mật | `SECURITY.md` | |
 | ✅ | Bảo vệ nhánh và tag | Hai ruleset đang `active` (API GitHub, 14/11): `main` (cấm xóa, cấm ghi đè lịch sử, bắt buộc pull request, 16 check phải xanh; một đối tượng được bỏ qua) và `tags-v-immutable` (cấm sửa và xóa tag `v*`); khớp với `.github/rulesets/main.json` và `tags.json` | |

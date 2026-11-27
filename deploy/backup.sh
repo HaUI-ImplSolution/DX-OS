@@ -27,7 +27,8 @@ SEAWEEDFS_IMAGE="$(sed -n 's/^ *image: \(chrislusf\/seaweedfs:.*\)$/\1/p' docker
 POSTGRES_IMAGE="postgres:16-bookworm@sha256:5264710be20f409750ac6dc4e5706dcef929c87e241605463f0f9aefa932a8d9"
 
 [[ -f "$ENV_FILE" ]] || { echo "$ENV_FILE not found. Run: ./make_env.sh (random secrets), or cp .env.example .env and fill every blank variable." >&2; exit 1; }
-env_value() { grep -E "^$1=" "$ENV_FILE" | tail -1 | cut -d= -f2- || true; }
+ENV_VALUE_FILE="$ENV_FILE"
+source lib/env.sh
 
 POSTGRES_USER="$(env_value POSTGRES_USER)"
 POSTGRES_DB="$(env_value POSTGRES_DB)"

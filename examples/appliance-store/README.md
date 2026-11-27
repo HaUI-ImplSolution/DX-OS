@@ -255,7 +255,8 @@ DX-OS không áp dụng thẳng mà cho xem kế hoạch với mức rủi ro tr
 Lưu mô hình bảo hành thành `warranty.yaml` và thử ba thay đổi:
 
 - **Thêm một trường** (ví dụ dòng `branch: {type: text, label: Chi nhánh}` sau dòng `customer`): `dxos plan warranty.yaml` báo `SAFE`, `dxos apply warranty.yaml` áp dụng.
-- **Bỏ trường đó lại:** kế hoạch báo `LOSS` vì dữ liệu của trường sẽ mất. `dxos apply` từ chối với "This change is at level LOSS ... pass accept=LOSS", và chỉ làm khi bạn gõ rõ `dxos apply warranty.yaml --accept LOSS`.
+- **Bỏ trường đó lại:** kế hoạch báo `LOSS` vì dữ liệu của trường sẽ mất.
+  `dxos apply` từ chối với "This change is at level LOSS ... pass accept=LOSS", và chỉ làm khi bạn gõ rõ `dxos apply warranty.yaml --accept LOSS`.
 - **Đổi hạn xử lý** (ví dụ `deadline: 2m` thành `8h`) khi còn phiếu bảo hành chưa đóng: bị từ chối với "Cannot change CHANGE_DEADLINE for ticket while 1 records are still open", không áp dụng gì.
 
 Tự viết thì cả ba việc này (luật theo vai, lịch sử chống sửa, đổi quy trình an toàn) đều phải tự làm và tự giữ đúng qua từng lần sửa.
@@ -303,7 +304,8 @@ Cấu hình webhook nằm ở tệp trên máy chủ, không có trên giao di�
 
 ### Việc khác
 
-- **Đổi quy trình về sau:** sửa mô hình rồi xem kế hoạch và áp dụng. Thêm trường là mức `Safe`; bỏ trường là mức `Loss` và cần xác nhận.
+- **Đổi quy trình về sau:** sửa mô hình rồi xem kế hoạch và áp dụng.
+  Thêm trường là mức `Safe`; bỏ trường là mức `Loss` và cần xác nhận.
 - **Hạn bảo hành thật:** đổi `deadline: 2m` thành `8h` hoặc `2d`; đổi hạn bị từ chối khi còn phiếu mở.
 - **Ứng dụng chạy ở máy khác DX-OS:** đặt `PUBLIC_HOST` của DX-OS thành địa chỉ máy chủ trước lần `dxos start` đầu tiên và dùng địa chỉ đó ở `DXOS_BASE_URL`.
 - **Tự dựng giao diện duyệt trong ứng dụng:** gọi API theo OpenAPI của từng mô hình; có thể sinh client bằng OpenAPI Generator, xem [`docs/EXTENSIONS.md`](../../docs/EXTENSIONS.md).

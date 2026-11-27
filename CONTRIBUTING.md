@@ -80,7 +80,11 @@ cd ../frontend && npm install && npm run dev
 - **Commit:** tiếng Anh, thể mệnh lệnh, kèm số issue ở cuối tiêu đề, ví dụ `feat: add the approval template (#123)`.
 - **Mã:** Java 21, định dạng theo google-java-format (chạy `./mvnw spotless:apply`); comment ngắn, nêu hành vi hiện tại, tiếng Anh.
 - **API:** mô tả `@Operation` bằng tiếng Anh; mọi response bọc trong `ApiResponse`.
+- **Tên job CI:** một động từ và đối tượng của nó, tối đa bốn từ, như `Test the API`; động từ cho biết loại việc: `Build`, `Test`, `Check`, `Validate`, `Lint`, `Scan`, `Plan`, `Package`, `Publish`, `Rerun` hoặc `Summarize`, và biến thể của ma trận ghi trong ngoặc ở cuối.
+  Tên job là tên của check bắt buộc ở `.github/rulesets/main.json` nên hai workflow không dùng cùng một tên; đổi tên một job thì đổi cả ruleset rồi nhập lại ở GitHub, và `check_workflow_names.py` kiểm các điều này.
 - **Tài liệu:** tiếng Việt, mỗi câu một dòng, chỉ ghi trạng thái hiện tại.
+- **Bản tiếng Anh của tài liệu:** tệp `<TÊN>_EN.md` trong `docs/en/` (ví dụ `docs/en/API_EN.md`) và `README_EN.md` ở gốc, và các trang viết riêng cho trang docs ở `website/i18n/en/`.
+  Sửa một bên thì sửa bên kia trong cùng pull request, rồi chạy `python3 .github/scripts/check_translations.py --stamp <tệp>` để ghi rằng hai bản khớp nhau; bước `Docs` của CI đỏ khi hai bản lệch, và script chỉ kiểm hai bản còn cùng cấu trúc và cùng đang được xác nhận, không kiểm bản dịch đúng hay sai.
 - **Issue và pull request:** viết bằng tiếng Việt hoặc tiếng Anh; nhóm đọc và trả lời cả hai.
 - **Thông báo của backend:** viết bằng tiếng Anh kèm `errorCode`; mỗi thông báo mới cần thêm một mẫu dịch ở `frontend/src/shell/backendMessages.ts`, nếu không giao diện hiện nguyên văn tiếng Anh.
 - **Mã lõi không chứa tên thực thể, vai hay luồng của một lĩnh vực**; nghiệp vụ nằm trong tệp mô hình.

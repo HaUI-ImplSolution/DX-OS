@@ -1,0 +1,50 @@
+{
+  "link.title.Dự án": {
+    "message": "Project",
+    "description": "The title of the footer links column with title=Dự án in the footer"
+  },
+  "link.title.Trong repository": {
+    "message": "In the repository",
+    "description": "The title of the footer links column with title=Trong repository in the footer"
+  },
+  "link.item.label.Repository": {
+    "message": "Repository",
+    "description": "The label of footer link with label=Repository linking to https://github.com/HaUI-ImplSolution/DX-OS"
+  },
+  "link.item.label.Releases": {
+    "message": "Releases",
+    "description": "The label of footer link with label=Releases linking to https://github.com/HaUI-ImplSolution/DX-OS/releases"
+  },
+  "link.item.label.Issues": {
+    "message": "Issues",
+    "description": "The label of footer link with label=Issues linking to https://github.com/HaUI-ImplSolution/DX-OS/issues"
+  },
+  "link.item.label.README": {
+    "message": "README",
+    "description": "The label of footer link with label=README linking to https://github.com/HaUI-ImplSolution/DX-OS#readme"
+  },
+  "link.item.label.ARCHITECTURE": {
+    "message": "ARCHITECTURE",
+    "description": "The label of footer link with label=ARCHITECTURE linking to https://github.com/HaUI-ImplSolution/DX-OS/blob/main/ARCHITECTURE.md"
+  },
+  "link.item.label.CHANGELOG": {
+    "message": "CHANGELOG",
+    "description": "The label of footer link with label=CHANGELOG linking to https://github.com/HaUI-ImplSolution/DX-OS/blob/main/CHANGELOG.md"
+  },
+  "link.item.label.LICENSE (Apache-2.0)": {
+    "message": "LICENSE (Apache-2.0)",
+    "description": "The label of footer link with label=LICENSE (Apache-2.0) linking to https://github.com/HaUI-ImplSolution/DX-OS/blob/main/LICENSE"
+  },
+  "link.item.label.NOTICE": {
+    "message": "NOTICE",
+    "description": "The label of footer link with label=NOTICE linking to https://github.com/HaUI-ImplSolution/DX-OS/blob/main/NOTICE"
+  },
+  "link.item.label.DEPENDENCIES": {
+    "message": "DEPENDENCIES",
+    "description": "The label of footer link with label=DEPENDENCIES linking to https://github.com/HaUI-ImplSolution/DX-OS/blob/main/DEPENDENCIES.txt"
+  },
+  "copyright": {
+    "message": "DX-OS, Apache-2.0 license. School of Information and Communication Technology, Hanoi University of Industry.",
+    "description": "The footer copyright"
+  }
+}

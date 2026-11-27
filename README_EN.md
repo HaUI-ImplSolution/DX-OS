@@ -13,7 +13,7 @@
 [![Platform](https://github.com/HaUI-ImplSolution/DX-OS/actions/workflows/ci-platform.yml/badge.svg)](https://github.com/HaUI-ImplSolution/DX-OS/actions/workflows/ci-platform.yml)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/16682/badge)](https://www.bestpractices.dev/projects/16682)
 
-**[Try it](#try-it)** · **[Quick start](./docs/QUICKSTART.md)** (Vietnamese) · **[Docs](https://haui-implsolution.github.io/DX-OS/)** (Vietnamese) · **[Features](./docs/FEATURES.md)** (Vietnamese) · **[Changelog](./CHANGELOG.md)**
+**[Try it](#try-it)** · **[Quick start](./docs/en/QUICKSTART_EN.md)** · **[Docs](https://haui-implsolution.github.io/DX-OS/en/)** · **[Features](./docs/en/FEATURES_EN.md)** · **[Changelog](./CHANGELOG.md)**
 
 Entry of the **OLP Open Source Software 2026** contest, DX-OS track (VFOSSA), by team **HaUI-ImplSolution**, School of Information and Communication Technology, Hanoi University of Industry.
 
@@ -62,7 +62,7 @@ The whole system is assembled from open-source software under OSI-approved licen
 - **The everyday work is included:** Vietnamese PDF documents, importing records from a spreadsheet, archiving old records, virus scanning of attachments, encrypted backup.
 - **Installs with two commands:** it runs on one machine with Docker, and the data never leaves that machine.
 
-The full list is in [`docs/FEATURES.md`](./docs/FEATURES.md) (Vietnamese); each feature is matched with its test in the [evidence matrix](https://haui-implsolution.github.io/DX-OS/docs/evidence-matrix).
+The full list is in [`docs/FEATURES_EN.md`](./docs/en/FEATURES_EN.md); each feature is matched with its test in the [evidence matrix](https://haui-implsolution.github.io/DX-OS/docs/evidence-matrix).
 
 ## How it works
 
@@ -88,7 +88,7 @@ A record from the moment it is filed to its approval and printout:
 
 The core is assembled from open-source software as it is, with no change to upstream code: APISIX is the API gateway, Keycloak handles sign-in, PostgreSQL keeps the data, SeaweedFS keeps attachments, Flowable runs the workflows and ClamAV scans for malware.
 The version and license of each component are in [`DEPENDENCIES.txt`](./DEPENDENCIES.txt) and [`sbom/`](./sbom/README.md).
-The detailed diagrams are in [`ARCHITECTURE.md`](./ARCHITECTURE.md) (Vietnamese); how to write a model file is in [`docs/MODEL.md`](./docs/MODEL.md) (Vietnamese); ten ready templates can be picked in the control panel.
+The detailed diagrams are in [`docs/en/ARCHITECTURE_EN.md`](./docs/en/ARCHITECTURE_EN.md); how to write a model file is in [`docs/MODEL_EN.md`](./docs/en/MODEL_EN.md); ten ready templates can be picked in the control panel.
 
 ## Quick start
 
@@ -103,7 +103,7 @@ The installer downloads the latest release, checks its SHA-256 and installs it i
 On the first run `dxos start` pulls the images, waits for every service, creates the `admin` account with a temporary password printed on screen, and prints the addresses.
 Sign in at `http://localhost:9080/console` as `admin`, change the password, pick a template on the Template library tab, preview the plan and apply it.
 
-- **Connect your own application:** the [quick start](./docs/QUICKSTART.md) (Vietnamese) has two paths, without code and with code, from a clean machine to a working process.
+- **Connect your own application:** the [quick start](./docs/en/QUICKSTART_EN.md) has two paths, without code and with code, from a clean machine to a working process.
 - **Only the API platform:** `dxos start --core`, see [Core-only mode](./docs/OPERATIONS.md#chế-độ-chỉ-lõi) (Vietnamese).
 - **Build from source:** `deploy/make_env.sh`, then `cd deploy && docker compose up -d --build`, then `./dxos admin`; JDK 21 and Node 22 are also needed to build outside Docker.
 - **Machine requirements, the `dxos` commands, backup and troubleshooting:** [`docs/OPERATIONS.md`](./docs/OPERATIONS.md) (Vietnamese).
@@ -157,19 +157,19 @@ The full list and the reasons are in [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.
 
 ## Documentation
 
-Docs site: <https://haui-implsolution.github.io/DX-OS/>; the documents are written in Vietnamese, and the full table of contents by folder is in [`docs/README.md`](./docs/README.md).
+Docs site: <https://haui-implsolution.github.io/DX-OS/en/>, in English for the features, the quick start, the model file, the API, the architecture, monitoring, integrations, extension points, reporting, storage, sizing, the glossary and the guides by role; each of these has an English file with the suffix `_EN` in `docs/en/`; the other documents are in Vietnamese only, and the full table of contents by folder is in [`docs/README.md`](./docs/README.md).
 
 | You need | See |
 |---|---|
-| From a clean machine to a working process, or connecting your own application | [`docs/QUICKSTART.md`](./docs/QUICKSTART.md) (Vietnamese) |
-| Using the system by role | [submitters](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-nop), [handlers](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-xu-ly), [deployers](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-trien-khai) (Vietnamese) |
-| Screenshots and videos | [the gallery page](https://haui-implsolution.github.io/DX-OS/docs/hinh-anh) (Vietnamese) |
-| Writing a model file | [`docs/MODEL.md`](./docs/MODEL.md) (Vietnamese) |
-| Calling the API, building extension services and webhooks | [`docs/API.md`](./docs/API.md), [`docs/EXTENSIONS.md`](./docs/EXTENSIONS.md) (Vietnamese); and the OpenAPI specification (`/v3/api-docs`) of the running backend |
-| Install, the `dxos` commands, backup, troubleshooting, monitoring | [`docs/OPERATIONS.md`](./docs/OPERATIONS.md), [`docs/MONITORING.md`](./docs/MONITORING.md) (Vietnamese) |
-| Architecture and the decisions made | [`ARCHITECTURE.md`](./ARCHITECTURE.md) (Vietnamese) |
+| From a clean machine to a working process, or connecting your own application | [`docs/QUICKSTART_EN.md`](./docs/en/QUICKSTART_EN.md) |
+| Using the system by role | [submitters](https://haui-implsolution.github.io/DX-OS/en/docs/huong-dan/nguoi-nop), [handlers](https://haui-implsolution.github.io/DX-OS/en/docs/huong-dan/nguoi-xu-ly), [deployers](https://haui-implsolution.github.io/DX-OS/en/docs/huong-dan/nguoi-trien-khai) |
+| Screenshots and videos | [the gallery page](https://haui-implsolution.github.io/DX-OS/en/docs/hinh-anh) |
+| Writing a model file | [`docs/MODEL_EN.md`](./docs/en/MODEL_EN.md) |
+| Calling the API, building extension services and webhooks | [`docs/API_EN.md`](./docs/en/API_EN.md), [`docs/EXTENSIONS_EN.md`](./docs/en/EXTENSIONS_EN.md); and the OpenAPI specification (`/v3/api-docs`) of the running backend |
+| Install, the `dxos` commands, backup, troubleshooting, monitoring | [`docs/OPERATIONS.md`](./docs/OPERATIONS.md) (Vietnamese), [`docs/MONITORING_EN.md`](./docs/en/MONITORING_EN.md) |
+| Architecture and the decisions made | [`docs/en/ARCHITECTURE_EN.md`](./docs/en/ARCHITECTURE_EN.md) |
 | Testing | [`docs/TESTING.md`](./docs/TESTING.md) (Vietnamese) |
-| Glossary | [`docs/GLOSSARY.md`](./docs/GLOSSARY.md) (Vietnamese) |
+| Glossary | [`docs/GLOSSARY_EN.md`](./docs/en/GLOSSARY_EN.md) |
 | Third-party components and licenses | [`DEPENDENCIES.txt`](./DEPENDENCIES.txt), [`NOTICE`](./NOTICE), [`sbom/`](./sbom/README.md) |
 
 ## Contributing

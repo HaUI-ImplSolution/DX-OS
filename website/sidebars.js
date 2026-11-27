@@ -18,6 +18,7 @@ const sidebars = {
       label: 'Tài liệu sản phẩm',
       collapsed: false,
       items: [
+        'tai-lieu/tinh-nang',
         'tai-lieu/viet-mo-hinh',
         'tai-lieu/api',
         'tai-lieu/van-hanh',
@@ -30,6 +31,7 @@ const sidebars = {
         'tai-lieu/kien-truc',
         'tai-lieu/tuong-thich',
         'tai-lieu/trinh-dien',
+        'tai-lieu/thuat-ngu',
       ],
     },
     {

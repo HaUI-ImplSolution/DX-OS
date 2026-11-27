@@ -48,4 +48,4 @@ npx playwright test
 - `web/test-results/`: vết của bài hỏng.
 - Cả hai thư mục không vào git.
 
-CI chạy bài này ở job `Browser end-to-end` của workflow `Platform`, trên stack dựng từ commit đang kiểm.
+CI chạy bài này ở job `Test in a browser` của workflow `Platform`, trên stack dựng từ commit đang kiểm.

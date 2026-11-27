@@ -1,0 +1,22 @@
+{
+  "version.label": {
+    "message": "Next",
+    "description": "The label for version current"
+  },
+  "sidebar.docs.category.Hướng dẫn sử dụng": {
+    "message": "User guides",
+    "description": "The label for category 'Hướng dẫn sử dụng' in sidebar 'docs'"
+  },
+  "sidebar.docs.category.Tài liệu sản phẩm": {
+    "message": "Product documentation",
+    "description": "The label for category 'Tài liệu sản phẩm' in sidebar 'docs'"
+  },
+  "sidebar.docs.category.Hồ sơ dự thi": {
+    "message": "Contest dossier",
+    "description": "The label for category 'Hồ sơ dự thi' in sidebar 'docs'"
+  },
+  "sidebar.docs.category.Mẫu tài liệu theo phase": {
+    "message": "Phase document templates",
+    "description": "The label for category 'Mẫu tài liệu theo phase' in sidebar 'docs'"
+  }
+}

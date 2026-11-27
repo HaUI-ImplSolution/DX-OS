@@ -24,18 +24,18 @@ Mức hoàn thiện của từng tính năng và bài kiểm của nó ở [`web
 | Phân tích tĩnh của web | `cd frontend && npm run lint` | Workflow `Frontend` |
 | Test đơn vị của web (Vitest, 220 test: nhà cung cấp dữ liệu (`body()` và từng lời gọi), điều kiện, xuất CSV, định dạng số và thời gian, đường dẫn của mọi lời gọi API, sơ đồ quy trình, thông báo lỗi, điều hướng của bộ dựng mô hình, nơi dùng và đổi tên của trường và vai trò, hàng của quy trình, luồng sự kiện thay đổi trực tiếp, ngôn ngữ giao diện, phiên đăng nhập và vai trò, ghi đè tệp YAML giữ nguyên chú thích, chuỗi mô tả lịch sử hồ sơ và kế hoạch áp dụng) | `cd frontend && npm test`; kèm độ phủ: `npm run coverage` | Workflow `Frontend` |
 | Độ phủ | `python3 .github/scripts/check_coverage.py backend` sau `./mvnw verify`; `cd frontend && npm run coverage` | `Backend` (bảng ở tóm tắt của lượt chạy) và `Frontend` |
-| Giấy phép và header | `python3 .github/scripts/check_licenses.py`; `python3 .github/scripts/check_license_inventory.py check` (thêm `--maven` cho gói Maven, cần JDK 21); `pipx run --spec reuse==6.3.0 reuse lint` | `Check licenses` của `Compliance`; Maven ở `Scan the backend SBOM` của `Dependencies` |
+| Giấy phép và header | `python3 .github/scripts/check_licenses.py`; `python3 .github/scripts/check_license_inventory.py check` (thêm `--maven` cho gói Maven, cần JDK 21); `pipx run --spec reuse==6.3.0 reuse lint` | `Check licenses` của `Compliance`; Maven ở `Scan backend SBOM` của `Dependencies` |
 | Văn bản giấy phép trong gói đi vào sản phẩm | `python3 .github/scripts/check_license_texts.py` (cần mạng) | `Check licenses` của `Compliance` |
-| Gói trong image và văn bản giấy phép của image | `python3 .github/scripts/check_image_packages.py check` (thêm `--full` để đọc lại image, cần Docker); `python3 .github/scripts/check_third_party_notices.py check` (cần JDK 21) | `Check licenses` của `Compliance`; `Check the packages inside the images` theo lịch; `Scan the backend SBOM` của `Dependencies` |
+| Gói trong image và văn bản giấy phép của image | `python3 .github/scripts/check_image_packages.py check` (thêm `--full` để đọc lại image, cần Docker); `python3 .github/scripts/check_third_party_notices.py check` (cần JDK 21) | `Check licenses` của `Compliance`; `Check image packages` theo lịch; `Scan backend SBOM` của `Dependencies` |
 | Giấy phép của phiên bản đang dùng | `GITHUB_TOKEN=... python3 .github/scripts/check_upstream_licenses.py`; `python3 -m unittest discover -s .github/scripts/tests` | `Check upstream licenses` và `Check licenses` của `Compliance` |
 | SBOM khớp tệp khóa | `python3 .github/scripts/check_sbom_fresh.py` | `Check SBOMs against lockfiles` của `Compliance` |
-| Route của gateway | `python3 e2e/api/check_routes.py` | `Validate the gateway routes` của `Platform` |
+| Route của gateway | `python3 e2e/api/check_routes.py` | `Validate gateway routes` của `Platform` |
 | Compose hợp lệ, dừng khi thiếu bí mật | `docker compose config` trong `deploy/` | `Validate the Compose file` của `Platform` |
-| Gói phát hành và bộ cài | `.github/scripts/check_archive.sh <gói> <phiên bản>` | `Install from the release archive` của `Platform` |
-| Sao lưu và khôi phục | `deploy/backup.sh` rồi `verify` | `Back up and restore` của `Platform` |
-| API trên stack thật | Các script `e2e/api/check_*.py`, mục 4 | `API end-to-end` của `Platform`, ba nhóm, một nhóm chạy ở chế độ lõi và giữ quét mã độc |
-| Bề mặt của gateway | `python3 e2e/api/check_surface.py` | `Gateway surface` của `Platform`, hai chế độ |
-| Trình duyệt | Xem [`e2e/README.md`](../e2e/README.md) | `Browser end-to-end` của `Platform` |
+| Gói phát hành và bộ cài | `.github/scripts/check_archive.sh <gói> <phiên bản>` | `Test the install` của `Platform` |
+| Sao lưu và khôi phục | `deploy/backup.sh` rồi `verify` | `Test backup and restore` của `Platform` |
+| API trên stack thật | Các script `e2e/api/check_*.py`, mục 4 | `Test the API` của `Platform`, ba nhóm, một nhóm chạy ở chế độ lõi và giữ quét mã độc |
+| Bề mặt của gateway | `python3 e2e/api/check_surface.py` | `Test gateway surface` của `Platform`, hai chế độ |
+| Trình duyệt | Xem [`e2e/README.md`](../e2e/README.md) | `Test in a browser` của `Platform` |
 | Trích dẫn giữa các tài liệu | `python3 .github/scripts/check_doc_refs.py` | `Build the docs site` của `Docs` |
 | Trang tài liệu | `cd website && npm ci && npm run build` | `Build the docs site` của `Docs` |
 | Tải đồng thời và cấu hình nhỏ nhất | `python3 e2e/api/load_test.py` trên stack tạm; các bước và kết quả ở [`SIZING.md`](SIZING.md) | Không |
@@ -80,7 +80,7 @@ Phần dựa vào chương trình ngoài (áp dụng mô hình qua `pgschema`, q
 ### Độ phủ
 
 `./mvnw verify` ghi báo cáo JaCoCo của từng module ở `target/site/jacoco/`.
-Lệnh `python3 .github/scripts/check_coverage.py backend` (chạy ở thư mục gốc) cộng chúng lại; job `Build and test the backend` in bảng này vào phần tóm tắt của lượt chạy.
+Lệnh `python3 .github/scripts/check_coverage.py backend` (chạy ở thư mục gốc) cộng chúng lại; job `Test the backend` in bảng này vào phần tóm tắt của lượt chạy.
 `cd frontend && npm run coverage` in độ phủ của mã web, và job của workflow `Frontend` chạy lệnh đó.
 
 | Phần | Dòng | Nhánh |
@@ -166,7 +166,7 @@ Mỗi kiểm in một dòng `PASS` hoặc `FAIL` kèm nhãn, cuối script in `N
 Điều kiện đặc biệt:
 
 - Tiêu chí 3 của `check_demo.py` (tệp sạch, tệp EICAR bị chặn, tệp bị từ chối khi ClamAV dừng) chỉ chạy khi bật quét; khi tắt quét (`dxos av off`) script in `NOTE` rồi bỏ qua phần này.
-- Đặt `DXOS_REQUIRE_SCAN=1` thì stack không quét làm script báo `FAIL`; nhóm chế độ lõi của `API end-to-end` đặt biến này.
+- Đặt `DXOS_REQUIRE_SCAN=1` thì stack không quét làm script báo `FAIL`; nhóm chế độ lõi của `Test the API` đặt biến này.
 - Với quét bật, đợi `clamav` khỏe (`docker compose up -d --wait clamav`) trước khi chạy script, vì tệp tải lên bị từ chối khi ClamAV chưa nạp xong chữ ký.
 - Một số kiểm cần backend chạy với biến gây lỗi có chủ ý (`ENGINE_FAULT_AFTER_DECISION=true`, `ENGINE_FAULT_APPLY_STEP=ENSURE_CLIENT`); các script tự bật rồi tắt bằng cách tạo lại service `backend`.
 - Keycloak 26.8 trả 400 thay vì 401 cho mật khẩu sai; các kiểm về mật khẩu nhận cả hai.
@@ -176,7 +176,7 @@ Mỗi kiểm in một dòng `PASS` hoặc `FAIL` kèm nhãn, cuối script in `N
 Bài Playwright của bảng điều khiển nằm ở `e2e/web/`; cách chạy, biến cấu hình và nơi có ảnh chụp ở [`e2e/README.md`](../e2e/README.md).
 Bài `phone.spec.ts` chạy ở cỡ điện thoại 390 px và kiểm bảng điều khiển cùng hộp việc không rộng hơn màn hình.
 Bài `console-draft.spec.ts` kiểm bảng điều khiển hỏi trước khi bản đang soạn có thay đổi chưa áp dụng bị thay bằng một mẫu: Hủy giữ bản nháp, Thay thế mở mẫu.
-CI chạy bài này ở job `Browser end-to-end` của workflow `Platform`.
+CI chạy bài này ở job `Test in a browser` của workflow `Platform`.
 
 ## 6. Kiểm tay trước khi phát hành
 

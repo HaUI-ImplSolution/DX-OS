@@ -4,7 +4,8 @@ name: Docs
 
 # Builds the site of website/ on every pull request, so a broken link or anchor fails it.
 # It also checks that the documents cite real items of docs/TESTING.md and real check scripts.
-# The product documents of docs/ are copied into the site on every build.
+# The product documents of docs/ are copied into the site on every build, with the English ones (docs/en) for the English site.
+# It fails when a document was changed in one language and not in the other (check_translations.py).
 # A push to main also publishes the build to GitHub Pages.
 on:
   push:
@@ -14,8 +15,11 @@ on:
       - 'website/**'
       - 'docs/**'
       - 'ARCHITECTURE.md'
+      - 'README.md'
+      - 'README_EN.md'
+      - '.github/scripts/check_translations.py'
       - '.github/scripts/check_doc_refs.py'
-      - '.github/workflows/docs.yml'
+      - '.github/workflows/ci-docs.yml'
   pull_request:
     types:
       - opened
@@ -55,11 +59,20 @@ jobs:
         working-directory: .
         run: python3 .github/scripts/check_doc_refs.py
 
+      - name: The English documents and the Vietnamese ones say the same
+        working-directory: .
+        run: python3 .github/scripts/check_translations.py
+
       - name: Install dependencies
         run: npm ci --no-audit --no-fund --ignore-scripts
 
       - name: Build the site, failing on a broken link or anchor
         run: npm run build
+
+      - name: Every document is in the sidebar
+        working-directory: .
+        run: python3 .github/scripts/check_sidebar.py
+
 
       - name: Upload the site
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'

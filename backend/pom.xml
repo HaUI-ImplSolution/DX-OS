@@ -32,14 +32,14 @@
 	</modules>
 	<properties>
 		<java.version>21</java.version>
-		<awssdk.version>2.57.10</awssdk.version>
+		<awssdk.version>2.59.0</awssdk.version>
 		<pdfbox.version>3.0.8</pdfbox.version>
 		<wiremock.version>3.13.2</wiremock.version>
 		<spotless.version>2.46.1</spotless.version>
 		<spotbugs-maven-plugin.version>4.10.5.0</spotbugs-maven-plugin.version>
 		<findsecbugs.version>1.14.0</findsecbugs.version>
 		<google-java-format.version>1.27.0</google-java-format.version>
-		<jacoco.version>0.8.13</jacoco.version>
+		<jacoco.version>0.8.16</jacoco.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>

@@ -6,8 +6,10 @@ version: 2
 # still supported, not whether the project still works with it. So it opens pull requests for minor and patch
 # updates only, and a new major version, a new runtime line or a change of base image is decided by hand
 # (license in .github/licenses/component-catalog.json, support line, compatibility, then the checks in docs/TESTING.md).
-# A new release must also be old enough before it is proposed (except for the Compose images): a week for a patch and
-# two weeks for a minor, so that a yanked or hijacked release is gone, and the first fixes of a new minor are out, before it arrives.
+# A new release must also be a week old before it is proposed (except for the Compose images), so that a yanked or
+# hijacked release is gone before it arrives; for Maven and npm a new minor waits two weeks, so that its first fixes are out too.
+# Dependabot accepts the per-level wait only for ecosystems it can read semantic versions from, which excludes
+# github-actions and docker.
 # Every pull request still has to pass Check licenses, Check SBOMs against lockfiles and Check upstream licenses.
 #
 # GitHub reads this file from the default branch (main); updates are aimed at Khuong/main.
@@ -20,7 +22,6 @@ updates:
     open-pull-requests-limit: 3
     cooldown:
       default-days: 7
-      semver-minor-days: 14
     commit-message:
       prefix: "chore(deps)"
     groups:
@@ -127,7 +128,6 @@ updates:
     open-pull-requests-limit: 3
     cooldown:
       default-days: 7
-      semver-minor-days: 14
     commit-message:
       prefix: "chore(deps)"
     ignore:
@@ -172,7 +172,6 @@ updates:
     open-pull-requests-limit: 1
     cooldown:
       default-days: 7
-      semver-minor-days: 14
     commit-message:
       prefix: "chore(deps)"
     ignore:

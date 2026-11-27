@@ -11,6 +11,6 @@
     "test": "npm run build && node --test test/*.test.mjs",
     "start": "node dist/server.js"
   },
-  "dependencies": { "fastify": "5.12.8", "jose": "6.2.15", "@fastify/swagger": "9.9.3" },
-  "devDependencies": { "typescript": "7.0.2", "@types/node": "24.10.0" }
+  "dependencies": { "fastify": "5.12.8", "jose": "6.2.18", "@fastify/swagger": "9.9.5" },
+  "devDependencies": { "typescript": "7.0.2", "@types/node": "24.19.2" }
 }

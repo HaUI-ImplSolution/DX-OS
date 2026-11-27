@@ -20,7 +20,7 @@ Closes #
 
 ### Frontend
 
-- [ ] `npx tsc --noEmit` và `npm run lint`
+- [ ] `npx tsc --noEmit`, `npm run lint` và `npm test`
 
 ### Trợ lý và bộ phân loại
 

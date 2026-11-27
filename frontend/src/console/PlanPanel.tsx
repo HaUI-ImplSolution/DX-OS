@@ -54,7 +54,7 @@ const REPAIR = {
   text: t("Cấu trúc bảng đã lệch khỏi mô hình; áp dụng sẽ sửa lại cho khớp."),
 };
 
-const confirmLabel = (level: string, moves: boolean, regrants: boolean, widens: boolean, repairs: boolean) => {
+export const confirmLabel = (level: string, moves: boolean, regrants: boolean, widens: boolean, repairs: boolean) => {
   if (level === "LOSS") return t("Tôi hiểu dữ liệu sẽ mất và đã sao lưu");
   const parts = [
     ...(moves ? [t("chuyển dữ liệu")] : []),
@@ -81,7 +81,7 @@ const FLOW_PARTS: [string, string][] = [
 ];
 
 // What the plan says changed in the steps of a process, in the language of the interface.
-function flowDetail(text: string): string {
+export function flowDetail(text: string): string {
   return text
     .split("; ")
     .map((part) => {

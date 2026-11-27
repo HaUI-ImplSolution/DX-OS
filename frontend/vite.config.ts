@@ -37,5 +37,10 @@ export default defineConfig({
     include: ["src/**/*.test.ts"],
     setupFiles: ["./src/test/setup.ts"],
     server: { deps: { inline: [/@mui/, /react-admin/, /ra-/] } },
+    coverage: {
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: ["src/**/*.test.ts", "src/test/**", "src/**/*.d.ts"],
+      reporter: ["text-summary", "json-summary"],
+    },
   },
 });

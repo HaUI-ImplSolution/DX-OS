@@ -22,7 +22,7 @@ const COLUMN_LABEL: Record<string, string> = {
 };
 
 // The ui block as it is written to the file: a part with nothing in it is left out, and so is the block itself.
-function tidyUi(ui: Rec): Rec | undefined {
+export function tidyUi(ui: Rec): Rec | undefined {
   const next: Rec = { ...ui };
   const menu = compactPart(rec(ui.menu));
   const listView = compactPart(rec(ui.list));

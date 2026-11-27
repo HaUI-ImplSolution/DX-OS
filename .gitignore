@@ -20,6 +20,7 @@ __pycache__/
 .tox/
 .nox/
 .coverage
+frontend/coverage/
 .coverage.*
 coverage.xml
 htmlcov/

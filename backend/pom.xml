@@ -39,6 +39,7 @@
 		<spotbugs-maven-plugin.version>4.10.5.0</spotbugs-maven-plugin.version>
 		<findsecbugs.version>1.14.0</findsecbugs.version>
 		<google-java-format.version>1.27.0</google-java-format.version>
+		<jacoco.version>0.8.13</jacoco.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -101,6 +102,26 @@
 	</dependencies>
 	<build>
 		<plugins>
+			<!-- Line and branch coverage of the tests, written to target/site/jacoco of each module -->
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>${jacoco.version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<goals>
+							<goal>report</goal>
+						</goals>
+						<phase>verify</phase>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>com.diffplug.spotless</groupId>
 				<artifactId>spotless-maven-plugin</artifactId>

@@ -48,7 +48,7 @@ interface Props {
 }
 
 // The form leaves empty strings, lists and objects behind for fields nobody filled in.
-function prune(value: unknown): unknown {
+export function prune(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(prune);
   if (value === null || typeof value !== "object") return value;
   const kept: Record<string, unknown> = {};
@@ -68,7 +68,7 @@ type Path = (string | number)[];
 const isMapping = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === "object" && !Array.isArray(value);
 
 // Writes only what differs into the document, so the comments around what did not change stay in the file.
-function patch(doc: Document, path: Path, before: unknown, after: unknown) {
+export function patch(doc: Document, path: Path, before: unknown, after: unknown) {
   if (JSON.stringify(before) === JSON.stringify(after)) return;
   if (isMapping(before) && isMapping(after)) {
     Object.keys(before).forEach((key) => {

@@ -138,6 +138,7 @@ Nâng cấp từ `2.0.2` giữ nguyên dữ liệu; hai migration mới thêm b�
 
 ### Phát hành
 
+- CI đo độ phủ test của backend (JaCoCo, in bảng vào tóm tắt lượt chạy) và của web (Vitest).
 - Image phát hành có nhãn `org.opencontainers.image.licenses=Apache-2.0`.
 - Script sao lưu ghim image `restic` theo digest.
 

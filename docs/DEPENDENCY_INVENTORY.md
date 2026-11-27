@@ -11,11 +11,11 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 
 | Nhóm | Số gói |
 |---|---|
-| npm: frontend | 275 |
+| npm: frontend | 283 |
 | npm: website | 1332 |
 | npm: assistant | 79 |
 | npm: e2e/web | 3 |
-| Maven: backend | 499 |
+| Maven: backend | 510 |
 | GitHub Actions | 14 |
 | Go: pgschema trong image backend | 16 |
 | Keycloak trong image sso | 438 |
@@ -41,6 +41,7 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 | `@babel/template` | 7.29.7 | MIT | prod |  |
 | `@babel/traverse` | 7.29.12 | MIT | prod |  |
 | `@babel/types` | 7.29.11 | MIT | prod |  |
+| `@bcoe/v8-coverage` | 1.0.2 | MIT | dev |  |
 | `@biomejs/biome` | 2.6.8 | MIT OR Apache-2.0 | dev |  |
 | `@biomejs/cli-android-arm64` | 2.6.8 | MIT OR Apache-2.0 | dev |  |
 | `@biomejs/cli-android-x64` | 2.6.8 | MIT OR Apache-2.0 | dev |  |
@@ -142,12 +143,16 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 | `@typescript/typescript-win32-arm64` | 7.0.2 | Apache-2.0 | dev |  |
 | `@typescript/typescript-win32-x64` | 7.0.2 | Apache-2.0 | dev |  |
 | `@vitejs/plugin-react` | 6.1.2 | MIT | dev |  |
+| `@vitest/coverage-v8` | 5.1.1 | MIT | dev |  |
+| `@vitest/istanbul-lib-coverage` | 2.1.1 | MIT | dev |  |
+| `@vitest/istanbul-lib-report` | 2.1.1 | MIT | dev |  |
 | `@vitest/mocker` | 5.1.1 | MIT | dev |  |
 | `@vitest/spy` | 5.1.1 | MIT | dev |  |
 | `@vscode/l10n` | 0.0.18 | MIT | prod |  |
 | `@xyflow/react` | 12.12.1 | MIT | prod |  |
 | `@xyflow/system` | 0.0.84 | MIT | prod |  |
 | `assertion-error` | 2.0.1 | MIT | dev |  |
+| `ast-v8-to-istanbul` | 1.0.8 | MIT | dev |  |
 | `attr-accept` | 2.2.5 | MIT | prod |  |
 | `autosuggest-highlight` | 3.3.4 | MIT | prod |  |
 | `babel-plugin-macros` | 3.1.0 | MIT | prod |  |
@@ -207,6 +212,7 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 | `inflection` | 3.0.2 | MIT | prod |  |
 | `is-arrayish` | 0.2.1 | MIT | prod |  |
 | `is-core-module` | 2.17.0 | MIT | prod |  |
+| `js-tokens` | 10.0.2 | MIT | dev |  |
 | `js-tokens` | 4.0.0 | MIT | prod |  |
 | `jsesc` | 3.1.0 | MIT | prod |  |
 | `json-parse-even-better-errors` | 2.3.1 | MIT | prod |  |
@@ -229,6 +235,7 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 | `lodash` | 4.18.1 | MIT | prod |  |
 | `loose-envify` | 1.4.0 | MIT | prod |  |
 | `magic-string` | 1.4.5 | MIT | dev |  |
+| `magicast` | 0.5.5 | MIT | dev |  |
 | `marked` | 14.0.0 | MIT | prod |  |
 | `math-intrinsics` | 1.1.0 | MIT | prod |  |
 | `monaco-editor` | 0.57.0 | MIT | prod |  |
@@ -290,6 +297,7 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 | `tinybench` | 6.2.5 | MIT | dev |  |
 | `tinyexec` | 1.4.0 | MIT | dev |  |
 | `tinyglobby` | 0.2.17 | MIT | dev |  |
+| `tinyrainbow` | 3.2.0 | MIT | dev |  |
 | `tslib` | 2.9.1 | 0BSD | prod |  |
 | `typescript` | 7.0.2 | Apache-2.0 | dev |  |
 | `use-sync-external-store` | 1.7.0 | MIT | prod |  |
@@ -1896,6 +1904,7 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 | `org.apache.maven.doxia:doxia-module-xdoc` | 2.0.0 | Apache-2.0 | plugin |  |
 | `org.apache.maven.doxia:doxia-module-xdoc` | 2.1.0 | Apache-2.0 | plugin |  |
 | `org.apache.maven.doxia:doxia-module-xhtml5` | 2.1.0 | Apache-2.0 | plugin |  |
+| `org.apache.maven.doxia:doxia-sink-api` | 1.0 | Apache-2.0 | plugin |  |
 | `org.apache.maven.doxia:doxia-sink-api` | 2.1.0 | Apache-2.0 | plugin |  |
 | `org.apache.maven.doxia:doxia-site-model` | 2.1.0 | Apache-2.0 | plugin |  |
 | `org.apache.maven.doxia:doxia-site-renderer` | 2.1.0 | Apache-2.0 | plugin |  |
@@ -1910,6 +1919,7 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 | `org.apache.maven.plugins:maven-shade-plugin` | 3.6.2 | Apache-2.0 | plugin |  |
 | `org.apache.maven.plugins:maven-site-plugin` | 3.22.0 | Apache-2.0 | plugin |  |
 | `org.apache.maven.plugins:maven-surefire-plugin` | 3.5.6 | Apache-2.0 | plugin |  |
+| `org.apache.maven.reporting:maven-reporting-api` | 3.0 | Apache-2.0 | plugin |  |
 | `org.apache.maven.reporting:maven-reporting-api` | 4.0.0 | Apache-2.0 | plugin |  |
 | `org.apache.maven.reporting:maven-reporting-exec` | 2.0.1 | Apache-2.0 | plugin |  |
 | `org.apache.maven.reporting:maven-reporting-impl` | 4.0.0 | Apache-2.0 | plugin |  |
@@ -1919,6 +1929,7 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 | `org.apache.maven.resolver:maven-resolver-transport-wagon` | 1.4.1 | Apache-2.0 | plugin |  |
 | `org.apache.maven.resolver:maven-resolver-util` | 1.4.1 | Apache-2.0 | plugin |  |
 | `org.apache.maven.resolver:maven-resolver-util` | 1.9.22 | Apache-2.0 | plugin |  |
+| `org.apache.maven.shared:file-management` | 3.1.0 | Apache-2.0 | plugin |  |
 | `org.apache.maven.shared:file-management` | 3.2.0 | Apache-2.0 | plugin |  |
 | `org.apache.maven.shared:maven-common-artifact-filters` | 3.4.0 | Apache-2.0 | plugin |  |
 | `org.apache.maven.shared:maven-filtering` | 3.5.0 | Apache-2.0 | plugin |  |
@@ -1969,6 +1980,7 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 | `org.codehaus.plexus:plexus-java` | 1.5.2 | Apache-2.0 | plugin |  |
 | `org.codehaus.plexus:plexus-resources` | 1.3.0 | Apache-2.0 | plugin |  |
 | `org.codehaus.plexus:plexus-resources` | 1.4.0 | Apache-2.0 | plugin |  |
+| `org.codehaus.plexus:plexus-utils` | 3.0.24 | Apache-2.0 | plugin |  |
 | `org.codehaus.plexus:plexus-utils` | 3.5.1 | Apache-2.0 | plugin |  |
 | `org.codehaus.plexus:plexus-utils` | 3.6.0 | Apache-2.0 | plugin |  |
 | `org.codehaus.plexus:plexus-utils` | 4.0.0 | Apache-2.0 | plugin |  |
@@ -2054,6 +2066,10 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 | `org.hibernate.orm:hibernate-core` | 7.4.13.Final | Apache-2.0 | compile,test |  |
 | `org.hibernate.validator:hibernate-validator` | 9.1.5.Final | Apache-2.0 | compile |  |
 | `org.iq80.snappy:snappy` | 0.4 | Apache-2.0 | plugin |  |
+| `org.jacoco:jacoco-maven-plugin` | 0.8.13 | EPL-2.0 | plugin |  |
+| `org.jacoco:org.jacoco.agent` | 0.8.13 | EPL-2.0 | plugin |  |
+| `org.jacoco:org.jacoco.core` | 0.8.13 | EPL-2.0 | plugin |  |
+| `org.jacoco:org.jacoco.report` | 0.8.13 | EPL-2.0 | plugin |  |
 | `org.jboss.logging:jboss-logging` | 3.6.3.Final | Apache-2.0 | compile,test |  |
 | `org.jdom:jdom2` | 2.0.6.1 | Similar to Apache License but with the acknowledgment clause removed | plugin | JDOM licence: the Apache-1.1 text without its acknowledgment clause, a BSD-style licence the OSI does not list under this text. Used only by SpotBugs while the backend is built; it is in no image or jar of the product. |
 | `org.jetbrains.kotlin:kotlin-stdlib` | 1.8.21 | Apache-2.0 | plugin |  |
@@ -2080,13 +2096,16 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 | `org.ow2.asm:asm` | 9.11 | BSD-3-Clause | plugin |  |
 | `org.ow2.asm:asm` | 9.7 | BSD-3-Clause | plugin |  |
 | `org.ow2.asm:asm` | 9.7.1 | BSD-3-Clause | compile,test |  |
+| `org.ow2.asm:asm` | 9.8 | BSD-3-Clause | plugin |  |
 | `org.ow2.asm:asm` | 9.9.1 | BSD-3-Clause | plugin |  |
 | `org.ow2.asm:asm-analysis` | 9.11 | BSD-3-Clause | plugin |  |
 | `org.ow2.asm:asm-commons` | 9.11 | BSD-3-Clause | plugin |  |
 | `org.ow2.asm:asm-commons` | 9.7 | BSD-3-Clause | plugin |  |
+| `org.ow2.asm:asm-commons` | 9.8 | BSD-3-Clause | plugin |  |
 | `org.ow2.asm:asm-commons` | 9.9.1 | BSD-3-Clause | plugin |  |
 | `org.ow2.asm:asm-tree` | 9.11 | BSD-3-Clause | plugin |  |
 | `org.ow2.asm:asm-tree` | 9.7 | BSD-3-Clause | plugin |  |
+| `org.ow2.asm:asm-tree` | 9.8 | BSD-3-Clause | plugin |  |
 | `org.ow2.asm:asm-tree` | 9.9.1 | BSD-3-Clause | plugin |  |
 | `org.ow2.asm:asm-util` | 9.11 | BSD-3-Clause | plugin |  |
 | `org.postgresql:postgresql` | 42.7.14 | BSD-2-Clause | compile,runtime |  |

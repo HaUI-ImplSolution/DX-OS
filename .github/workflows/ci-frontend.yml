@@ -52,5 +52,6 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Unit tests
-        run: npm test
+      # Prints the share of statements, branches, functions and lines the tests run.
+      - name: Unit tests with coverage
+        run: npm run coverage

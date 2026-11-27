@@ -261,7 +261,7 @@ const OPERATION_LABEL: Record<string, string> = {
 };
 
 // Who an escalation told and which notice of its level it was, from the "level:round" the backend records.
-function escalatedDetail(detail: string, levels: EscalationLevel[]): string | null {
+export function escalatedDetail(detail: string, levels: EscalationLevel[]): string | null {
   const match = /^(\d+):(\d+)$/.exec(detail);
   if (!match) return null;
   const level = Number(match[1]);
@@ -274,7 +274,7 @@ function escalatedDetail(detail: string, levels: EscalationLevel[]): string | nu
 }
 
 // Why a completion action was skipped, as the backend records it: "<operation> skipped: the record has no <what>".
-function skippedReason(detail: string, fieldLabel: (name: string) => string): string {
+export function skippedReason(detail: string, fieldLabel: (name: string) => string): string {
   const match = /^(\S+) skipped: the record has no (?:user in field (\S+)|group in field (\S+)|group)$/.exec(detail);
   if (!match) return translateBackend(detail);
   const [, operation, userField, groupField] = match;
@@ -288,7 +288,7 @@ function skippedReason(detail: string, fieldLabel: (name: string) => string): st
 
 // What an "updated" event changed. A detail that is a JSON object maps each field to [old, new];
 // an older one is just the list of field names.
-function updatedDetail(
+export function updatedDetail(
   detail: string | null,
   fields: FieldMeta[],
   fieldLabel: (name: string) => string,
@@ -314,7 +314,7 @@ function updatedDetail(
 }
 
 // The account ids an "updated" event moved between in user fields.
-function userIdsOf(event: RecordEvent, userFields: Set<string>): string[] {
+export function userIdsOf(event: RecordEvent, userFields: Set<string>): string[] {
   if (event.action !== "updated" || !event.detail?.startsWith("{") || userFields.size === 0) return [];
   try {
     const changes: Record<string, [string | null, string | null]> = JSON.parse(event.detail);

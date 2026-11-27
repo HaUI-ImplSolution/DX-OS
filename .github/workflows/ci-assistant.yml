@@ -39,7 +39,7 @@ concurrency:
 
 jobs:
   service:
-    name: Check the assistant
+    name: Test the assistant
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -66,7 +66,7 @@ jobs:
           python3 .github/scripts/check_licenses.py sbom "$RUNNER_TEMP/assistant.cdx.json"
 
   stack:
-    name: Validate the assistant Compose services and route
+    name: Validate assistant Compose
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:

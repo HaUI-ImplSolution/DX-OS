@@ -106,7 +106,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
   Không cần mã nguồn: `dxos-install.sh` của bản phát hành tải gói, kiểm SHA-256, cài vào `~/.dxos`; `dxos start <tệp mô hình>` lên đủ dịch vụ, áp dụng tệp và in tài khoản `admin`.
 - Mọi cấu hình nằm ở `deploy/.env`, không sửa tệp mã.
 - Đã kiểm: `dxos-install.sh` của release `v2.0.0` cài và `dxos start` kéo image `v2.0.0` từ GHCR trên máy chủ đã xóa stack cũ, rồi áp dụng một tệp mô hình.
-- **Bằng chứng:** `README.md` mục Bắt đầu nhanh; các job `Install from the release archive` và `Validate the Compose file` của workflow `Platform` (gói sai SHA-256 bị từ chối, mọi tệp Compose mount đều có); `docs/TESTING.md` mục 3.
+- **Bằng chứng:** `README.md` mục Bắt đầu nhanh; các job `Test the install` và `Validate the Compose file` của workflow `Platform` (gói sai SHA-256 bị từ chối, mọi tệp Compose mount đều có); `docs/TESTING.md` mục 3.
 
 ## 9. Từ 100 lên 100.000 người dùng thì sao?
 

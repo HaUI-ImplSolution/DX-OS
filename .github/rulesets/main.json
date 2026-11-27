@@ -44,11 +44,11 @@
         "do_not_enforce_on_create": true,
         "required_status_checks": [
           {
-            "context": "Build and test the backend",
+            "context": "Test the backend",
             "integration_id": 15368
           },
           {
-            "context": "Type-check the web app",
+            "context": "Test the web app",
             "integration_id": 15368
           },
           {
@@ -68,7 +68,7 @@
             "integration_id": 15368
           },
           {
-            "context": "Check required files and scripts",
+            "context": "Check required files",
             "integration_id": 15368
           },
           {
@@ -80,27 +80,27 @@
             "integration_id": 15368
           },
           {
-            "context": "Validate the gateway routes",
+            "context": "Validate gateway routes",
             "integration_id": 15368
           },
           {
-            "context": "Install from the release archive",
+            "context": "Test the install",
             "integration_id": 15368
           },
           {
-            "context": "Back up and restore",
+            "context": "Test backup and restore",
             "integration_id": 15368
           },
           {
-            "context": "API end-to-end (model and process)",
+            "context": "Test the API (model and process)",
             "integration_id": 15368
           },
           {
-            "context": "API end-to-end (events and bootstrap)",
+            "context": "Test the API (events and bootstrap)",
             "integration_id": 15368
           },
           {
-            "context": "Browser end-to-end",
+            "context": "Test in a browser",
             "integration_id": 15368
           },
           {

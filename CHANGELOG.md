@@ -7,6 +7,11 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ## [Unreleased]
 
+### Tài liệu
+
+- Trang docs có nút đổi ngôn ngữ và bộ tài liệu tiếng Anh cho tính năng, bắt đầu nhanh, viết tệp mô hình, API, kiến trúc, giám sát, tích hợp, điểm mở rộng, báo cáo, kho tệp, cỡ cấu hình, thuật ngữ và hướng dẫn theo vai.
+  Mỗi tài liệu có bản `_EN` trong `docs/en/`, `README_EN.md` trỏ tới chúng, và bước `Docs` của CI đỏ khi một tài liệu đổi ở một thứ tiếng mà thứ tiếng còn lại chưa được xem lại.
+
 ## [2.1.0] - 2026-11-26
 
 Thêm và sửa sau bản `2.0.2`: dự án gom mô hình và ứng dụng ngoài kèm quản trị theo dự án, `dxos connect` và `webUrl` để nối ứng dụng ngoài, ứng dụng mẫu `appliance-store`, kế hoạch đổi mô hình báo tác động lên hồ sơ đang chờ, ghi có điều kiện theo phiên bản, tìm hồ sơ theo chữ, `dxos import` nhập hồ sơ từ tệp CSV, thời gian ở từng trạng thái, cầu nối MQTT và Prometheus tùy chọn, trình dựng mô hình ở bảng điều khiển, văn bản giấy phép đi kèm mọi image, và trợ lý nghiệp vụ dùng bộ phân loại tự huấn luyện, chạy cùng stack.

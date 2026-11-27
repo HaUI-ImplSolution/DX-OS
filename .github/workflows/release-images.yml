@@ -20,13 +20,13 @@ concurrency:
 
 jobs:
   plan:
-    name: Plan the images
+    name: Plan release images
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
       names: ${{ steps.pick.outputs.names }}
     steps:
-      - name: Plan the images to build
+      - name: Plan release images to build
         id: pick
         env:
           REQUESTED: ${{ inputs.services }}
@@ -45,7 +45,7 @@ jobs:
           echo "names=$(printf '%s\n' $PICKED | jq -R . | jq -sc .)" >> "$GITHUB_OUTPUT"
 
   build:
-    name: "Build image (${{ matrix.name }})"
+    name: "Build release image (${{ matrix.name }})"
     needs: plan
     runs-on: ubuntu-24.04
     timeout-minutes: 60
@@ -166,7 +166,7 @@ jobs:
           push-to-registry: true
 
   summary:
-    name: Show the update command
+    name: Summarize release images
     needs: build
     runs-on: ubuntu-24.04
     timeout-minutes: 5

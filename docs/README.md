@@ -2,6 +2,7 @@
 
 Trang này giúp xem nhanh DX-OS trong 5 phút và biết tìm từng phần ở đâu.
 Giới thiệu đầy đủ ở [`README.md`](../README.md).
+Một số tài liệu có bản tiếng Anh, nằm ở [`en/`](./en) với tên có hậu tố `_EN` (ví dụ `en/API_EN.md`); trang docs có nút đổi sang bộ tài liệu tiếng Anh.
 
 ## Xem nhanh trong 5 phút
 

@@ -621,7 +621,7 @@ Kho nằm ở `deploy/backups` (đổi bằng `BACKUP_DIR`) hoặc ở một kho
 Kho cùng máy với dữ liệu không cứu được khi mất máy, nên chép nó ra ngoài (rsync, rclone) hoặc dùng kho từ xa.
 Chạy theo lịch bằng cron, ví dụ mỗi đêm: `0 2 * * * cd /đường/dẫn/deploy && ./backup.sh >> backups/backup.log 2>&1`, và chạy `verify` mỗi tuần.
 Máy chủ dùng tệp env khác `.env` thì đặt `ENV_FILE=.env.dev ./backup.sh`.
-CI chạy một lượt backup và verify trên Postgres thật có một mô hình hai dòng và một tệp đính kèm thật ở job `Back up and restore` của workflow `Platform`, rồi thêm một dòng tệp không có trong kho và mong `verify` thất bại.
+CI chạy một lượt backup và verify trên Postgres thật có một mô hình hai dòng và một tệp đính kèm thật ở job `Test backup and restore` của workflow `Platform`, rồi thêm một dòng tệp không có trong kho và mong `verify` thất bại.
 
 **Khôi phục** (máy mới hoặc sau khi mất dữ liệu):
 
@@ -680,7 +680,7 @@ Image chính thức tự cập nhật chữ ký một lần mỗi ngày từ m�
 Mã 429 trong log của `clamav` là bị giới hạn tốc độ (hay gặp ở IP máy chủ đám mây dùng chung), và chữ ký cũ vẫn dùng được cho đến lần cập nhật sau.
 ClamAV chặn tải chữ ký với phiên bản đã hết hỗ trợ, nên nâng image `clamav/clamav` trong `clamav/Dockerfile` khi bản đang ghim tới hạn (chính sách ở https://docs.clamav.net/faq/faq-eol.html).
 Mỗi lần clamd nạp lại chữ ký (hằng ngày và sau khi khởi động) nó không quét được khoảng 10 giây, và người dùng gặp 503 trong lúc đó; chờ rồi tải lại.
-Thử bằng tệp EICAR (chuỗi kiểm thử chuẩn của ngành diệt virus): tệp chỉ gồm đúng chuỗi đó, đổi tên `.pdf` rồi đính vào một yêu cầu; `e2e/api/check_demo.py` tự làm bước này khi `STORAGE_SCAN_HOST` có giá trị, cùng với tệp sạch và tệp tải lên lúc ClamAV dừng, và nhóm chế độ lõi của job `API end-to-end` chạy nó trong CI.
+Thử bằng tệp EICAR (chuỗi kiểm thử chuẩn của ngành diệt virus): tệp chỉ gồm đúng chuỗi đó, đổi tên `.pdf` rồi đính vào một yêu cầu; `e2e/api/check_demo.py` tự làm bước này khi `STORAGE_SCAN_HOST` có giá trị, cùng với tệp sạch và tệp tải lên lúc ClamAV dừng, và nhóm chế độ lõi của job `Test the API` chạy nó trong CI.
 
 ## Dữ liệu cá nhân ra nước ngoài
 

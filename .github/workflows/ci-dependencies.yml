@@ -109,7 +109,7 @@ jobs:
   # The vulnerabilities job reads pom.xml, where the versions managed by Spring Boot are not written.
   # The SBOM lists every resolved package, so Jackson, Tomcat and the like are checked too.
   backend-sbom:
-    name: Scan the backend SBOM
+    name: Scan backend SBOM
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:

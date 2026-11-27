@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 # Accounts and sample records for the people who try DX-OS (see dxos demo).
 #
-#   ./demo.sh [--password PASSWORD]   apply the student one-stop model when it is not running, create the
+#   lib/demo.sh [--password PASSWORD]   apply the student one-stop model when it is not running, create the
 #                                     accounts judge_student, judge_officer (DAO_TAO), judge_officer2
 #                                     (CTSV) and judge_supervisor, and file about 40 sample requests
-#   ./demo.sh remove                  delete the four accounts and nothing else
+#   lib/demo.sh remove                delete the four accounts and nothing else
 #
 # One password serves the four accounts: PASSWORD, or a random one. It is printed once, and running
 # the command again sets and prints a new one. The records go through the same API as the web
@@ -15,7 +15,7 @@
 # on its own when its deadline passes, which is how the overdue ones appear later.
 set -euo pipefail
 
-DEPLOY_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DEPLOY_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$DEPLOY_DIR"
 [[ -f .env ]] || { echo "demo: $DEPLOY_DIR/.env is missing; install DX-OS with install.sh first" >&2; exit 1; }
 MODEL="onestop"
@@ -24,22 +24,10 @@ SEED_CLIENT="dxos-demo-seed"
 USERS="judge_student judge_officer judge_officer2 judge_supervisor"
 
 die() { echo "demo: $*" >&2; exit 1; }
-env_value() { grep -E "^$1=" "$DEPLOY_DIR/.env" | tail -n1 | cut -d= -f2- || true; }
+ENV_VALUE_FILE="$DEPLOY_DIR/.env"
+source "$DEPLOY_DIR/lib/env.sh"
 compose() { docker compose "$@"; }
 json_field() { sed -n "s/.*\"$1\":\"\{0,1\}\([^\",}]*\).*/\1/p" <<<"$2" | head -n1; }
-
-# The address browsers use; GATEWAY_PUBLIC_URL unless it still refers to other variables.
-public_url() {
-  local url host port
-  url="$(env_value GATEWAY_PUBLIC_URL)"
-  # shellcheck disable=SC2016 # a literal "${" marks a value Compose interpolates
-  if [[ -z "$url" || "$url" == *'${'* ]]; then
-    host="$(env_value PUBLIC_HOST)"
-    port="$(env_value APISIX_HOST_PORT)"
-    url="http://${host:-localhost}:${port##*:}"
-  fi
-  echo "${url%/}"
-}
 
 WORK="$(mktemp -d)"
 chmod 700 "$WORK"

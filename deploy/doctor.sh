@@ -9,6 +9,7 @@
 set -uo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
+source lib/env.sh
 source lib/web-url.sh
 source lib/windows-ports.sh
 
@@ -19,7 +20,7 @@ warn() { printf '  [WARN] %s\n' "$*"; WARNS=$((WARNS + 1)); }
 fail() { printf '  [FAIL] %s\n' "$*"; FAILS=$((FAILS + 1)); }
 
 # Value of KEY in .env (last assignment), empty when absent or blank.
-env_value() { grep -E "^$1=" .env | tail -n1 | cut -d= -f2-; }
+ENV_VALUE_FILE=.env
 # Port number of a *_HOST_PORT value such as 9080 or 127.0.0.1:9082.
 port_of() { printf '%s' "${1##*:}"; }
 

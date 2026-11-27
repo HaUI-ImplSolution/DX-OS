@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # Gives the client dxos-backend-admin the client scope kc-admin-api, which puts the audience of the Admin API into its token.
 #
-#   ./keycloak-admin-scope.sh
+#   lib/keycloak-admin-scope.sh
 #
 # From Keycloak 26.8 the Admin API refuses a token without that audience, and every model apply then fails with 502.
 # A new realm gets the scope from sso/realm-dxos.json; a realm imported by an earlier release has the scope after the
@@ -12,7 +12,7 @@
 # so no secret is read or printed here, and it touches only this one client.
 set -euo pipefail
 
-cd "$(dirname "${BASH_SOURCE[0]}")"
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
 docker compose exec -T keycloak bash -s <<'INSIDE'
 set -euo pipefail

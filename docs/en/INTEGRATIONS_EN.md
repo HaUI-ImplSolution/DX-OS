@@ -189,7 +189,7 @@ The core does not change and keeps no device state; the default stack does not c
 
 ### Switch it on
 
-1. Copy `deploy/mqtt.env.example` to `deploy/mqtt.env` (kept out of Git) and fill in `MQTT_PASSWORD`, generated with `openssl rand -hex 24`.
+1. Copy `deploy/mqtt/mqtt.env.example` to `deploy/mqtt.env` (kept out of Git) and fill in `MQTT_PASSWORD`, generated with `openssl rand -hex 24`.
 2. Apply a model that has an entity to receive readings, for example the "Equipment incident" template (`plant`) of the template library, and then register the client of the bridge: `dxos client add itot-mqtt --model plant --role SENSOR --env MQTT_BRIDGE`.
    Paste the two lines `MQTT_BRIDGE_CLIENT_ID` and `MQTT_BRIDGE_CLIENT_SECRET` that the command prints into `deploy/mqtt.env`.
 3. Set `COMPOSE_FILE=docker-compose.yml:docker-compose.mqtt.yml` in `deploy/.env`, then run `dxos start`.

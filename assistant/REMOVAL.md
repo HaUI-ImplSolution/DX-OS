@@ -7,7 +7,7 @@ Gỡ hẳn khỏi mã nguồn thì làm theo ba nhóm sau.
 
 - `assistant/`, `sbom/assistant.cdx.json`
 - `tools/classifier/` (dữ liệu, huấn luyện và trọng số của bộ phân loại) và `LICENSES/CC-BY-4.0.txt`
-- `deploy/assistant-sso.sh`
+- `deploy/lib/assistant-sso.sh`
 - `.github/workflows/ci-assistant.yml`
 - `frontend/src/assistant/`
 - `e2e/web/tests/assistant.spec.ts`
@@ -15,7 +15,7 @@ Gỡ hẳn khỏi mã nguồn thì làm theo ba nhóm sau.
 ## Xóa một khối hoặc một dòng trong tệp chung
 
 - `.github/dependabot.yml`: mục "The assistant".
-- `deploy/.env.example`: hai biến `ASSISTANT_*` ở mục 6.
+- `deploy/.env.example`: hai biến `ASSISTANT_*` ở mục 8.
 - `.github/workflows/release-images.yml`: chữ `assistant` ở phần mô tả, ở `ALL` và nhánh đặt build context gốc repo cho `assistant`.
 - `.github/workflows/ci-platform.yml`: `assistant/**` và `tools/classifier/model/**` trong khóa cache của job `images`.
 - `deploy/docker-compose.yml`: các dịch vụ `assistant-init`, `assistant-sso`, `assistant-control`, mạng `assistant` và dòng `networks` của `backend`, `keycloak`, `apisix`.

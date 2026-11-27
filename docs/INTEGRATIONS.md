@@ -189,7 +189,7 @@ Lõi không đổi và không giữ trạng thái thiết bị; stack mặc đ�
 
 ### Bật
 
-1. Chép `deploy/mqtt.env.example` thành `deploy/mqtt.env` (ngoài Git) và điền `MQTT_PASSWORD`, sinh bằng `openssl rand -hex 24`.
+1. Chép `deploy/mqtt/mqtt.env.example` thành `deploy/mqtt.env` (ngoài Git) và điền `MQTT_PASSWORD`, sinh bằng `openssl rand -hex 24`.
 2. Áp dụng mô hình có thực thể nhận số đo, ví dụ mẫu "Sự cố thiết bị" (`plant`) của thư viện mẫu, rồi đăng ký client của cầu nối: `dxos client add itot-mqtt --model plant --role SENSOR --env MQTT_BRIDGE`.
    Dán hai dòng `MQTT_BRIDGE_CLIENT_ID` và `MQTT_BRIDGE_CLIENT_SECRET` mà lệnh in ra vào `deploy/mqtt.env`.
 3. Đặt `COMPOSE_FILE=docker-compose.yml:docker-compose.mqtt.yml` trong `deploy/.env`, rồi chạy `dxos start`.

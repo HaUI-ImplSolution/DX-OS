@@ -30,6 +30,7 @@ if (( ${#ARGS[@]} > 2 )); then
 fi
 
 SOURCE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "$SOURCE/deploy/lib/runtime-files.sh"
 mkdir -p "${ARGS[0]:-${DXOS_HOME:-$HOME/.dxos}}"
 PREFIX="$(cd "${ARGS[0]:-${DXOS_HOME:-$HOME/.dxos}}" && pwd)"
 TAG="${DXOS_IMAGE_TAG:-${ARGS[1]:-latest}}"
@@ -51,15 +52,6 @@ if [[ ! -e "$ENV_FILE" && "$UPGRADE" == true ]]; then
   exit 1
 fi
 
-# Runtime files, relative to the source root: everything in deploy/ but local state and env files
-# (.env*, *.env; .env.example stays), the realm file, and the three scripts that dxos conformance runs.
-runtime_files() {
-  (cd "$SOURCE" && find deploy sso/realm-dxos.json e2e/api/kc.py e2e/api/check_api.py e2e/api/check_conformance.py \
-    \( -path deploy/data -o -path deploy/backups -o -name __pycache__ \) -prune -o \
-    -type f ! \( -name '.env*' ! -name '.env.example' \) ! -name '*.env' ! -name 'VPS.md' \
-    ! -path deploy/apisix/local.yaml -print) | LC_ALL=C sort
-}
-
 # Sets KEY=VALUE in the env file, replacing the last assignment or appending one.
 set_env() {
   local key="$1" value="$2" tmp
@@ -74,7 +66,7 @@ set_env() {
   mv "$tmp" "$ENV_FILE"
 }
 
-NEW_FILES="$(runtime_files)"
+NEW_FILES="$(runtime_files "$SOURCE")"
 if [[ "$UPGRADE" == true && -f "$MANIFEST" ]]; then
   echo "==> Removing the runtime files the new version no longer has"
   LC_ALL=C comm -23 <(LC_ALL=C sort "$MANIFEST") <(printf '%s\n' "$NEW_FILES") | while IFS= read -r stale; do
@@ -92,11 +84,14 @@ if [[ "$UPGRADE" == true ]]; then
   fresh="$(mktemp)"
   trap 'rm -f "$fresh"' EXIT
   "$PREFIX/deploy/make_env.sh" "$fresh" --force
+  # Ends the last line, so the first added variable does not join it.
+  [[ -z "$(tail -c1 "$ENV_FILE")" ]] || echo >> "$ENV_FILE"
   while IFS= read -r line; do
     key="${line%%=*}"
     if [[ "$line" =~ ^[A-Za-z0-9_]+= ]] && ! grep -q "^$key=" "$ENV_FILE"; then
       # An install that never chose the virus scan keeps it off: the scan host without the profile av would refuse every upload.
       [[ "$key" == STORAGE_SCAN_HOST ]] && line="STORAGE_SCAN_HOST="
+      [[ "$key" == COMPOSE_PROFILES ]] && ! grep -qE "^STORAGE_SCAN_HOST=[\"']?[A-Za-z0-9]" "$ENV_FILE" && line="COMPOSE_PROFILES=app"
       printf '%s\n' "$line" >> "$ENV_FILE"
       echo "    added $key"
     fi

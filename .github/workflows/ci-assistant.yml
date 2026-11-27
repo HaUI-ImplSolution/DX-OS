@@ -12,7 +12,7 @@ on:
       - 'assistant/**'
       - 'tools/classifier/**'
       - 'deploy/docker-compose.yml'
-      - 'deploy/assistant-sso.sh'
+      - 'deploy/lib/assistant-sso.sh'
       - 'sbom/assistant.cdx.json'
       - '.github/workflows/ci-assistant.yml'
   pull_request:
@@ -26,7 +26,7 @@ on:
       - 'assistant/**'
       - 'tools/classifier/**'
       - 'deploy/docker-compose.yml'
-      - 'deploy/assistant-sso.sh'
+      - 'deploy/lib/assistant-sso.sh'
       - 'sbom/assistant.cdx.json'
       - '.github/workflows/ci-assistant.yml'
 

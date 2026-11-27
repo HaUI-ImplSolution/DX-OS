@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # Optional MQTT bridge, loaded only when deploy/.env sets
 # COMPOSE_FILE=docker-compose.yml:docker-compose.mqtt.yml (see docs/INTEGRATIONS.md).
-# Its settings are in deploy/mqtt.env (copy mqtt.env.example), never in deploy/.env.
+# Its settings are in deploy/mqtt.env (copy mqtt/mqtt.env.example), never in deploy/.env.
 # The routes are in mqtt/bridge.json (the incidents of the plant template) or, to change them, MQTT_BRIDGE_ROUTES in deploy/mqtt.env.
 # The broker is published on 127.0.0.1 only; MQTT_BIND=0.0.0.0 in deploy/.env opens it to devices, and then the
 # traffic should run over a VPN or a TLS proxy, because the broker speaks plain MQTT.

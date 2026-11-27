@@ -133,7 +133,7 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 | `dxos status` | Trạng thái từng dịch vụ, các địa chỉ và trạng thái quét mã độc |
 | `dxos logs [dịch vụ]` | Theo dõi log |
 | `dxos admin` | Đặt mật khẩu tạm mới cho `admin`, tạo tài khoản nếu chưa có |
-| `dxos update [vX.Y.Z]` | Cài bản mới hơn (mặc định bản mới nhất): thay tệp chạy, giữ `.env`, `data/` và `apisix/local.yaml`, thêm biến mới, rồi chạy `update.sh`; script này gán cho `dxos-backend-admin` scope `kc-admin-api` mà Keycloak 26.8 đòi (`keycloak-admin-scope.sh`, chạy lại được), và nên sao lưu trước vì cơ sở dữ liệu của Keycloak không hạ phiên bản được |
+| `dxos update [vX.Y.Z]` | Cài bản mới hơn (mặc định bản mới nhất): thay tệp chạy, giữ `.env`, `data/` và `apisix/local.yaml`, thêm biến mới, rồi chạy `update.sh`; script này gán cho `dxos-backend-admin` scope `kc-admin-api` mà Keycloak 26.8 đòi (`lib/keycloak-admin-scope.sh`, chạy lại được), và nên sao lưu trước vì cơ sở dữ liệu của Keycloak không hạ phiên bản được |
 | `dxos doctor`, `dxos backup` | Chạy `doctor.sh`, `backup.sh` |
 | `dxos av [on\|off]` | Bật hoặc tắt quét mã độc tệp tải lên (xem dưới); không có đối số thì in trạng thái quét |
 | `dxos plan [--check] [--json] <tệp>`, `dxos apply <tệp> [--accept MỨC] [--json]` | In kế hoạch của một tệp mô hình, hoặc áp dụng nó (xem dưới) |

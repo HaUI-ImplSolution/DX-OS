@@ -32,7 +32,7 @@ Giao diện chỉ hiện mục Trợ lý khi dịch vụ trả lời, nên dừn
 
 ### Cấu hình
 
-Trợ lý chạy được không cần tệp cấu hình riêng; hai biến tùy chọn `ASSISTANT_CLASSIFIERS_DIR` và `ASSISTANT_OIDC_REVOKE_URL` ở mục 6 của [`deploy/.env.example`](../deploy/.env.example).
+Trợ lý chạy được không cần tệp cấu hình riêng; hai biến tùy chọn `ASSISTANT_CLASSIFIERS_DIR` và `ASSISTANT_OIDC_REVOKE_URL` ở mục 8 của [`deploy/.env.example`](../deploy/.env.example).
 Giới hạn RAM và CPU của container nằm ở dịch vụ `assistant-control` trong `deploy/docker-compose.yml`.
 
 Nếu mật khẩu quản trị Keycloak trong `deploy/.env` không còn đúng, `assistant-sso` chỉ ghi cảnh báo và trợ lý không liên kết được tài khoản.

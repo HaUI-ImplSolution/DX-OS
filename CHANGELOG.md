@@ -7,12 +7,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ## [Unreleased]
 
-### Tài liệu
-
-- Trang docs có nút đổi ngôn ngữ và bộ tài liệu tiếng Anh cho tính năng, bắt đầu nhanh, viết tệp mô hình, API, kiến trúc, giám sát, tích hợp, điểm mở rộng, báo cáo, kho tệp, cỡ cấu hình, thuật ngữ và hướng dẫn theo vai.
-  Mỗi tài liệu có bản `_EN` trong `docs/en/`, `README_EN.md` trỏ tới chúng, và bước `Docs` của CI đỏ khi một tài liệu đổi ở một thứ tiếng mà thứ tiếng còn lại chưa được xem lại.
-
-## [2.1.0] - 2026-11-26
+## [2.1.0] - 2026-11-27
 
 Thêm và sửa sau bản `2.0.2`: dự án gom mô hình và ứng dụng ngoài kèm quản trị theo dự án, `dxos connect` và `webUrl` để nối ứng dụng ngoài, ứng dụng mẫu `appliance-store`, kế hoạch đổi mô hình báo tác động lên hồ sơ đang chờ, ghi có điều kiện theo phiên bản, tìm hồ sơ theo chữ, `dxos import` nhập hồ sơ từ tệp CSV, thời gian ở từng trạng thái, cầu nối MQTT và Prometheus tùy chọn, trình dựng mô hình ở bảng điều khiển, văn bản giấy phép đi kèm mọi image, và trợ lý nghiệp vụ dùng bộ phân loại tự huấn luyện, chạy cùng stack.
 Nâng cấp từ `2.0.2` giữ nguyên dữ liệu; hai migration mới thêm bảng dự án và thành viên dự án.
@@ -125,6 +120,11 @@ Nâng cấp từ `2.0.2` giữ nguyên dữ liệu; hai migration mới thêm b�
 - `docker compose run --rm assistant-init dist/rotate.js /bootstrap` thay master key và mã hóa lại state.
 - `docs/AI.md` tổng hợp phần AI: luồng xử lý, dữ liệu và giấy phép, kết quả nghiệm thu và cách đo lại; `docs/API.md` liệt kê các đường dẫn `/assistant-api/v1`.
 
+### Tài liệu
+
+- Trang docs có nút đổi ngôn ngữ và bộ tài liệu tiếng Anh cho tính năng, bắt đầu nhanh, viết tệp mô hình, API, kiến trúc, giám sát, tích hợp, điểm mở rộng, báo cáo, kho tệp, cỡ cấu hình, thuật ngữ và hướng dẫn theo vai.
+  Mỗi tài liệu có bản `_EN` trong `docs/en/`, `README_EN.md` trỏ tới chúng, và bước `Docs` của CI đỏ khi một tài liệu đổi ở một thứ tiếng mà thứ tiếng còn lại chưa được xem lại.
+
 ### Giấy phép
 
 - `docs/DEPENDENCY_INVENTORY.md` liệt kê từng gói dự án dùng ở bất kỳ bước nào (npm kể cả gói dev, Maven kể cả test và plugin build, GitHub Actions, image, công cụ, phông, model), mỗi gói có phiên bản và giấy phép của đúng phiên bản đó; `.github/scripts/check_license_inventory.py` sinh mục này và `check` báo đỏ ở mỗi pull request khi thiếu gói hoặc có giấy phép ngoài danh sách OSI (`.github/licenses/osi-approved.json`) mà chưa có lý do.
@@ -150,6 +150,12 @@ Nâng cấp từ `2.0.2` giữ nguyên dữ liệu; hai migration mới thêm b�
 - Workflow `Rerun` đọc log của job lỗi tối đa ba lần và chờ một đến hai phút trước khi chạy lại job lỗi vì mạng hoặc hạn mức.
 - Image phát hành có nhãn `org.opencontainers.image.licenses=Apache-2.0`.
 - Script sao lưu ghim image `restic` theo digest.
+- Lệnh `dxos` chia theo nhóm vào `deploy/lib/` (`model.sh`, `client.sh`, `project.sh`, `archive.sh`).
+- `demo.sh`, `keycloak-admin-scope.sh` và `assistant-sso.sh` nằm ở `deploy/lib/`, `mqtt.env.example` nằm ở `deploy/mqtt/`; ai chạy tay hoặc chép các tệp này thì dùng đường dẫn mới.
+- Các script của `deploy/` đọc `.env` như Compose: bỏ dấu nháy, chú thích sau giá trị và ký tự xuống dòng của Windows.
+- `online-check.sh` và `dxos` điền `PUBLIC_HOST`, `APISIX_HOST_PORT` vào `GATEWAY_PUBLIC_URL` và giữ `https` của địa chỉ.
+- Nâng cấp ghi biến mới trên dòng riêng khi `.env` không có dòng trống cuối, và chỉ thêm profile `av` khi quét mã độc đang bật.
+- `deploy/.env.example` xếp lại theo mục, chú thích ngắn chỉ tới hướng dẫn, phần tinh chỉnh nằm cuối, có thêm biến của MQTT và Prometheus.
 
 ## [2.0.2] - 2026-11-19
 

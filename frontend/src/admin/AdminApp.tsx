@@ -28,6 +28,7 @@ import { i18nProvider } from "../shell/i18n";
 import LanguageSwitch from "../shell/LanguageSwitch";
 import { darkTheme, lightTheme } from "../shell/theme";
 import { listModels } from "./api";
+import { getProjectScope } from "../console/api";
 import authProvider from "./authProvider";
 import { createDataProvider } from "./dataProvider";
 import InboxPage from "./InboxPage";
@@ -35,12 +36,14 @@ import LiveRefresh from "./LiveRefresh";
 import { uiIcon } from "./uiIcons";
 import { screens } from "./resources";
 import { resourceName, type EntityMeta, type ModelMeta } from "./types";
+import { useAssistantEnabled } from "../assistant/api";
 import { t } from "../shell/t";
 
 // The control panel and its editor are loaded only when an administrator opens it.
 const ConsolePage = lazy(() => import("../console/ConsolePage"));
 const CalendarPage = lazy(() => import("./CalendarPage"));
 const StatsPage = lazy(() => import("./StatsPage"));
+const AssistantPage = lazy(() => import("../assistant/AssistantPage"));
 
 // One icon per process family, so a menu reads at a glance.
 const FAMILY_ICONS = {
@@ -109,9 +112,19 @@ function menuGroups(entities: EntityMeta[]) {
 }
 
 // The entities are grouped under their model, so two models that both have a "Hồ sơ" stay apart.
-const makeMenu = (models: ModelMeta[]) =>
+const makeMenu = (models: ModelMeta[], assistantEnabled: boolean) =>
   function AppMenu() {
     const { permissions } = usePermissions();
+    const admin = Array.isArray(permissions) && permissions.includes("ADMIN");
+    // An account that administers a project reaches the people of that project in the console.
+    const [projectAdmin, setProjectAdmin] = useState(false);
+    useEffect(() => {
+      if (!Array.isArray(permissions) || admin) return;
+      getProjectScope().then(
+        (scope) => setProjectAdmin(scope.projects.some((project) => project.level === "ADMIN")),
+        () => setProjectAdmin(false),
+      );
+    }, [permissions, admin]);
     const reachable = models.map((model) => ({
       model,
       // The model file may order the entities and put some of them under a heading of their own.
@@ -124,6 +137,7 @@ const makeMenu = (models: ModelMeta[]) =>
     return (
       <Menu>
         <Menu.DashboardItem primaryText={t("Hộp việc")} />
+        {assistantEnabled && <Menu.Item to="/assistant" primaryText={t("Trợ lý nghiệp vụ")} leftIcon={<SupportAgentOutlinedIcon />} />}
         {reachable
           .filter((group) => group.entities.length > 0)
           .map(({ model, entities }) => (
@@ -147,7 +161,7 @@ const makeMenu = (models: ModelMeta[]) =>
               ))}
             </Box>
           ))}
-        {Array.isArray(permissions) && permissions.includes("ADMIN") && (
+        {(admin || projectAdmin) && (
           <Box>
             <ListSubheader disableSticky sx={{ background: "transparent", lineHeight: "32px", mt: 1, fontSize: 11, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase" }}>
               {t("Quản trị")}
@@ -167,6 +181,7 @@ export default function AdminApp() {
   useEffect(() => {
     listModels().then(setModels, (e: unknown) => setError(e instanceof Error ? e.message : t("Không đọc được metadata")));
   }, []);
+  const assistantEnabled = useAssistantEnabled(models);
 
   const byResource = useMemo(() => {
     const map: Record<string, EntityMeta> = {};
@@ -179,14 +194,14 @@ export default function AdminApp() {
   }, [models]);
   const dataProvider = useMemo(() => createDataProvider((resource) => byResource[resource]), [byResource]);
   const layout = useMemo(() => {
-    const menu = makeMenu(models ?? []);
+    const menu = makeMenu(models ?? [], assistantEnabled);
     return ({ children }: LayoutProps) => (
       <Layout menu={menu} appBar={AppTopBar}>
         <LiveRefresh />
         {children}
       </Layout>
     );
-  }, [models]);
+  }, [models, assistantEnabled]);
 
   if (error) return <p className="section-subtitle">{error}</p>;
   if (!models) return <div className="login-screen" />;
@@ -204,6 +219,7 @@ export default function AdminApp() {
       disableTelemetry
     >
       <CustomRoutes>
+        <Route path="/assistant" element={<Suspense fallback={<p className="section-subtitle">{t("Đang tải...")}</p>}><AssistantPage /></Suspense>} />
         <Route
           path="/console/*"
           element={

@@ -77,4 +77,24 @@ class ModelUpgraderTest {
     assertThrows(IllegalStateException.class, () -> ModelUpgrader.upgrade(original, 2, steps));
     assertEquals(MODEL, original);
   }
+
+  @Test
+  void aiTasksAreReadAndRefuseAFieldThatDoesNotExist() {
+    String yaml =
+        MODEL.replace("access:", "  kind: {type: choice, options: [A, B]}\n    access:")
+            + """
+            ai:
+              tasks:
+                suggest:
+                  classifier: kinds
+                  input_fields: [title]
+                  output_field: kind
+        """;
+    var task = ModelParser.parse(yaml).entities().get("item").aiTasks().get("suggest");
+    assertEquals("kind", task.outputField());
+    assertEquals(java.util.List.of("title"), task.inputFields());
+    assertThrows(
+        ModelException.class,
+        () -> ModelParser.parse(yaml.replace("input_fields: [title]", "input_fields: [missing]")));
+  }
 }

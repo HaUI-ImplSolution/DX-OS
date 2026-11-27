@@ -27,6 +27,7 @@ export type ProcessDiagramNode = {
   position: Point;
   label: string;
   terminal: boolean;
+  initial: boolean;
   // A second line under the label: the deadline of a waiting state or the completions of a final one.
   caption: string;
 };
@@ -42,9 +43,11 @@ export type ProcessDiagramEdge = {
   labelSide: 1 | -1;
   labelT: number;
   dashed: boolean;
+  // The action the arrow draws; auto_close for the arrow the system takes by itself.
+  action: string;
 };
 
-type EdgeSpec = { id: string; source: string; target: string; label: string; dashed?: boolean };
+type EdgeSpec = { id: string; source: string; target: string; label: string; action: string; dashed?: boolean };
 type RoutedEdge = EdgeSpec & {
   sourceAnchor: ProcessAnchor;
   targetAnchor: ProcessAnchor;
@@ -122,12 +125,14 @@ export function buildProcessDiagram(
       },
       label: t(state.label),
       terminal: state.terminal,
+      initial: state.name === family.initial,
       caption: captionOf(family, state),
     };
   });
   const specs: EdgeSpec[] = steps.flatMap((action) =>
     action.from.filter((from) => visible.has(from) && visible.has(action.to)).map((from) => ({
       id: `${action.name}-${from}`,
+      action: action.name,
       source: from,
       target: action.to,
       label: `${ta(action.label)} (${action.by === "OWNER" ? t("người nộp") : (action.roles.length ? action.roles : family.handlers).join(", ")})${action.when ? t(", khi {condition}", { condition: conditionSource(action.when) }) : ""}`,
@@ -139,6 +144,7 @@ export function buildProcessDiagram(
   if (closing && closeFrom && visible.has(closing.to)) {
     specs.push({
       id: "auto_close",
+      action: "auto_close",
       source: closeFrom,
       target: closing.to,
       label: t("tự đóng sau {time}", { time: formatDuration(family.autoCloseSeconds ?? 0) }),
@@ -168,6 +174,7 @@ export function buildProcessDiagram(
     labelSide: route.labelSide,
     labelT: route.labelT,
     dashed: route.dashed ?? false,
+    action: route.action,
   }));
   return { nodes, edges };
 }

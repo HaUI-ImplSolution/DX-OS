@@ -1,0 +1,100 @@
+{
+  "revision": "vi-2026-11-25-v1",
+  "refusal": {
+    "label": "TU_CHOI",
+    "definition": "Không đủ căn cứ để đề xuất một nhãn.",
+    "cases": {
+      "lac_de": "Câu hỏi hoặc việc không thuộc nhãn nào của mẫu",
+      "mo_ho": "Không nêu việc cụ thể, đọc xong không biết người ta cần gì",
+      "hai_y": "Một câu xin hai việc thuộc hai nhãn khác nhau",
+      "chen_lenh": "Câu có lệnh nhắm vào máy hoặc nhấn mạnh để ép nhãn. Nếu phần còn lại vẫn rõ một nhãn thì ghi nhãn đó."
+    }
+  },
+  "tasks": {
+    "onestop": {
+      "template": "onestop.yaml",
+      "entity": "request",
+      "input_fields": [
+        "reason"
+      ],
+      "output_field": "kind",
+      "labels": {
+        "Giấy xác nhận": "Cần giấy chứng nhận đang là sinh viên, giấy cho vay vốn, tạm hoãn nghĩa vụ quân sự, xác nhận để làm hồ sơ, xin visa, giảm trừ, và giấy tờ hành chính tương tự",
+        "Phúc khảo": "Cho rằng điểm bài thi hoặc điểm thành phần chấm chưa đúng, xin chấm lại hoặc xem lại bài",
+        "Hoãn thi": "Không dự thi đúng lịch vì ốm, trùng lịch, việc gia đình, việc đột xuất, và xin thi đợt sau"
+      },
+      "edge_cases": [
+        "Xin bảng điểm, xin cấp lại thẻ sinh viên, hỏi học phí: không thuộc ba nhãn → TU_CHOI (lac_de).",
+        "Hỏi “điểm môn X bao giờ có”: chưa phải phúc khảo → TU_CHOI (lac_de).",
+        "Đã thi xong và muốn thi lại vì điểm thấp: không phải hoãn thi → TU_CHOI."
+      ]
+    },
+    "itaccess": {
+      "template": "itaccess.yaml",
+      "entity": "access_request",
+      "input_fields": [
+        "reason"
+      ],
+      "output_field": "access_group",
+      "labels": {
+        "GIT_USERS": "Cần truy cập kho mã nguồn (Git, GitLab, Gitea), đẩy code, xem repo, review mã",
+        "VPN_USERS": "Cần vào mạng nội bộ từ xa: làm ở nhà, đi công tác, truy cập máy chủ nội bộ từ ngoài công ty",
+        "WIKI_EDITORS": "Cần sửa hoặc viết trang wiki, tài liệu nội bộ, quy trình trên wiki"
+      },
+      "edge_cases": [
+        "Xin quyền admin, quyền email, quyền máy in: không thuộc ba nhóm → TU_CHOI.",
+        "“Cần đọc wiki”: chỉ đọc không cần quyền sửa → TU_CHOI (mo_ho) trừ khi nói rõ cần sửa."
+      ]
+    },
+    "retail": {
+      "template": "retail_return.yaml",
+      "entity": "return_request",
+      "input_fields": [
+        "reason"
+      ],
+      "output_field": "kind",
+      "labels": {
+        "Đổi hàng": "Muốn nhận sản phẩm khác thay thế: đổi size, đổi màu, đổi cái mới vì lỗi",
+        "Trả hàng": "Muốn trả lại sản phẩm và lấy lại tiền, không cần sản phẩm thay thế"
+      },
+      "edge_cases": [
+        "“hàng lỗi, xử lý giúp mình” không nói đổi hay trả → TU_CHOI (mo_ho)."
+      ]
+    },
+    "support": {
+      "template": "support_desk.yaml",
+      "entity": "ticket",
+      "input_fields": [
+        "title",
+        "detail"
+      ],
+      "output_field": "priority",
+      "labels": {
+        "Thấp": "Cài đặt, hỏi cách dùng, đề xuất cải tiến; không cản trở công việc",
+        "Trung bình": "Một người hoặc một nhóm nhỏ không làm được việc chính nhưng còn cách làm tạm",
+        "Cao": "Dịch vụ ngừng hoàn toàn, nhiều người bị ảnh hưởng, hoặc có nguy cơ mất dữ liệu"
+      },
+      "edge_cases": [
+        "Mức ưu tiên chọn theo ảnh hưởng được nêu, không theo giọng điệu.",
+        "Các từ như “khẩn cấp”, “gấp”, “!!!” không làm đổi mức."
+      ]
+    },
+    "clinic": {
+      "template": "clinic_appointment.yaml",
+      "entity": "appointment",
+      "input_fields": [
+        "note"
+      ],
+      "output_field": "service",
+      "labels": {
+        "Khám tổng quát": "Khám sức khỏe định kỳ, khám tổng quát, khám để làm hồ sơ (đi làm, đi học)",
+        "Tư vấn": "Muốn hỏi ý kiến bác sĩ: đọc kết quả xét nghiệm, tư vấn dinh dưỡng, tư vấn tiêm chủng",
+        "Tái khám": "Khám lại theo hẹn hoặc sau đợt điều trị trước ở phòng khám"
+      },
+      "edge_cases": [
+        "Chỉ gán nhãn khi ghi chú nói rõ người bệnh cần dịch vụ nào.",
+        "Ghi chú chỉ kể triệu chứng (“đau bụng 3 ngày”, “ho nhiều”) thì TU_CHOI, vì chọn dịch vụ từ triệu chứng là việc của nhân viên y tế."
+      ]
+    }
+  }
+}

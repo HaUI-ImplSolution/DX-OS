@@ -1,18 +1,14 @@
 # Kịch bản trình diễn 15 phút
 
-Kịch bản cho phần trình diễn chung kết của bản `2.0.2`.
+Kịch bản cho phần trình diễn chung kết của bản `2.1.0`.
+Phần trình chiếu đi cùng ở [`TRINH_BAY.md`](./TRINH_BAY.md); ba phần demo của nó theo các mục 3, 4 và 5 dưới đây.
 Mỗi bước nêu việc làm, tài khoản dùng, kết quả mong đợi và cách xử lý khi sự cố.
 Khung kiểm gốc là tám mục "Thế nào là đạt" ở [`docs/dynamic-core/README.md`](./dynamic-core/README.md#thế-nào-là-đạt), chạy tự động bằng `python3 e2e/api/check_demo.py`.
 
-## Chuẩn bị trước ngày trình diễn
+## Tài khoản thử
 
-1. Cài bản `2.0.2` trên máy chủ công khai bằng `dxos-install.sh`, rồi `dxos start` kèm tệp `onestop.yaml` ở [`backend/dx-engine/src/main/resources/templates/`](../backend/dx-engine/src/main/resources/templates/onestop.yaml).
-2. `dxos doctor` phải không báo lỗi, kể cả dòng quét mã độc của tệp tải lên.
-3. `dxos demo` để có bốn tài khoản thử và khoảng 40 hồ sơ mẫu; mật khẩu in ra một lần, ghi lại ngay.
-   Chạy lệnh này sớm: hạn xử lý của một cửa sinh viên là 72 giờ và không thể làm trễ qua API, nên hồ sơ quá hạn chỉ xuất hiện khi các hồ sơ đã nộp đủ ba ngày.
-4. Đặt mật khẩu cho tài khoản quản trị bằng `dxos admin` (tài khoản `admin`, bắt buộc đổi mật khẩu ở lần đầu).
-5. Tập trọn kịch bản một lần trên đúng máy sẽ trình diễn, kể cả các bước đổi mô hình ở phần 4, vì chúng làm thay đổi mô hình đang chạy.
-6. Mở sẵn bốn cửa sổ trình duyệt riêng, mỗi cửa sổ đã đăng nhập một tài khoản: `judge_student`, `judge_officer`, `judge_officer2` và `admin`.
+Bản `2.1.0` chạy công khai tại <https://khuongdev.io.vn/> với mô hình Một cửa sinh viên và 40 hồ sơ mẫu.
+Bốn tài khoản `judge_*` dùng chung mật khẩu `15c9777835f0dfcf4e8d`; trên bản tự cài, `dxos demo` tạo cùng bốn tài khoản với mật khẩu riêng.
 
 | Tài khoản | Vai | Thấy gì |
 |---|---|---|
@@ -21,6 +17,20 @@ Khung kiểm gốc là tám mục "Thế nào là đạt" ở [`docs/dynamic-cor
 | `judge_officer2` | Cán bộ Phòng Công tác sinh viên | Hồ sơ của đơn vị Công tác sinh viên |
 | `judge_supervisor` | Người giám sát | Mọi hồ sơ, chỉ đọc |
 | `admin` | Quản trị | Bảng điều khiển ở `/console` |
+
+Bảng điều khiển `/console` và màn hình giám sát chỉ dành cho quản trị viên, nên bốn tài khoản `judge_*` không vào được; tài khoản `admin` chỉ có trên bản tự cài.
+
+## Chuẩn bị trước ngày trình diễn
+
+1. Cài bản `2.1.0` trên máy chủ công khai bằng `dxos-install.sh`, rồi `dxos start` kèm tệp `onestop.yaml` ở [`backend/dx-engine/src/main/resources/templates/`](../backend/dx-engine/src/main/resources/templates/onestop.yaml).
+2. `dxos doctor` phải không báo lỗi, kể cả dòng quét mã độc của tệp tải lên.
+3. `dxos demo` để có bốn tài khoản thử và khoảng 40 hồ sơ mẫu; mật khẩu in ra một lần, ghi lại ngay.
+   Chạy lệnh này sớm: hạn xử lý của một cửa sinh viên là 72 giờ và không thể làm trễ qua API, nên hồ sơ quá hạn chỉ xuất hiện khi các hồ sơ đã nộp đủ ba ngày.
+4. Đặt mật khẩu cho tài khoản quản trị bằng `dxos admin` (tài khoản `admin`, bắt buộc đổi mật khẩu ở lần đầu).
+5. Tập trọn kịch bản một lần trên đúng máy sẽ trình diễn, kể cả các bước đổi mô hình ở phần 4, vì chúng làm thay đổi mô hình đang chạy.
+6. Mở sẵn bốn cửa sổ trình duyệt riêng, mỗi cửa sổ đã đăng nhập một tài khoản: `judge_student`, `judge_officer`, `judge_officer2` và `admin`.
+
+Bảng tài khoản ở mục [Tài khoản thử](#tài-khoản-thử).
 
 ## Tiến trình
 
@@ -40,6 +50,12 @@ Nói ba ý, không mở máy:
 - Một trường học hay một doanh nghiệp nhỏ có những quy trình giống nhau: một người gửi, một người xem xét, duyệt hoặc trả lại, mọi bước đều phải để lại dấu vết.
 - Mỗi lần có nghiệp vụ mới, người ta dựng lại đăng nhập, phân quyền, lưu tệp và luồng duyệt.
 - DX-OS làm phần dùng chung đó một lần, nghiệp vụ nằm trong một tệp mô hình.
+
+Nếu còn thời gian, thêm ba ý sau và nói rõ đây là giả thuyết, vì đội không phỏng vấn khách hàng:
+
+- **Nỗi đau:** đơn vị nhỏ cần quy trình duyệt có phân quyền và lịch sử, nhưng không đủ người để dựng và giữ một hệ thống riêng.
+- **Thị trường:** các đơn vị đã có phần mềm chạy sẵn và chỉ thiếu một quy trình; họ cần thêm quy trình vào đó, không cần thay phần mềm.
+- **Cạnh tranh:** bộ quản lý quy trình đóng gói và nền tảng low-code thường gắn với một nhà cung cấp hoặc tính phí theo người dùng; DX-OS là nguồn mở, tự chạy trên máy của đơn vị, và ứng dụng ngoài gọi nó như gọi Keycloak hay MinIO.
 
 ## 2. Kiến trúc (2 đến 4 phút)
 
@@ -111,12 +127,39 @@ Sự cố: lần chạy `dxos archive` đầu cần tải extension DuckDB từ 
 
 Nói thẳng phần chưa có, theo [Việc tồn đọng](./dynamic-core/BACKLOG.md):
 
-- Chưa có phần AI, vì cần mô hình ngôn ngữ đạt định nghĩa Open Source AI của OSI.
-- Ứng dụng Tầng 2 chưa phủ chữ I của H-P-D-I.
+- Phần AI là trợ lý đề xuất giá trị một trường bằng bộ phân loại tiếng Việt do đội tự huấn luyện, chạy trên CPU; người dùng xác nhận trước khi lưu; không có hỏi đáp trên tri thức nội bộ và tác tử nghe sự kiện.
 - Hồ dữ liệu là kho Parquet trong SeaweedFS; `dxos archive query` đọc một lần chạy bằng DuckDB mà không cần cấp quyền cơ sở dữ liệu.
 - Không có bản sao số: số đo của thiết bị vào lõi thành hồ sơ sự cố, lõi không giữ trạng thái thời gian thực của thiết bị.
 
 Kết bằng một câu: đổi nghiệp vụ là đổi tệp, không đổi mã.
+
+## 7. Ứng dụng của người ngoài (tùy chọn)
+
+Phần này chứng minh lõi là nền tảng cho ứng dụng tầng trên: một ứng dụng bán hàng không liên quan đến dự án thêm hai quy trình bằng hai tệp mô hình.
+Các bước từ máy sạch ở [`examples/appliance-store`](../examples/appliance-store/README.md); làm trước theo README trên máy trình diễn.
+
+- **Cửa sổ ứng dụng (`nhanvien`):** mở một đơn bán, gửi yêu cầu đổi trả; trạng thái "Chờ duyệt" kèm liên kết "Mở trên DX-OS".
+- **Cửa sổ `manager` ở DX-OS:** mở liên kết, duyệt phiếu ở hộp việc; quay lại ứng dụng thấy "Đã duyệt" mà không bấm gì.
+- **Bảo hành:** gửi yêu cầu bảo hành, để quá hạn xử lý (2 phút) rồi mở lại trang ở ứng dụng: nhãn "Quá hạn" hiện ra (khi bật webhook thì hiện không cần mở trang).
+- **Vì sao không tự viết (ba phép thử ở mục "Vì sao không tự viết vòng duyệt" của README, mỗi phép chừng một phút):** tài khoản máy của ứng dụng không tự duyệt được phiếu của mình (403), sửa một dòng lịch sử thì `dxos history verify` chỉ ra dòng đó, đổi quy trình có kế hoạch và mức rủi ro (`SAFE`, `LOSS`, từ chối khi còn phiếu mở).
+  Chọn hai phép nếu thiếu thời gian.
+- **Điều cần nói:** ứng dụng không có mã quy trình, phân quyền hay lịch sử; phần tích hợp là một mẫu dùng nguyên, một tệp mở rộng mẫu, vài biến môi trường và 109 dòng mã.
+
+Sự cố: nếu ứng dụng không cập nhật trạng thái, kiểm `DXOS_BASE_URL` và `extra_hosts`; khi bật webhook thì mở tab Hàng đợi sự kiện ở `/console` để xem thông điệp bị dừng, kiểm địa chỉ trong `deploy/webhooks/targets.yml`, rồi bấm Thử lại.
+
+## 8. Bốn nguyên lý của đề (tùy chọn)
+
+Mục 4 của đề nêu bốn nguyên lý kỹ thuật.
+Bảng dưới đây chứng minh từng nguyên lý bằng vài lệnh trên bản đang chạy, dùng khi hội đồng hỏi hoặc khi còn thời gian ở phần 5.
+
+| Nguyên lý | Làm gì | Kết quả mong đợi | Nói thẳng |
+|---|---|---|---|
+| (i) Tách theo vòng đời dữ liệu | `dxos archive onestop --store`, rồi `dxos archive list` và `dxos archive check --store onestop/<lần chạy>`; đọc một tệp bằng `dxos archive query onestop/<lần chạy> --file <tệp> "SELECT ... FROM archive"` | Hồ sơ đã đóng và lịch sử nằm ở kho đối tượng dạng Parquet kèm manifest có hash; kiểm lại báo khớp; truy vấn chỉ đọc, không cần quyền cơ sở dữ liệu | Phạm vi là kho hồ sơ, tệp Parquet không kèm lớp bảng |
+| (ii) Hội tụ dữ liệu hành chính và vận hành | Áp dụng mẫu "Sự cố thiết bị" ở `/console`, rồi `python3 examples/itot-simulator/simulator.py setup` và `run --devices 3 --interval 5`; `replay` gửi lại lần đo cuối; qua MQTT thì bật `docker-compose.mqtt.yml` ([`INTEGRATIONS.md`](./INTEGRATIONS.md#cầu-nối-mqtt-tùy-chọn)) rồi `run --transport mqtt` | Chỉ số vượt ngưỡng tạo hồ sơ sự cố ở hộp việc của vai kỹ thuật viên, đi cùng quy trình và quyền như hồ sơ hành chính; gửi lại cùng lần đo in `duplicate`, hoặc không tạo hồ sơ mới khi đi qua MQTT | Cầu nối MQTT là tùy chọn, mặc định bộ mô phỏng gọi HTTP; lõi không giữ trạng thái thiết bị |
+| (iii) Quản trị dữ liệu, phả hệ, chất lượng | `/console`, tab Danh mục dữ liệu; mục Chất lượng dữ liệu; `dxos history verify` | Mỗi mô hình có nơi lưu, người được xem, quan hệ giữa các loại hồ sơ, đường đi của từng trường, độ đầy đủ và độ mới; lịch sử hồ sơ báo nguyên vẹn | Không |
+| (iv) Zero-Trust, GitOps, kiểm dịch mã độc, tự phục hồi | Đính tệp EICAR đổi tên `.pdf` vào một hồ sơ; `dxos doctor`; `dxos gitops status models`; xóa một container bằng `docker rm -f <tên>` (tên ở `dxos status`) rồi `dxos reconcile` và `dxos status` | Tệp EICAR bị từ chối khi quét đang bật; `doctor` có dòng quét mã độc; `gitops` báo mô hình đang khớp kho git; container bị xóa được dựng lại theo khai báo | Một máy chạy Compose; tự phục hồi chạy trên Compose |
+
+Sự cố: tệp EICAR chỉ bị chặn khi quét mã độc đang bật (`dxos av`); lần chạy `dxos archive` đầu cần tải extension DuckDB từ mạng.
 
 ## Xử lý sự cố chung
 

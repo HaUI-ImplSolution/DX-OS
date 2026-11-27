@@ -32,6 +32,9 @@ public final class ModelDiff {
     LOSS
   }
 
+  // An action of a process that now requires fields, with the states it is taken from.
+  public record RequireGain(String entity, String action, List<String> from, List<String> fields) {}
+
   public record Change(Level level, String kind, String entity, String field, String detail) {}
 
   // Existing rows must satisfy this new rule before the change can run.
@@ -58,6 +61,8 @@ public final class ModelDiff {
   public final Map<String, Map<String, String>> renames = new LinkedHashMap<>();
   // Entities whose process holds records that may be affected.
   public final Set<String> touchedProcesses = new LinkedHashSet<>();
+  // The actions that now require fields they did not require before.
+  public final List<RequireGain> requireGains = new ArrayList<>();
   // The tables and columns the schema tool may remove, as its plan names them.
   public final Set<String> allowedDrops = new LinkedHashSet<>();
   // The working calendars of the running model and of the new one, by name.
@@ -434,6 +439,9 @@ public final class ModelDiff {
     if (!old.documents().equals(entity.documents())) {
       changes.add(new Change(Level.SAFE, "CHANGE_DOCUMENTS", entity.name(), null, null));
     }
+    if (!old.aiTasks().equals(entity.aiTasks())) {
+      changes.add(new Change(Level.SAFE, "CHANGE_AI_TASKS", entity.name(), null, null));
+    }
     Process before = old.process();
     Process after = entity.process();
     if (before == null && after == null) {
@@ -563,7 +571,57 @@ public final class ModelDiff {
                   .filter(name -> !reopened.contains(name))
                   .toList()));
     } else if (!was.equals(now)) {
-      changes.add(new Change(Level.SAFE, "CHANGE_ACTIONS", entity.name(), null, null));
+      List<String> details = new ArrayList<>();
+      for (ProcessFamily.Action action : now.actions()) {
+        was.action(action.name())
+            .ifPresent(earlier -> compareAction(entity, earlier, action, details));
+      }
+      changes.add(
+          new Change(
+              Level.SAFE,
+              "CHANGE_ACTIONS",
+              entity.name(),
+              null,
+              details.isEmpty() ? null : String.join("; ", details)));
+    }
+  }
+
+  // What changed in one action whose steps stayed the same, as "name: what, what". A field that the
+  // action newly requires is kept in requireGains for the plan to count the records it stops.
+  private void compareAction(
+      Entity entity,
+      ProcessFamily.Action before,
+      ProcessFamily.Action after,
+      List<String> details) {
+    if (before.equals(after)) {
+      return;
+    }
+    List<String> parts = new ArrayList<>();
+    if (!Objects.equals(before.label(), after.label())) {
+      parts.add("label");
+    }
+    if (!before.roles().equals(after.roles())) {
+      parts.add("roles " + before.roles() + " -> " + after.roles());
+    }
+    if (before.needsNote() != after.needsNote()) {
+      parts.add(after.needsNote() ? "needs_note added" : "needs_note removed");
+    }
+    List<String> added =
+        after.require().stream().filter(f -> !before.require().contains(f)).toList();
+    List<String> removed =
+        before.require().stream().filter(f -> !after.require().contains(f)).toList();
+    if (!added.isEmpty()) {
+      parts.add("require +" + String.join(", +", added));
+      requireGains.add(new RequireGain(entity.name(), after.name(), after.from(), added));
+    }
+    if (!removed.isEmpty()) {
+      parts.add("require -" + String.join(", -", removed));
+    }
+    if (!Objects.equals(before.check(), after.check())) {
+      parts.add("check");
+    }
+    if (!parts.isEmpty()) {
+      details.add(after.name() + ": " + String.join(", ", parts));
     }
   }
 

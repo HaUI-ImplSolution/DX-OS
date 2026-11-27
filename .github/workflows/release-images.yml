@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       services:
-        description: "Images to build: all, or a comma list of backend,monitor,frontend,portal,sso"
+        description: "Images to build: all, or a comma list of backend,monitor,frontend,portal,sso,clamav,assistant"
         required: true
         default: all
 
@@ -20,18 +20,18 @@ concurrency:
 
 jobs:
   plan:
-    name: Plan the images
+    name: Plan release images
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
       names: ${{ steps.pick.outputs.names }}
     steps:
-      - name: Plan the images to build
+      - name: Plan release images to build
         id: pick
         env:
           REQUESTED: ${{ inputs.services }}
         run: |
-          ALL="backend monitor frontend portal sso"
+          ALL="backend monitor frontend portal sso clamav assistant"
           if [[ "$REQUESTED" == "all" ]]; then
             PICKED="$ALL"
           else
@@ -45,7 +45,7 @@ jobs:
           echo "names=$(printf '%s\n' $PICKED | jq -R . | jq -sc .)" >> "$GITHUB_OUTPUT"
 
   build:
-    name: "Build image (${{ matrix.name }})"
+    name: "Build release image (${{ matrix.name }})"
     needs: plan
     runs-on: ubuntu-24.04
     timeout-minutes: 60
@@ -74,13 +74,15 @@ jobs:
           else
             echo "version=sha-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
           fi
+          # The scan image carries ClamAV, which is GPL-2.0-only; the others are DX-OS.
+          if [[ "${{ matrix.name }}" == "clamav" ]]; then echo "license=GPL-2.0-only" >> "$GITHUB_OUTPUT"; else echo "license=Apache-2.0" >> "$GITHUB_OUTPUT"; fi
           # The monitor is built from the backend sources, with its own target of the same Dockerfile.
           if [[ "${{ matrix.name }}" == "monitor" ]]; then
-            echo "context=backend" >> "$GITHUB_OUTPUT"
-            echo "target=monitor" >> "$GITHUB_OUTPUT"
+            { echo "context=backend"; echo "dockerfile=backend/Dockerfile"; echo "target=monitor"; } >> "$GITHUB_OUTPUT"
           else
-            echo "context=${{ matrix.name }}" >> "$GITHUB_OUTPUT"
-            echo "target=" >> "$GITHUB_OUTPUT"
+            context="${{ matrix.name }}"
+            if [[ "$context" == "assistant" ]]; then context="."; fi
+            { echo "context=$context"; echo "dockerfile=${{ matrix.name }}/Dockerfile"; echo "target="; } >> "$GITHUB_OUTPUT"
           fi
           {
             echo "args<<EOF"
@@ -112,7 +114,7 @@ jobs:
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: ${{ steps.image.outputs.context }}
-          file: ${{ steps.image.outputs.context }}/Dockerfile
+          file: ${{ steps.image.outputs.dockerfile }}
           target: ${{ steps.image.outputs.target }}
           load: true
           push: false
@@ -137,7 +139,7 @@ jobs:
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: ${{ steps.image.outputs.context }}
-          file: ${{ steps.image.outputs.context }}/Dockerfile
+          file: ${{ steps.image.outputs.dockerfile }}
           target: ${{ steps.image.outputs.target }}
           push: true
           sbom: true
@@ -151,6 +153,7 @@ jobs:
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.licenses=${{ steps.image.outputs.license }}
           cache-from: type=registry,ref=${{ steps.image.outputs.repo }}:buildcache
           cache-to: type=registry,ref=${{ steps.image.outputs.repo }}:buildcache,mode=max,image-manifest=true,oci-mediatypes=true
 
@@ -163,7 +166,7 @@ jobs:
           push-to-registry: true
 
   summary:
-    name: Show the update command
+    name: Summarize release images
     needs: build
     runs-on: ubuntu-24.04
     timeout-minutes: 5

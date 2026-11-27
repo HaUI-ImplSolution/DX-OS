@@ -4,6 +4,7 @@ package HaUI.ImplSolution.dxos.engine.process;
 
 import HaUI.ImplSolution.dxos.core.api.exception.ActionNotAllowedException;
 import HaUI.ImplSolution.dxos.core.api.exception.InvalidStateException;
+import HaUI.ImplSolution.dxos.engine.apply.Sql;
 import HaUI.ImplSolution.dxos.engine.exception.ModelValidationException;
 import HaUI.ImplSolution.dxos.model.Model.Entity;
 import HaUI.ImplSolution.dxos.model.ProcessFamily.Action;
@@ -12,12 +13,32 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 // The rules every process obeys, whichever states and actions it declares. A model cannot switch
 // them off.
 @Component
 public class ProcessRules {
+
+  // The SQL of a record that lacks at least one of the columns: empty or blank counts as lacking,
+  // as in checkAction. alias is the table alias; no columns gives FALSE.
+  public static String missingCondition(List<String> columns, String alias) {
+    if (columns.isEmpty()) {
+      return "FALSE";
+    }
+    String prefix = alias == null || alias.isEmpty() ? "" : alias + ".";
+    return columns.stream()
+        .map(
+            column ->
+                prefix
+                    + Sql.ident(column)
+                    + " IS NULL OR btrim("
+                    + prefix
+                    + Sql.ident(column)
+                    + "::text) = ''")
+        .collect(Collectors.joining(" OR ", "(", ")"));
+  }
 
   // Whether the caller may take the action on the record, judged from the record as it is locked.
   public void checkAction(

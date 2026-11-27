@@ -53,7 +53,7 @@ function Points({ title, points }: { title: string; points: DataPoint[] }) {
             key={`${point.kind}-${point.name}-${index}`}
             size="small"
             variant="outlined"
-            label={`${POINT_LABEL[point.kind] ?? point.kind}: ${point.name}${point.detail ? ` (${point.detail})` : ""}`}
+            label={`${POINT_LABEL[point.kind] ?? point.kind}: ${point.name}${point.detail ? ` (${point.detail})` : ""}${point.project ? ` · ${point.project}` : ""}`}
           />
         ))}
       </Box>
@@ -113,6 +113,9 @@ export default function DataCatalogTab() {
       </TextField>
       {catalog && (
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <Typography variant="body2" color="text.secondary">
+            {catalog.project ? t("Dự án: {project}", { project: catalog.project }) : t("Chưa phân loại")}
+          </Typography>
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
             <Points title={t("Dữ liệu đi vào từ")} points={catalog.origins} />
             <Points title={t("Dữ liệu đi ra tới")} points={catalog.destinations} />

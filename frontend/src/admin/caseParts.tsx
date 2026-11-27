@@ -23,6 +23,7 @@ import AttachFileIcon from "@mui/icons-material/AttachFile";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { useGetIdentity, useNotify, useRecordContext, useRefresh } from "react-admin";
+import { ApiError } from "../shell/api";
 import { translateBackend } from "../shell/backendMessages";
 import { formatDateTime, timeAgo } from "../shell/format";
 import { StatusChip, TONES } from "./StatusChip";
@@ -39,6 +40,9 @@ interface Props {
 }
 
 const message = (error: unknown) => (error instanceof Error ? error.message : t("Không xử lý được"));
+
+// The API answers 409 when the record or the model is no longer the one the screen read, so the screen reads it again.
+const changed = (error: unknown) => error instanceof ApiError && error.status === 409;
 
 // A titled card; a panel that has nothing to show returns null before it gets here.
 export function Section({ title, action, children }: { title: string; action?: JSX.Element; children: React.ReactNode }) {
@@ -86,16 +90,29 @@ export function ActionButtons({ model, entity }: Props) {
     return !record.assignee || record.assignee === me;
   });
 
+  const openNote = (action: ProcessAction) => {
+    setNote("");
+    setNoteFor(action);
+  };
+
+  const closeNote = () => {
+    setNoteFor(null);
+    setNote("");
+  };
+
   const send = async (action: ProcessAction, text?: string) => {
     setBusy(true);
     try {
-      await takeAction(model, entity.name, record.id, action.name, text);
+      await takeAction(model, entity.name, record.id, action.name, text, { version: record.version, modelVersion: entity.modelVersion });
       notify(t("{action}: xong", { action: ta(action.label) }), { type: "success" });
-      setNoteFor(null);
-      setNote("");
+      closeNote();
       refresh();
     } catch (error) {
       notify(message(error), { type: "error" });
+      if (changed(error)) {
+        setNoteFor(null);
+        refresh();
+      }
     } finally {
       setBusy(false);
     }
@@ -111,7 +128,7 @@ export function ActionButtons({ model, entity }: Props) {
             {...actionStyle(action)}
             sx={{ ml: 1 }}
             disabled={busy || waiting}
-            onClick={() => (action.needsNote || action.name === WITHDRAW ? setNoteFor(action) : send(action))}
+            onClick={() => (action.needsNote || action.name === WITHDRAW ? openNote(action) : send(action))}
           >
             {ta(action.label)}
           </Button>
@@ -124,7 +141,7 @@ export function ActionButtons({ model, entity }: Props) {
           <Fragment key={action.name}>{button}</Fragment>
         );
       })}
-      <Dialog open={noteFor !== null} onClose={() => setNoteFor(null)} fullWidth>
+      <Dialog open={noteFor !== null} onClose={closeNote} fullWidth>
         <DialogTitle>{noteFor ? ta(noteFor.label) : null}</DialogTitle>
         <DialogContent>
           {noteFor?.name === WITHDRAW && (
@@ -141,7 +158,7 @@ export function ActionButtons({ model, entity }: Props) {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setNoteFor(null)}>{t("Hủy")}</Button>
+          <Button onClick={closeNote}>{t("Hủy")}</Button>
           <Button
             disabled={busy || (noteFor?.needsNote === true && !note.trim())}
             onClick={() => noteFor && send(noteFor, note.trim() || undefined)}
@@ -177,10 +194,11 @@ export function AssignPanel({ model, entity }: Props) {
 
   const assign = async (assignee: string | null) => {
     try {
-      await assignRecord(model, entity.name, record.id, assignee);
+      await assignRecord(model, entity.name, record.id, assignee, { version: record.version, modelVersion: entity.modelVersion });
       refresh();
     } catch (error) {
       notify(message(error), { type: "error" });
+      if (changed(error)) refresh();
     }
   };
 
@@ -243,7 +261,7 @@ const OPERATION_LABEL: Record<string, string> = {
 };
 
 // Who an escalation told and which notice of its level it was, from the "level:round" the backend records.
-function escalatedDetail(detail: string, levels: EscalationLevel[]): string | null {
+export function escalatedDetail(detail: string, levels: EscalationLevel[]): string | null {
   const match = /^(\d+):(\d+)$/.exec(detail);
   if (!match) return null;
   const level = Number(match[1]);
@@ -256,7 +274,7 @@ function escalatedDetail(detail: string, levels: EscalationLevel[]): string | nu
 }
 
 // Why a completion action was skipped, as the backend records it: "<operation> skipped: the record has no <what>".
-function skippedReason(detail: string, fieldLabel: (name: string) => string): string {
+export function skippedReason(detail: string, fieldLabel: (name: string) => string): string {
   const match = /^(\S+) skipped: the record has no (?:user in field (\S+)|group in field (\S+)|group)$/.exec(detail);
   if (!match) return translateBackend(detail);
   const [, operation, userField, groupField] = match;
@@ -270,7 +288,7 @@ function skippedReason(detail: string, fieldLabel: (name: string) => string): st
 
 // What an "updated" event changed. A detail that is a JSON object maps each field to [old, new];
 // an older one is just the list of field names.
-function updatedDetail(
+export function updatedDetail(
   detail: string | null,
   fields: FieldMeta[],
   fieldLabel: (name: string) => string,
@@ -296,7 +314,7 @@ function updatedDetail(
 }
 
 // The account ids an "updated" event moved between in user fields.
-function userIdsOf(event: RecordEvent, userFields: Set<string>): string[] {
+export function userIdsOf(event: RecordEvent, userFields: Set<string>): string[] {
   if (event.action !== "updated" || !event.detail?.startsWith("{") || userFields.size === 0) return [];
   try {
     const changes: Record<string, [string | null, string | null]> = JSON.parse(event.detail);
@@ -311,28 +329,44 @@ function userIdsOf(event: RecordEvent, userFields: Set<string>): string[] {
 // What happened to this record, newest first, as a timeline.
 export function HistoryPanel({ model, entity }: Props) {
   const record = useRecordContext();
-  const [events, setEvents] = useState<RecordEvent[]>([]);
+  // null while the first load runs; a failed load says so instead of looking like an empty history.
+  const [events, setEvents] = useState<RecordEvent[] | null>(null);
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   const id = record?.id;
   const version = record?.version;
 
   useEffect(() => {
-    if (id !== undefined) listEvents(model, entity.name, id).then(setEvents, () => setEvents([]));
-  }, [model, entity.name, id, version]);
+    if (id === undefined) return;
+    setFailed(false);
+    listEvents(model, entity.name, id).then(setEvents, () => setFailed(true));
+  }, [model, entity.name, id, version, attempt]);
 
   const process = entity.process;
   const actionLabel = (name: string) =>
     EVENT_LABELS[name] ?? ta(process?.actions.find((action) => action.name === name)?.label ?? name);
   const fieldLabel = (name: string) => entity.fields.find((field) => field.name === name)?.label ?? name;
-  const ordered = [...events].reverse();
+  const ordered = [...(events ?? [])].reverse();
   const userFields = new Set(entity.fields.filter((field) => field.type === "user").map((field) => field.name));
-  const personNames = useNames(events.flatMap((event) => userIdsOf(event, userFields)));
+  const personNames = useNames(ordered.flatMap((event) => userIdsOf(event, userFields)));
 
   return (
     <Section title={t("Lịch sử xử lý")}>
-      {ordered.length === 0 && (
-        <Typography variant="body2" color="text.secondary">
-          {t("Chưa có hoạt động nào.")}
-        </Typography>
+      {failed ? (
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+          <Typography variant="body2" color="error">
+            {t("Không tải được lịch sử xử lý.")}
+          </Typography>
+          <Button size="small" onClick={() => setAttempt(attempt + 1)}>
+            {t("Thử lại")}
+          </Button>
+        </Box>
+      ) : (
+        ordered.length === 0 && (
+          <Typography variant="body2" color="text.secondary">
+            {events === null ? t("Đang tải...") : t("Chưa có hoạt động nào.")}
+          </Typography>
+        )
       )}
       <Box sx={{ position: "relative", pl: 3 }}>
         <Box sx={{ position: "absolute", left: 7, top: 6, bottom: 6, width: 2, bgcolor: "divider" }} />
@@ -345,7 +379,9 @@ export function HistoryPanel({ model, entity }: Props) {
                 ? skippedReason(event.detail, fieldLabel)
                 : event.action === "escalated" && event.detail
                   ? escalatedDetail(event.detail, process?.escalations ?? [])
-                  : null);
+                  : event.action === "file_added" || event.action === "file_removed"
+                    ? event.detail
+                    : null);
           const tone = event.to_status ? TONES[event.to_status] : undefined;
           const color = !tone || tone === "default" ? "text.disabled" : `${tone}.main`;
           return (

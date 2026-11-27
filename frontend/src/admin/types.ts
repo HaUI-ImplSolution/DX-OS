@@ -73,7 +73,12 @@ export interface ProcessInfo {
   actions: ProcessAction[];
 }
 
+export interface AiTask {
+  label: string; inputFields: string[]; outputField: string; classifier: string;
+}
+
 export interface EntityMeta {
+  aiTasks?: Record<string, AiTask>;
   name: string;
   label: string;
   fields: FieldMeta[];
@@ -84,6 +89,8 @@ export interface EntityMeta {
   canWrite: boolean;
   canHandle: boolean;
   canAssign: boolean;
+  // The applied version of the model, sent with a decision so a changed model is refused.
+  modelVersion?: number | null;
   // Names of the process actions the roles of the user may take.
   handlerActions?: string[];
   ui?: EntityUi | null;
@@ -159,6 +166,7 @@ export interface Page<T> {
 }
 
 // react-admin resource names join the model and the entity with a hyphen, which names never contain.
+// A record opens at /<resourceName>/<id>/show; docs/EXTENSIONS.md names this address and the backend builds it for webUrl.
 export const resourceName = (model: string, entity: string) => `${model}-${entity}`;
 
 export function splitResource(resource: string): { model: string; entity: string } {

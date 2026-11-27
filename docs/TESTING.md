@@ -11,7 +11,7 @@ Mức hoàn thiện của từng tính năng và bài kiểm của nó ở [`web
 |---|---|
 | Docker và Docker Compose v2 | Backend `verify` dùng Testcontainers nên cần Docker chạy |
 | JDK 21 | Dùng Maven wrapper trong repo; đặt `JAVA_HOME` về JDK 21 nếu máy mặc định bản khác |
-| Node 22 trở lên | Cho `frontend`, `website` và `e2e` |
+| Node 22 trở lên | Cho `frontend`, `website` và `e2e`; riêng trợ lý cần Node 24.16 |
 | Python 3 | Cho các script kiểm ở `e2e/api` |
 
 ## 2. Các loại kiểm
@@ -19,18 +19,23 @@ Mức hoàn thiện của từng tính năng và bài kiểm của nó ở [`web
 | Loại | Lệnh | Chạy ở CI |
 |---|---|---|
 | Định dạng, biên dịch, test của backend | `cd backend && ./mvnw verify` | Workflow `Backend` |
+| Trợ lý, không cần key | `cd assistant && npm ci && npm test` (Node 24.16) | Workflow `Assistant` |
 | Kiểu của web | `cd frontend && npx tsc --noEmit` | Workflow `Frontend` |
 | Phân tích tĩnh của web | `cd frontend && npm run lint` | Workflow `Frontend` |
-| Giấy phép và header | `python3 .github/scripts/check_licenses.py`; `pipx run --spec reuse==6.3.0 reuse lint` | `Check licenses` của `Compliance` |
-| Giấy phép của phiên bản đang dùng | `GITHUB_TOKEN=... python3 .github/scripts/check_upstream_licenses.py`; `python3 -m unittest discover -s .github/scripts` | `Check upstream licenses` và `Check licenses` của `Compliance` |
+| Test đơn vị của web (Vitest, 220 test: nhà cung cấp dữ liệu (`body()` và từng lời gọi), điều kiện, xuất CSV, định dạng số và thời gian, đường dẫn của mọi lời gọi API, sơ đồ quy trình, thông báo lỗi, điều hướng của bộ dựng mô hình, nơi dùng và đổi tên của trường và vai trò, hàng của quy trình, luồng sự kiện thay đổi trực tiếp, ngôn ngữ giao diện, phiên đăng nhập và vai trò, ghi đè tệp YAML giữ nguyên chú thích, chuỗi mô tả lịch sử hồ sơ và kế hoạch áp dụng) | `cd frontend && npm test`; kèm độ phủ: `npm run coverage` | Workflow `Frontend` |
+| Độ phủ | `python3 .github/scripts/check_coverage.py backend` sau `./mvnw verify`; `cd frontend && npm run coverage` | `Backend` (bảng ở tóm tắt của lượt chạy) và `Frontend` |
+| Giấy phép và header | `python3 .github/scripts/check_licenses.py`; `python3 .github/scripts/check_license_inventory.py check` (thêm `--maven` cho gói Maven, cần JDK 21); `pipx run --spec reuse==6.3.0 reuse lint` | `Check licenses` của `Compliance`; Maven ở `Scan backend SBOM` của `Dependencies` |
+| Văn bản giấy phép trong gói đi vào sản phẩm | `python3 .github/scripts/check_license_texts.py` (cần mạng) | `Check licenses` của `Compliance` |
+| Gói trong image và văn bản giấy phép của image | `python3 .github/scripts/check_image_packages.py check` (thêm `--full` để đọc lại image, cần Docker); `python3 .github/scripts/check_third_party_notices.py check` (cần JDK 21) | `Check licenses` của `Compliance`; `Check image packages` theo lịch; `Scan backend SBOM` của `Dependencies` |
+| Giấy phép của phiên bản đang dùng | `GITHUB_TOKEN=... python3 .github/scripts/check_upstream_licenses.py`; `python3 -m unittest discover -s .github/scripts/tests` | `Check upstream licenses` và `Check licenses` của `Compliance` |
 | SBOM khớp tệp khóa | `python3 .github/scripts/check_sbom_fresh.py` | `Check SBOMs against lockfiles` của `Compliance` |
-| Route của gateway | `python3 e2e/api/check_routes.py` | `Validate the gateway routes` của `Platform` |
+| Route của gateway | `python3 e2e/api/check_routes.py` | `Validate gateway routes` của `Platform` |
 | Compose hợp lệ, dừng khi thiếu bí mật | `docker compose config` trong `deploy/` | `Validate the Compose file` của `Platform` |
-| Gói phát hành và bộ cài | `.github/scripts/check_archive.sh <gói> <phiên bản>` | `Install from the release archive` của `Platform` |
-| Sao lưu và khôi phục | `deploy/backup.sh` rồi `verify` | `Back up and restore` của `Platform` |
-| API trên stack thật | Các script `e2e/api/check_*.py`, mục 4 | `API end-to-end` của `Platform`, ba nhóm, một nhóm chạy ở chế độ lõi và giữ quét mã độc |
-| Bề mặt của gateway | `python3 e2e/api/check_surface.py` | `Gateway surface` của `Platform`, hai chế độ |
-| Trình duyệt | Xem [`e2e/README.md`](../e2e/README.md) | `Browser end-to-end` của `Platform` |
+| Gói phát hành và bộ cài | `.github/scripts/check_archive.sh <gói> <phiên bản>` | `Test the install` của `Platform` |
+| Sao lưu và khôi phục | `deploy/backup.sh` rồi `verify` | `Test backup and restore` của `Platform` |
+| API trên stack thật | Các script `e2e/api/check_*.py`, mục 4 | `Test the API` của `Platform`, ba nhóm, một nhóm chạy ở chế độ lõi và giữ quét mã độc |
+| Bề mặt của gateway | `python3 e2e/api/check_surface.py` | `Test gateway surface` của `Platform`, hai chế độ |
+| Trình duyệt | Xem [`e2e/README.md`](../e2e/README.md) | `Test in a browser` của `Platform` |
 | Trích dẫn giữa các tài liệu | `python3 .github/scripts/check_doc_refs.py` | `Build the docs site` của `Docs` |
 | Trang tài liệu | `cd website && npm ci && npm run build` | `Build the docs site` của `Docs` |
 | Tải đồng thời và cấu hình nhỏ nhất | `python3 e2e/api/load_test.py` trên stack tạm; các bước và kết quả ở [`SIZING.md`](SIZING.md) | Không |
@@ -40,6 +45,58 @@ Sau khi đổi tài nguyên nên chạy `./mvnw clean verify`: tài nguyên cũ 
 `./mvnw spotless:apply` sửa định dạng khi `spotless:check` báo lỗi.
 Test của client Keycloak, bộ gửi webhook và bộ dò dịch vụ dùng WireMock, không cần Docker.
 Test chậm gắn `@Tag("slow")`, bỏ qua bằng `-DexcludedGroups=slow`.
+
+### Test của backend
+
+`./mvnw verify` chạy 466 test, khoảng một đến hai phút ở máy dev.
+Test không cần Docker:
+
+| Nhóm | Kiểm gì |
+|---|---|
+| Bộ đọc mô hình (`dx-model`) | `ModelParser` theo từng khối: vai, quyền, tham chiếu, quy trình, hạn, báo quá hạn, hành động hoàn tất, đặt chỗ, trợ lý, mẫu in, giao diện, thuộc tính của trường; mỗi lỗi nêu đúng dòng; `ConditionText` (thứ tự `and`, `or`, `not`, ngoặc, trích dẫn); `CodeFormat`; `ModelExtends`; `ModelLint` |
+| Kế hoạch đổi mô hình (`ModelDiffTest`) | Từng loại thay đổi và mức rủi ro của nó: thêm, bỏ, đổi tên và đổi kiểu trường, ràng buộc chặt hơn hay lỏng hơn, quyền rộng ra hay hẹp lại, đổi quy trình, các câu hỏi, từ chối và dòng kiểm tra dữ liệu cũ |
+| Hạn theo lịch (`BusinessCalendarTest`, `DeadlinesTest`) | Hạn rơi vào nghỉ trưa, cuối tuần, ngày lễ, ngoài giờ, qua nửa đêm; hạn tính theo giờ và theo ngày làm |
+| Sinh mã, SQL và BPMN | Mã hồ sơ từ bộ đếm và năm của ngày làm việc, hết số; tên đi vào SQL; bảng và ràng buộc sinh từ mô hình; BPMN của từng họ quy trình |
+| Mẫu đóng gói sẵn (`BundledTemplatesTest`) | Mỗi mẫu đọc được, sinh đủ bảng, so với chính nó không đổi gì |
+| Phần còn lại | Tìm không dấu và ký tự đại diện, chặn mẫu chuỗi chạy vô hạn, câu chữ gửi vào kênh chat, PDF của mẫu in, tài liệu OpenAPI, giới hạn tốc độ theo người dùng, cột của màn giám sát |
+| Bộ lọc yêu cầu (`RequestFiltersTest`) | Tài khoản bị giới hạn client, giới hạn tốc độ trả 429 kèm `Retry-After`, mật khẩu đọc số đo, mã yêu cầu và địa chỉ ghi vào nhật ký, giới hạn số dòng từ chối |
+| Client Keycloak (`KeycloakAdminClientTest`, `KeycloakApplicationRolesTest`) | Phân biệt bị từ chối với không liên lạc được; đổi vai của ứng dụng hỏng giữa chừng không để lại hai vai hay không vai nào; danh sách người đọc đủ mọi trang |
+
+Test cần Docker (PostgreSQL thật bằng Testcontainers, áp dụng migration của `engine`):
+
+| Test | Kiểm gì |
+|---|---|
+| `HistoryChainIntegrationTest` | Chuỗi băm của lịch sử: dòng bị sửa, bị xóa hay chen vào đều bị chỉ đúng chỗ; ghi chú không nằm trong chuỗi; không phụ thuộc múi giờ của phiên |
+| `DataServiceIntegrationTest` | Tạo, đọc, sửa, xóa trên bảng sinh từ mô hình: mã, mặc định, ràng buộc, quyền `own`, `all`, `read`, xung đột phiên bản, lọc, sắp xếp, phân trang, tìm không dấu, lịch sử |
+| `ModelRegistryIntegrationTest` | Kho mô hình đọc phiên bản mới nhất, loại mô hình hỏng kèm lý do, giữ mô hình đang áp dụng |
+| `WorkflowIntegrationTest` | Hồ sơ đi qua quy trình trên Flowable thật: ai làm được hành động nào ở trạng thái nào, quyền theo dòng và đơn vị, phân công, hạn xử lý, nhắc sắp đến hạn và quá hạn, tự đóng |
+| `ApplyIntegrationTest` | Kế hoạch và áp dụng tệp mô hình: mức rủi ro, dòng dữ liệu vi phạm, hồ sơ đang mở, tiến trình đang chạy, áp dụng dừng giữa chừng rồi chạy tiếp hay bỏ, quay lui, áp dụng lúc khởi động; công cụ lược đồ và Keycloak là bản thế |
+| `ProjectAdministrationTest` | Quản trị viên nền tảng, quản trị viên dự án và người ngoài làm được gì với dự án, tài khoản và ứng dụng ngoài |
+| `DeliveryIntegrationTest` | Hàng đợi gửi đi đúng thứ tự và thử lại, tệp đích webhook, kiểm tra trước khi chuyển trạng thái, khóa chống gửi trùng |
+| `MonitorIntegrationTest` (`dx-monitor`) | Dòng log của gateway thành số liệu của màn giám sát, khóa nhận log, gộp khi một địa chỉ gửi dồn, xóa dữ liệu cũ |
+
+Phần dựa vào chương trình ngoài (áp dụng mô hình qua `pgschema`, quy trình Flowable, Keycloak) do các script `e2e/api/check_*.py` ở mục 4 kiểm.
+
+### Độ phủ
+
+`./mvnw verify` ghi báo cáo JaCoCo của từng module ở `target/site/jacoco/`.
+Lệnh `python3 .github/scripts/check_coverage.py backend` (chạy ở thư mục gốc) cộng chúng lại; job `Test the backend` in bảng này vào phần tóm tắt của lượt chạy.
+`cd frontend && npm run coverage` in độ phủ của mã web, và job của workflow `Frontend` chạy lệnh đó.
+
+| Phần | Dòng | Nhánh |
+|---|---|---|
+| `dx-model` | 75,2% | 63,4% |
+| `dx-engine` | 64,3% | 58,9% |
+| `dx-core` | 52,1% | 44,3% |
+| `dx-monitor` | 64,0% | 50,9% |
+| Toàn backend | 64,8% | 58,9% |
+| Mã web | 28,9% | 21,4% |
+
+Số đo của backend không gồm các script `e2e/api/check_*.py` và kịch bản trình duyệt.
+
+Giao diện web được kiểm theo hai lớp.
+Test đơn vị của Vitest chỉ chạy trên phần logic thuần (nhà cung cấp dữ liệu, phiên đăng nhập, luồng sự kiện, ghi đè YAML, chuỗi mô tả), nên số đo của mã web chỉ tính phần này.
+Các thành phần React (MUI và react-admin) không có test đơn vị; chúng được kiểm bằng bài Playwright ở mục 5 và các script `e2e/api/check_*.py` trên stack thật, và độ phủ của hai lớp này không nằm trong bảng trên.
 
 ## 3. Dựng stack
 
@@ -86,17 +143,17 @@ python3 e2e/api/check_bootstrap.py
 | `check_api.py` | Áp dụng mô hình mẫu vào hệ thống rỗng, lỗi tệp theo dòng và cột, quyền theo vai và theo dòng, chặn ghi `status`, chống SQL qua tên trường, 10.000 dòng có lọc và sắp xếp |
 | `check_recovery.py` | Lỗi sau bước quy trình thì hồ sơ và quy trình cùng quay về; áp dụng bị Keycloak làm gián đoạn rồi áp dụng lại |
 | `check_case.py` | Trạng thái và hành động, đơn vị, giao việc, hộp việc, lịch sử có giá trị cũ và mới, mã lý do của lỗi 403 và 409 |
-| `check_change.py` | Đổi mô hình khi đã có dữ liệu: mức rủi ro, đổi tên giữ dữ liệu, dòng vi phạm, quay về; tệp mở rộng từ mẫu bằng `extends` |
+| `check_change.py` | Đổi mô hình khi đã có dữ liệu: mức rủi ro, đổi tên giữ dữ liệu, dòng vi phạm, số hồ sơ chờ thiếu trường mà một `require` mới đòi, quay về; tệp mở rộng từ mẫu bằng `extends` |
 | `check_process.py` | Các họ mẫu, hạn và quá hạn, hành động hoàn tất qua outbox, tệp đính kèm, thống kê, chống ghi đè |
 | `check_codes.py` | Mã hồ sơ: mã đầu năm, đếm riêng theo thực thể, tạo đồng thời, từ chối ghi và sửa mã, tra theo mã, chuyển năm, đổi khuôn, hết số |
 | `check_booking.py` | Họ `reservation`, danh mục của bảng điều khiển, mọi mẫu áp dụng được |
 | `check_documents.py` | Mẫu in: PDF, tên tệp, trạng thái cho in, quyền đọc hồ sơ, audit, OpenAPI và metadata |
 | `check_demo.py` | Tám tiêu chí của kịch bản trình diễn |
 | `check_guards.py` | Người giữ vai, vai của nền tảng, xóa thực thể còn hồ sơ đang chạy, lần áp dụng dừng giữa chừng (tiếp tục và hủy bỏ) |
-| `check_users.py` | Quản trị người dùng: gán và gỡ vai và đơn vị, tạo, khóa, đặt lại mật khẩu, audit |
+| `check_users.py` | Quản trị người dùng: gán và gỡ vai và đơn vị, tạo, khóa, đặt lại mật khẩu, audit; quản trị viên dự án chỉ thấy và gán vai trong dự án của mình, 403 ngoài phạm vi, người ở hai dự án, mô hình chưa có dự án |
 | `check_docs.py` | Mọi endpoint các tài liệu nêu có trong OpenAPI của backend đang chạy, đúng phương thức |
 | `check_conformance.py` | Rào chắn của lõi giữ với mọi mô hình đã áp dụng (hoặc các mô hình nêu tên): không ghi được `status`, không token thì 401, không đọc được dữ liệu mô hình khác |
-| `check_cli.py` | Lệnh `dxos`: `lint`, `conformance`, `plan`, `apply --accept`, `model upgrade`, `archive` (kể cả `--store`, `check`, `query`, `list`, `auto`), lịch sử ghi tài khoản của lệnh, bộ mô phỏng IT/OT gửi lại không thêm hồ sơ; cần Docker và tự áp dụng một mô hình riêng |
+| `check_cli.py` | Lệnh `dxos`: `lint`, `conformance`, `plan`, `apply --accept`, `model upgrade`, `archive` (kể cả `--store`, `check`, `query`, `list`, `auto`), `project` và `--project` của `client add`, lịch sử ghi tài khoản của lệnh, bộ mô phỏng IT/OT gửi lại không thêm hồ sơ; cần Docker và tự áp dụng một mô hình riêng |
 | `check_browser.py` | Giao diện trình duyệt ngoài: `dxos client browser add`, `list`, `remove`, CORS, đăng nhập PKCE gọi được API, redirect không an toàn bị từ chối |
 | `check_events.py` | Webhook: thứ tự, chữ ký, thử lại, nội dung không lộ, nhắc hạn; chuỗi hash nhiều phiên bản, trường riêng tư ngoài hash, điểm neo và bên nhận so hash |
 | `check_bootstrap.py` | Tệp mô hình lúc khởi động: `applied`, `unchanged`, `skipped`, `failed` |
@@ -109,7 +166,7 @@ Mỗi kiểm in một dòng `PASS` hoặc `FAIL` kèm nhãn, cuối script in `N
 Điều kiện đặc biệt:
 
 - Tiêu chí 3 của `check_demo.py` (tệp sạch, tệp EICAR bị chặn, tệp bị từ chối khi ClamAV dừng) chỉ chạy khi bật quét; khi tắt quét (`dxos av off`) script in `NOTE` rồi bỏ qua phần này.
-- Đặt `DXOS_REQUIRE_SCAN=1` thì stack không quét làm script báo `FAIL`; nhóm chế độ lõi của `API end-to-end` đặt biến này.
+- Đặt `DXOS_REQUIRE_SCAN=1` thì stack không quét làm script báo `FAIL`; nhóm chế độ lõi của `Test the API` đặt biến này.
 - Với quét bật, đợi `clamav` khỏe (`docker compose up -d --wait clamav`) trước khi chạy script, vì tệp tải lên bị từ chối khi ClamAV chưa nạp xong chữ ký.
 - Một số kiểm cần backend chạy với biến gây lỗi có chủ ý (`ENGINE_FAULT_AFTER_DECISION=true`, `ENGINE_FAULT_APPLY_STEP=ENSURE_CLIENT`); các script tự bật rồi tắt bằng cách tạo lại service `backend`.
 - Keycloak 26.8 trả 400 thay vì 401 cho mật khẩu sai; các kiểm về mật khẩu nhận cả hai.
@@ -118,7 +175,8 @@ Mỗi kiểm in một dòng `PASS` hoặc `FAIL` kèm nhãn, cuối script in `N
 
 Bài Playwright của bảng điều khiển nằm ở `e2e/web/`; cách chạy, biến cấu hình và nơi có ảnh chụp ở [`e2e/README.md`](../e2e/README.md).
 Bài `phone.spec.ts` chạy ở cỡ điện thoại 390 px và kiểm bảng điều khiển cùng hộp việc không rộng hơn màn hình.
-CI chạy bài này ở job `Browser end-to-end` của workflow `Platform`.
+Bài `console-draft.spec.ts` kiểm bảng điều khiển hỏi trước khi bản đang soạn có thay đổi chưa áp dụng bị thay bằng một mẫu: Hủy giữ bản nháp, Thay thế mở mẫu.
+CI chạy bài này ở job `Test in a browser` của workflow `Platform`.
 
 ## 6. Kiểm tay trước khi phát hành
 
@@ -135,6 +193,7 @@ Mỗi mục nêu điều phải thấy; lệnh và biến cấu hình chi tiết
 4. **Chế độ tối và điện thoại 390 px:** chế độ tối hiện đủ hộp việc, danh sách, chi tiết và bảng điều khiển; ở điện thoại mỗi hồ sơ là một thẻ, không trang nào tràn ngang, tên trang không bị công tắc ngôn ngữ che.
 5. **Hộp việc thời gian thực:** số "Việc đang chờ" của cán bộ tăng trong khoảng hai giây khi sinh viên nộp hồ sơ, ở mọi tab, không tải lại trang; chi tiết đang mở đổi trạng thái khi người khác duyệt và form đang gõ dở không bị làm mới.
    Khởi động lại `backend` thì tab đang mở nhận lại thay đổi sau vài giây.
+   Hộp việc trống của người nộp có một nút "Tạo <tên thực thể>" cho mỗi thực thể được ghi, bấm vào mở đúng biểu mẫu tạo; tài khoản chỉ đọc không thấy nút nào.
    `GET /api/v1/inbox/stream` không token thì 401, có token thì 200 `text/event-stream` kèm `: ping` mỗi 20 giây và đóng sau 600 giây.
 6. **Hàng đợi sự kiện:** ba danh sách Lỗi, Chờ gửi, Đã gửi; thông điệp lỗi hiện lỗi gần nhất và nút Thử lại ngay.
 7. **Tệp đính kèm:** tải `.html` lên bị từ chối (400); tải `.pdf` rồi mở link thì trình duyệt lưu thành tệp; gỡ tệp rồi mở link cũ thì 404.
@@ -142,6 +201,12 @@ Mỗi mục nêu điều phải thấy; lệnh và biến cấu hình chi tiết
 9. **Lịch sử và ghi đè:** chi tiết hồ sơ hiện `Nhãn: cũ → mới` của từng trường; sửa hồ sơ đã bị người khác đổi thì báo "Bản ghi vừa được người khác thay đổi".
 10. **Tài khoản của tôi:** mở Account Console của Keycloak ở tab mới, đã đăng nhập.
 11. **Lần chạy đầu trên máy sạch:** `admin` đăng nhập bằng mật khẩu tạm, bị buộc đổi mật khẩu, vào bảng điều khiển, áp dụng mẫu đầu tiên.
+    Stack chạy dở: chỉ chạy `docker compose up -d postgres` rồi `dxos start` thì `doctor` ghi cổng PostgreSQL do chính stack giữ, không `FAIL`, và lệnh dựng nốt các dịch vụ còn lại.
+    Một chương trình ngoài giữ cổng (ví dụ `nc -l 127.0.0.1 <cổng>` khi stack chưa chạy) thì `dxos start` dừng ở `FAIL` nêu chương trình ngoài giữ cổng và khóa trong `deploy/.env` cần đổi.
+    Trên Windows với WSL2 và Docker Desktop, làm riêng cho `APISIX_HOST_PORT` và `POSTGRES_HOST_PORT`; một chương trình Windows giữ cổng bằng PowerShell: `$l = New-Object Net.Sockets.TcpListener([Net.IPAddress]::Loopback, <cổng>); $l.ExclusiveAddressUse = $true; $l.Start()`.
+    Giữ cổng khi stack chưa chạy: `dxos doctor` và `dxos start` thoát mã 1 ở `FAIL` nêu đúng khóa của cổng đó, và `dxos start` không dựng container nào.
+    Giữ cổng sau khi `docker compose up -d` đã dựng stack: `dxos doctor` và `dxos start` thoát mã 1 nêu đúng khóa; từ Windows, `Invoke-WebRequest http://127.0.0.1:<cổng gateway>/api/v1/system/status` hoặc một kết nối tới cổng PostgreSQL chạm chương trình giữ cổng, không chạm stack.
+    Đóng chương trình giữ cổng, hoặc khi không có chương trình nào: `dxos start` và `dxos doctor` thoát mã 0, kể cả khi stack đang chạy, và Windows vào được gateway cùng PostgreSQL của stack.
 12. **Hành động theo vai:** người chỉ giữ vai `AGENT` không thấy nút của hành động dành cho `LEAD`; hồ sơ đã giao thì chỉ người được giao thấy nút, "Bỏ giao" trả lại cho vai khác.
     Hành động có `require` khi trường còn trống báo "Bắt buộc nhập trước khi thực hiện" kèm tên trường và giữ nguyên trạng thái.
     Hồ sơ có quy trình không có nút Xóa; nút hành động không đặt nhãn hiện mã hành động.
@@ -158,28 +223,52 @@ Mỗi mục nêu điều phải thấy; lệnh và biến cấu hình chi tiết
     Trường nhiều lựa chọn có `default` là danh sách thì hồ sơ tạo không gửi trường đó nhận danh sách ấy; ở chế độ Điền form, ô mặc định chọn từ `options` và YAML ghi danh sách.
 19. **Thống kê:** thực thể khai hạn có ô "Đúng hạn" với phần trăm và `n/N`; thực thể không khai hạn không có ô này.
     Báo cáo theo trường: "Nhóm theo" lựa chọn, đơn vị, trạng thái hoặc ngày theo tháng, "Tính" đếm hoặc tổng, trung bình, nhỏ nhất, lớn nhất của trường số; có dòng Tất cả, nhóm rỗng hiện "Chưa có giá trị" và "—".
+    Thời gian trung bình ở từng trạng thái: hồ sơ trả lại rồi nộp lại tính mỗi lượt riêng, trạng thái cuối không có dòng, dòng đầu là trạng thái có trung bình lớn nhất và mang nhãn "Chờ lâu nhất"; vai `unit` chỉ thấy số trên hồ sơ của đơn vị mình.
     Vai `own` chỉ nhận số của hồ sơ mình; `report?groupBy=<trường số>` hoặc `metrics=sum(<trường chữ>)` trả 400, vai không có quyền đọc trả 403.
     Hồ sơ đóng sau hạn có dòng `overdue` trước dòng quyết định và tính là muộn (kể cả khi được trả lại rồi duyệt), hồ sơ rút lại sau hạn thì không; `closedOnTime` cộng `closedLate` bằng số hồ sơ đã quyết định và `GET /api/v1/history/verify` báo chuỗi nguyên vẹn.
     Tên hành động dành riêng (như `overdue`, `created`, `escalated`, xem [`MODEL.md`](MODEL.md)) bị từ chối ở bước kiểm kèm dòng và cột.
-20. **Mẫu in** (`onestop`, Giấy xác nhận chỉ cho hồ sơ Đã duyệt): hồ sơ Chờ xử lý không có nút In; sau khi `OFFICER` duyệt, nút "In: Giấy xác nhận" hiện và trình duyệt lưu `giay-xac-nhan-<mã>.pdf` có tiêu đề, các trường đã khai báo và chỗ ký.
+20. **Mẫu in** (`onestop`, Kết quả xử lý hồ sơ chỉ cho hồ sơ Đã duyệt): hồ sơ Chờ xử lý không có nút In; sau khi `OFFICER` duyệt, nút "In: Kết quả xử lý hồ sơ" hiện và trình duyệt lưu `ket-qua-xu-ly-ho-so-<mã>.pdf` có tiêu đề, các trường đã khai báo và chỗ ký.
     Người nộp thấy nút; người không đọc được hồ sơ thì không in được; ở điện thoại nút hiện dạng biểu tượng.
 
 ### Bảng điều khiển
 
 21. **Soạn và áp dụng:** sơ đồ quy trình vẽ lại sau 5 giây không gõ theo `deadline`, `auto_close` và `after`; tệp sai báo lỗi kèm dòng và cột và giữ sơ đồ đúng gần nhất; sơ đồ mở to thành hộp thoại.
     Vai `ADMIN` khai báo trong tệp báo lỗi tiếng Việt kèm dòng và cột và không có nút Áp dụng; vai trùng tên với mô hình khác thì áp dụng được.
-22. **Chế độ Điền form:** các tab Chung, Vai, Đơn vị, Thực thể gọn trên một màn hình; Thực thể có tab con Chung, Trường, Quyền, Quy trình; vai, trường và thực thể chọn từ danh sách đã khai báo.
-    Thêm vai xử lý chưa có quyền xem hồ sơ thì form cảnh báo và sơ đồ báo lỗi kèm dòng và cột; cho quyền thì hết lỗi.
-    Thêm hành động, đổi mã trạng thái, bỏ hoặc khôi phục một hành động của khung, chọn "Tự khai báo, không dùng khung": sơ đồ vẽ lại và YAML giữ nguyên dòng chú thích.
-23. **Hướng dẫn trong trình soạn:** nút "Phạm vi có thể làm" ở mỗi phần của form và bảng "Viết được gì trong tệp" nêu hệ thống chấp nhận gì, mở rộng được gì, tự tạo được gì, tên trạng thái và hành động của từng khung; rê chuột lên một khóa trong YAML hiện giải thích tiếng Việt; trình soạn không gạch chân `when`.
+22. **Chế độ Điền form:** cây bên trái gồm Thông tin chung, Vai trò, Đơn vị và từng thực thể với Thông tin chung, Trường dữ liệu, Quyền truy cập, Quy trình (Tổng quan, Trạng thái, Hành động, Thời hạn, Tự động hóa), Giao diện, Mẫu in và Trợ lý nghiệp vụ; đường dẫn phía trên nêu chỗ đang sửa.
+    Trang Giao diện sửa biểu tượng, nhóm và thứ tự menu, cột và cách sắp xếp của danh sách, nhóm trường trên form và gợi ý của trường; ô chọn trường của một nhóm chỉ còn trường chưa nằm trong nhóm khác, và nhóm chưa có trường thì báo đỏ.
+    Trang Mẫu in sửa tên mẫu, nhãn, tên tệp, tiêu đề, trạng thái được in và các khối nội dung, đổi thứ tự được; dòng ký nhận tối đa bốn tiêu đề, và thêm mẫu thứ 11 bị chặn.
+    Một khối để trống làm Core từ chối tệp, và lỗi hiện ở đúng trang Giao diện hoặc Mẫu in.
+    Chuyển sang Soạn YAML rồi quay lại thì form vẫn ở chỗ cũ; vai trò, trường và thực thể chọn từ danh sách đã khai báo.
+    Trường dữ liệu là bảng, có ô tìm khi hơn 5 trường; bấm một dòng mở phần sửa của trường đó, chỉ với các thuộc tính hợp kiểu.
+    Mục Vai trò có ma trận vai trò × thực thể; ô báo đỏ khi vai trò xử lý quy trình mà không xem được hồ sơ.
+    Xóa trường, vai trò hay thực thể đang được dùng thì hộp xác nhận liệt kê các chỗ dùng.
+    Đổi tên một vai trò thì quyền, vai xử lý, `role` của hành động và `escalate.to` đổi theo; đổi tên một trường thì mọi chỗ hộp xác nhận liệt kê đều đổi theo, nên Xem kế hoạch không báo lỗi tham chiếu.
+    Ở chế độ form, bảng "Viết được gì trong tệp" nằm dưới khung chính và chỉ nêu phần đang sửa (mỗi trang một nhóm khóa; các bước của quy trình chỉ nêu khóa của bước đó); sơ đồ quy trình nằm ở Quy trình → Tổng quan và mở to được.
+    Ở chế độ YAML bảng đầy đủ vẫn ở cột phải cùng thẻ sơ đồ.
+    Mọi biểu tượng thùng rác trong form màu đỏ.
+    Ở Quy trình → Tổng quan, bấm một trạng thái trên sơ đồ mở Trạng thái với dòng đó được chọn, bấm một mũi tên mở hành động đó, bấm mũi tên tự đóng mở Thời hạn.
+    Thêm vai trò xử lý chưa có quyền xem hồ sơ thì cây và trang hiện cảnh báo màu cam; cho quyền thì hết.
+    Tệp có lỗi kèm dòng và cột thì cây đánh dấu đỏ đúng mục, và bấm lỗi trong danh sách đầu form thì đi tới mục đó.
+    Sửa một trường ở tab Soạn và áp dụng rồi bấm Dùng mẫu ở Thư viện mẫu (hoặc mở một mô hình ở Mô hình đang chạy): hộp thoại "Thay bản đang soạn?" hiện ra; Hủy giữ nguyên bản đang soạn, Thay thế mở mẫu; chưa sửa gì thì mở ngay, không hỏi.
+    Sửa một chữ thì cạnh tên tệp hiện "Có thay đổi chưa áp dụng"; áp dụng xong mở lại thì hiện "Chưa sửa gì".
+    Thêm hành động, đổi mã trạng thái, bỏ hoặc khôi phục một hành động của mẫu, chọn "Tự khai báo, không dùng mẫu": sơ đồ vẽ lại và YAML giữ nguyên dòng chú thích.
+23. **Hướng dẫn trong trình soạn:** nút "Phạm vi có thể làm" ở mỗi phần của form và bảng "Viết được gì trong tệp" (ở chế độ form chỉ nêu phần đang sửa) nêu hệ thống chấp nhận gì, mở rộng được gì, tự tạo được gì, tên trạng thái và hành động của từng mẫu quy trình; rê chuột lên một khóa trong YAML hiện giải thích tiếng Việt; trình soạn không gạch chân `when`.
 24. **Đổi quy trình khi còn hồ sơ đang mở:** thêm hoặc bỏ trạng thái, đổi `from`, `to`, `by`, `when`, `initial` hay hạn xử lý thì "Xem kế hoạch" báo không đổi được kèm câu tiếng Việt nêu số hồ sơ và không có nút Áp dụng; rút hết hồ sơ rồi xem lại thì có nút Áp dụng.
     Đổi nhãn, `role` hoặc `handler` thì áp dụng được: vai cũ không thực hiện được nữa, vai mới thực hiện được hồ sơ đang mở.
     Bỏ `terminal` của trạng thái cuối còn hồ sơ đã đóng thì bị từ chối kèm số dòng vi phạm ở `status`.
+    Thêm `require` vào một hành động (thêm cả trường mới cũng được) thì kế hoạch vẫn `SAFE`, `CHANGE_ACTIONS` nêu hành động và trường, và một dải cảnh báo nêu số hồ sơ đang ở trạng thái nguồn còn thiếu trường; hồ sơ đã đủ trường hoặc đã đóng không được đếm, bỏ `require` thì không có dải cảnh báo.
 25. **Áp dụng dừng dở:** dừng Keycloak (`docker compose stop keycloak`), áp dụng một thay đổi rồi bật lại thì thẻ mô hình hiện "Đang dừng dở" kèm Tiếp tục áp dụng và Hủy bỏ; Tiếp tục thì phiên bản tăng, Hủy bỏ hỏi xác nhận rồi về phiên bản đang chạy.
     Với lần áp dụng đầu dừng dở (`ENGINE_FAULT_APPLY_STEP=ENSURE_CLIENT`) thẻ hiện "Chưa có phiên bản" và Hủy bỏ làm thẻ biến mất.
+    Mô hình đã lưu vi phạm luật kiểm: thêm vào `engine.model_version` một phiên bản có `auto_close` gọi hành động `needs_note: true` rồi khởi động lại backend; thẻ của mô hình ở tab **Mô hình đang chạy** có dải cảnh báo, mô hình vẫn chạy, và áp dụng tệp đã sửa (kèm `base`) xóa cảnh báo.
+    Một phiên bản không đọc được (thiếu `roles`) làm thẻ có chip "Không chạy", yêu cầu dữ liệu của mô hình trả 409 và `dxos_models_left_out` bằng 1; tệp mới vi phạm vẫn bị từ chối ở kế hoạch.
 26. **Người dùng:** tìm, gán và gỡ vai và đơn vị, tạo (mật khẩu tạm phải đổi ở lần đăng nhập đầu), khóa, mở, đặt lại mật khẩu; hộp thoại hiện lịch sử thay đổi và không có mật khẩu nào.
+    Quản trị theo dự án: ở tab **Dự án** tạo dự án A và B, đưa một mô hình vào mỗi dự án, bấm **Thành viên** ở A rồi thêm tài khoản `x` làm thành viên và `y` làm quản trị viên.
+    Đăng nhập bằng `y`: Bảng điều khiển chỉ có tab **Người dùng** và **Thành viên dự án**; danh sách chỉ có thành viên của A, hộp thoại của `x` chỉ có vai của mô hình A, không có đơn vị, đặt lại mật khẩu và khóa; `y` gán được vai của mô hình A cho `x`.
+    `y` không thêm `x` vào B và không nâng ai lên quản trị viên (403); với tài khoản `ADMIN` thì cả hai làm được.
+    Đổi dự án của một mô hình ở tab **Mô hình đang chạy** hiện hộp xác nhận; xóa dự án khi còn mô hình bị từ chối, còn dự án chỉ có thành viên thì xóa được.
 27. **Ứng dụng ngoài:** đăng ký một ứng dụng với một vai của một mô hình, mã bí mật hiện một lần kèm nút sao chép; token lấy bằng mã đó đọc được mô hình đã gán, gọi bảng điều khiển hay quản trị người dùng thì 403.
     Đổi mã thì mã cũ bị từ chối; "Đổi vai" giữ mã cũ lấy được token, token mới mang vai mới và token cũ giữ vai cũ đến khi hết hạn; xóa thì không lấy được token và hồ sơ đã tạo vẫn còn.
+    Tab **Dự án**: tạo hai dự án, đưa một mô hình vào dự án A và đăng ký một ứng dụng vào dự án B gọi mô hình đó thì dòng ứng dụng có nhãn "Dùng chéo dự án"; bộ lọc dự án ở tab **Mô hình đang chạy** và **Ứng dụng ngoài** chỉ hiện đúng nhóm, "Chưa phân loại" vẫn hiện những mô hình và ứng dụng chưa gán; xóa dự án còn mô hình hay ứng dụng thì bị từ chối.
 28. **OpenAPI của mô hình:** nhập được vào công cụ API hoặc trình sinh thư viện không lỗi; đổi một trường rồi áp dụng và quay về thì tài liệu đổi theo; người không có vai của mô hình nhận 404.
 29. **Danh mục dữ liệu** (ADMIN, mô hình có quy trình và tham chiếu): trang liệt kê vai và ứng dụng ngoài đi vào, nơi dữ liệu đi ra, liên kết giữa thực thể; mỗi thực thể có số bản ghi, quyền theo vai và danh sách trường.
     Đăng ký thêm một ứng dụng ngoài rồi tải lại thì nó hiện ở "Dữ liệu đi vào từ".
@@ -222,6 +311,7 @@ Kiểm bằng đúng các lệnh và thao tác trong tài liệu.
 40. **`dxos reconcile`:** xóa container `backend` thì chạy lại; sau `dxos stop` thì không bật lại; mọi service có chính sách restart `unless-stopped`.
 41. **`dxos demo`** (stack có `dxos-cli`): tạo bốn tài khoản `judge_*` và 40 hồ sơ; `judge_student` thấy hồ sơ của mình, mỗi cán bộ chỉ thấy đơn vị mình, `judge_supervisor` thấy mọi hồ sơ và không có nút Tạo mới; chạy lại không nộp thêm hồ sơ và in mật khẩu mới; `dxos demo remove` gỡ bốn tài khoản.
 42. **`dxos client add`, `list`, `role`, `rotate`, `remove`:** secret chỉ in ở `add` và `rotate`; `role` đổi vai mà secret cũ vẫn lấy được token và token mới mang vai mới; `rotate` làm secret cũ bị từ chối; `remove` làm client không lấy được token.
+    `dxos project add`, `list`, `remove`, `dxos model project`, `dxos client project` và `--project` của `client add` gán và gỡ dự án; dự án còn mô hình hoặc ứng dụng, hoặc không có, thì lệnh trả lỗi; `dxos project member add`, `list`, `remove` thêm, liệt kê và bớt thành viên theo tên đăng nhập, tên không có thì lệnh trả lỗi.
 43. **`dxos client browser add`:** tạo public client chỉ dùng Authorization Code với PKCE S256, có mapper audience và nhóm, lưu origin chính xác vào `CORS_ALLOWED_ORIGINS`; preflight từ origin đó được nhận, đăng nhập PKCE gọi được API; HTTP ngoài loopback và wildcard bị từ chối trước khi tạo client.
 44. **Lưu trữ theo lịch:** `dxos archive schedule install` rồi `systemctl --user start dxos-archive.service`: `deploy/archive.log` ghi lượt chạy, `dxos archive list` thấy lần chạy mới khi có hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS`, chạy lần nữa không ghi lại các hồ sơ đó.
     `dxos archive check --store` khớp manifest; khóa S3 sai thì `list` và `auto` thoát mã 1 và không in khóa; `schedule uninstall` gỡ hai tệp đơn vị.
@@ -241,7 +331,7 @@ Kiểm bằng đúng các lệnh và thao tác trong tài liệu.
     - Địa chỉ SSH với host lạ, khóa sai hoặc khóa có quyền rộng bị từ chối, mỗi lỗi ghi nguyên nhân riêng.
     - API tắt thì nguồn mô hình ghi `error` và thoát mã 1.
     - `dxos gitops install` tạo timer và `uninstall` gỡ; `history.log` ghi mỗi lần commit hoặc kết quả đổi.
-48. **Kế hoạch khi đổi quyền truy cập:** áp dụng một mẫu (ví dụ `equipment`), sửa `access` của một thực thể rồi chạy `dxos plan <tệp>` hoặc bấm Xem kế hoạch ở tab Soạn và áp dụng:
+48. **Kế hoạch khi đổi quyền truy cập:** áp dụng một mẫu (ví dụ `equipment`), sửa `access` của một thực thể rồi chạy `dxos plan <tệp>` (bản chữ ghi "Widen access", "Narrow access"...; `dxos plan --json <tệp>` ghi các mã dưới đây) hoặc bấm Xem kế hoạch ở tab Soạn và áp dụng:
     - `own` sang `all` ra `WIDEN_ACCESS` với `BORROWER: own → all`; `all` sang `read` ra `NARROW_ACCESS`.
     - Thêm một vai vào `access` ra `GRANT_ACCESS` (`AUDITOR: none → read`); bỏ một vai ra `REVOKE_ACCESS` (`BORROWER: own → none`).
     - `own` sang `assigned`, hoặc `read` sang `own`, ra `CHANGE_ACCESS`.
@@ -254,7 +344,7 @@ Kiểm bằng đúng các lệnh và thao tác trong tài liệu.
     - `dxos lint` và Xem kế hoạch báo lỗi theo dòng và cột cho lịch không khai, giờ chồng nhau, giờ kết thúc trước giờ bắt đầu, `days` rỗng, ngày nghỉ sai dạng hoặc trùng, và `calendar` không có `deadline`.
     - Đổi giờ của lịch đang dùng, hoặc bỏ `calendar` khỏi quy trình, ra `CHANGE_CALENDAR` ở mức `SAFE` và bị từ chối khi thực thể còn hồ sơ đang xử lý; một lịch không quy trình nào dùng mà đổi vẫn ra một dòng `CHANGE_CALENDAR`.
     - Một tệp `extends` khai lại `office` chỉ với `hours` giữ `days` của mẫu và thêm lịch mới theo tên.
-    - Form quy trình ở tab Soạn và áp dụng có ô Lịch làm việc với các lịch đã khai, báo đỏ khi tên lịch chưa khai, và đủ ở tiếng Việt và tiếng Anh.
+    - Form quy trình (bước Thời hạn) ở tab Soạn và áp dụng có ô Lịch làm việc với các lịch đã khai, báo đỏ khi tên lịch chưa khai, và đủ ở tiếng Việt và tiếng Anh.
 50. **Điều kiện nối nhiều phép:** áp dụng một mô hình có thực thể `loan` với `amount` (number), `kind` (choice `book`, `pen`, `Phần mềm`) và `note` (text), một hành động có `when: "amount > 100 and (kind == book or kind == pen)"` và `note` có `required_when: "amount > 100 and not kind == \"Phần mềm\""`:
     - Hồ sơ `amount` 500, `kind` book: hành động làm được, và `note` để trống bị API từ chối với `is required when amount > 100 and not kind == "Phần mềm"`.
     - Hồ sơ `amount` 500, `kind` Phần mềm: hành động bị 409 `CONDITION_NOT_MET`, và `note` để trống được chấp nhận.
@@ -263,6 +353,36 @@ Kiểm bằng đúng các lệnh và thao tác trong tài liệu.
     - Áp dụng `required_when` nối nhiều phép vào thực thể đã có hồ sơ vi phạm thì kế hoạch bị từ chối và nêu số dòng vi phạm, đếm đúng theo điều kiện nối.
     - `GET /api/v1/meta/models/<tên>/entities/<thực thể>` và `x-dxos-required-when` của OpenAPI trả điều kiện nối dạng `{op: "and", conditions: [...]}`, điều kiện một phép vẫn `{field, op, value}`.
     - Ở web: nút hành động của hồ sơ không đạt điều kiện bị mờ kèm gợi ý "Chỉ thực hiện khi ... và (... hoặc ...)", ô `note` báo đỏ đúng lúc, và tab Soạn hiện điều kiện nối ở bảng hành động.
+51. **`dxos connect`** (stack có `dxos-cli`, đã áp dụng `examples/order_approval/dxos.yaml`, `PUBLIC_HOST` còn `localhost`):
+    - Trong thư mục `examples/order_approval` không có `.env`: `dxos connect order_approval --role REQUESTER --role APPROVER` ghi `.env` quyền `600` có `DXOS_BASE_URL=http://host.docker.internal:<cổng>` và bốn biến client, không in secret, và `dxos client test` đạt.
+    - `docker compose run --rm app` in `filed order 1, status submitted` và `approved order 1, status approved`.
+    - Chạy lại không đổi tệp (`Nothing new to write`).
+    - Xóa dòng `DXOS_APPROVER_CLIENT_SECRET`: chạy lại bị từ chối và nói dùng `--rotate`; với `--rotate` thì có secret mới và `dxos client test` đạt.
+    - Vai không có trong mô hình bị API từ chối và không ghi secret nào; `--app` quá dài bị từ chối; `--prefix DXOS_RETAIL --app shop` ghi `DXOS_RETAIL_<VAI>_CLIENT_*` và tệp thiếu dòng cuối vẫn được nối đúng dòng.
+52. **Webhook tới ứng dụng cùng máy** (stack đầy đủ, một máy chủ nhận tạm nghe trên `0.0.0.0:<cổng>`, mô hình có `webhook: <tên>`):
+    - Trong `deploy/webhooks/targets.yml` khai `<tên>` với `url: http://host.docker.internal:<cổng>/hook` và `secret`.
+    - Một thay đổi hồ sơ làm máy chủ nhận được `POST` JSON kèm chữ ký.
+    - `docker compose exec backend grep host.docker.internal /etc/hosts` trả một dòng địa chỉ.
+53. **Ví dụ `appliance-store`** (stack đầy đủ, làm theo `examples/appliance-store/README.md` trên một thư mục chỉ có ứng dụng):
+    - Chưa nối DX-OS: ứng dụng chạy, chi tiết đơn không có biểu mẫu Đổi trả và Bảo hành, `/claims` trả 404.
+    - Sau khi áp dụng hai mô hình, đăng ký hai tài khoản máy, ghi `.env` và thêm `env_file`, `extra_hosts`: biểu mẫu hiện ra, phiếu đổi trả và bảo hành gửi được, quản lý duyệt thì mở lại trang ứng dụng thấy "Đã duyệt", phiếu bảo hành quá hạn 2 phút hiện "Quá hạn".
+    - Sản phẩm chưa có ở DX-OS: ứng dụng báo "nhờ quản lý thêm vào mục Sản phẩm" và không tạo phiếu.
+    - `./reset.sh --keep-dxos` xóa container, ảnh, dữ liệu và `.env` của ứng dụng, đưa `docker-compose.yml` về như cũ và gỡ hai tài khoản máy; `./reset.sh` còn gỡ DX-OS cùng dữ liệu.
+    - Ba phép thử của mục "Vì sao không tự viết vòng duyệt": 403 khi tài khoản máy gọi `approve`, `dxos history verify` báo dòng bị sửa rồi nguyên vẹn sau khi khôi phục, `LOSS` cần `--accept LOSS` và đổi hạn bị từ chối khi còn phiếu mở.
+
+### Trợ lý
+
+54. Theo [`assistant/README.md`](../assistant/README.md), chạy stack ở chế độ full, áp dụng một mẫu có nhiệm vụ phân loại, rồi liên kết tài khoản cán bộ.
+    Bấm "Rà loại hồ sơ" ở Hộp việc và kiểm hồ sơ cần rà lên đầu, có màu nổi bật.
+    Kiểm mỗi hồ sơ cần rà có độ tự tin theo phần trăm, và tài khoản chưa liên kết bấm rà thì được nhắc liên kết.
+    Bấm "Cần rà" để mở hồ sơ, xem "Căn cứ trong hồ sơ" và xác nhận lưu đề xuất.
+    Rà lại và kiểm số hồ sơ cần rà giảm.
+    Kiểm ghi chú phòng khám chỉ nêu triệu chứng không có đề xuất.
+    Kiểm hai chủ không đọc/ghi chéo, giá trị trùng không tạo lịch sử sửa và tắt trợ lý không cản nghiệp vụ, và chế độ core không có trợ lý.
+    Kiểm "Hủy liên kết" làm trợ lý không đọc được hồ sơ nữa và xóa phiên của Keycloak; `dist/rotate.js` giữ nguyên liên kết sau khi thay master key.
+    Kiểm nâng cấp giữ liên kết SSO và lịch sử, không thực thi lại đề xuất cũ; sau khôi phục từ sao lưu, người dùng liên kết lại tài khoản.
+
+55. Kiểm container `assistant-control` không ra được Internet, và tắt trợ lý bằng bước 4 của `assistant/README.md` không để lại container hay route.
 
 ## 7. Hồi quy
 
@@ -288,4 +408,4 @@ grep -rIlw -i -E 'farm|lab|farmer|DXOS_APP|dx-host|app-farm|app-lab|dx-core-api'
 | Gateway trả 429 giữa chừng khi chạy nhiều script | Giới hạn tốc độ của gateway; chờ một phút hoặc chạy cách nhau |
 | Áp dụng mô hình trả 502 `ERR_ACCOUNT_SERVICE_DENIED` | Tài khoản dịch vụ `dxos-backend-admin` thiếu quyền hoặc scope `kc-admin-api`; xem [`sso/README.md`](../sso/README.md) |
 | Kết quả không khớp mã vừa sửa | Image `dxos-backend:local` cũ hơn mã; chạy `docker compose build` rồi tạo lại service |
-| Cổng 9080 hoặc 5432 bị chiếm | Đổi `APISIX_HOST_PORT`, `POSTGRES_HOST_PORT` trong `deploy/.env` |
+| Cổng 9080 hoặc 5432 bị chương trình ngoài stack chiếm (`dxos doctor` báo `FAIL`) | Đổi `APISIX_HOST_PORT`, `POSTGRES_HOST_PORT` trong `deploy/.env` hoặc dừng chương trình đó; cổng do container của stack giữ thì không phải lỗi |

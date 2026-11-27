@@ -18,9 +18,11 @@ set -uo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
-env_value() { [[ -f .env ]] && grep -E "^$1=" .env | tail -n1 | cut -d= -f2- || true; }
+ENV_VALUE_FILE=.env
+source lib/env.sh
 
-BASE_URL="${PUBLIC_URL:-$(env_value GATEWAY_PUBLIC_URL)}"
+BASE_URL="${PUBLIC_URL:-}"
+[[ -n "$BASE_URL" || -z "$(env_value GATEWAY_PUBLIC_URL)" ]] || BASE_URL="$(public_url)"
 BASE_URL="${BASE_URL%/}"
 STATE_FILE="${STATE_FILE:-/tmp/dxos-online-check.state}"
 WEBHOOK="$(env_value ALERT_WEBHOOK_URL_ADMIN)"

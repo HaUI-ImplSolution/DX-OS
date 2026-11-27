@@ -7,11 +7,12 @@
 	<parent>
 		<groupId>HaUI.ImplSolution</groupId>
 		<artifactId>dx-os-parent</artifactId>
-		<version>2.0.2</version>
+		<version>2.1.0</version>
 	</parent>
 	<artifactId>dx-core</artifactId>
 	<name>dx-core</name>
 	<description>Shared services: identity, workflow, storage, security, platform</description>
+	<url>https://github.com/HaUI-ImplSolution/DX-OS/tree/main/backend/dx-core</url>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

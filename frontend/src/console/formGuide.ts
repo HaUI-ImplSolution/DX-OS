@@ -12,16 +12,16 @@ export interface Guide {
   creates: string[];
 }
 
-export type Section = "general" | "roles" | "units" | "entities" | "fields" | "access" | "process";
+export type Section = "general" | "roles" | "units" | "entities" | "fields" | "access" | "process" | "ui" | "documents";
 
 export const GUIDE: Record<Section, Guide> = {
   general: {
-    summary: t("Tên mô hình và nơi nhận lịch sử hồ sơ."),
+    summary: t("Tên mô hình và kết nối nhận lịch sử hồ sơ."),
     accepts: [
       t("Tên mô hình gồm chữ thường, số và dấu gạch dưới, bắt đầu bằng chữ, dài tối đa 40 ký tự."),
-      t("Đích gửi lịch sử là tên một đích đã cấu hình ở máy chủ, không phải địa chỉ web."),
+      t("Kết nối gửi sự kiện là tên một kết nối đã cấu hình ở máy chủ, không phải địa chỉ web."),
     ],
-    extends: [t("Để trống đích gửi thì lịch sử đi theo đích mặc định của hệ thống.")],
+    extends: [t("Để trống kết nối thì lịch sử đi theo kết nối mặc định của hệ thống.")],
     creates: [t("Mỗi tên mới là một mô hình mới, có bảng dữ liệu, vai và API riêng.")],
   },
   roles: {
@@ -31,8 +31,8 @@ export const GUIDE: Record<Section, Guide> = {
       t("Cần ít nhất một vai."),
     ],
     extends: [
-      t("Thêm vai bất cứ lúc nào; vai mới dùng được ngay ở mục Quyền và làm vai xử lý của quy trình."),
-      t("Đổi tên vai ở đây thì quyền và vai xử lý đang trỏ tới vai đó đổi theo."),
+      t("Thêm vai trò bất cứ lúc nào; vai trò mới dùng được ngay ở mục Quyền truy cập và làm vai trò xử lý của quy trình."),
+      t("Đổi tên vai ở đây thì quyền, vai xử lý, vai của hành động và vai nhận thông báo quá hạn đang trỏ tới vai đó đổi theo."),
     ],
     creates: [
       t("Vai có thể đặt tên theo nghiệp vụ của bạn, ví dụ TRUONG_KHOA hay KE_TOAN."),
@@ -66,6 +66,7 @@ export const GUIDE: Record<Section, Guide> = {
       t("Kiểu lựa chọn cần danh sách lựa chọn; kiểu tham chiếu cần chọn thực thể được tham chiếu."),
     ],
     extends: [
+      t("Đổi tên trường ở đây thì điều kiện, hành động, giao diện, mẫu in và nhiệm vụ trợ lý đang dùng tên đó đổi theo."),
       t("Đổi tên trường mà giữ dữ liệu: điền tên cũ vào Nâng cao."),
       t("Đặt bắt buộc, không trùng hoặc giá trị mặc định ở từng trường."),
     ],
@@ -74,7 +75,7 @@ export const GUIDE: Record<Section, Guide> = {
   access: {
     summary: t("Mỗi vai được xem và sửa hồ sơ của thực thể này đến đâu."),
     accepts: [
-      t("Chỉ vai đã khai báo ở mục Vai. Mức quyền: tất cả, của mình, chỉ đọc, của đơn vị mình, được giao cho mình."),
+      t("Chỉ vai trò đã khai báo ở mục Vai trò. Mức quyền: tất cả, của mình, chỉ đọc, của đơn vị mình, được giao cho mình."),
       t("Vai không có dòng nào ở đây thì không thấy thực thể này."),
     ],
     extends: [t("Đổi mức quyền của một vai bất cứ lúc nào; áp dụng lại mô hình thì quyền mới có hiệu lực.")],
@@ -83,12 +84,12 @@ export const GUIDE: Record<Section, Guide> = {
   process: {
     summary: t("Quy trình cho biết hồ sơ đi qua những bước nào và ai xử lý ở mỗi bước."),
     accepts: [
-      t("Chọn một khung có sẵn rồi giữ nguyên, hoặc bỏ khung và tự khai báo đủ trạng thái (states) và hành động (actions)."),
-      t("Vai xử lý là một vai hoặc một danh sách vai, đều phải đã khai báo ở mục Vai và có quyền xem hồ sơ (tất cả, chỉ đọc, đơn vị hoặc được giao)."),
+      t("Chọn một mẫu quy trình có sẵn rồi giữ nguyên, hoặc bỏ mẫu và tự khai báo đủ trạng thái (states) và hành động (actions)."),
+      t("Vai trò xử lý là một vai trò hoặc một danh sách vai trò, đều phải đã khai báo ở mục Vai trò và có quyền xem hồ sơ (tất cả, chỉ đọc, đơn vị hoặc được giao)."),
       t("Tên trạng thái và hành động gồm chữ thường, số, gạch dưới. Mỗi trạng thái không cuối phải có hành động đi ra, trạng thái cuối thì không."),
     ],
     extends: [
-      t("Thêm trạng thái hoặc hành động vào khung đã chọn; đổi nhãn, đổi trạng thái đích; bỏ hành động của khung bằng null."),
+      t("Thêm trạng thái hoặc hành động vào mẫu quy trình đã chọn; đổi nhãn, đổi trạng thái đích; bỏ hành động của mẫu bằng null."),
       t("Giao một hành động cho riêng một vai (duyệt nhiều cấp) và bắt buộc điền trường trước khi thực hiện hành động."),
       t("Đặt hạn xử lý, tự đóng hồ sơ bằng một hành động của người nộp, cho phép người tạo tự quyết định, thêm hành động hoàn tất."),
       t("Gắn lịch làm việc đã khai ở đầu tệp (calendars) để hạn xử lý chỉ đếm trong giờ làm và bỏ qua ngày nghỉ; báo leo thang và nhắc sắp đến hạn vẫn tính theo giờ thường."),
@@ -96,10 +97,37 @@ export const GUIDE: Record<Section, Guide> = {
       t("Đổi trạng thái hoặc hành động khi còn hồ sơ đang xử lý thì bị từ chối; đổi nhãn, vai, trường bắt buộc, các cấp báo leo thang thì áp dụng ngay; đổi hạn hoặc lịch làm việc khi còn hồ sơ đang xử lý cũng bị từ chối."),
     ],
     creates: [
-      t("Quy trình hoàn toàn mới, không dựa khung nào: tự khai báo states, actions và trạng thái ban đầu (initial)."),
-      t("Khung Chiếm dụng theo thời gian kèm khối đặt chỗ tạo ra nghiệp vụ đặt phòng, mượn thiết bị."),
+      t("Quy trình hoàn toàn mới, không dựa mẫu nào: tự khai báo states, actions và trạng thái ban đầu (initial)."),
+      t("Mẫu Chiếm dụng theo thời gian kèm khối đặt chỗ tạo ra nghiệp vụ đặt phòng, mượn thiết bị."),
       t("Bỏ quy trình thì thực thể chỉ là danh mục để nhập và xem."),
     ],
+  },
+  ui: {
+    summary: t("Giao diện chọn cách thực thể hiện trên màn hình: biểu tượng, chỗ trong menu, cột của danh sách, nhóm trường trên form và dòng gợi ý."),
+    accepts: [
+      t("Biểu tượng chọn trong danh sách có sẵn; nhóm menu dài tối đa 40 ký tự và thứ tự là số từ 0 đến 9999."),
+      t("Cột của danh sách là trường của thực thể, hoặc ngày tạo và ngày sửa; thực thể có quy trình thêm trạng thái và người xử lý."),
+      t("Nhãn nhóm trường dài 1 đến 60 ký tự, mỗi trường nằm trong một nhóm; trường mã do hệ thống cấp không có ô nhập; gợi ý dài 1 đến 200 ký tự."),
+    ],
+    extends: [
+      t("Không khai gì thì giao diện dựng theo thứ tự các trường."),
+      t("Trường không nằm trong nhóm nào xếp vào nhóm cuối."),
+      t("Đổi giao diện không đụng dữ liệu hay quyền và áp dụng được cả khi còn hồ sơ đang xử lý."),
+    ],
+    creates: [t("Gom các thực thể vào một nhóm của menu và đặt thứ tự; chia form dài thành các nhóm có nhãn.")],
+  },
+  documents: {
+    summary: t("Mẫu in biến một hồ sơ thành một tệp PDF."),
+    accepts: [
+      t("Mỗi thực thể có tối đa 10 mẫu; tên mẫu gồm chữ thường, số và dấu gạch dưới, bắt đầu bằng chữ."),
+      t("Nội dung là danh sách khối: tiêu đề, văn bản, bảng trường hoặc dòng ký; tối đa 60 khối, mỗi văn bản tối đa 2000 ký tự."),
+      t("Chỗ trống {{tên}} lấy giá trị của một trường, hoặc id, created_at, updated_at; thực thể có quy trình thêm status và decided_at."),
+    ],
+    extends: [
+      t("Chọn các trạng thái mà hồ sơ phải đang ở thì mới in được; bỏ trống thì in ở mọi trạng thái."),
+      t("Dòng ký có từ một đến bốn tiêu đề đặt cạnh nhau trên một khoảng trống để ký."),
+    ],
+    creates: [t("Thêm mẫu cho bất cứ giấy tờ nào nghiệp vụ cần, như giấy xác nhận hay biên bản; mẫu chỉ đọc hồ sơ đang in, không có điều kiện hay vòng lặp.")],
   },
 };
 
@@ -124,6 +152,15 @@ export const SCOPE_LABEL: Record<string, string> = {
   assigned: t("Được giao cho mình"),
 };
 
+// What each level of access lets a person do, in plain words.
+export const SCOPE_HELP: Record<string, string> = {
+  all: t("Xem và sửa mọi hồ sơ của thực thể."),
+  own: t("Chỉ xem và sửa hồ sơ của chính mình."),
+  read: t("Xem mọi hồ sơ nhưng không sửa được."),
+  unit: t("Chỉ xem và sửa hồ sơ thuộc đơn vị của mình."),
+  assigned: t("Chỉ xem và sửa hồ sơ được giao cho mình xử lý."),
+};
+
 export const COMPLETION_LABEL: Record<string, string> = {
   add_to_group: t("Thêm vào nhóm"),
   remove_from_group: t("Bỏ khỏi nhóm"),
@@ -143,7 +180,7 @@ export const SCHEMA_HELP: Record<string, string> = {
   format: t("Phiên bản định dạng của tệp mô hình, hiện là 1."),
   extends: t("Dựa trên một mẫu của thư viện: chỉ viết phần khác với mẫu, lõi ghép thành tệp hoàn chỉnh khi xem kế hoạch và áp dụng. Khóa name vẫn phải có."),
   name: t("Tên mô hình: chữ thường, số, gạch dưới, bắt đầu bằng chữ, tối đa 40 ký tự. Đặt tên bảng dữ liệu (schema m_<tên>) và đường dẫn API."),
-  webhook: t("Tên đích nhận lịch sử hồ sơ, đã cấu hình ở máy chủ (không phải địa chỉ web). Bỏ trống thì dùng đích mặc định."),
+  webhook: t("Tên kết nối nhận lịch sử hồ sơ, đã cấu hình ở máy chủ (không phải địa chỉ web). Bỏ trống thì dùng kết nối mặc định."),
   roles: t("Danh sách vai: nhóm người có cùng quyền. Cần ít nhất một vai. Vai khai ở đây dùng được ở access, handler và role của hành động."),
   "roles.name": t("Tên vai viết hoa: chữ, số, gạch dưới, bắt đầu bằng chữ. ADMIN dành riêng cho nền tảng."),
   "roles.description": t("Mô tả vai, hiện ở màn hình quản lý người dùng."),
@@ -164,14 +201,19 @@ export const SCHEMA_HELP: Record<string, string> = {
   "entities.fields.renamed_from": t("Tên cũ của trường, khai khi đổi tên trường mà muốn giữ dữ liệu."),
   "entities.fields.default": t("Giá trị điền cho hồ sơ cũ khi thêm trường bắt buộc; trường nhiều lựa chọn chọn từ danh sách các lựa chọn."),
   "entities.access": t("Quyền của từng vai: all (đọc và ghi tất cả), own (của mình), read (tất cả, chỉ đọc), unit (của đơn vị mình), assigned (được giao cho mình). Vai không có dòng thì không thấy thực thể."),
+  "entities.ai": t("Trợ lý nghiệp vụ: khai tasks để người dùng nhờ trợ lý đề xuất giá trị cho một trường của hồ sơ. Không khai thì thực thể không có trợ lý."),
+  "entities.ai.tasks": t("Từ một đến tám nhiệm vụ, khóa là mã nhiệm vụ. Mỗi nhiệm vụ cần classifier, input_fields và output_field."),
+  "entities.ai.tasks.classifier": t("Tên bộ phân loại đã nạp, bắt buộc."),
+  "entities.ai.tasks.input_fields": t("Bộ phân loại chỉ đọc trường text theo thứ tự khai báo."),
+  "entities.ai.tasks.output_field": t("Trường choice đơn trị có tập lựa chọn khớp với tập nhãn của bộ phân loại. Không dùng trường cấp nhóm thành viên."),
   "entities.process": t("Quy trình của hồ sơ. Chọn family có sẵn rồi mở rộng, hoặc bỏ family và tự khai states và actions. Bỏ cả khối nếu thực thể chỉ là danh mục."),
-  "entities.process.family": t("Khung có sẵn để bắt đầu: approval (duyệt), work_item (công việc xử lý), reservation (đặt chỗ). Bỏ trống thì phải tự khai states và actions."),
+  "entities.process.family": t("Mẫu quy trình có sẵn để bắt đầu: approval (duyệt), work_item (công việc xử lý), reservation (đặt chỗ). Bỏ trống thì phải tự khai states và actions."),
   "entities.process.handler": t("Vai xử lý: một vai (handler: AGENT) hoặc danh sách ([AGENT, LEAD]). Phải là vai đã khai ở roles và có quyền xem hồ sơ ở access."),
-  "entities.process.initial": t("Trạng thái đầu tiên của hồ sơ. Mặc định là trạng thái khai đầu tiên, hoặc trạng thái đầu của khung."),
-  "entities.process.states": t("Trạng thái của hồ sơ. Khai tên mới để thêm, khai tên của khung để đổi nhãn, đặt null để bỏ trạng thái của khung."),
+  "entities.process.initial": t("Trạng thái đầu tiên của hồ sơ. Mặc định là trạng thái khai đầu tiên, hoặc trạng thái đầu của mẫu quy trình."),
+  "entities.process.states": t("Trạng thái của hồ sơ. Khai tên mới để thêm, khai tên của mẫu quy trình để đổi nhãn, đặt null để bỏ trạng thái của mẫu quy trình."),
   "entities.process.states.label": t("Tên hiển thị của trạng thái."),
   "entities.process.states.terminal": t("true nếu là trạng thái cuối: hồ sơ vào đó thì không đổi được nữa."),
-  "entities.process.actions": t("Hành động chuyển hồ sơ giữa các trạng thái. Khai tên mới để thêm, khai tên của khung để ghi đè, đặt null để bỏ hành động của khung. withdraw là hành động rút lại của người nộp, chỉ cần khai from."),
+  "entities.process.actions": t("Hành động chuyển hồ sơ giữa các trạng thái. Khai tên mới để thêm, khai tên của mẫu quy trình để ghi đè, đặt null để bỏ hành động của mẫu quy trình. withdraw là hành động rút lại của người nộp, chỉ cần khai from."),
   "entities.process.actions.label": t("Tên hiển thị của nút hành động; bỏ trống thì nút hiện mã hành động."),
   "entities.process.actions.from": t("Trạng thái xuất phát: một trạng thái hoặc danh sách trạng thái."),
   "entities.process.actions.to": t("Trạng thái đích."),
@@ -183,6 +225,29 @@ export const SCHEMA_HELP: Record<string, string> = {
   "entities.process.allow_self_decision": t("true nếu người tạo hồ sơ được tự xử lý hồ sơ của mình."),
   "entities.process.deadline": t("Thời gian vai xử lý có để xử lý, quá hạn thì bị đánh dấu. Số kèm m (phút), h (giờ) hoặc d (ngày), ví dụ 90m, 72h, 3d. Khi quy trình có calendar, m và h đếm giờ làm còn d là số ngày làm."),
   "entities.process.calendar": t("Tên một lịch đã khai ở calendars. Hạn xử lý chỉ đếm trong giờ làm của lịch và bỏ qua ngày nghỉ; không khai thì đếm liên tục. Đổi khi còn hồ sơ đang xử lý bị từ chối."),
+  "entities.ui": t("Cách thực thể hiện trên màn hình: icon, menu, list, form và hints. Không khai thì giao diện dựng theo thứ tự các trường. Chỉ chọn trong những gì giao diện đã có, không đổi quyền."),
+  "entities.ui.icon": t("Biểu tượng của thực thể trong menu, chọn trong danh sách có sẵn."),
+  "entities.ui.menu": t("Chỗ của thực thể trong menu: group gom thực thể thành một nhóm, order là thứ tự."),
+  "entities.ui.menu.group": t("Tên nhóm menu, dài 1 đến 40 ký tự."),
+  "entities.ui.menu.order": t("Thứ tự trong menu, số nguyên từ 0 đến 9999."),
+  "entities.ui.list": t("Danh sách hồ sơ: columns là các cột, sort là cột sắp xếp."),
+  "entities.ui.list.columns": t("Các cột của danh sách, không trùng nhau: trường của thực thể, hoặc created_at, updated_at; thực thể có quy trình thêm status và assignee."),
+  "entities.ui.list.sort": t("Tên một cột, thêm dấu - ở đầu để sắp giảm dần. Không khai thì danh sách mở theo -id, hoặc -updated_at khi thực thể có quy trình."),
+  "entities.ui.form": t("Form nhập hồ sơ: groups chia form thành nhóm có nhãn."),
+  "entities.ui.form.groups": t("Các nhóm trường của form, theo thứ tự. Trường không nằm trong nhóm nào xếp vào nhóm cuối."),
+  "entities.ui.form.groups.label": t("Nhãn của nhóm, dài 1 đến 60 ký tự."),
+  "entities.ui.form.groups.fields": t("Các trường của nhóm; mỗi trường chỉ nằm trong một nhóm, và trường mã do hệ thống cấp không có ô nhập."),
+  "entities.ui.hints": t("Dòng gợi ý dưới ô nhập của một trường: khóa là tên trường, giá trị là câu gợi ý dài 1 đến 200 ký tự."),
+  "entities.documents": t("Các mẫu in của thực thể, tối đa 10; khóa là tên mẫu. Mỗi mẫu biến một hồ sơ thành một tệp PDF."),
+  "entities.documents.label": t("Tên mẫu ở màn hình hồ sơ; không có chỗ trống {{tên}}."),
+  "entities.documents.file": t("Tên tệp tải về, không kèm .pdf, tối đa 80 ký tự; có thể dùng chỗ trống {{tên}}."),
+  "entities.documents.when": t("Một trạng thái hoặc danh sách trạng thái của quy trình mà hồ sơ phải đang ở thì mới in được; bỏ đi thì in ở mọi trạng thái."),
+  "entities.documents.title": t("Dòng tiêu đề ở giữa đầu trang đầu; có thể dùng chỗ trống {{tên}}."),
+  "entities.documents.body": t("Nội dung của mẫu: danh sách từ một đến 60 khối, mỗi khối có đúng một khóa trong heading, text, fields, signatures."),
+  "entities.documents.body.heading": t("Dòng tiêu đề đậm."),
+  "entities.documents.body.text": t("Văn bản; mỗi dòng xuống dòng là một dòng của trang, dòng trống là một khoảng cách. Tối đa 2000 ký tự."),
+  "entities.documents.body.fields": t("Bảng nhãn và giá trị cho từng trường được kể tên; giá trị rỗng in —."),
+  "entities.documents.body.signatures": t("Từ một đến bốn tiêu đề ký, đặt cạnh nhau trên một khoảng trống để ký."),
   calendars: t("Lịch làm việc, mỗi lịch một tên viết thường (chữ, số, gạch dưới). Quy trình gắn lịch bằng calendar."),
   "calendars.days": t("Các ngày làm trong tuần: mon, tue, wed, thu, fri, sat, sun. Cần ít nhất một ngày."),
   "calendars.hours": t("Giờ làm trong một ngày làm: danh sách khoảng HH:MM-HH:MM, ví dụ ['08:00-12:00', '13:30-17:30'] để có nghỉ trưa. Các khoảng không chồng nhau."),
@@ -193,10 +258,10 @@ export const SCHEMA_HELP: Record<string, string> = {
   "entities.process.escalate.repeat": t("Nhắc lại: {every: 12h, times: 3}. Bỏ khóa này thì cấp chỉ báo một lần."),
   "entities.process.escalate.repeat.every": t("Khoảng cách giữa hai lần báo của cấp, ví dụ 12h."),
   "entities.process.escalate.repeat.times": t("Số lần báo của cấp, từ 1 đến 20, lần đầu tính vào."),
-  "entities.process.auto_close": t("Tự đóng hồ sơ chờ người nộp: 7d (khung work_item) hoặc {after: 7d, action: <hành động của người nộp>}."),
+  "entities.process.auto_close": t("Tự đóng hồ sơ chờ người nộp: 7d (mẫu work_item) hoặc {after: 7d, action: <hành động của người nộp>}."),
   "entities.process.auto_close.after": t("Thời gian chờ, ví dụ 7d."),
   "entities.process.auto_close.action": t("Hành động của người nộp mà hệ thống thực hiện thay họ khi hết thời gian chờ."),
-  "entities.process.booking": t("Chỉ với khung reservation: trường tài nguyên, thời gian bắt đầu, kết thúc và sức chứa. Lượt đặt vượt sức chứa bị từ chối."),
+  "entities.process.booking": t("Chỉ với mẫu reservation: trường tài nguyên, thời gian bắt đầu, kết thúc và sức chứa. Lượt đặt vượt sức chứa bị từ chối."),
   "entities.process.booking.resource": t("Tên trường reference chỉ tài nguyên được đặt."),
   "entities.process.booking.starts": t("Tên trường datetime chỉ giờ bắt đầu."),
   "entities.process.booking.ends": t("Tên trường datetime chỉ giờ kết thúc."),

@@ -7,6 +7,156 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-11-27
+
+Thêm và sửa sau bản `2.0.2`: dự án gom mô hình và ứng dụng ngoài kèm quản trị theo dự án, `dxos connect` và `webUrl` để nối ứng dụng ngoài, ứng dụng mẫu `appliance-store`, kế hoạch đổi mô hình báo tác động lên hồ sơ đang chờ, ghi có điều kiện theo phiên bản, tìm hồ sơ theo chữ, `dxos import` nhập hồ sơ từ tệp CSV, thời gian ở từng trạng thái, cầu nối MQTT và Prometheus tùy chọn, trình dựng mô hình ở bảng điều khiển, văn bản giấy phép đi kèm mọi image, và trợ lý nghiệp vụ dùng bộ phân loại tự huấn luyện, chạy cùng stack.
+Nâng cấp từ `2.0.2` giữ nguyên dữ liệu; hai migration mới thêm bảng dự án và thành viên dự án.
+
+### Lõi chạy ngầm
+
+- Kế hoạch đổi mô hình nêu hành động nào đổi (`CHANGE_ACTIONS` ghi nhãn, vai, `needs_note`, `check` và `require` thêm hoặc bỏ), và thêm `impacts`: với mỗi hành động mới đòi thêm trường bằng `require`, số hồ sơ đang ở trạng thái nguồn còn thiếu trường đó.
+  Mức vẫn `SAFE`; hành động từ chối các hồ sơ đó đến khi trường được bổ sung.
+  `dxos plan` in `impacts` cùng phần còn lại của kế hoạch, và bảng điều khiển hiện một dải cảnh báo cho mỗi hành động.
+- `dxos start` và `dxos doctor` phân biệt cổng do chính stack giữ với cổng do chương trình ngoài giữ.
+  Stack chạy dở (PostgreSQL chạy, APISIX chưa có) thì `dxos start` dựng nốt các dịch vụ còn thiếu; cổng do chương trình ngoài giữ vẫn báo `FAIL`, nêu rõ `dxos stop` không giải phóng được và nên đổi khóa nào trong `deploy/.env`.
+- Dự án gom mô hình và ứng dụng ngoài của một hệ thống tích hợp để lọc và xem phạm vi ảnh hưởng; dự án không cấp quyền, không cô lập dữ liệu và không đổi vai `dxos-m-<mô hình>`.
+  Một mô hình và một ứng dụng ngoài mỗi bên thuộc tối đa một dự án, ứng dụng có dự án riêng của nó nên ứng dụng của dự án này gọi được mô hình của dự án khác, và bên chưa khai nằm ở nhóm chưa phân loại.
+  Dự án nằm ngoài tệp mô hình, nên đổi dự án không tạo phiên bản mới.
+- `GET`, `POST /api/v1/projects`, `PUT`, `DELETE /api/v1/projects/{name}` quản lý dự án (ADMIN); xóa dự án còn mô hình hoặc ứng dụng trả 409.
+  `PUT /api/v1/models/{model}/project` và `PUT /api/v1/clients/{name}/project` đưa một mô hình hoặc ứng dụng vào dự án, `null` đưa ra khỏi dự án; `POST /api/v1/clients` nhận `project` tùy chọn.
+  `GET /api/v1/models`, `GET /api/v1/clients` và danh mục dữ liệu trả `project`, `null` khi chưa phân loại.
+  Nhật ký quản trị ghi `PROJECT_CREATED`, `PROJECT_UPDATED`, `PROJECT_DELETED`, `MODEL_PROJECT_CHANGED` và `CLIENT_PROJECT_CHANGED`.
+- Bảng điều khiển có tab Dự án, bộ lọc dự án ở tab Mô hình đang chạy và Ứng dụng ngoài, ô chọn dự án ngay trên từng mô hình và ứng dụng, nhãn "Dùng chéo dự án", và dự án ở Danh mục dữ liệu.
+- `dxos project list|add|remove`, `dxos model project <mô hình> <dự án|->`, `dxos client project <tên> <dự án|->`, và `--project` cho `dxos client add` và `dxos connect`.
+  Client trình duyệt (`dxos client browser`) chưa có dự án; `docs/OPERATIONS.md` nêu khi nào nhiều dự án dùng chung một bản cài và khi nào tách bản cài hoặc realm Keycloak.
+- Dự án có thành viên và quản trị viên: `GET /api/v1/projects/{name}/members`, `PUT`, `DELETE /api/v1/projects/{name}/members/{userId}` (thân `{"level": "MEMBER"|"ADMIN"}`) và `GET /api/v1/projects/mine`.
+  Thành viên là người nằm trong phạm vi của dự án, không tự cấp quyền; xóa dự án xóa luôn danh sách thành viên.
+- Quản trị viên của một dự án không cần vai `ADMIN`: `GET /api/v1/users` chỉ thấy thành viên các dự án mình, và gán, gỡ vai của mô hình thuộc dự án cho thành viên của dự án đó.
+  Tạo, khóa, đặt lại mật khẩu, đơn vị và mô hình chưa phân loại chỉ `ADMIN` làm được; vượt phạm vi trả 403, backend kiểm ở mỗi lần gọi.
+  Đây là quản trị theo dự án, không phải cô lập giữa các tổ chức.
+- Nhật ký quản trị ghi thêm `project` ở `USER_ROLE_GRANTED`, `USER_ROLE_REVOKED`, và ghi `PROJECT_MEMBER_ADDED`, `PROJECT_MEMBER_CHANGED`, `PROJECT_MEMBER_REMOVED`.
+- Bảng điều khiển: tab Dự án có cột và hộp thành viên, đổi dự án của một mô hình hỏi xác nhận, và quản trị viên của dự án vào được Bảng điều khiển với hai tab Người dùng và Thành viên dự án.
+- `dxos project member list|add|remove`; `add` nhận `--admin`.
+- Ghi có điều kiện: `PATCH` một hồ sơ, hành động và giao việc nhận thêm `version` và `modelVersion`; hồ sơ hoặc mô hình đã đổi thì trả 409, `data.reason` là `MODEL_VERSION_CHANGED` khi mô hình đổi; `PATCH` kèm `version` cũ trả 409 kể cả khi giá trị không đổi.
+- `GET /api/v1/meta/models` trả `modelVersion` của từng mô hình và thực thể, `process.effects` (việc hoàn tất xếp vào hàng đợi, `asynchronous: true`) và `aiTasks`.
+- Thực thể khai báo được khối `ai.tasks` trong tệp mô hình: tên bộ phân loại, các trường `text` đầu vào và một trường `choice` đơn trị nhận đề xuất; lõi chỉ kiểm khai báo, không gọi model.
+- `dxos connect <mô hình> --role R [--role R ...]` đăng ký một client cho mỗi vai và ghi `DXOS_BASE_URL` cùng các biến của chúng vào `.env` của ứng dụng, đăng nhập thử rồi in hai dòng cần thêm vào `docker-compose.yml`; chạy lại thì giữ nguyên secret đã có, và client mất secret cần `--rotate`.
+- Ứng dụng chạy cùng máy với DX-OS không cần đổi `PUBLIC_HOST`: container gọi DX-OS qua `host.docker.internal` với `extra_hosts`; `docs/QUICKSTART.md` đường 2 và `examples/order_approval` theo cách này.
+- `examples/appliance-store`: ứng dụng bán hàng của một cửa hàng điện máy, không liên quan đến dự án, thêm quy trình đổi trả (mẫu `retail_return` dùng nguyên) và bảo hành (`extends: support_desk`).
+  Làm được hết trên Console, có lệnh `dxos` tương đương; ứng dụng đọc trạng thái từ DX-OS khi mở trang và nhận webhook nếu bật.
+  README có ba phép thử cho thấy luật theo vai, lịch sử chống sửa và kế hoạch đổi quy trình nằm ở DX-OS.
+- Backend có `extra_hosts: host.docker.internal:host-gateway`, nên webhook tới ứng dụng cùng máy dùng địa chỉ `http://host.docker.internal:<cổng>/...` trong `deploy/webhooks/targets.yml`.
+- Hồ sơ trong API dữ liệu và thông điệp webhook, cùng feed `GET /api/v1/events`, mang `webUrl`, trang của hồ sơ trên giao diện web; ứng dụng ngoài đưa người duyệt sang đó bằng liên kết này (xem `docs/EXTENSIONS.md`).
+  Chế độ `dxos start --core` không có `webUrl`.
+- Phiên bản đã lưu vi phạm một luật kiểm được siết thêm thì mô hình vẫn chạy khi bỏ phần vi phạm được an toàn: hiện là `auto_close` gọi hành động cần ghi chú, `auto_close` đó bị bỏ và có cảnh báo, áp dụng tệp đã sửa là xóa cảnh báo.
+  Không bỏ được thì mô hình bị loại khỏi hoạt động, yêu cầu dữ liệu của nó trả 409 kèm lý do và số đo `dxos_models_left_out` đếm nó.
+  `GET /api/v1/models` ghi `leftOut`, `problems` và `warnings`, bảng điều khiển hiện cả hai trường hợp trên thẻ của mô hình, và tệp mới vi phạm luật vẫn bị từ chối.
+- API danh sách, `stats`, `report` và `quality` nhận `q`: mỗi từ phải có, không phân biệt hoa thường và dấu, trong ít nhất một trường chữ, mã hoặc lựa chọn đơn của hồ sơ; điều kiện nằm cùng câu SQL với quyền theo dòng nên không trả hồ sơ ngoài quyền, và truy vấn có `q` bị cắt sau 10 giây.
+- Cầu nối MQTT tùy chọn (`deploy/docker-compose.mqtt.yml`, bật bằng `COMPOSE_FILE`): một broker Mosquitto có mật khẩu và một cầu nối nhận bản tin theo chủ đề khai báo rồi tạo hồ sơ qua API dữ liệu chung bằng client máy; bản tin giao hai lần chỉ tạo một hồ sơ, bản tin bị từ chối hoặc sai khuôn được ghi log và bỏ qua, và lõi ngừng thì bản tin được giữ ở broker đến khi xử lý.
+  `examples/itot-simulator` có `--transport mqtt`.
+- Prometheus tùy chọn (`deploy/docker-compose.prometheus.yml`, bật bằng `COMPOSE_FILE`): đọc số đo `dxos_*` của lõi bằng `METRICS_PASSWORD`, mở ở `127.0.0.1`.
+- Người dùng đóng hoặc tải lại trang không còn bị ghi thành lỗi server: luồng SSE của Hộp việc ngắt kết nối thì không có ERROR trong nhật ký và không có bản ghi audit `SERVER_ERROR`.
+- `dxos plan` in kế hoạch bằng chữ: mức rủi ro, mỗi thay đổi một dòng, hồ sơ đang xử lý, tác động lên hành động, dòng vi phạm và lệnh `dxos apply --accept` cần dùng; `--json` in JSON đầy đủ như trước.
+- `dxos apply` in tên mô hình, phiên bản và từng bước đã chạy bằng chữ, in thông báo máy chủ khi áp dụng lỗi và in phản hồi JSON đầy đủ với `--json`.
+- `stats` của thực thể có quy trình trả `timeInStatus`: mỗi trạng thái có số lượt vào, thời gian trung bình và lâu nhất, sắp theo trung bình giảm dần.
+  Mỗi lần vào lại tính một lượt, lượt đang mở tính đến `computedAt`, trạng thái cuối không tính; cùng quyền theo dòng, bộ lọc và mức cắt 10 giây như các số khác.
+- Tệp mô hình có khóa viết hai lần trong cùng một khối bị `dxos lint`, `dxos plan` và áp dụng từ chối, kèm dòng của lần viết thứ hai; mô hình đã lưu có khóa trùng vẫn chạy và hiện cảnh báo.
+- `dxos import <mô hình> <thực thể> <tệp.csv> --client TÊN` tạo mỗi dòng của tệp CSV thành một hồ sơ qua API dữ liệu chung, nên mỗi dòng đi qua quyền, ràng buộc, quy tắc và quy trình của thực thể; dòng bị từ chối được báo kèm số dòng và lý do, gửi lại cùng tệp không tạo trùng trong 24 giờ, và `--dry-run` kiểm tệp mà không tạo gì.
+- `dxos av on`, `dxos av off` và các lệnh khác tạo lại backend khởi động lại APISIX sau đó, nên gateway không trả 502 vì giữ địa chỉ của container cũ.
+- `dxos uninstall --purge` xóa cả kho sao lưu trong `deploy/backups`; kho ở `BACKUP_DIR` hoặc `BACKUP_REPOSITORY` ngoài thư mục cài được giữ nguyên.
+- `dxos connect` cảnh báo khi `.env` của ứng dụng cho tài khoản khác đọc được, như trên ổ Windows gắn vào WSL (`/mnt/c`), nơi `chmod` không có tác dụng.
+- `dxos start` nêu khóa `APISIX_HOST_PORT` hoặc `POSTGRES_HOST_PORT` cần đổi khi Docker không mở được cổng.
+- Trong WSL, `dxos doctor` và `dxos start` hỏi cả Windows: cổng mà một chương trình ở phía Windows giữ độc quyền bị báo `FAIL` nêu đúng khóa `*_HOST_PORT`, và `dxos start` thoát mã 1 thay vì báo thành công khi Docker vẫn khởi động được container; cổng do chính stack giữ không bị báo.
+- `dxos doctor` báo `WARN`, không báo `FAIL`, cho cổng đang dùng khi Docker không trả lời, vì không biết container của stack có giữ cổng đó không.
+- Realm `dxos` không bắt buộc `lastName`, nên người dùng có tên một từ không bị hỏi thêm hồ sơ ở lần đăng nhập đầu; realm đã import từ trước chỉnh tay theo `sso/README.md`.
+
+### Giao diện
+
+- Bản build web không còn kèm các dịch vụ ngôn ngữ TypeScript, HTML, CSS và JSON của Monaco mà trình soạn YAML không dùng, nên nhỏ đi hơn một nửa (từ 18 MB còn 8,4 MB).
+- Mở một mẫu hoặc một mô hình ở bảng điều khiển khi bản đang soạn có thay đổi chưa áp dụng thì hỏi trước khi thay; chọn Hủy giữ nguyên bản đang soạn.
+- Web có test đơn vị bằng Vitest (`npm test` trong `frontend/`), chạy ở workflow `Frontend`.
+- Trình dựng mô hình có thêm hai trang cho mỗi thực thể: Giao diện và Mẫu in.
+  Giao diện sửa biểu tượng, nhóm và thứ tự trong menu, cột và cách sắp xếp của danh sách, nhóm trường trên form và gợi ý của từng trường.
+  Mẫu in sửa tên mẫu, nhãn, tên tệp, tiêu đề, các trạng thái được in và các khối nội dung (tiêu đề, văn bản, bảng trường, dòng ký, đổi được thứ tự).
+  Lỗi của Core thuộc `ui` hoặc `documents` hiện ở đúng trang đó, và mỗi trang có hướng dẫn về những gì khối nhận.
+  Lỗi của Core về hai khối này hiện bằng tiếng Việt khi giao diện ở tiếng Việt.
+- Đổi tên một trường hay một vai trò trong trình dựng mô hình đổi theo mọi chỗ đang dùng tên đó, đúng các chỗ hộp xác nhận khi xóa liệt kê, nên Xem kế hoạch không còn báo tham chiếu tới tên cũ.
+  Với trường: `required_when` của trường khác, `require` và `when` của hành động, cột, cách sắp xếp, nhóm trường và gợi ý trong `ui`, và `file`, `title`, `text`, `fields` và `signatures` của mẫu in; với vai trò: `role` của hành động và `escalate.to`.
+- Thông báo lỗi của trợ lý nghiệp vụ hiện bằng tiếng Anh khi giao diện ở tiếng Anh.
+- Danh sách hồ sơ có ô "Tìm theo chữ" ở đầu bộ lọc; nó thay ô lọc riêng của trường mã, vì mã cũng được tìm.
+- Trang Thống kê có thẻ "Thời gian trung bình ở từng trạng thái", đánh dấu trạng thái giữ hồ sơ lâu nhất; bấm một dòng mở danh sách hồ sơ ở trạng thái đó.
+- Hộp việc trống có nút tạo hồ sơ cho từng loại hồ sơ người dùng được tạo.
+- Duyệt, từ chối, yêu cầu bổ sung, chuyển tiếp, rút lại, nhận việc, giao việc và thao tác hàng loạt gửi kèm phiên bản của hồ sơ và của mô hình mà màn hình đã đọc, nên không ai quyết định trên nội dung đã đổi mà họ chưa thấy.
+  Khi hồ sơ đã đổi, màn hình báo "Hồ sơ vừa được thay đổi, hãy xem lại." và đọc lại hồ sơ; khi mô hình đã đổi, màn hình báo hãy tải lại trang.
+- Kế hoạch đổi mô hình hiện "Hồ sơ hiện có được cấp mã" bằng tiếng Việt khi thêm một trường kiểu `code`.
+- Hủy hộp thoại nhập lý do, của một hồ sơ hay của thao tác hàng loạt, thì ghi chú vừa gõ bị xóa, nên không lọt sang thao tác khác; gửi lỗi thì ghi chú được giữ để gửi lại.
+- Thẻ danh sách trên điện thoại hiện số và ngày theo ngôn ngữ đang chọn như trang chi tiết, ví dụ `1.500.000` và `20/11/2026`; trang chi tiết cũng định dạng số theo ngôn ngữ đang chọn.
+- Chế độ Điền form của trình soạn mô hình là một trình dựng mô hình: cây cấu trúc của mô hình, trường dữ liệu dạng bảng có ô tìm, ma trận quyền vai trò × thực thể, quy trình chia Tổng quan, Trạng thái, Hành động, Thời hạn và Tự động hóa, và bấm trạng thái hay mũi tên trên sơ đồ thì mở chỗ sửa nó.
+- Trình dựng mô hình hỏi lại trước khi xóa trường, vai trò hay thực thể đang được dùng; lỗi Core chặn áp dụng và cảnh báo của form được tách màu, đánh dấu trên cây và liệt kê kèm liên kết tới chỗ sửa; cạnh tên tệp có nhãn khi còn thay đổi chưa áp dụng.
+- Ở chế độ form, "Viết được gì trong tệp" nằm dưới khung chính và chỉ nêu phần đang sửa; biểu tượng xóa màu đỏ.
+- Nhãn của form theo nghiệp vụ, ở cả tiếng Việt và tiếng Anh: Trường dữ liệu, Vai trò, Quyền truy cập, Mẫu quy trình, Kế thừa quyền từ hồ sơ liên quan, Kết nối gửi sự kiện, Nhóm người dùng (Keycloak).
+- Bảng kế hoạch có nhãn tiếng Việt và tiếng Anh cho định dạng mã, mẫu chuỗi, điều kiện bắt buộc nhập, cách hiển thị và tài liệu in, và cho các quy tắc bắt buộc có điều kiện, số phần tử, giá trị nhỏ nhất, giá trị lớn nhất và mẫu chuỗi ở dòng vi phạm.
+- Form sửa và form tạo chỉ gửi các trường mô hình khai báo cho thực thể, nên `webUrl` và các khóa khác API thêm vào hồ sơ không còn bị gửi lại và làm lưu hồ sơ bị từ chối.
+  Khi máy chủ trả 400 mà không lỗi nào thuộc trường trên form, form hiện nguyên thông báo của máy chủ.
+- Lịch sử xử lý của hồ sơ tách đang tải, chưa có hoạt động và tải lỗi kèm nút "Thử lại"; dòng thêm tệp và gỡ tệp hiện tên tệp.
+
+### Tệp mô hình
+
+- Mẫu Một cửa in "Kết quả xử lý hồ sơ" sau khi duyệt, nên cùng một mẫu không gọi hồ sơ Hoãn thi hoặc Phúc khảo là giấy xác nhận.
+- Mẫu `onestop`, `support_desk` và `clinic_appointment` khai sẵn nhiệm vụ phân loại.
+
+### Trợ lý nghiệp vụ
+
+- Trợ lý dùng bộ phân loại hồ sơ tiếng Việt do đội tự huấn luyện, chạy trên CPU trong chính dịch vụ, để gợi ý loại hồ sơ, mức ưu tiên hoặc dịch vụ trong các mẫu `onestop`, `support_desk` và `clinic_appointment`, kèm cụm chữ của hồ sơ làm căn cứ; người dùng sửa, hủy hoặc xác nhận, Core kiểm quyền và phiên bản trước khi ghi.
+- Hộp việc có nút **Rà loại hồ sơ** để rà tối đa 25 hồ sơ mỗi lượt (`POST /assistant-api/v1/me/reviews`) và mở đề xuất từng hồ sơ được đánh dấu **Cần rà**, kèm độ tự tin của từng gợi ý.
+- `ASSISTANT_CLASSIFIERS_DIR` chọn thư mục trọng số khác, và `GET /assistant-api/v1/me` trả thêm `model.classifiers`.
+- Mã huấn luyện, dữ liệu, thẻ mô hình và trọng số ở `tools/classifier/`; trọng số theo Apache-2.0, dữ liệu theo CC-BY-4.0 trong phạm vi đội có quyền (câu huấn luyện và tập chỉnh do Claude soạn), câu lạc đề từ MASSIVE (gồm dữ liệu SLURP) được tải lúc huấn luyện.
+- Trợ lý chạy cùng stack ở chế độ full (nhóm `app` của `deploy/docker-compose.yml`) và `dxos update` kéo image của nó; chế độ core không có trợ lý.
+- `dxos start`, `dxos update` và `reset.sh` khởi động trợ lý sau nền tảng và không chờ nó, nên trợ lý lỗi hay bị dừng chỉ có cảnh báo, Core và ứng dụng vẫn chạy.
+- Hai biến tùy chọn của trợ lý nằm ở `deploy/.env`, kiểm tra ở workflow `Assistant`, và `assistant/REMOVAL.md` có danh sách các chỗ cần xóa để gỡ trợ lý.
+- Image trợ lý chỉ chứa Node.js và mã của trợ lý, không có npm, corepack và yarn.
+- Trợ lý chạy trên network nội bộ riêng, không có đường ra ngoài stack.
+- Người dùng hủy liên kết ở trang Trợ lý nghiệp vụ (`DELETE /assistant-api/v1/me/core/link`): refresh token bị thu hồi ở Keycloak, token đã lưu bị xóa và các đề xuất đang chờ bị hủy.
+- `docker compose run --rm assistant-init dist/rotate.js /bootstrap` thay master key và mã hóa lại state.
+- `docs/AI.md` tổng hợp phần AI: luồng xử lý, dữ liệu và giấy phép, kết quả nghiệm thu và cách đo lại; `docs/API.md` liệt kê các đường dẫn `/assistant-api/v1`.
+
+### Tài liệu
+
+- Trang docs có nút đổi ngôn ngữ và bộ tài liệu tiếng Anh cho tính năng, bắt đầu nhanh, viết tệp mô hình, API, kiến trúc, giám sát, tích hợp, điểm mở rộng, báo cáo, kho tệp, cỡ cấu hình, thuật ngữ và hướng dẫn theo vai.
+  Mỗi tài liệu có bản `_EN` trong `docs/en/`, `README_EN.md` trỏ tới chúng, và bước `Docs` của CI đỏ khi một tài liệu đổi ở một thứ tiếng mà thứ tiếng còn lại chưa được xem lại.
+
+### Giấy phép
+
+- `docs/DEPENDENCY_INVENTORY.md` liệt kê từng gói dự án dùng ở bất kỳ bước nào (npm kể cả gói dev, Maven kể cả test và plugin build, GitHub Actions, image, công cụ, phông, model), mỗi gói có phiên bản và giấy phép của đúng phiên bản đó; `.github/scripts/check_license_inventory.py` sinh mục này và `check` báo đỏ ở mỗi pull request khi thiếu gói hoặc có giấy phép ngoài danh sách OSI (`.github/licenses/osi-approved.json`) mà chưa có lý do.
+- Mỗi image do dự án phát hành (`backend`, `monitor`, `frontend`, `portal`, `sso`, `assistant`, `clamav`) kèm `LICENSE`, `NOTICE` và văn bản giấy phép của thư viện nó chứa ở `/licenses`; image `backend` có thêm giấy phép của `pgschema` và các mô-đun Go của nó.
+- Image `sso` kèm danh sách và văn bản giấy phép của 438 thư viện trong bản Keycloak (`THIRD-PARTY-LICENSES-keycloak.txt`), image `clamav` kèm giấy phép GPL-2.0 của ClamAV và của các phần bên thứ ba dựng sẵn trong nó, và mỗi image kèm `SOURCES.txt` nêu nơi lấy nguồn của gói hệ điều hành và thành phần GPL của image nền; các thư viện đó đều có trong `docs/DEPENDENCY_INVENTORY.md`.
+- CI đọc tệp giấy phép trong gói npm và Maven đi vào sản phẩm (`check_license_texts.py`) và báo đỏ khi văn bản hạn chế việc sử dụng hoặc không phải giấy phép mở.
+- Quét mã độc chạy bằng image `clamav` của dự án, dựng trên image ClamAV chính thức và bỏ `libclamunrar` (giấy phép UnRAR, không phải OSI); backend từ chối tệp tải lên có chữ ký RAR dù tên tệp đổi đuôi, vì ClamAV không mở được RAR.
+- Image `frontend`, `portal` dùng `nginx:1.30-alpine-slim`, image `assistant` và ứng dụng ví dụ `appliance-store` dùng `node:24.16.0-alpine`, ví dụ `order_approval` dùng `python:3.12-alpine`; số gói ngoài OSI trong các image này giảm rõ (xem `docs/IMAGE_PACKAGES.md`).
+- `docs/IMAGE_PACKAGES.md` liệt kê gói bên trong các image bên thứ ba mà stack chạy, kèm giấy phép từng gói và cột Ngoài OSI; `check_image_packages.py` kiểm đủ bảng ở mỗi pull request và đọc lại image hằng tuần.
+- `LICENSE` và `NOTICE` đi kèm GitHub Release cùng `dxos-install.sh` và `dxos-lint.jar`; SBOM của web và trang docs khai Apache-2.0 cho gói gốc; README của mỗi ví dụ nêu giấy phép; `check_licenses.py` kiểm mọi nơi dự án khai giấy phép (`package.json`, `pom.xml`, `CITATION.cff`, chân trang trang docs) đều là Apache-2.0.
+- `dxos-lint.jar` kèm `LICENSE`, `NOTICE` và giấy phép của SnakeYAML ở `META-INF`; `pom.xml` và `package.json` khai Apache-2.0; phông Codicons (CC-BY-4.0) trong bản build web có ghi công ở `third-party-licenses.txt`.
+- Mọi câu về giấy phép ở README, NOTICE, `DEPENDENCIES.txt` và trang docs nêu cùng danh sách ngoại lệ ngoài OSI.
+- Danh sách ngoại lệ nêu cả dữ liệu đóng trong thư viện PDFBox của image `backend` và lớp nền được phân phối lại của các image phát hành.
+- Ghi công MASSIVE và SLURP, nguồn của câu lạc đề khi huấn luyện bộ phân loại.
+- `third-party-licenses.txt` của web và trang docs kèm cả tệp thông báo bên thứ ba của thư viện, và văn bản chuẩn của giấy phép cho gói không kèm tệp giấy phép.
+- `check_licenses.py` kiểm `DEPENDENCIES.txt` nêu SHA-256 của từng tệp trọng số trong image trợ lý và mã băm khớp tệp thật.
+- Thẻ dữ liệu của bộ phân loại nêu rằng điều khoản của Anthropic cấm dùng phần do Claude soạn để huấn luyện chatbot hoặc mô hình sinh văn bản, và bên thứ ba có thể tải dữ liệu công khai về làm vậy.
+- Hai video của trang Hình ảnh dùng WebM (VP9) thay cho MP4 (H.264), định dạng có bằng sáng chế.
+
+### Phát hành
+
+- CI đo độ phủ test của backend (JaCoCo, in bảng vào tóm tắt lượt chạy) và của web (Vitest).
+- Workflow `Rerun` đọc log của job lỗi tối đa ba lần và chờ một đến hai phút trước khi chạy lại job lỗi vì mạng hoặc hạn mức.
+- Image phát hành có nhãn `org.opencontainers.image.licenses=Apache-2.0`.
+- Script sao lưu ghim image `restic` theo digest.
+- Lệnh `dxos` chia theo nhóm vào `deploy/lib/` (`model.sh`, `client.sh`, `project.sh`, `archive.sh`).
+- `demo.sh`, `keycloak-admin-scope.sh` và `assistant-sso.sh` nằm ở `deploy/lib/`, `mqtt.env.example` nằm ở `deploy/mqtt/`; ai chạy tay hoặc chép các tệp này thì dùng đường dẫn mới.
+- Các script của `deploy/` đọc `.env` như Compose: bỏ dấu nháy, chú thích sau giá trị và ký tự xuống dòng của Windows.
+- `online-check.sh` và `dxos` điền `PUBLIC_HOST`, `APISIX_HOST_PORT` vào `GATEWAY_PUBLIC_URL` và giữ `https` của địa chỉ.
+- Nâng cấp ghi biến mới trên dòng riêng khi `.env` không có dòng trống cuối, và chỉ thêm profile `av` khi quét mã độc đang bật.
+- `deploy/.env.example` xếp lại theo mục, chú thích ngắn chỉ tới hướng dẫn, phần tinh chỉnh nằm cuối, có thêm biến của MQTT và Prometheus.
+
 ## [2.0.2] - 2026-11-19
 
 Sửa và bổ sung sau bản `2.0.1`: cài mới tạo được tài khoản `admin`, Hộp việc đưa hồ sơ mới lên đầu, kế hoạch mở rộng quyền chờ duyệt, điều kiện nối nhiều phép, hướng dẫn bắt đầu nhanh và chữ ký cho bản phát hành.
@@ -52,29 +202,39 @@ Bổ sung và sửa sau bản `2.0.0`, nâng cấp từ `2.0.0` giữ nguyên d�
 - Mọi tệp mã và cấu hình (CSS, HTML, `Dockerfile`, `pom.xml`, `nginx.conf`, `.env.example`, `.gitleaks.toml`) có dòng `SPDX-License-Identifier`; `REUSE.toml` và `LICENSES/` khai giấy phép và bản quyền cho tệp không chèn được chú thích, và job `Check licenses` chạy `reuse lint`.
 - Mã Java của backend định dạng bằng google-java-format (Apache-2.0) qua Spotless, chạy `./mvnw spotless:apply`; mã của kho theo Apache-2.0.
 - `check_upstream_licenses.py` đọc giấy phép của dự án gốc ở đúng phiên bản đang dùng của từng image và bản tải về (tag của image, hoặc `ARG` của Dockerfile), và làm job đỏ khi giấy phép khác bản đã khai, ngoài danh sách OSI, không xác định được hoặc không đọc được; mục không đọc được theo cách đó khai `refs`, `text` hoặc `unverified` trong `component-catalog.json`.
-- `check_licenses.py sbom <tệp>` kiểm giấy phép của SBOM sinh lại từ pull request ở job SBOM của Compliance và của Dependencies, nên bản mới của một thư viện được kiểm trước khi `sbom/` được sinh lại; `python3 -m unittest discover -s .github/scripts` chạy các ca kiểm của hai script.
+- `check_licenses.py sbom <tệp>` kiểm giấy phép của SBOM sinh lại từ pull request ở job SBOM của Compliance và của Dependencies, nên bản mới của một thư viện được kiểm trước khi `sbom/` được sinh lại; `python3 -m unittest discover -s .github/scripts/tests` chạy các ca kiểm của hai script.
 
 ### Lõi chạy ngầm
 
 - SpotBugs với find-sec-bugs chạy ở bước `verify` của backend và làm hỏng build khi có phát hiện mà `backend/spotbugs-exclude.xml` chưa giải thích; workflow `Backend` in số phát hiện của từng module.
-- Số đo vận hành theo định dạng Prometheus ở `GET /actuator/prometheus` của dịch vụ lõi: hồ sơ theo trạng thái và quá hạn của từng thực thể có quy trình, tuổi và số sự kiện chưa chuyển trong hàng đợi, số lần áp dụng mô hình thành công hoặc thất bại. Endpoint chỉ đọc được trong mạng Docker, đòi mật khẩu `METRICS_PASSWORD` (người dùng `metrics`), và nhãn chỉ gồm tên mô hình, thực thể, trạng thái và kết quả nên số chuỗi không tăng theo dữ liệu. Cách đọc, cấu hình scrape, truy vấn Grafana và quy tắc cảnh báo ở `docs/MONITORING.md`.
+- Số đo vận hành theo định dạng Prometheus ở `GET /actuator/prometheus` của dịch vụ lõi: hồ sơ theo trạng thái và quá hạn của từng thực thể có quy trình, tuổi và số sự kiện chưa chuyển trong hàng đợi, số lần áp dụng mô hình thành công hoặc thất bại.
+  Endpoint chỉ đọc được trong mạng Docker, đòi mật khẩu `METRICS_PASSWORD` (người dùng `metrics`), và nhãn chỉ gồm tên mô hình, thực thể, trạng thái và kết quả nên số chuỗi không tăng theo dữ liệu.
+  Cách đọc, cấu hình scrape, truy vấn Grafana và quy tắc cảnh báo ở `docs/MONITORING.md`.
 - `dxos lint <tệp>...` kiểm tệp mô hình bằng bộ đọc của backend mà không cần hệ thống đang chạy, in `tệp:dòng:cột: nội dung` và thoát 0, 1 hoặc 2. Nó chạy `dxos-lint.jar` trong image backend, hoặc trên Java 21 qua `DXOS_LINT_JAR`; Release kèm `dxos-lint.jar`.
 - `dxos conformance <mô hình>` chạy các kiểm rào chắn của lõi trên hệ thống đang chạy và từ chối stack có `PUBLIC_HOST` khác `localhost` khi thiếu `--allow-test-users`.
 - `examples/model-repo` có workflow `model-lint.yml` kiểm tệp mô hình trên runner của GitHub bằng `dxos-lint.jar`.
-- Quét mã độc tệp tải lên bật sẵn trong `.env` sinh từ `.env.example` (`av` trong `COMPOSE_PROFILES`, `STORAGE_SCAN_HOST=clamav`); `dxos av off` tắt và `dxos doctor` báo `WARN` khi tắt. `install.sh --upgrade` giữ quét tắt ở bản chưa từng bật.
-- Nhóm chế độ lõi của job `API end-to-end` chạy với ClamAV: `check_demo.py` kiểm tệp sạch tải lên và tải về, tệp EICAR bị từ chối 422 và không lưu, tệp bị từ chối 503 khi ClamAV dừng, rồi tải lại được khi ClamAV chạy lại. `DXOS_REQUIRE_SCAN=1` làm script hỏng khi stack không quét.
+- Quét mã độc tệp tải lên bật sẵn trong `.env` sinh từ `.env.example` (`av` trong `COMPOSE_PROFILES`, `STORAGE_SCAN_HOST=clamav`); `dxos av off` tắt và `dxos doctor` báo `WARN` khi tắt.
+  `install.sh --upgrade` giữ quét tắt ở bản chưa từng bật.
+- Nhóm chế độ lõi của job `API end-to-end` chạy với ClamAV: `check_demo.py` kiểm tệp sạch tải lên và tải về, tệp EICAR bị từ chối 422 và không lưu, tệp bị từ chối 503 khi ClamAV dừng, rồi tải lại được khi ClamAV chạy lại.
+  `DXOS_REQUIRE_SCAN=1` làm script hỏng khi stack không quét.
 - `dxos start --core` chỉ chạy Tầng 1 (cổng vào, Keycloak, dịch vụ lõi, PostgreSQL, kho tệp); `dxos start --full` chạy đủ, và các lệnh `stop`, `status`, `update`, `reconcile` giữ chế độ đã lưu ở `DXOS_MODE`.
 - Dịch vụ lõi không kèm Swagger UI; đặc tả OpenAPI ở `/v3/api-docs` và `/api/v1/meta/models/{model}/openapi`.
 - Keycloak Admin Console mặc định không mở ra gateway; đặt `KEYCLOAK_ADMIN_CONSOLE=true` trong `deploy/.env` để mở.
 - Job `Gateway surface` của workflow `Platform` kiểm bằng `e2e/api/check_surface.py` rằng cả hai chế độ không trả Swagger UI hay Admin Console, và nhóm kiểm API chạy thêm trên chế độ lõi.
 - Portal bỏ thẻ Keycloak Admin và Swagger, thêm thẻ Bảng điều khiển.
-- `dxos gitops` kéo hạ tầng và tệp mô hình từ git. Nguồn hạ tầng so `deploy/`, cấu hình cổng vào và tag image của bản cài với một kho DX-OS, rồi nâng cấp bằng luồng của `dxos update`; `auto` cho hạ tầng chỉ nhận commit có chữ ký hợp lệ. Nguồn mô hình so từng tệp với mô hình đang chạy. Cả hai báo lệch, chờ `dxos gitops approve` hoặc tự áp dụng; `dxos gitops install` chạy mỗi 5 phút bằng systemd user timer và `dxos doctor` kiểm các biến `GITOPS_*`.
+- `dxos gitops` kéo hạ tầng và tệp mô hình từ git.
+  Nguồn hạ tầng so `deploy/`, cấu hình cổng vào và tag image của bản cài với một kho DX-OS, rồi nâng cấp bằng luồng của `dxos update`; `auto` cho hạ tầng chỉ nhận commit có chữ ký hợp lệ.
+  Nguồn mô hình so từng tệp với mô hình đang chạy.
+  Cả hai báo lệch, chờ `dxos gitops approve` hoặc tự áp dụng; `dxos gitops install` chạy mỗi 5 phút bằng systemd user timer và `dxos doctor` kiểm các biến `GITOPS_*`.
 - `dxos plan --check` thoát với mã 0 khi mô hình đang chạy giống tệp, 2 khi kế hoạch có thay đổi và 1 khi bị từ chối.
 - `examples/model-repo` là kho tệp mô hình mẫu, kèm workflow dán kế hoạch vào pull request.
 - Kế hoạch (`POST /api/v1/models/plan`, `dxos plan`) của một mô hình chưa chạy không để lại schema `m_<mô hình>` trong PostgreSQL; schema chỉ có khi áp dụng.
-- `e2e/api/load_test.py` đo thông lượng, p50, p95, p99 và lỗi của API chung ở nhiều mức người dùng đồng thời, và đo đăng nhập riêng; `e2e/api/load_override.yml` ghim mọi dịch vụ vào N nhân và đặt giới hạn bộ nhớ để một máy đóng vai máy nhỏ hơn. Kết quả theo số nhân và cấu hình nhỏ nhất đạt ngưỡng nằm ở `docs/SIZING.md`.
+- `e2e/api/load_test.py` đo thông lượng, p50, p95, p99 và lỗi của API chung ở nhiều mức người dùng đồng thời, và đo đăng nhập riêng; `e2e/api/load_override.yml` ghim mọi dịch vụ vào N nhân và đặt giới hạn bộ nhớ để một máy đóng vai máy nhỏ hơn.
+  Kết quả theo số nhân và cấu hình nhỏ nhất đạt ngưỡng nằm ở `docs/SIZING.md`.
 - Flowable dùng id UUID sinh trong bộ nhớ, nên lấy id không cần thêm kết nối cơ sở dữ liệu và backend không còn treo khi có từ 50 người dùng đồng thời.
-- Hành động của quy trình có thêm khóa `check: <tên đích>`: dịch vụ riêng được hỏi trước khi trạng thái đổi và có thể từ chối (403, `CHECK_DENIED`). Đích có `on_error` (`deny` mặc định hoặc `allow`) cho lúc dịch vụ không trả lời (503, `CHECK_UNAVAILABLE`, hồ sơ giữ nguyên) và `bypass` cho vận hành. Lịch sử ghi `check_denied`, `check_unavailable`, `check_skipped`.
+- Hành động của quy trình có thêm khóa `check: <tên đích>`: dịch vụ riêng được hỏi trước khi trạng thái đổi và có thể từ chối (403, `CHECK_DENIED`).
+  Đích có `on_error` (`deny` mặc định hoặc `allow`) cho lúc dịch vụ không trả lời (503, `CHECK_UNAVAILABLE`, hồ sơ giữ nguyên) và `bypass` cho vận hành.
+  Lịch sử ghi `check_denied`, `check_unavailable`, `check_skipped`.
 - Image phát hành lên GHCR kèm SBOM (SPDX) và thông tin dựng (SLSA); mỗi tag là một chỉ mục gồm image và manifest attestation, đọc theo digest bằng `docker buildx imagetools inspect` (cách kiểm ở `docs/OPERATIONS.md`).
 
 ### Ứng dụng ngoài
@@ -88,8 +248,10 @@ Bổ sung và sửa sau bản `2.0.0`, nâng cấp từ `2.0.0` giữ nguyên d�
 
 - Kế hoạch của một lần đổi `access` ghi mỗi vai đổi mức thành một dòng `vai: cũ → mới`, phân loại là cấp thêm, thu hồi, mở rộng, thu hẹp hoặc đổi ở API kế hoạch, `dxos plan` và tab Kế hoạch; mức rủi ro vẫn là `SAFE`.
 - Khóa `extends: <mẫu>` cho một tệp bắt đầu từ mẫu của thư viện và chỉ ghi phần khác: lõi ghép lúc xem kế hoạch và áp dụng, lưu tệp đã ghép kèm tên và hash của mẫu; `POST /api/v1/models/merge` và `dxos model merge` in tệp đầy đủ, còn `dxos lint` kiểm phần của tệp ngắn và để `dxos plan` kiểm phần ghép.
-- Kiểu trường `code` sinh mã hồ sơ đọc được theo khuôn `format`, ví dụ `HS-{year}-{seq:5}`: chữ cố định, năm tạo và số thứ tự có độ dài cố định, đếm riêng theo mô hình, thực thể và trường, và đếm lại mỗi năm khi khuôn có `{year}`. Mã gán một lần lúc tạo hồ sơ, không ghi hay sửa được, tra bằng `filter.<trường>`; thêm trường vào thực thể đã có hồ sơ là thay đổi `MIGRATION` và điền mã cho hồ sơ cũ.
-- Thực thể khai báo mẫu in bằng khóa `documents`: tiêu đề, đoạn văn, bảng trường và khối chữ ký với chỗ trống `{{trường}}`, kèm tên tệp và trạng thái cho in. `GET /api/v1/data/{model}/{entity}/{id}/documents` liệt kê mẫu và `.../documents/{tên}` trả PDF tiếng Việt cho người đọc được hồ sơ; mỗi lần in vào `audit_log`, và màn hình hồ sơ có nút In.
+- Kiểu trường `code` sinh mã hồ sơ đọc được theo khuôn `format`, ví dụ `HS-{year}-{seq:5}`: chữ cố định, năm tạo và số thứ tự có độ dài cố định, đếm riêng theo mô hình, thực thể và trường, và đếm lại mỗi năm khi khuôn có `{year}`.
+  Mã gán một lần lúc tạo hồ sơ, không ghi hay sửa được, tra bằng `filter.<trường>`; thêm trường vào thực thể đã có hồ sơ là thay đổi `MIGRATION` và điền mã cho hồ sơ cũ.
+- Thực thể khai báo mẫu in bằng khóa `documents`: tiêu đề, đoạn văn, bảng trường và khối chữ ký với chỗ trống `{{trường}}`, kèm tên tệp và trạng thái cho in.
+  `GET /api/v1/data/{model}/{entity}/{id}/documents` liệt kê mẫu và `.../documents/{tên}` trả PDF tiếng Việt cho người đọc được hồ sơ; mỗi lần in vào `audit_log`, và màn hình hồ sơ có nút In.
 - Format hiện hành là `1`; lõi tự nâng format `0` trong bộ nhớ, API `/models/upgrade` và `dxos model upgrade` cho xem diff trước khi tùy chọn ghi nguyên tử, còn format tương lai hoặc thiếu bước migration bị từ chối.
 - Lần áp dụng đầu của tệp đã nâng format tạo thêm một phiên bản không đổi bảng hay quyền nào, và `dxos plan --check` trả 2 cho đến lúc đó.
 - Mẫu trống và đặc tả cho trình soạn YAML của bảng điều khiển (`model-v1.schema.json`) dùng format `1`; tệp format `0` dán vào vẫn lập được kế hoạch, chỉ bị trình soạn gạch chân dòng `format`.
@@ -97,13 +259,15 @@ Bổ sung và sửa sau bản `2.0.0`, nâng cấp từ `2.0.0` giữ nguyên d�
 - Trường nhiều lựa chọn nhận `default` là một danh sách các lựa chọn.
 - `escalate` trong quy trình khai các mức leo thang khi hồ sơ quá hạn, mỗi mức có thời gian sau hạn, vai nhận và số lần nhắc lại; mỗi thông báo là một dòng lịch sử `escalated` gửi qua webhook của mô hình, không đổi trạng thái hồ sơ, và sau lúc dịch vụ tắt chỉ gửi mức mới nhất đã đến hạn.
 - Trường `date` làm nguồn của điều kiện `when` và `required_when`, so sánh bằng `==`, `!=`, `<`, `<=`, `>` và `>=`.
-- `calendars` khai các lịch làm việc (ngày làm, khoảng giờ, ngày nghỉ) và `calendar` trong quy trình đếm `deadline` theo lịch đó: `m` và `h` chỉ đếm qua giờ làm, `d` là ngày làm, hồ sơ vào ngoài giờ tính từ lần mở cửa kế tiếp; không khai `calendar` thì hạn đếm liên tục như trước. Đổi lịch là thay đổi `SAFE` (`CHANGE_CALENDAR`) và bị từ chối khi quy trình còn hồ sơ mở, như đổi `deadline`; kế hoạch, bảng điều khiển (ô chọn lịch ở form quy trình, nhãn tiếng Việt và tiếng Anh) và trình soạn YAML đều hiểu khóa mới.
+- `calendars` khai các lịch làm việc (ngày làm, khoảng giờ, ngày nghỉ) và `calendar` trong quy trình đếm `deadline` theo lịch đó: `m` và `h` chỉ đếm qua giờ làm, `d` là ngày làm, hồ sơ vào ngoài giờ tính từ lần mở cửa kế tiếp; không khai `calendar` thì hạn đếm liên tục như trước.
+  Đổi lịch là thay đổi `SAFE` (`CHANGE_CALENDAR`) và bị từ chối khi quy trình còn hồ sơ mở, như đổi `deadline`; kế hoạch, bảng điều khiển (ô chọn lịch ở form quy trình, nhãn tiếng Việt và tiếng Anh) và trình soạn YAML đều hiểu khóa mới.
 
 ### Dữ liệu
 
 - `GET /api/v1/data/{model}/{entity}/quality` đo chất lượng các dòng người gọi được xem (ADMIN đo mọi dòng của thực thể và chỉ nhận số đếm): độ điền của từng trường, số bản ghi thiếu trường bắt buộc có điều kiện, số giá trị vi phạm lựa chọn, `min`, `max` hay `pattern`, và độ mới theo `staleDays`; mỗi thực thể trong tab Danh mục dữ liệu có mục Chất lượng dữ liệu kèm thời điểm đo và số bản ghi được xét, và ô chọn số ngày cho độ mới.
 - `GET /api/v1/models/{model}/data-lineage` nêu cho từng trường của mô hình đang chạy nơi giá trị đi vào, các quy tắc đọc nó và nơi nó đi ra (ADMIN); tab Danh mục dữ liệu hiện phả hệ này ở mục Nguồn gốc của từng trường.
-- `GET /api/v1/data/{model}/{entity}/report` nhóm các dòng người gọi được xem theo một trường lựa chọn, đơn vị, đúng/sai, trạng thái hoặc tháng của một ngày và tính đếm, tổng, trung bình, nhỏ nhất, lớn nhất trên trường số, với cùng bộ lọc và quyền theo dòng như `stats`; trường hoặc phép tính mô hình không cho phép là 400 và số nhóm bị giới hạn. Trang Thống kê có mục Báo cáo theo trường.
+- `GET /api/v1/data/{model}/{entity}/report` nhóm các dòng người gọi được xem theo một trường lựa chọn, đơn vị, đúng/sai, trạng thái hoặc tháng của một ngày và tính đếm, tổng, trung bình, nhỏ nhất, lớn nhất trên trường số, với cùng bộ lọc và quyền theo dòng như `stats`; trường hoặc phép tính mô hình không cho phép là 400 và số nhóm bị giới hạn.
+  Trang Thống kê có mục Báo cáo theo trường.
 
 ### Giao diện
 
@@ -291,7 +455,7 @@ Không có đường nâng cấp dữ liệu từ `1.1.x`; bản cũ nằm ở t
   Portal chỉ còn ứng dụng chính, Keycloak Admin, màn hình giám sát và Swagger; biến `PORTAL_BI_URL` và `PORTAL_CHAT_URL` không còn dùng.
 - Mã của dự án chỉ có một giấy phép, Apache-2.0.
 - Mỗi bản build của ứng dụng web và của trang tài liệu kèm `third-party-licenses.txt` ở gốc, chép thông báo bản quyền của từng thư viện npm đóng gói trong đó (`frontend/scripts/third-party-licenses.mjs`).
-- `.github/component-catalog.json` khai báo image và tệp tải về; `check_licenses.py` chỉ cho giấy phép OSI và chặn mục thiếu.
+- `.github/licenses/component-catalog.json` khai báo image và tệp tải về; `check_licenses.py` chỉ cho giấy phép OSI và chặn mục thiếu.
   `DEPENDENCIES.txt`, `NOTICE` và các tệp SBOM ghi đúng thành phần của bản phát hành; số phiên bản của backend, web và SBOM là `2.0.0`.
 
 ## [1.1.1] - 2026-10-30
@@ -399,7 +563,8 @@ Bản phát hành đầu tiên của DX-OS.
 - Backend, Keycloak và frontend không publish cổng, mọi truy cập đi qua gateway; `deploy/demo/seed_demo.py` tạo tài khoản và dữ liệu demo.
 - Tài liệu và nguồn mở: `LICENSE`, `LICENSES.md`, SBOM CycloneDX, `CONTRIBUTING.md`, mẫu issue và pull request.
 
-[Unreleased]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v2.0.2...main
+[Unreleased]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v2.1.0...main
+[2.1.0]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v2.0.2...v2.1.0
 [2.0.2]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/HaUI-ImplSolution/DX-OS/compare/v1.1.1...v2.0.0

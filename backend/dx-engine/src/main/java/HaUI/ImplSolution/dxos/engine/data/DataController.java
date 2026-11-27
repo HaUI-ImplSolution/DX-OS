@@ -12,6 +12,7 @@ import HaUI.ImplSolution.dxos.model.Model.Entity;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -60,7 +61,10 @@ public class DataController {
       summary = "List records",
       description =
           "filter.<field>=<value> (also filter.<field>.<op> with op eq, ne, lt, lte,"
-              + " gt, gte, like or in; in takes at least one comma-separated value), sort=<field>,"
+              + " gt, gte, like or in; in takes at least one comma-separated value),"
+              + " q=<words> (every word, ignoring case and diacritics, in a text, code or"
+              + " single-choice field; at most 8 words and 200 characters; stats, report and"
+              + " quality take it too), sort=<field>,"
               + " order=asc|desc, page (from 0) and size (at most 200). A role sees only the rows its"
               + " access reaches; 403 when no role of the caller reaches the entity.")
   public ApiResponse<PageResponse<Map<String, Object>>> list(
@@ -81,6 +85,9 @@ public class DataController {
               + " creation to the final state over the records that reached one (a withdrawn record"
               + " counts), avgOpenAgeSeconds and oldestOpenAgeSeconds are the mean and largest age at"
               + " computedAt of the records that did not, each null when there is no such record;"
+              + " timeInStatus reports the entry count and mean and maximum whole seconds per state,"
+              + " counting open visits up to computedAt, excluding the last visit of closed records,"
+              + " and sorting by mean descending, then by status ascending;"
               + " an entity with a deadline also has closedOnTime and closedLate, the decided records"
               + " (a withdrawn one excluded) without and with an overdue line in their history; a"
               + " record that was overdue and later decided in time still counts as late;"
@@ -189,14 +196,20 @@ public class DataController {
       description =
           "The body may carry version, as read with the record: the change then applies"
               + " only to that version, and 409 ERR_CONCURRENT_MODIFICATION answers when the record"
-              + " changed in between. Without version the change applies to the current record.")
+              + " changed in between, including an unchanged value."
+              + " Optional modelVersion rejects a changed model with 409 and data.reason"
+              + " MODEL_VERSION_CHANGED. Without conditions the change applies to the current record.")
   public ApiResponse<Map<String, Object>> update(
       @PathVariable String model,
       @PathVariable String entity,
       @PathVariable long id,
       @RequestBody Map<String, Object> body) {
     Model m = registry.require(model);
-    return ApiResponse.success(service.update(m, entity(m, entity), id, body));
+    RecordPreconditions conditions = RecordPreconditions.from(body);
+    registry.checkVersion(model, conditions.modelVersion());
+    Map<String, Object> fields = new LinkedHashMap<>(body);
+    fields.remove("modelVersion");
+    return ApiResponse.success(service.update(m, entity(m, entity), id, fields));
   }
 
   @DeleteMapping("/{id}")
@@ -227,8 +240,10 @@ public class DataController {
               + " when it cannot be asked and the target does not allow the action then, the record"
               + " left as it was. A terminal state"
               + " stores decided_by and decided_at. The owner can take the action withdraw from any"
-              + " state that is not final. An Idempotency-Key header works as it does when creating a"
-              + " record: a repeat gets the first answer instead of 409 WRONG_STATE.")
+              + " state that is not final. Optional version and modelVersion reject a changed record"
+              + " or model with 409; a changed model has data.reason MODEL_VERSION_CHANGED."
+              + " An Idempotency-Key repeat returns the first answer without executing the action"
+              + " again.")
   public ApiResponse<Map<String, Object>> act(
       @PathVariable String model,
       @PathVariable String entity,
@@ -239,13 +254,17 @@ public class DataController {
       HttpServletResponse response) {
     Model m = registry.require(model);
     String note = body == null ? null : body.get("note");
+    RecordPreconditions conditions = RecordPreconditions.from(body);
     return answer(
         idempotency.once(
             key,
             "act",
             model + "/" + entity + "/" + id + "/" + action,
             body,
-            () -> service.act(m, entity(m, entity), id, action, note)),
+            () -> {
+              registry.checkVersion(model, conditions.modelVersion());
+              return service.act(m, entity(m, entity), id, action, note, conditions.version());
+            }),
         response);
   }
 
@@ -264,14 +283,19 @@ public class DataController {
       description =
           "The body is {\"assignee\": \"<user id>\"}, with null to release it. The"
               + " handler role and roles writing to all rows or to their units may assign. 400 when"
-              + " that user, the caller included, cannot handle the record.")
+              + " that user, the caller included, cannot handle the record. Optional version and"
+              + " modelVersion reject changed snapshots with 409; a changed model has data.reason"
+              + " MODEL_VERSION_CHANGED.")
   public ApiResponse<Map<String, Object>> assign(
       @PathVariable String model,
       @PathVariable String entity,
       @PathVariable long id,
       @RequestBody Map<String, String> body) {
     Model m = registry.require(model);
-    return ApiResponse.success(service.assign(m, entity(m, entity), id, body.get("assignee")));
+    RecordPreconditions conditions = RecordPreconditions.from(body);
+    registry.checkVersion(model, conditions.modelVersion());
+    return ApiResponse.success(
+        service.assign(m, entity(m, entity), id, body.get("assignee"), conditions.version()));
   }
 
   @GetMapping("/{id}/handlers")

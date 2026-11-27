@@ -23,7 +23,9 @@ dxos start
 Vào `/console` bằng tài khoản `ADMIN`.
 
 - **Thư viện mẫu:** chọn một trong các mẫu có sẵn (một cửa sinh viên, hỗ trợ kỹ thuật, đặt phòng, mượn thiết bị và các mẫu khác) rồi áp dụng.
-- **Soạn và áp dụng:** viết tệp mô hình hoặc điền form, có hướng dẫn nói rõ viết được những gì, và sơ đồ quy trình vẽ theo tệp đang soạn.
+- **Soạn và áp dụng:** viết tệp mô hình, hoặc dựng bằng form: cây bên trái cho thấy cả mô hình, bấm một trạng thái hay mũi tên trên sơ đồ quy trình là tới chỗ sửa nó, và lỗi được chỉ đúng mục cần sửa.
+  Mỗi phần có hướng dẫn nói rõ viết được những gì.
+  Mở một mẫu hoặc một mô hình khác khi bản đang soạn có thay đổi chưa áp dụng thì bảng điều khiển hỏi trước; chọn Hủy giữ nguyên bản đang soạn.
 
 Thêm một nghiệp vụ mới là thêm một tệp mô hình; cách viết ở [`docs/MODEL.md`](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/MODEL.md).
 
@@ -32,6 +34,7 @@ Thêm một nghiệp vụ mới là thêm một tệp mô hình; cách viết �
 1. Mở phiên bản đang chạy ở tab **Soạn và áp dụng** và sửa.
 2. Bấm **Xem kế hoạch**: kế hoạch nêu mức an toàn, thay đổi nào chuyển được dữ liệu, thay đổi nào bị từ chối và vì sao.
    Lỗi trong tệp được chỉ đúng dòng và cột.
+   Khi một hành động của quy trình đổi, kế hoạch nói hành động nào đổi gì; nếu hành động đó vừa đòi thêm một trường, kế hoạch cho biết có bao nhiêu hồ sơ đang chờ còn thiếu trường ấy và sẽ bị từ chối cho đến khi được bổ sung.
 3. Bấm **Áp dụng** khi kế hoạch đúng ý; hệ thống đang chạy không bị dừng.
 4. Muốn quay lại, ở tab **Mô hình đang chạy** bấm **Lịch sử** của mô hình rồi **Quay về phiên bản trước**; việc quay về cũng có kế hoạch để xem trước.
 
@@ -48,7 +51,8 @@ Vai `ADMIN` của nền tảng không cấp ở tab này mà cấp ở Keycloak 
 ## Nối hệ thống khác
 
 - **Webhook:** mọi thay đổi của hồ sơ được báo tới địa chỉ web hoặc kênh chat, có chữ ký để bên nhận kiểm tra; chi tiết ở [`docs/INTEGRATIONS.md`](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/INTEGRATIONS.md).
-- **Ứng dụng ngoài:** tab **Ứng dụng ngoài** hoặc `dxos client add` đăng ký một ứng dụng gọi API với đúng một vai của một mô hình.
+- **Ứng dụng ngoài:** tab **Ứng dụng ngoài**, `dxos client add` hoặc `dxos connect` (một lệnh cho mọi vai, ghi sẵn `.env` của ứng dụng) đăng ký một ứng dụng gọi API với đúng một vai của một mô hình.
+- **Dự án:** tab **Dự án** hoặc `dxos project add` gom các mô hình và ứng dụng ngoài của một hệ thống tích hợp để lọc và xem phạm vi ảnh hưởng; dự án không cấp quyền và không tách dữ liệu, còn quản trị viên của dự án (`dxos project member add --admin`) tự gán vai của các mô hình trong dự án cho thành viên của mình, chi tiết ở [`docs/OPERATIONS.md`](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/OPERATIONS.md#dự-án).
 - **Hàng đợi sự kiện:** tab cùng tên cho xem việc chờ gửi và thử lại khi lỗi.
 - **Công cụ báo cáo:** nối bằng vai chỉ đọc `report_ro`; xem [`docs/REPORTING.md`](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/REPORTING.md).
 

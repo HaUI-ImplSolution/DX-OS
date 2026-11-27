@@ -76,7 +76,7 @@ public class DataService {
 
   private static final int MAX_PAGE_SIZE = 200;
   private static final int DEFAULT_PAGE_SIZE = 20;
-  private static final int STATS_TIMEOUT_MS = 10_000;
+  private static final int QUERY_TIMEOUT_MS = 10_000;
   private static final Set<String> SYSTEM_COLUMNS =
       Set.of(
           "id",
@@ -104,6 +104,7 @@ public class DataService {
   private final TransactionTemplate separate;
   private final RecordCodes codes;
   private final Deadlines deadlines;
+  private final WebLinks links;
 
   public DataService(
       NamedParameterJdbcTemplate jdbc,
@@ -117,6 +118,7 @@ public class DataService {
       ActionCheck checks,
       RecordCodes codes,
       Deadlines deadlines,
+      WebLinks links,
       PlatformTransactionManager transactions) {
     this.jdbc = jdbc;
     this.user = user;
@@ -129,6 +131,7 @@ public class DataService {
     this.checks = checks;
     this.codes = codes;
     this.deadlines = deadlines;
+    this.links = links;
     this.separate = new TransactionTemplate(transactions);
     this.separate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
   }
@@ -167,6 +170,10 @@ public class DataService {
       Model model, Entity entity, Map<String, String> params) {
     Access access = access(model, entity);
     requireRead(access);
+    if (searching(params)) {
+      // Applies to this transaction only: a search that runs longer is stopped.
+      jdbc.getJdbcOperations().execute("SET LOCAL statement_timeout = " + QUERY_TIMEOUT_MS);
+    }
     MapSqlParameterSource values = new MapSqlParameterSource();
     List<String> where = new ArrayList<>();
     where.add(scope(model, entity, access.reads(), values));
@@ -196,7 +203,7 @@ public class DataService {
                     + " LIMIT :limit OFFSET :offset",
                 values)
             .stream()
-            .map(DataService::present)
+            .map(row -> presentRecord(model, entity, row))
             .toList();
     long count = total == null ? 0 : total;
     return new PageResponse<>(rows, page, size, count, (int) ((count + size - 1) / size));
@@ -245,7 +252,7 @@ public class DataService {
     Access access = access(model, entity);
     requireRead(access);
     // Applies to this transaction only: the counts below stop after the limit.
-    jdbc.getJdbcOperations().execute("SET LOCAL statement_timeout = " + STATS_TIMEOUT_MS);
+    jdbc.getJdbcOperations().execute("SET LOCAL statement_timeout = " + QUERY_TIMEOUT_MS);
     MapSqlParameterSource values = new MapSqlParameterSource();
     List<String> where = new ArrayList<>();
     where.add(scope(model, entity, access.reads(), values));
@@ -269,6 +276,7 @@ public class DataService {
               values,
               Long.class));
       body.putAll(timings(from, values));
+      body.put("timeInStatus", timeInStatus(model, entity, from, values));
       if (entity.process().deadline() != null) {
         body.putAll(closings(model, entity, from, values));
       }
@@ -309,6 +317,49 @@ public class DataService {
     out.put("avgOpenAgeSeconds", seconds(row.get("open_avg")));
     out.put("oldestOpenAgeSeconds", seconds(row.get("open_max")));
     return out;
+  }
+
+  // A visit runs from a state entry to the next entry or computedAt.
+  // The last visit of a closed record is excluded.
+  private List<Map<String, Object>> timeInStatus(
+      Model model, Entity entity, String from, MapSqlParameterSource values) {
+    values.addValue("event_model", model.name());
+    values.addValue("event_entity", entity.name());
+    String sql =
+        "WITH visible AS (SELECT id, decided_at"
+            + from
+            + "),"
+            + """
+        visits AS (
+          SELECT e.to_status AS status, e.at, v.decided_at,
+                 lead(e.at) OVER (PARTITION BY e.record_id ORDER BY e.id) AS left_at
+          FROM engine.record_event e
+          JOIN visible v ON v.id = e.record_id
+          WHERE e.model = :event_model AND e.entity = :event_entity
+            AND e.to_status IS NOT NULL AND e.from_status IS DISTINCT FROM e.to_status
+        ),
+        durations AS (
+          SELECT s.status,
+                 EXTRACT(EPOCH FROM coalesce(s.left_at, CAST(:at AS timestamptz)) - s.at) AS elapsed
+          FROM visits s
+          WHERE s.left_at IS NOT NULL OR s.decided_at IS NULL
+        )
+        SELECT status, count(*) AS visits, avg(elapsed) AS avg_s, max(elapsed) AS max_s
+        FROM durations
+        GROUP BY status
+        ORDER BY floor(avg(elapsed) + 0.5) DESC, status
+        """;
+    return jdbc.query(
+        sql,
+        values,
+        (rs, row) -> {
+          Map<String, Object> visit = new LinkedHashMap<>();
+          visit.put("status", rs.getString("status"));
+          visit.put("visits", rs.getLong("visits"));
+          visit.put("avgSeconds", seconds(rs.getObject("avg_s")));
+          visit.put("maxSeconds", seconds(rs.getObject("max_s")));
+          return visit;
+        });
   }
 
   // The records that were decided, a withdrawn one excluded, split by whether the history holds an
@@ -365,7 +416,7 @@ public class DataService {
     if (rows.isEmpty()) {
       throw notFound(entity, id);
     }
-    return present(rows.get(0));
+    return presentRecord(model, entity, rows.get(0));
   }
 
   @Transactional
@@ -428,7 +479,7 @@ public class DataService {
               new MapSqlParameterSource("id", id));
     }
     events.record(model, entity, id, "created", null, (String) row.get("status"), null, null);
-    return present(row);
+    return presentRecord(model, entity, row);
   }
 
   @Transactional
@@ -443,7 +494,7 @@ public class DataService {
     }
     requireReachableParent(model, entity, access, values);
     requireOpen(model, entity, access, id);
-    Changed changed = changes(model, entity, access, id, values);
+    Changed changed = changes(model, entity, access, id, values, baseVersion);
     requireConditionalFields(model, entity, id, values);
     Map<String, Object> changes = changed.values();
     if (changes.isEmpty()) {
@@ -502,7 +553,7 @@ public class DataService {
         status,
         null,
         events.changesOf(historyValues(entity, changes), changed.before()));
-    return present(rows.get(0));
+    return presentRecord(model, entity, rows.get(0));
   }
 
   // The version the caller read the record at; an update with one only applies to that version.
@@ -584,6 +635,12 @@ public class DataService {
   @Transactional
   public Map<String, Object> act(
       Model model, Entity entity, long id, String actionName, String note) {
+    return act(model, entity, id, actionName, note, null);
+  }
+
+  @Transactional
+  public Map<String, Object> act(
+      Model model, Entity entity, long id, String actionName, String note, Long version) {
     Action action =
         processOf(entity)
             .definition()
@@ -599,6 +656,7 @@ public class DataService {
       }
     }
     Map<String, Object> record = lock(model, entity, access(model, entity), id, judged);
+    RecordPreconditions.check(entity.name(), version, record);
     String me = user.currentUserId();
     rules.checkAction(
         entity, action, record, me, user.clientRoles(ModelClient.of(model.name())), note);
@@ -670,6 +728,12 @@ public class DataService {
   // Gives a record to a user who can handle it, or back to the handler role with null.
   @Transactional
   public Map<String, Object> assign(Model model, Entity entity, long id, String assignee) {
+    return assign(model, entity, id, assignee, null);
+  }
+
+  @Transactional
+  public Map<String, Object> assign(
+      Model model, Entity entity, long id, String assignee, Long version) {
     processOf(entity);
     Access access = access(model, entity);
     Map<String, Object> current = get(model, entity, id);
@@ -686,6 +750,7 @@ public class DataService {
                   () -> new ModelValidationException("assignee", "cannot handle this record"));
     }
     Map<String, Object> record = lock(model, entity, access, id);
+    RecordPreconditions.check(entity.name(), version, record);
     String status = (String) record.get("status");
     if (entity.process().definition().isTerminal(status)) {
       throw new InvalidStateException("The record is closed", "RECORD_CLOSED");
@@ -698,7 +763,9 @@ public class DataService {
     process.assign(model, entity, id, status, assignee);
     events.record(model, entity, id, "assigned", status, status, null, holder);
     // Read without the scope: giving a record away can take it out of the caller's reach.
-    return present(
+    return presentRecord(
+        model,
+        entity,
         jdbc.queryForMap(
             "SELECT " + columns(entity) + " FROM " + table(model, entity) + " WHERE id = :id",
             new MapSqlParameterSource("id", id)));
@@ -956,9 +1023,15 @@ public class DataService {
   // values the row held. The row stays locked until the transaction ends, so what is read here is
   // what the update replaces.
   private Changed changes(
-      Model model, Entity entity, Access access, long id, Map<String, Object> values) {
+      Model model,
+      Entity entity,
+      Access access,
+      long id,
+      Map<String, Object> values,
+      Long expectedVersion) {
     MapSqlParameterSource params = new MapSqlParameterSource("id", id);
     List<String> columns = new ArrayList<>();
+    columns.add("version");
     List<String> names = new ArrayList<>(values.keySet());
     for (int i = 0; i < names.size(); i++) {
       String name = names.get(i);
@@ -987,6 +1060,7 @@ public class DataService {
     if (rows.isEmpty()) {
       throw notFound(entity, id);
     }
+    RecordPreconditions.check(entity.name(), expectedVersion, rows.get(0));
     Map<String, Object> changed = new LinkedHashMap<>();
     Map<String, Object> before = new LinkedHashMap<>();
     for (int i = 0; i < names.size(); i++) {
@@ -1163,6 +1237,52 @@ public class DataService {
       } else {
         throw new ModelValidationException(param.getKey(), "unknown operator " + operator);
       }
+    }
+    if (searching(params)) {
+      search(entity, params.get("q"), where, values);
+    }
+  }
+
+  private static boolean searching(Map<String, String> params) {
+    String q = params.get("q");
+    return q != null && !q.isBlank();
+  }
+
+  // Every word of q must appear, ignoring case and diacritics, in at least one text, code or
+  // single-choice field. The condition joins the row scope in the same query, so a search never
+  // reaches a row the caller cannot read.
+  private void search(Entity entity, String q, List<String> where, MapSqlParameterSource values) {
+    if (q.length() > TextSearch.MAX_LENGTH) {
+      throw new ModelValidationException(
+          "q", "is longer than " + TextSearch.MAX_LENGTH + " characters");
+    }
+    List<String> columns =
+        entity.fields().values().stream()
+            .filter(
+                field ->
+                    !field.multiple()
+                        && (field.type() == FieldType.TEXT
+                            || field.type() == FieldType.CODE
+                            || field.type() == FieldType.CHOICE))
+            .map(field -> "lower(translate(" + ident(field.name()) + ", :qfrom, :qto))")
+            .toList();
+    if (columns.isEmpty()) {
+      throw new ModelValidationException("q", "the entity has no text field to search");
+    }
+    String[] words = TextSearch.fold(q).trim().split("\\s+");
+    if (words.length > TextSearch.MAX_WORDS) {
+      throw new ModelValidationException("q", "has more than " + TextSearch.MAX_WORDS + " words");
+    }
+    values.addValue("qfrom", TextSearch.FROM).addValue("qto", TextSearch.TO);
+    for (int i = 0; i < words.length; i++) {
+      String name = "q" + i;
+      values.addValue(name, TextSearch.contains(words[i]));
+      where.add(
+          "("
+              + columns.stream()
+                  .map(column -> column + " LIKE :" + name)
+                  .collect(java.util.stream.Collectors.joining(" OR "))
+              + ")");
     }
   }
 
@@ -1486,6 +1606,18 @@ public class DataService {
     } catch (NumberFormatException e) {
       throw new IllegalArgumentException("must be the id of a record");
     }
+  }
+
+  // A record as the API shows it: the row, and webUrl when there is a web app to open it.
+  private Map<String, Object> presentRecord(Model model, Entity entity, Map<String, Object> row) {
+    Map<String, Object> shown = present(row);
+    if (row.get("id") instanceof Number id) {
+      String url = links.record(model.name(), entity.name(), id.longValue());
+      if (url != null) {
+        shown.put("webUrl", url);
+      }
+    }
+    return shown;
   }
 
   // A row as the API shows it: timestamps as instants.

@@ -30,7 +30,11 @@ const config = {
 
   i18n: {
     defaultLocale: 'vi',
-    locales: ['vi'],
+    locales: ['vi', 'en'],
+    localeConfigs: {
+      vi: {label: 'Tiếng Việt', htmlLang: 'vi'},
+      en: {label: 'English', htmlLang: 'en'},
+    },
   },
 
   themes: ['@docusaurus/theme-mermaid'],
@@ -56,6 +60,7 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
+      image: 'img/banner.png',
       colorMode: {
         respectPrefersColorScheme: true,
       },
@@ -64,6 +69,7 @@ const config = {
         logo: {alt: 'DX-OS', src: 'img/logo.svg'},
         items: [
           {type: 'docSidebar', sidebarId: 'docs', position: 'left', label: 'Tài liệu'},
+          {type: 'localeDropdown', position: 'right'},
           {href: 'https://github.com/HaUI-ImplSolution/DX-OS', label: 'Mã nguồn', position: 'right'},
           {href: 'https://github.com/HaUI-ImplSolution/DX-OS/releases', label: 'Releases', position: 'right'},
         ],
@@ -85,6 +91,9 @@ const config = {
               {label: 'README', href: 'https://github.com/HaUI-ImplSolution/DX-OS#readme'},
               {label: 'ARCHITECTURE', href: 'https://github.com/HaUI-ImplSolution/DX-OS/blob/main/ARCHITECTURE.md'},
               {label: 'CHANGELOG', href: 'https://github.com/HaUI-ImplSolution/DX-OS/blob/main/CHANGELOG.md'},
+              {label: 'LICENSE (Apache-2.0)', href: 'https://github.com/HaUI-ImplSolution/DX-OS/blob/main/LICENSE'},
+              {label: 'NOTICE', href: 'https://github.com/HaUI-ImplSolution/DX-OS/blob/main/NOTICE'},
+              {label: 'DEPENDENCIES', href: 'https://github.com/HaUI-ImplSolution/DX-OS/blob/main/DEPENDENCIES.txt'},
             ],
           },
         ],

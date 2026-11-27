@@ -8,7 +8,7 @@ Hướng thiết kế và phạm vi đầy đủ ở [`docs/dynamic-core/README.
 ![Sơ đồ kiến trúc DX-OS: người dùng và ứng dụng gọi vào qua cổng APISIX, lõi dx-engine nối Keycloak, PostgreSQL, SeaweedFS và ClamAV](website/docs/images/video/architecture.gif)
 
 - **Tầng 1, lõi:** không có trang nào do đội viết; mọi thứ qua API.
-- **Tầng 2:** giao diện đọc metadata của lõi, cùng portal, màn hình giám sát và lệnh `dxos`.
+- **Tầng 2:** giao diện đọc metadata của lõi, cùng portal, màn hình giám sát, trợ lý nghiệp vụ và lệnh `dxos`.
 - **Tầng 3:** chỉ là tệp mô hình, không có mã.
 - Chữ người dùng đọc do frontend quyết định: backend trả thông báo tiếng Anh kèm `errorCode`, frontend dịch theo `frontend/src/shell/backendMessages.ts`.
 
@@ -33,6 +33,7 @@ Keycloak giữ tài khoản, mật khẩu và vai; realm `dxos` được nhập 
 | `dxos-monitor` | Đăng nhập vào màn hình giám sát |
 | `dxos-cli` | Lệnh `dxos plan`, `dxos apply` và `dxos gitops`; tài khoản dịch vụ giữ vai `ADMIN` |
 | `dxos-backend-admin` | Tài khoản dịch vụ của backend gọi Admin API: tạo client, vai, nhóm và quản trị người dùng |
+| `dxos-assistant` | Trợ lý nghiệp vụ liên kết với tài khoản của từng người bằng PKCE; trợ lý gọi Core bằng phiên của chính người đó, không có tài khoản dịch vụ riêng |
 | `dxos-m-<mô hình>` | Chỉ để chứa vai của mô hình, không cho ai đăng nhập |
 | `dxos-app-<tên>` | Một ứng dụng ngoài gọi API bằng token máy; tài khoản dịch vụ giữ đúng một vai của một mô hình |
 
@@ -40,6 +41,8 @@ Keycloak giữ tài khoản, mật khẩu và vai; realm `dxos` được nhập 
 - APISIX kiểm token ở biên; backend kiểm lại chữ ký, thời hạn và audience `dxos-api`.
 - Vai và đơn vị đọc từ token đã ký, nên đổi vai hay đơn vị có hiệu lực sau tối đa khoảng 5 phút (token sống 300 giây).
 - Admin API của Keycloak 26.8 chỉ nhận token có audience của chính nó, nên `dxos-backend-admin` mang scope `kc-admin-api`; xem [`sso/README.md`](./sso/README.md).
+- Dự án (`engine.project`, `engine.model_project`, `engine.client_project`) gom mô hình và ứng dụng ngoài để quản trị; token và quyền đọc ghi dữ liệu không biết đến dự án, nên dự án không phải ranh giới cô lập.
+- Thành viên (`engine.project_member`, cấp `MEMBER` hoặc `ADMIN`) chia việc quản trị người dùng: backend đọc phạm vi của người gọi từ cơ sở dữ liệu ở mỗi yêu cầu (`UserScope`), nên quản trị viên dự án chỉ xem và gán vai của mô hình trong dự án mình, và đổi cấp có hiệu lực ngay, không đợi token hết hạn.
 
 ## 4. Áp dụng một mô hình
 
@@ -53,6 +56,7 @@ Mô hình đi qua một đường duy nhất, từ hệ thống rỗng hay từ 
 - Dòng đang vi phạm quy tắc mới: siết hoặc thêm `min`, `max`, `pattern` hay danh sách lựa chọn là `MIGRATION` kèm số dòng và bị từ chối đến khi dữ liệu được sửa; nới hoặc bỏ là `SAFE`.
   Đổi `required_when`, `ui:` hay `documents:` là `SAFE` và không bị chặn khi còn hồ sơ đang xử lý.
 - Số hồ sơ đang xử lý của các quy trình bị ảnh hưởng, và các câu lệnh pgschema sẽ chạy.
+- Với mỗi hành động mới đòi thêm trường bằng `require`: `CHANGE_ACTIONS` nêu hành động và trường (cùng đổi nhãn, vai, `needs_note`), và `impacts` đếm hồ sơ đang ở trạng thái nguồn mà còn thiếu trường; mức vẫn `SAFE`, hành động từ chối các hồ sơ đó đến khi trường được bổ sung.
 
 ### Áp dụng
 
@@ -82,6 +86,8 @@ Các bảo đảm:
 - Một bước lỗi làm lần áp dụng dừng và mô hình vẫn bị giữ, kể cả sau khi backend khởi động lại, vì trạng thái suy ra từ `engine.apply_run`, nơi lưu tệp, các lần đổi tên và mức đã xác nhận.
 - `POST /api/v1/models/{model}/resume` hoàn tất lần dở mà không cần tệp.
 - `POST /api/v1/models/{model}/abandon` đưa các bảng về phiên bản đang chạy; cột và bảng mà lần dở đã thêm bị xóa cùng dữ liệu.
+- Lúc khởi động và sau mỗi lần áp dụng, registry đọc phiên bản mới nhất của từng mô hình bằng bộ kiểm hiện hành.
+  Phiên bản vi phạm một luật được siết thêm mà bỏ phần vi phạm vẫn an toàn thì mô hình chạy với phần đó bị bỏ và `GET /api/v1/models` ghi `warnings`; không bỏ được thì mô hình bị loại khỏi hoạt động, ghi `leftOut` kèm `problems`, các yêu cầu dữ liệu của nó trả 409 và số đo `dxos_models_left_out` đếm nó.
 
 ### Vai và đơn vị
 
@@ -204,11 +210,16 @@ Flowable đặt `search_path` của kết nối nó dùng về `engine` và khô
 
 ## 12. Triển khai
 
-- Compose chạy lõi (`postgres`, `keycloak`, `seaweedfs`, `backend`, `apisix`) và Tầng 2 (`frontend`, `portal`, `monitor`); `clamav` chạy với profile `av`, có sẵn trong cấu hình mặc định.
-- `dxos start --core` chỉ chạy lõi: không có Tầng 2 và gateway không có route của nó.
+- Compose chạy lõi (`postgres`, `keycloak`, `seaweedfs`, `backend`, `apisix`) và Tầng 2 (`frontend`, `portal`, `monitor`, `assistant-control`); `clamav` chạy với profile `av`, có sẵn trong cấu hình mặc định.
+- `dxos start --core` chỉ chạy lõi: không có Tầng 2, kể cả trợ lý, và gateway không có route của nó.
   Keycloak Admin Console mặc định không mở ra gateway.
 - Gateway kiểm token cho mọi route API; các route không kiểm token nằm trong danh sách công khai kiểm bởi `e2e/api/check_routes.py`.
 - `dxos start <tệp>...` đưa các tệp mô hình vào qua `deploy/model/` và in kết quả của `ModelBootstrap` cho từng tệp.
+- Dịch vụ [`assistant/`](./assistant/README.md) đề xuất giá trị trường, đọc và ghi qua API Core bằng phiên đăng nhập của người dùng.
+  Mô hình của nó là bộ phân loại hồ sơ tiếng Việt do đội tự huấn luyện ([`tools/classifier/`](./tools/classifier/README.md)), suy luận ngay trong tiến trình trên CPU với trọng số đóng gói trong image.
+  Nó có SQLite riêng và không truy cập cơ sở dữ liệu nghiệp vụ.
+  Nó chạy trên network nội bộ không có đường ra Internet.
+  Core kiểm quyền cùng `modelVersion` và `version` trong giao dịch ghi.
 - Chi tiết vận hành ở [`docs/OPERATIONS.md`](./docs/OPERATIONS.md), log và audit ở [`docs/MONITORING.md`](./docs/MONITORING.md), webhook và lịch sử chống sửa ở [`docs/INTEGRATIONS.md`](./docs/INTEGRATIONS.md).
 
 ## 13. Đối chiếu với yêu cầu của đề
@@ -290,3 +301,14 @@ Lý do chọn từng công cụ ở [trang thành phần](https://haui-implsolut
 - **Phương án:** viết lại các thành phần; sửa hoặc vá mã thượng nguồn; dùng nguyên bản và cấu hình.
 - **Quyết định:** image chính thức ghim tag và digest, không sửa mã thượng nguồn, mọi giấy phép thuộc danh sách OSI và được máy kiểm ở mỗi pull request.
 - **Hệ quả:** thay một thành phần là đổi cấu hình hoặc địa chỉ; đổi lại, phần dự án cần mà thượng nguồn không có phải tự viết ở lớp nối.
+
+### QĐ-9: Bộ phân loại tại chỗ cho đề xuất một trường
+
+- **Bối cảnh:** trợ lý cần gợi ý một nhãn trong tập giá trị mà nghiệp vụ cho phép và đưa ra căn cứ từ hồ sơ để cán bộ kiểm.
+- **Phương án:** dò từ khóa, chạy mô hình ngôn ngữ tổng quát qua dịch vụ suy luận, hoặc huấn luyện một bộ phân loại nhỏ cho từng nhiệm vụ.
+- **Quyết định:** chạy bộ phân loại hồi quy logistic tự huấn luyện trong trợ lý Node.js ở Tầng 2.
+  API Core vẫn quyết định quyền và phiên bản lúc ghi.
+- **Hệ quả:** trọng số nhỏ, có thể tái tạo từ dữ liệu được mô tả và so sánh với dò từ khóa ở cùng độ phủ.
+  Một nghiệp vụ mới cần nhãn, dữ liệu và kiểm định riêng.
+  Các đề xuất yếu bị từ chối theo ngưỡng và quyết định lưu thuộc người có thẩm quyền.
+  [Thiết kế và kết quả đo](./docs/AI.md)

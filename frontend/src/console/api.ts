@@ -20,6 +20,15 @@ export interface Violation {
   sample: number[];
 }
 
+// An action that now requires fields, and the records waiting for it that lack one of them.
+export interface Impact {
+  entity: string;
+  action: string;
+  states: string[];
+  fields: string[];
+  rows: number;
+}
+
 export interface Plan {
   model: string;
   fromVersion: number;
@@ -31,6 +40,7 @@ export interface Plan {
   questions: string[];
   violations: Violation[];
   openRecords: Record<string, number>;
+  impacts: Impact[];
   statements: string[];
 }
 
@@ -50,6 +60,13 @@ export interface AppliedModel {
   applied_at: string;
   // An apply of the model runs or stopped before it finished, so its users cannot use it.
   held: boolean;
+  // The project the model belongs to; null while it is unclassified.
+  project: string | null;
+  // The stored version fails the checks of this release, so the model is not running; problems says why.
+  leftOut: boolean;
+  problems?: string[];
+  // What a running model was read without, for a check made stricter after the version was stored.
+  warnings: string[];
 }
 
 export interface AppliedVersion {
@@ -188,10 +205,13 @@ export interface DataPoint {
   kind: string;
   name: string;
   detail: string | null;
+  // The project of an application; null for an application without one and for other kinds.
+  project: string | null;
 }
 
 export interface DataCatalog {
   model: string;
+  project: string | null;
   origins: DataPoint[];
   destinations: DataPoint[];
   links: { from: string; via: string; to: string; kind: string }[];
@@ -372,6 +392,7 @@ export interface AppClient {
   model: string;
   role: string;
   enabled: boolean;
+  project: string | null;
 }
 
 // The answer to registering an application or giving it a new secret; the secret is shown only now.
@@ -380,11 +401,55 @@ export interface AppSecret {
   clientId: string;
   model?: string;
   role?: string;
+  project?: string | null;
   secret: string;
 }
 
 export const listApps = () => request<AppClient[]>("/clients");
-export const registerApp = (name: string, model: string, role: string) => request<AppSecret>("/clients", json("POST", { name, model, role }));
+export const registerApp = (name: string, model: string, role: string, project: string | null) =>
+  request<AppSecret>("/clients", json("POST", { name, model, role, project }));
 export const renewAppSecret = (name: string) => request<AppSecret>(`/clients/${name}/secret`, { method: "POST" });
 export const changeAppRole = (name: string, role: string) => request<AppClient>(`/clients/${name}`, json("PUT", { role }));
 export const removeApp =(name: string) => request<null>(`/clients/${name}`, { method: "DELETE" });
+
+// A named group of the models and applications that one integration uses. It grants no access.
+export interface Project {
+  name: string;
+  label: string;
+  description: string | null;
+  models: string[];
+  clients: { name: string; model: string; role: string }[];
+  memberCount: number;
+}
+
+// What the signed-in user administers: all of it for the platform administrator, else the projects
+// where the account is a member, with its level.
+export interface ProjectScope {
+  global: boolean;
+  projects: { name: string; label: string; level: "MEMBER" | "ADMIN" }[];
+}
+
+export interface ProjectMember {
+  userId: string;
+  username: string;
+  name: string;
+  level: "MEMBER" | "ADMIN";
+}
+
+export const listProjects = () => request<Project[]>("/projects");
+export const createProject = (name: string, label: string, description: string) =>
+  request<Project>("/projects", json("POST", { name, label, description }));
+export const updateProject = (name: string, label: string, description: string) =>
+  request<Project>(`/projects/${name}`, json("PUT", { label, description }));
+export const deleteProject = (name: string) => request<null>(`/projects/${name}`, { method: "DELETE" });
+export const setModelProject = (model: string, project: string | null) =>
+  request<{ model: string; project: string | null }>(`/models/${model}/project`, json("PUT", { project }));
+export const setAppProject = (name: string, project: string | null) =>
+  request<AppClient>(`/clients/${name}/project`, json("PUT", { project }));
+
+export const getProjectScope = () => request<ProjectScope>("/projects/mine");
+export const listProjectMembers = (project: string) => request<ProjectMember[]>(`/projects/${project}/members`);
+export const setProjectMember = (project: string, userId: string, level: "MEMBER" | "ADMIN") =>
+  request<ProjectMember>(`/projects/${project}/members/${userId}`, json("PUT", { level }));
+export const removeProjectMember = (project: string, userId: string) =>
+  request<null>(`/projects/${project}/members/${userId}`, { method: "DELETE" });

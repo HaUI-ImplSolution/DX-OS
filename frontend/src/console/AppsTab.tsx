@@ -6,6 +6,7 @@ import {
   Box,
   Button,
   Card,
+  Chip,
   Dialog,
   DialogActions,
   DialogContent,
@@ -24,13 +25,17 @@ import {
   changeAppRole,
   getUserOptions,
   listApps,
+  listProjects,
   registerApp,
   removeApp,
   renewAppSecret,
+  setAppProject,
   type AppClient,
   type AppSecret,
+  type Project,
   type UserOptions,
 } from "./api";
+import { ALL, ProjectFilter, ProjectSelect, inFilter } from "./ProjectFilter";
 import { t } from "../shell/t";
 
 const NAME = /^[a-z][a-z0-9_-]{1,40}$/;
@@ -80,10 +85,17 @@ export default function AppsTab() {
   const [removing, setRemoving] = useState<AppClient | null>(null);
   const [changing, setChanging] = useState<AppClient | null>(null);
   const [newRole, setNewRole] = useState("");
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [filter, setFilter] = useState(ALL);
+  const [project, setProject] = useState<string | null>(null);
 
   const load = useCallback(() => {
     listApps().then(setApps, (e: unknown) => setError(message(e)));
+    listProjects().then(setProjects, (e: unknown) => setError(message(e)));
   }, []);
+
+  // The project each model belongs to, to mark an application that works across projects.
+  const projectOfModel = (name: string) => projects.find((item) => item.models.includes(name))?.name ?? null;
 
   useEffect(() => {
     load();
@@ -116,7 +128,8 @@ export default function AppsTab() {
           {error}
         </Alert>
       )}
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 1.5 }}>
+      <Box sx={{ display: "flex", justifyContent: projects.length > 0 ? "space-between" : "flex-end", alignItems: "center", mb: 1.5 }}>
+        {projects.length > 0 && <ProjectFilter projects={projects} value={filter} onChange={setFilter} />}
         <Button variant="contained" onClick={() => setAdding(true)}>
           {t("Đăng ký ứng dụng")}
         </Button>
@@ -128,15 +141,31 @@ export default function AppsTab() {
               <TableCell>{t("Mã ứng dụng")}</TableCell>
               <TableCell>{t("Mô hình")}</TableCell>
               <TableCell>{t("Vai được cấp")}</TableCell>
+              {projects.length > 0 && <TableCell>{t("Dự án")}</TableCell>}
               <TableCell align="right" />
             </TableRow>
           </TableHead>
           <TableBody>
-            {(apps ?? []).map((app) => (
+            {(apps ?? []).filter((app) => inFilter(filter, app.project)).map((app) => (
               <TableRow key={app.name}>
                 <TableCell>{app.clientId}</TableCell>
-                <TableCell>{app.model}</TableCell>
+                <TableCell>
+                  {app.model}
+                  {app.project !== null && projectOfModel(app.model) !== null && projectOfModel(app.model) !== app.project && (
+                    <Chip size="small" color="warning" variant="outlined" sx={{ ml: 1 }} label={t("Dùng chéo dự án")} />
+                  )}
+                </TableCell>
                 <TableCell>{app.role}</TableCell>
+                {projects.length > 0 && (
+                  <TableCell>
+                    <ProjectSelect
+                      projects={projects}
+                      value={app.project}
+                      disabled={busy}
+                      onChange={(next) => act(async () => void (await setAppProject(app.name, next)))}
+                    />
+                  </TableCell>
+                )}
                 <TableCell align="right">
                   <Button
                     size="small"
@@ -159,7 +188,7 @@ export default function AppsTab() {
             ))}
             {apps?.length === 0 && (
               <TableRow>
-                <TableCell colSpan={4}>
+                <TableCell colSpan={projects.length > 0 ? 5 : 4}>
                   <Typography variant="body2" color="text.secondary" sx={{ py: 2, textAlign: "center" }}>
                     {t("Chưa có ứng dụng ngoài nào.")}
                   </Typography>
@@ -188,6 +217,7 @@ export default function AppsTab() {
             onChange={(event) => {
               setModel(event.target.value);
               setRole("");
+              setProject(projectOfModel(event.target.value));
             }}
           >
             {(options?.models ?? []).map((item) => (
@@ -203,6 +233,14 @@ export default function AppsTab() {
               </MenuItem>
             ))}
           </TextField>
+          {projects.length > 0 && (
+            <Box>
+              <Typography variant="caption" color="text.secondary">
+                {t("Dự án")}
+              </Typography>
+              <ProjectSelect projects={projects} value={project} onChange={setProject} />
+            </Box>
+          )}
         </DialogContent>
         <DialogActions>
           <Button disabled={busy} onClick={() => setAdding(false)}>
@@ -212,11 +250,12 @@ export default function AppsTab() {
             disabled={busy || !valid}
             onClick={() =>
               act(async () => {
-                const created = await registerApp(name, model, role);
+                const created = await registerApp(name, model, role, project);
                 setAdding(false);
                 setName("");
                 setModel("");
                 setRole("");
+                setProject(null);
                 setSecret(created);
               })
             }

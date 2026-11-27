@@ -27,18 +27,22 @@ import {
   abandonModel,
   getVersion,
   listApplied,
+  listProjects,
   listRuns,
   listVersions,
   planRollback,
   resumeModel,
   rollbackModel,
+  setModelProject,
   type AppliedModel,
   type AppliedVersion,
   type Plan,
+  type Project,
   type Run,
 } from "./api";
 import { FAMILY_LABEL, RUN_STATUS, STEP_KIND, label, summarize, type ModelSummary } from "./labels";
 import PlanPanel from "./PlanPanel";
+import { ALL, ProjectFilter, ProjectSelect, inFilter } from "./ProjectFilter";
 import { t } from "../shell/t";
 
 interface Props {
@@ -64,8 +68,13 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
   const [working, setWorking] = useState<string | null>(null);
   const [giveUp, setGiveUp] = useState<AppliedModel | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [filter, setFilter] = useState(ALL);
+  // A change of project waits here until the administrator confirms it.
+  const [moving, setMoving] = useState<{ model: AppliedModel; project: string | null } | null>(null);
 
   useEffect(() => {
+    listProjects().then(setProjects, (e: unknown) => setProblem(message(e)));
     listApplied().then(
       (loaded) => {
         setModels(loaded);
@@ -79,6 +88,17 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
       (e: unknown) => setError(message(e)),
     );
   }, [refresh]);
+
+  const moveToProject = async (model: AppliedModel, project: string | null) => {
+    setProblem(null);
+    try {
+      await setModelProject(model.model, project);
+      setModels((current) => current?.map((item) => (item.model === model.model ? { ...item, project } : item)) ?? null);
+      setProjects(await listProjects());
+    } catch (e) {
+      setProblem(message(e));
+    }
+  };
 
   const open = async (model: AppliedModel) => {
     try {
@@ -136,8 +156,13 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
           {problem}
         </Alert>
       )}
+      {projects.length > 0 && (
+        <Box sx={{ mb: 2 }}>
+          <ProjectFilter projects={projects} value={filter} onChange={setFilter} />
+        </Box>
+      )}
       <Box sx={{ display: "grid", gap: 2, gridTemplateColumns: "repeat(auto-fill, minmax(min(360px, 100%), 1fr))" }}>
-        {models.map((model) => {
+        {models.filter((model) => inFilter(filter, model.project)).map((model) => {
           const summary = summaries[model.model];
           return (
             <Card key={model.model} sx={{ p: 2.5, display: "flex", flexDirection: "column", gap: 1.5 }}>
@@ -146,10 +171,21 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
                   {modelTitle(model.model)}
                 </Typography>
                 <Box sx={{ display: "flex", gap: 0.75 }}>
+                  {model.leftOut && <Chip size="small" color="error" label={t("Không chạy")} />}
                   {model.held && <Chip size="small" color="warning" label={t("Đang dừng dở")} />}
                   <Chip size="small" color="primary" label={model.version > 0 ? t("Phiên bản {version}", { version: model.version }) : t("Chưa có phiên bản")} />
                 </Box>
               </Box>
+              {model.leftOut && (
+                <Alert severity="error" sx={{ py: 0 }}>
+                  {t("Phiên bản đã lưu không qua được các kiểm tra của bản này nên mô hình chưa chạy: {problems}. Dữ liệu và các phiên bản đã lưu còn nguyên; mô hình chạy lại khi phiên bản đã lưu qua được kiểm tra.", { problems: (model.problems ?? []).join("; ") })}
+                </Alert>
+              )}
+              {model.warnings.length > 0 && (
+                <Alert severity="warning" sx={{ py: 0 }}>
+                  {t("Mô hình đang chạy, nhưng tệp còn chỗ không qua được kiểm tra của bản này: {problems}. Sửa tệp rồi áp dụng lại để khai báo đúng.", { problems: model.warnings.join("; ") })}
+                </Alert>
+              )}
               {model.held && (
                 <Alert severity="warning" sx={{ py: 0 }}>
                   {model.version > 0
@@ -163,6 +199,9 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
                   <span>{t(" · bởi {name}", { name: applier(model) })}</span>
                 </Tooltip>
               </Typography>
+              {(projects.length > 0 || model.project !== null) && (
+                <ProjectSelect projects={projects} value={model.project} onChange={(project) => setMoving({ model, project })} />
+              )}
               {summary ? (
                 <>
                   <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap" }}>
@@ -208,6 +247,28 @@ export default function ModelsTab({ refresh, onBrowse, onOpen, onChanged }: Prop
           );
         })}
       </Box>
+      {moving && (
+        <Dialog open onClose={() => setMoving(null)} maxWidth="sm" fullWidth>
+          <DialogTitle>{t("Đổi dự án của {model}?", { model: modelTitle(moving.model.model) })}</DialogTitle>
+          <DialogContent>
+            <Typography variant="body2">
+              {t("Quản trị viên của dự án cũ không còn gán được vai của mô hình này, còn quản trị viên của dự án mới thì gán được cho thành viên của dự án mới. Các vai đã gán cho tài khoản vẫn giữ nguyên, kể cả với người không thuộc dự án mới.")}
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setMoving(null)}>{t("Giữ nguyên")}</Button>
+            <Button
+              variant="contained"
+              onClick={() => {
+                void moveToProject(moving.model, moving.project);
+                setMoving(null);
+              }}
+            >
+              {t("Đổi dự án")}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
       {giveUp && (
         <Dialog open onClose={() => setGiveUp(null)} maxWidth="sm" fullWidth>
           <DialogTitle>{t("Hủy bỏ lần áp dụng dở của {model}?", { model: modelTitle(giveUp.model) })}</DialogTitle>

@@ -3,7 +3,7 @@
 .hero {
   padding: 4rem 0;
   text-align: center;
-  background: linear-gradient(135deg, #14532d 0%, #1f7a4d 60%, #2f9e66 100%);
+  background: linear-gradient(135deg, #161f5c 0%, #3451d1 60%, #5a76e8 100%);
   color: #fff;
 }
 
@@ -16,6 +16,18 @@
   max-width: 40rem;
   margin: 0 auto 1.5rem;
   font-size: 1.2rem;
+}
+
+.buttons :global(.button--primary) {
+  background: #fff;
+  border-color: #fff;
+  color: #243a98;
+}
+
+.buttons :global(.button--secondary) {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.7);
+  color: #fff;
 }
 
 .buttons {

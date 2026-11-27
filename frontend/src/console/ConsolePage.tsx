@@ -1,22 +1,25 @@
 // SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
 import { useEffect, useRef, useState } from "react";
-import { Alert, Box, Skeleton, Snackbar, Tab, Tabs } from "@mui/material";
+import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, MenuItem, Skeleton, Snackbar, Tab, Tabs, TextField } from "@mui/material";
 import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined";
 import AutoAwesomeMosaicOutlinedIcon from "@mui/icons-material/AutoAwesomeMosaicOutlined";
 import EditNoteOutlinedIcon from "@mui/icons-material/EditNoteOutlined";
+import FolderOutlinedIcon from "@mui/icons-material/FolderOutlined";
 import LayersOutlinedIcon from "@mui/icons-material/LayersOutlined";
 import ApiOutlinedIcon from "@mui/icons-material/ApiOutlined";
 import PeopleOutlineIcon from "@mui/icons-material/PeopleOutline";
 import SyncAltIcon from "@mui/icons-material/SyncAlt";
 import { Title } from "react-admin";
 import PageHeader from "../shell/PageHeader";
-import { getSchema, listTemplates, type Template } from "./api";
+import { getProjectScope, getSchema, listTemplates, type ProjectScope, type Template } from "./api";
 import { describeSchema } from "./formGuide";
 import EditorTab from "./EditorTab";
 import ModelsTab from "./ModelsTab";
 import { registerModelSchema } from "./monacoSetup";
 import OutboxTab from "./OutboxTab";
+import ProjectMembersPanel from "./ProjectMembersPanel";
+import ProjectsTab from "./ProjectsTab";
 import TemplatesTab from "./TemplatesTab";
 import AppsTab from "./AppsTab";
 import DataCatalogTab from "./DataCatalogTab";
@@ -36,8 +39,57 @@ entities:
     access: {USER: all}
 `;
 
-// The control panel of the implementer: pick a template, write the model, see the plan, apply.
+// The whole control panel for the platform administrator; an administrator of projects gets only
+// the people of those projects.
 export default function ConsolePage() {
+  const [scope, setScope] = useState<ProjectScope | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    getProjectScope().then(setScope, (e: unknown) => setError(e instanceof Error ? e.message : t("Không đọc được dữ liệu của bảng điều khiển")));
+  }, []);
+
+  if (error) return <Alert severity="error">{error}</Alert>;
+  if (!scope) return <Skeleton height={48} />;
+  if (scope.global) return <FullConsole />;
+  const administered = scope.projects.filter((project) => project.level === "ADMIN");
+  if (administered.length === 0) return <Alert severity="warning">{t("Tài khoản này không quản trị dự án nào.")}</Alert>;
+  return <ScopedConsole projects={administered} />;
+}
+
+// What an administrator of projects does: gives the roles of their models and keeps the members.
+function ScopedConsole({ projects }: { projects: ProjectScope["projects"] }) {
+  const [tab, setTab] = useState(0);
+  const [project, setProject] = useState(projects[0].name);
+  return (
+    <Box sx={{ contain: "inline-size" }}>
+      <Title title={t("Bảng điều khiển")} />
+      <PageHeader title={t("Bảng điều khiển")} subtitle={t("Quản lý người dùng của các dự án bạn quản trị.")} />
+      <Tabs value={tab} onChange={(_, next) => setTab(next)} sx={{ mb: 2.5, borderBottom: 1, borderColor: "divider" }}>
+        <Tab icon={<PeopleOutlineIcon fontSize="small" />} iconPosition="start" label={t("Người dùng")} />
+        <Tab icon={<FolderOutlinedIcon fontSize="small" />} iconPosition="start" label={t("Thành viên dự án")} />
+      </Tabs>
+      {tab === 0 && <UsersTab limited />}
+      {tab === 1 && (
+        <Box>
+          {projects.length > 1 && (
+            <TextField select size="small" label={t("Dự án")} value={project} onChange={(event) => setProject(event.target.value)} sx={{ width: 260, maxWidth: "100%", mb: 2 }}>
+              {projects.map((item) => (
+                <MenuItem key={item.name} value={item.name}>
+                  {item.label}
+                </MenuItem>
+              ))}
+            </TextField>
+          )}
+          <ProjectMembersPanel project={project} global={false} />
+        </Box>
+      )}
+    </Box>
+  );
+}
+
+// The control panel of the implementer: pick a template, write the model, see the plan, apply.
+function FullConsole() {
   const [tab, setTab] = useState(0);
   const [schema, setSchema] = useState<Record<string, unknown> | null>(null);
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -65,11 +117,20 @@ export default function ConsolePage() {
     );
   }, []);
 
-  const edit = (content: string, label: string) => {
+  // What waits for an answer while the editor holds changes that are not applied.
+  const [pending, setPending] = useState<{ content: string; label: string } | null>(null);
+
+  const open = (content: string, label: string) => {
     baselineRef.current = content;
     setText(content);
     setSource(label);
     setTab(2);
+  };
+
+  // Opening a model or a template replaces the text; the editor asks first when that would lose changes.
+  const edit = (content: string, label: string) => {
+    if (textRef.current === baselineRef.current) open(content, label);
+    else setPending({ content, label });
   };
 
   if (error) return <Alert severity="error">{error}</Alert>;
@@ -96,6 +157,7 @@ export default function ConsolePage() {
         <Tab icon={<PeopleOutlineIcon fontSize="small" />} iconPosition="start" label={t("Người dùng")} />
         <Tab icon={<ApiOutlinedIcon fontSize="small" />} iconPosition="start" label={t("Ứng dụng ngoài")} />
         <Tab icon={<AccountTreeOutlinedIcon fontSize="small" />} iconPosition="start" label={t("Danh mục dữ liệu")} />
+        <Tab icon={<FolderOutlinedIcon fontSize="small" />} iconPosition="start" label={t("Dự án")} />
       </Tabs>
       {!schema && (
         <Box>
@@ -122,6 +184,7 @@ export default function ConsolePage() {
         <EditorTab
           text={text}
           source={source}
+          changed={text !== baselineRef.current}
           schema={schema}
           onText={setText}
           onApplied={(message) => {
@@ -136,6 +199,26 @@ export default function ConsolePage() {
       {schema && tab === 4 && <UsersTab />}
       {schema && tab === 5 && <AppsTab />}
       {schema && tab === 6 && <DataCatalogTab />}
+      {schema && tab === 7 && <ProjectsTab />}
+      <Dialog open={pending !== null} onClose={() => setPending(null)} maxWidth="xs" fullWidth>
+        <DialogTitle>{t("Thay bản đang soạn?")}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>{t("Bản đang soạn có thay đổi chưa áp dụng. Mở “{source}” sẽ thay nó và các thay đổi đó sẽ mất.", { source: pending?.label ?? "" })}</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPending(null)}>{t("Hủy")}</Button>
+          <Button
+            color="warning"
+            variant="contained"
+            onClick={() => {
+              if (pending) open(pending.content, pending.label);
+              setPending(null);
+            }}
+          >
+            {t("Thay thế")}
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Snackbar open={note !== null} autoHideDuration={6000} onClose={() => setNote(null)} message={note ?? ""} />
     </Box>
   );

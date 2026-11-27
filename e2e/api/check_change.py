@@ -238,6 +238,18 @@ entities:
     untouched = v8.replace("  category:\n    fields:\n      title: {type: text, required: true}", "  category:\n    label: Danh mục\n    fields:\n      title: {type: text, required: true}")
     other_plan = plan(admin, untouched)
     rt.check("T7-08 a change elsewhere reports no open records", other_plan["openRecords"] == {}, str(other_plan["openRecords"]))
+    rt.check("T7-08 a plan with no process change has no impacts", other_plan.get("impacts") == [], str(other_plan.get("impacts")))
+    # A field an action newly requires is counted on the records waiting for that action; the plan stays SAFE.
+    rt.psql(f"update m_shop.order set kind = 'pen' where id = {ids[1]}")
+    rt.psql(f"update m_shop.order set kind = null where id = {ids[2]}")
+    needs = v8.replace("process: {family: approval, handler: SELLER}", "process: {family: approval, handler: SELLER, actions: {approve: {require: [kind]}}}")
+    needs_plan = plan(admin, needs)
+    code, lacking = rt.psql("select count(*) from m_shop.order where status = 'submitted' and (kind is null or btrim(kind::text) = '')")
+    code, holding = rt.psql("select count(*) from m_shop.order where status = 'submitted' and kind is not null and btrim(kind::text) <> ''")
+    found = [i for i in needs_plan.get("impacts", []) if i["entity"] == "order" and i["action"] == "approve"]
+    rt.check("T7-08 a field an action newly requires is counted on the waiting records that lack it, and not on those that have it",
+             needs_plan["level"] == "SAFE" and len(found) == 1 and found[0]["fields"] == ["kind"] and found[0]["rows"] == int(lacking) >= 1 and int(holding) >= 1,
+             f"{needs_plan['level']} {found} lacking={lacking} holding={holding}")
     for record_id in ids[1:]:
         status, _ = kc.api(buyer, "POST", f"{BASE}/{record_id}/actions/withdraw", {})
         rt.check("T7-08 open record can be closed before process rule change", status == 200, str(status))

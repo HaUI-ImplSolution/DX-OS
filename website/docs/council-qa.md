@@ -1,6 +1,6 @@
 # Bộ trả lời câu hỏi hội đồng
 
-Những câu hội đồng dễ hỏi sau phần trình diễn, kèm câu trả lời của đội cho bản `2.0.2`.
+Những câu hội đồng dễ hỏi sau phần trình diễn, kèm câu trả lời của đội cho bản `2.1.0`.
 Mười câu đầu theo thứ tự câu hỏi định hướng ở mục 13 của [đề thi](https://vfossa.vn/tin-tuc/de-thi-phan-mem-nguon-mo-olp-2026-798.html); các câu sau là câu hỏi phụ hay gặp.
 Mỗi câu trả lời nói được trong khoảng nửa phút.
 Dòng **Bằng chứng** là chỗ mở ngay khi hội đồng muốn xem: đường dẫn trong repository, lệnh, bước CI.
@@ -27,6 +27,8 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 | 16 | Lịch sử hồ sơ có chống sửa lén không? |
 | 17 | Bảo mật: gọi thẳng API để lách quy trình thì sao? |
 | 18 | Giấy phép tuân thủ thế nào? |
+| 19 | Mã có phần do công cụ AI viết, đội kiểm soát thế nào? |
+| 20 | Sao không kèm Grafana cho số đo của lõi? |
 
 ## 1. Open-Core nằm ở đâu, thành phần nào chạy headless?
 
@@ -43,7 +45,10 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
   Đội tự viết phần nối chúng theo một tệp mô hình.
 - Java 21 và Spring Boot vì ranh giới giữa các module kiểm được lúc biên dịch.
 - Mã, tài liệu, ảnh, video và sơ đồ của đội theo Apache-2.0, hai tệp phông Noto Sans theo OFL-1.1; cả hai giấy phép đều được OSI công nhận và không xung đột.
-  Mọi thành phần khác đều theo giấy phép OSI; không dùng BUSL, SSPL, RSAL, MSCL hay phần Enterprise.
+  Dữ liệu của bộ phân loại hồ sơ theo CC-BY-4.0, giấy phép dữ liệu mở.
+  Thành phần phần mềm bên thứ ba theo giấy phép OSI; không dùng BUSL, SSPL, RSAL, MSCL hay phần Enterprise.
+- Bảng tham chiếu của đề có năm thành phần không đạt OSI: Vault, n8n, Redpanda, MongoDB và immudb.
+  Đội không dùng thành phần nào trong số này; đó là quyết định thiết kế theo cam kết chỉ dùng phần mềm nguồn mở.
 - **Bằng chứng:** [Thành phần được chọn và không chọn](./dependencies.md); `DEPENDENCIES.txt`; `sbom/`; job `Check licenses` của workflow `Compliance`.
 
 ## 3. Đổi ứng dụng nghiệp vụ thì lõi có phải đổi không?
@@ -71,17 +76,18 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - **H, môi trường số chung:** một lần đăng nhập, vai và đơn vị khai trong mô hình; sinh viên chỉ thấy hồ sơ của mình, cán bộ chỉ thấy hồ sơ của đơn vị mình hoặc được giao, và xử lý từ hộp việc.
 - **P, rào chắn và luồng tự động:** trạng thái chỉ đổi qua quy trình (gọi thẳng API để đổi bị chặn); từ chối và trả lại bắt buộc có lý do; người tạo không tự quyết hồ sơ của mình; hạn xử lý, quá hạn lên đầu hộp việc; việc sau khi duyệt chạy qua hàng đợi và được thử lại.
 - **D, một nguồn sự thật:** dữ liệu nghiệp vụ, lịch sử và hàng đợi cùng nằm ở PostgreSQL; lịch sử hồ sơ nối thành chuỗi hash; mọi thay đổi báo ra ngoài bằng webhook có chữ ký.
-- **I, trí tuệ:** chưa làm (xem câu 6 và 11).
+- **I, trí tuệ:** một thành phần, trợ lý đề xuất giá trị một trường bằng bộ phân loại tự huấn luyện, người xác nhận trước khi ghi (xem câu 6 và 11).
 - **Bằng chứng:** `python3 e2e/api/check_demo.py` (tám tiêu chí của kịch bản trình diễn); `check_case.py`, `check_process.py`, `check_events.py`.
 
 ## 6. AI nằm ở đâu, dữ liệu và giới hạn là gì?
 
-- Phần AI chưa có.
-  Dịch vụ tìm kiếm tri thức từng có đã gỡ khỏi repository, vì chưa nối vào lõi và mô hình embedding của nó chưa kiểm được dữ liệu huấn luyện theo định nghĩa Open Source AI của OSI.
-- Hướng làm: hỏi đáp có trích nguồn và tác tử đề xuất giá trị cho một trường, luôn có người duyệt trước khi ghi, chạy tại chỗ để dữ liệu không ra ngoài máy.
-- Điều kiện: chỉ dùng mô hình có trọng số và dữ liệu huấn luyện đều mở; chưa chọn mô hình nào.
+- Trợ lý nghiệp vụ đề xuất giá trị một trường của hồ sơ và rà hồ sơ ở Hộp việc; người dùng sửa, hủy hoặc xác nhận trước khi ghi qua API Core.
+- Mô hình do đội tự huấn luyện: bộ phân loại hồ sơ tiếng Việt chạy trên CPU ngay trong trợ lý, không cần mô hình ngoài; đề xuất kèm cụm chữ của hồ sơ làm căn cứ, và từ chối khi không đủ căn cứ.
+- Dữ liệu: câu huấn luyện là bản nháp do Claude (Anthropic) viết, theo CC-BY-4.0 trong phạm vi đội có quyền; tập chỉnh ngưỡng do Claude viết; điều khoản của Anthropic cấm dùng phần do Claude soạn để huấn luyện chatbot hoặc mô hình sinh văn bản, và dữ liệu công khai nên bên thứ ba có thể làm vậy, ghi ở thẻ dữ liệu; Codex không tạo dữ liệu nào; câu lạc đề lấy từ MASSIVE; bộ nghiệm thu do đội viết tay.
+  Mã, trọng số, tập chỉnh và bộ nghiệm thu nằm trong repository.
+- Giới hạn: số đo lấy trên câu do đội viết, chưa trên hồ sơ thật, và bộ nghiệm thu đã được đo ba lần; bộ phân loại mới bật cho ba mẫu; hỏi đáp có trích nguồn, tìm kiếm tri thức và tác tử nghe sự kiện nằm ngoài phạm vi.
 - Lõi đã có sẵn chỗ để nối: hàng đợi sự kiện, webhook có chữ ký và `GET /api/v1/events` cho tác tử đọc việc mới, còn ghi lại vẫn đi qua API chung nên quyền, quy tắc và quy trình vẫn áp dụng.
-- **Bằng chứng:** [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md), dòng "Phần AI"; `docs/dynamic-core/README.md`, mục "Cam kết nguồn mở".
+- **Bằng chứng:** `tools/classifier/MODEL_CARD.md`; `tools/classifier/data/DATA_CARD.md`; [Việc tồn đọng](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/dynamic-core/BACKLOG.md), dòng "Phạm vi AI"; `docs/dynamic-core/README.md`, mục "Cam kết nguồn mở".
 
 ## 7. Một thành phần ngừng thì hệ thống ra sao?
 
@@ -100,7 +106,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
   Không cần mã nguồn: `dxos-install.sh` của bản phát hành tải gói, kiểm SHA-256, cài vào `~/.dxos`; `dxos start <tệp mô hình>` lên đủ dịch vụ, áp dụng tệp và in tài khoản `admin`.
 - Mọi cấu hình nằm ở `deploy/.env`, không sửa tệp mã.
 - Đã kiểm: `dxos-install.sh` của release `v2.0.0` cài và `dxos start` kéo image `v2.0.0` từ GHCR trên máy chủ đã xóa stack cũ, rồi áp dụng một tệp mô hình.
-- **Bằng chứng:** `README.md` mục Chạy thử; các job `Install from the release archive` và `Validate the Compose file` của workflow `Platform` (gói sai SHA-256 bị từ chối, mọi tệp Compose mount đều có); `docs/TESTING.md` mục 3.
+- **Bằng chứng:** `README.md` mục Bắt đầu nhanh; các job `Test the install` và `Validate the Compose file` của workflow `Platform` (gói sai SHA-256 bị từ chối, mọi tệp Compose mount đều có); `docs/TESTING.md` mục 3.
 
 ## 9. Từ 100 lên 100.000 người dùng thì sao?
 
@@ -122,7 +128,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 
 ## 11. Còn gì chưa làm?
 
-- Chưa có phần AI: tìm kiếm tri thức có nguồn, hỏi đáp sinh câu trả lời và tác tử có người duyệt.
+- Phần AI mới có một thành phần, trợ lý đề xuất giá trị một trường cho vài mẫu đã huấn luyện; chưa có tìm kiếm tri thức có nguồn, hỏi đáp sinh câu trả lời và tác tử nghe sự kiện.
 - Duyệt nhiều cấp tuần tự và rẽ nhánh theo ngưỡng khai báo được bằng quy trình tự khai báo, mới kiểm tay trên stack tạm chứ chưa có kiểm tự động.
 - Hồ dữ liệu có phần lưu trữ hồ sơ đã đóng theo lịch và `dxos archive query` truy vấn từng lần chạy; hai nguyên lý kế tiếp của đề mới được đáp ứng một phần: dữ liệu vận hành mới vào qua bộ mô phỏng IT/OT và chưa có bản sao số; phả hệ mới dừng ở danh mục dữ liệu của mô hình, chưa đến từng trường.
 - Một bản backend; chưa chịu lỗi nhiều nút; chưa thử tải lớn.
@@ -191,7 +197,26 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - Mã của đội theo Apache-2.0, có `LICENSE` toàn văn, `NOTICE` và dòng SPDX ở đầu mỗi tệp mã.
 - Mã, tài liệu và ảnh của repository theo Apache-2.0, hai tệp phông theo OFL-1.1; không có thành phần AGPL nào trong cây mã.
 - Mỗi bản phát hành có gói `.tar.gz` kèm `.sha256` và SBOM CycloneDX; không dùng định dạng đóng.
-- Job `Check licenses` của workflow `Compliance` chạy ở mọi pull request: kiểm header, giấy phép của từng gói trong SBOM, danh mục image.
-- Cam kết của đội chặt hơn thể lệ: cả công cụ, mô hình AI (khi có) và dữ liệu đều phải mở; thành phần không đạt đã gỡ khỏi bản phát hành.
-- Hai gói dữ liệu (CC-BY-4.0, CC0-1.0) chỉ dùng lúc dựng trang docs được nêu tên kèm lý do; ClamAV có image kèm `libclamunrar` theo giấy phép UnRAR, ghi rõ ở `DEPENDENCIES.txt`.
-- **Bằng chứng:** `LICENSE`, `NOTICE`, `DEPENDENCIES.txt`; `python3 .github/scripts/check_licenses.py`; [Thành phần được chọn và không chọn](./dependencies.md); [Rà soát PoF](./pof-audit.md).
+- Job `Check licenses` của workflow `Compliance` chạy ở mọi pull request: kiểm header, giấy phép của từng gói trong SBOM, danh mục image, và `docs/DEPENDENCY_INVENTORY.md` liệt kê mọi gói kể cả gói dev, test và plugin build; mỗi image phát hành kèm `LICENSE`, `NOTICE` và giấy phép của thư viện ở `/licenses`, và `docs/IMAGE_PACKAGES.md` liệt kê gói bên trong các image bên thứ ba.
+- Cam kết của đội chặt hơn thể lệ: cả công cụ, mô hình AI và dữ liệu đều phải mở; thành phần không đạt đã gỡ khỏi bản phát hành.
+- Mọi ngoại lệ ngoài danh sách OSI nêu tên kèm lý do ở phần "Giấy phép ngoài danh sách OSI" của `DEPENDENCIES.txt` và ở `docs/DEPENDENCY_INVENTORY.md`: dữ liệu (kể cả dữ liệu của bộ phân loại hồ sơ, CC-BY-4.0), phông, công cụ dựng và gói có sẵn trong image bên thứ ba.
+  Image ClamAV của dự án đã bỏ `libclamunrar` (giấy phép UnRAR).
+- **Bằng chứng:** `LICENSE`, `NOTICE`, `DEPENDENCIES.txt`; `python3 .github/scripts/check_licenses.py`; `python3 .github/scripts/check_license_inventory.py check`; [Thành phần được chọn và không chọn](./dependencies.md); [Rà soát PoF](./pof-audit.md).
+
+## 19. Mã có phần do công cụ AI viết, đội kiểm soát thế nào?
+
+- Đội dùng Claude (Anthropic) và Codex (OpenAI) để viết nháp mã và tài liệu; 443 trong 1273 commit trên `Khuong/main` (tính đến hết ngày 27/11/2026) mang dòng `Co-Authored-By` của công cụ, và GitHub hiện chúng ở trang thống kê người đóng góp; không phải commit nào có dùng công cụ cũng mang dòng đó.
+- Người gửi pull request đọc, chạy và chịu trách nhiệm về từng thay đổi; công cụ không tự gộp vào nhánh nào.
+- Mọi thay đổi đi qua cùng kiểm tra của CI: biên dịch, định dạng, kiểm đầu-cuối trên stack thật, kiểm giấy phép và quét bí mật; mã do công cụ viết không có đường tắt.
+- Giấy phép của phần đóng góp do người gửi bảo đảm; thư viện mới qua kiểm OSI trước khi thêm, nên mã sinh ra không kéo theo thành phần ngoài danh sách.
+- Quy tắc nằm ở mục "Công cụ AI hỗ trợ" của `CONTRIBUTING.md`.
+- **Bằng chứng:** `git log --grep "Co-Authored-By"`; `CONTRIBUTING.md`; job `Check licenses` và `Scan for secrets` của workflow `Compliance`.
+
+## 20. Sao không kèm Grafana cho số đo của lõi?
+
+- Vì giấy phép: image `grafana/grafana:12.4.15` đóng gói trong giao diện web hai gói `@locker/near-membrane-shared` và `@locker/near-membrane-shared-dom` 0.14.0.
+- `package.json` của hai gói ghi MIT, nhưng tệp `LICENSE.txt` phát hành kèm là Terms of Use của Salesforce.
+- Điều khoản đó cấm người dùng ở nước bị Mỹ cấm vận, buộc người dùng bồi thường cho Salesforce và cho Salesforce thu dữ liệu sử dụng; theo đội đọc, nó không đạt định nghĩa nguồn mở của OSI.
+- Mã của Grafana vẫn khai AGPL-3.0; phần không đạt là hai gói đi kèm, nên đội không đưa image này vào dự án.
+- Lõi phát số đo theo định dạng Prometheus: dự án kèm Prometheus (Apache-2.0) tùy chọn, và người triển khai nối công cụ giám sát của mình vào.
+- **Bằng chứng:** `npm pack @locker/near-membrane-shared@0.14.0` rồi mở `package/LICENSE.txt`; source map `public/build/*.js.map` trong image Grafana nêu hai gói; `deploy/docker-compose.prometheus.yml`.

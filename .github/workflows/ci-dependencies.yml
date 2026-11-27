@@ -14,6 +14,16 @@ on:
       - 'website/package-lock.json'
       - 'e2e/web/package-lock.json'
       - 'sbom/*.cdx.json'
+      - 'DEPENDENCIES.txt'
+      - 'docs/DEPENDENCY_INVENTORY.md'
+      - '.github/licenses/license-inventory.json'
+      - '.github/licenses/osi-approved.json'
+      - '.github/licenses/dependency-exceptions.json'
+      - '.github/scripts/check_license_inventory.py'
+      - '.github/scripts/check_third_party_notices.py'
+      - 'backend/licenses/**'
+      - 'sso/licenses/**'
+      - 'clamav/licenses/**'
       - 'deploy/docker-compose.yml'
       - '.trivyignore'
       - '.github/workflows/ci-dependencies.yml'
@@ -30,6 +40,16 @@ on:
       - 'website/package-lock.json'
       - 'e2e/web/package-lock.json'
       - 'sbom/*.cdx.json'
+      - 'DEPENDENCIES.txt'
+      - 'docs/DEPENDENCY_INVENTORY.md'
+      - '.github/licenses/license-inventory.json'
+      - '.github/licenses/osi-approved.json'
+      - '.github/licenses/dependency-exceptions.json'
+      - '.github/scripts/check_license_inventory.py'
+      - '.github/scripts/check_third_party_notices.py'
+      - 'backend/licenses/**'
+      - 'sso/licenses/**'
+      - 'clamav/licenses/**'
       - 'deploy/docker-compose.yml'
       - '.trivyignore'
       - '.github/workflows/ci-dependencies.yml'
@@ -89,7 +109,7 @@ jobs:
   # The vulnerabilities job reads pom.xml, where the versions managed by Spring Boot are not written.
   # The SBOM lists every resolved package, so Jackson, Tomcat and the like are checked too.
   backend-sbom:
-    name: Scan the backend SBOM
+    name: Scan backend SBOM
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -97,7 +117,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up JDK 21
-        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
         with:
           distribution: 'temurin'
           java-version: '21'
@@ -115,6 +135,14 @@ jobs:
       # The SBOM the pull request would have, which a bot has not generated again, so a new version is read.
       - name: The resolved packages have open licenses
         run: python3 .github/scripts/check_licenses.py sbom backend/target/backend.cdx.json
+
+      # Section 8 of DEPENDENCIES.txt lists the Maven packages of every scope, the plugins and their libraries.
+      - name: DEPENDENCIES.txt lists the Maven packages as they resolve, each with a license the OSI approves
+        run: python3 .github/scripts/check_license_inventory.py check --maven
+
+      # backend/licenses/ holds the license and notice texts that the backend and monitor images copy to /licenses.
+      - name: The license and notice texts of the Java images are those of the resolved libraries
+        run: python3 .github/scripts/check_third_party_notices.py check
 
       - name: Fail on a fixable HIGH or CRITICAL vulnerability in the resolved dependencies
         run: >

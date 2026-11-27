@@ -11,9 +11,9 @@ Việc chưa làm, chưa kiểm và giới hạn đã biết nằm ở [`BACKLOG
 - **Miền phục vụ:** quy trình chung cho bản ghi có vòng đời và có người tham gia (hồ sơ, ticket, đặt chỗ, mượn trả...), đổi được mô hình và quy trình an toàn khi hệ thống đang chạy; xem [Miền phục vụ](#miền-phục-vụ).
 - **Người dùng chính:** người triển khai hệ thống cho một tổ chức, làm việc qua [bảng điều khiển](#bảng-điều-khiển).
 - **Cách xây:** lõi headless, ghép từ các dịch vụ nguồn mở; đội tự viết một dịch vụ Java gồm phần điều khiển và API chung đọc mô hình lúc chạy.
-- **Ba tính năng đào sâu:** GitOps cho nghiệp vụ, quy trình không lách được, tác tử AI có người duyệt.
+- **Ba tính năng đào sâu:** GitOps cho nghiệp vụ, quy trình không lách được, trợ lý AI có người xác nhận.
 - **Mở rộng:** người dùng có thể viết thêm API và giao diện, luôn nằm ngoài lõi.
-- **Nguồn mở:** mọi thành phần của bản phát hành đều mở, kể cả công cụ, mô hình AI và dữ liệu.
+- **Nguồn mở:** mọi thành phần của bản phát hành đều mở, kể cả công cụ, dữ liệu và mô hình AI; mô hình AI là bộ phân loại hồ sơ do đội tự huấn luyện.
 - **Hạn gửi bài:** 17:00 ngày 2026-12-06.
 
 ## Đề thi
@@ -91,7 +91,7 @@ Các hàm ý sau là suy luận từ cách đề viết, người ra đề khôn
 | Điều chỉnh quy trình không cần sửa mã nguồn, BPMN | Họ mẫu quy trình trên Flowable, hoặc tự khai báo trạng thái và hành động; BPMN sinh từ tệp mô hình |
 | GitOps, tự phục hồi                                                  | Triển khai hạ tầng và nghiệp vụ kéo từ git (`dxos gitops`), tệp sai bị chặn, áp dụng dở được hoàn tất hoặc hủy bỏ, `dxos reconcile` tự phục hồi |
 | Kiến trúc hướng sự kiện | Trục sự kiện bằng bảng outbox: webhook có chữ ký, API kéo theo `eventId`, kênh báo cho hộp việc đang mở |
-| Tác tử AI, Human-in-the-loop, RAG                                     | Tác tử có người duyệt và hỏi đáp kèm nguồn                                     |
+| Tác tử AI, Human-in-the-loop, RAG                                     | Trợ lý đề xuất giá trị một trường bằng bộ phân loại tự huấn luyện, người xác nhận trước khi ghi; hỏi đáp kèm nguồn và tác tử nghe sự kiện không làm |
 | Chống nguyên khối, chủ quyền số                                   | Thành phần thay được, dữ liệu trong PostgreSQL thuần                               |
 | Chống ốc đảo dữ liệu | Một định danh, một cơ sở dữ liệu, mô hình là danh mục dữ liệu và trang Danh mục dữ liệu đọc từ đó; hồ sơ đã đóng ghi ra kho Parquet |
 
@@ -279,7 +279,8 @@ Người triển khai làm việc qua bảng điều khiển; CLI `dxos` là má
 Bảng điều khiển thuộc tầng 2, nằm ở tuyến `/console` của ứng dụng web, chỉ dành cho vai ADMIN và chỉ gọi API của lõi.
 
 - **Thư viện mẫu:** chọn họ mẫu và mô hình mẫu, kèm mô tả mỗi mẫu cần gì.
-- **Soạn mô hình có hướng dẫn:** form dựng từ JSON Schema của định dạng mô hình, trình soạn YAML có gợi ý và báo lỗi theo schema, và sơ đồ quy trình vẽ từ tệp đang soạn.
+- **Soạn mô hình có hướng dẫn:** trình dựng mô hình theo cây cấu trúc, dựng từ JSON Schema của định dạng mô hình, gồm vai trò, đơn vị và với mỗi thực thể là trường, quyền, quy trình, giao diện, mẫu in và trợ lý; bấm một trạng thái hay mũi tên trên sơ đồ quy trình thì mở chỗ sửa nó.
+  Trình soạn YAML có gợi ý và báo lỗi theo schema, và sơ đồ quy trình vẽ từ tệp đang soạn.
 - **Màn hình kế hoạch:** khác biệt, mức rủi ro, dòng vi phạm và xác nhận thay đổi mất dữ liệu; mỗi vai đổi quyền truy cập là một dòng `vai: cũ → mới`, phân loại là cấp thêm, thu hồi, mở rộng, thu hẹp hoặc đổi.
 - **Lịch sử áp dụng:** từng phiên bản và từng bước của mỗi lần áp dụng, kèm quay về phiên bản trước.
 - **Sơ đồ quy trình:** trạng thái và hành động của quy trình mà thực thể dùng, vẽ cả từ tệp đang soạn, chỉ để xem.
@@ -327,7 +328,7 @@ Thêm năng lực mới nghĩa là thêm provider, không phải sửa lõi.
 | Trục sự kiện                   | Bảng outbox trong PostgreSQL             | Webhook theo mô hình, API kéo sự kiện theo `eventId`, thông điệp của việc áp dụng mô hình và của tài khoản (chỉ qua webhook); kênh sự kiện `GET /api/v1/inbox/stream` báo cho giao diện khi hồ sơ đổi |
 | Thông báo                       | Mattermost hoặc Slack do người triển khai cấp | Đích webhook dạng `chat`: việc mới, sắp đến hạn, quá hạn, leo thang |
 | Báo cáo | Công cụ báo cáo do người triển khai cấp | Vai `report_ro` chỉ đọc các bảng nghiệp vụ, cách kết nối ở [`docs/REPORTING.md`](../REPORTING.md) |
-| AI | Mô hình ngôn ngữ và embedding mở hoàn toàn | Khai báo nguồn tri thức và tác tử |
+| AI | Bộ phân loại hồi quy logistic đội tự huấn luyện, chạy trên CPU | Dữ liệu, huấn luyện và suy luận (`tools/classifier/`, `assistant/`); nhiệm vụ trợ lý khai trong mô hình (`ai.tasks`) |
 | Vận hành                        | `dx-monitor`, `deploy/backup.sh`          | Giữ nguyên                                                    |
 
 ### Nguyên tắc mã nguồn
@@ -348,7 +349,7 @@ Trần dưới đây giữ cho tệp mô hình không biến thành ngôn ngữ 
 | Mức              | Nội dung                                               | Cách làm                                                      |
 | ------------------- | --------------------------------------------------------- | ----------------------------------------------------------------- |
 | **1. Khai báo**  | Thực thể, kiểu trường, quyền, luồng, đích webhook | Chỉ tệp mô hình                                             |
-| **2. Cấu hình** | Quy tắc, biểu thức, hạn xử lý, tác tử AI        | Chỉ tệp mô hình, không viết mã                           |
+| **2. Cấu hình** | Quy tắc, biểu thức, hạn xử lý, nhiệm vụ trợ lý AI | Chỉ tệp mô hình, không viết mã                           |
 | **3. Mở rộng**  | Logic đặc thù, giao diện riêng                     | Mã nằm ngoài lõi, xem [Điểm mở rộng](#điểm-mở-rộng) |
 
 
@@ -359,7 +360,7 @@ Trần dưới đây giữ cho tệp mô hình không biến thành ngôn ngữ 
 | Quy tắc       | Bắt buộc, bắt buộc có điều kiện, duy nhất, giới hạn giá trị, mẫu chuỗi, chống trùng khoảng thời gian, chặn khi chưa đủ điều kiện |
 | Biểu thức    | Một dòng, không có vòng lặp, không có tác dụng phụ                              |
 | Quy trình     | Chọn từ mẫu có sẵn, hoặc tự khai báo trạng thái và hành động                                                |
-| Tác tử AI    | Khi có sự kiện, đề xuất giá trị một trường, người xác nhận                  |
+| Trợ lý AI    | Theo yêu cầu của người dùng, đề xuất giá trị một trường, người xác nhận     |
 
 Một năng lực mới chỉ được thêm khi cần ở ít nhất 3 lĩnh vực, khai báo được mà không cần cú pháp mới, và không làm hỏng các mô hình đã có.
 Không đạt thì đi qua điểm mở rộng.
@@ -447,21 +448,26 @@ Trạng thái hồ sơ không thể bị đi vòng:
 - Flowable chạy nhúng trong dịch vụ lõi dùng chung cơ sở dữ liệu, để đổi trạng thái và ghi hồ sơ nằm trong một giao dịch.
 
 Quy tắc khai báo được API chung kiểm để báo lỗi rõ và biên dịch thành ràng buộc trong cơ sở dữ liệu.
-Mọi thay đổi hồ sơ và bước quy trình phát ra sự kiện vào trục sự kiện, để thông báo, báo cáo và AI cùng nghe.
+Mọi thay đổi hồ sơ và bước quy trình phát ra sự kiện vào trục sự kiện, để thông báo và báo cáo cùng nghe.
 Tệp mô hình chọn đích webhook bằng `webhook: <tên đích>`; địa chỉ và bí mật của đích nằm ngoài tệp mô hình, trong một tệp cấu hình của bản cài.
 Các dòng của một hồ sơ tới đích theo đúng thứ tự, và bên nhận lỡ tin kéo lại theo `eventId`.
 
 Lõi có ba họ mẫu là chuỗi duyệt, công việc cần xử lý và chiếm dụng tài nguyên theo thời gian, cùng bộ quy tắc bất biến; có hộp việc, giao việc và quy tắc chặn; trục sự kiện có webhook theo mô hình, thông báo chat, nhắc hạn và leo thang khi quá hạn.
 Tham số của từng họ mẫu ở [`docs/MODEL.md`](../MODEL.md#tự-khai-báo-hoặc-mở-rộng-quy-trình).
 
-### 3. Tác tử AI có người duyệt
+### 3. Trợ lý AI có người xác nhận
 
-Khai báo trên một mô hình bất kỳ để có hỏi đáp kèm nguồn và tác tử nghe sự kiện.
-Có hồ sơ mới thì AI đề xuất và dẫn nguồn, người xác nhận.
-Đây là chuỗi từ P tới I đúng với Human-in-the-loop của đề, và cũng chứng minh cơ chế provider hoạt động.
+Khai báo `ai.tasks` trên một thực thể để người dùng nhờ trợ lý đề xuất giá trị cho một trường.
+Người dùng xem căn cứ, sửa hoặc xác nhận; Core kiểm quyền, quy tắc và phiên bản trước khi ghi, nên model không có đường ghi trực tiếp.
+Đây là bước từ P tới I với Human-in-the-loop của đề.
 
-AI là một provider nối vào lõi qua trục sự kiện và API, chạy bằng mô hình ngôn ngữ và embedding đạt định nghĩa Open Source AI của OSI.
-Tìm kiếm tri thức có nguồn, hỏi đáp sinh câu trả lời và tác tử đề xuất giá trị một trường đều cần người xác nhận; tác tử không tự hành động khi chưa có xác nhận.
+Mô hình của trợ lý là bộ phân loại hồ sơ tiếng Việt do đội tự huấn luyện: nó chạy trên CPU ngay trong trợ lý, đề xuất kèm cụm chữ trích từ hồ sơ làm căn cứ và từ chối khi không đủ căn cứ.
+Trọng số theo Apache-2.0; mã huấn luyện, dữ liệu huấn luyện và cách lấy dữ liệu ngoài công bố theo [cam kết nguồn mở](#cam-kết-nguồn-mở), xem [`tools/classifier/`](../../tools/classifier/README.md).
+Hộp việc rà được hồ sơ đang chờ và đánh dấu hồ sơ có giá trị khác gợi ý.
+
+Trợ lý là dịch vụ của tầng ứng dụng, chạy cùng stack ở chế độ full, nối vào lõi qua API; lõi và mọi nghiệp vụ chạy đủ khi không có nó.
+Cách cấu hình, giới hạn và gỡ ở [`assistant/README.md`](../../assistant/README.md).
+Hỏi đáp có nguồn, tìm kiếm tri thức và tác tử nghe sự kiện không nằm trong phạm vi; lý do ở mục "Phạm vi AI" của [`BACKLOG.md`](./BACKLOG.md).
 
 ## Điểm mở rộng
 
@@ -487,7 +493,7 @@ Lõi có webhook theo mô hình và API kéo sự kiện, kèm hai ví dụ ở 
 
 Kịch bản demo chính là **Một cửa sinh viên**: gửi yêu cầu xin giấy xác nhận, phúc khảo, hoãn thi kèm minh chứng.
 Đây là mô hình yêu cầu và phê duyệt chạy trên lõi.
-Phần AI đề xuất và hỏi đáp quy chế dựa trên một kho văn bản đạt [cam kết nguồn mở](#cam-kết-nguồn-mở).
+Phần trợ lý AI gợi ý loại hồ sơ bằng bộ phân loại huấn luyện trên dữ liệu đạt [cam kết nguồn mở](#cam-kết-nguồn-mở).
 
 **Mô hình thứ hai** là cấp phát dịch vụ IT, rất ngắn, chứng minh tính trung lập: nhân viên xin vào một nhóm quyền, được duyệt thì Keycloak cấp thật.
 Nếu mô hình này tốn hơn một tệp, đó là tín hiệu lõi còn gắn với ứng dụng đầu.
@@ -569,13 +575,13 @@ Thể lệ chỉ bắt buộc giấy phép OSI cho sản phẩm; cam kết của
 | Dữ liệu                      | CC0, CC BY, ODbL, hoặc không thuộc diện bảo hộ quyền tác giả                                                                                                     | "Công khai trên mạng" nhưng giữ toàn quyền                       |
 | Dịch vụ ngoài               | Không bắt buộc khi chạy                                                                                                                                               | Sản phẩm phụ thuộc dịch vụ đóng                                 |
 
-Nơi lưu mã và máy chủ demo như GitHub, VPS, Cloudflare không thuộc sản phẩm; được dùng nhưng phải tùy chọn và công bố rõ.
+Nơi lưu mã và máy chủ demo như GitHub, máy chủ EC2, dịch vụ DNS không thuộc sản phẩm; được dùng nhưng phải tùy chọn và công bố rõ.
 
 ### Giấy phép của các thành phần
 
 Mọi thành phần của bản phát hành đạt tiêu chuẩn trên; danh mục và giấy phép từng thành phần ở [`DEPENDENCIES.txt`](../../DEPENDENCIES.txt), kiểm tự động bằng `.github/scripts/check_licenses.py`.
 ClamAV (GPL-2.0) chạy thành dịch vụ riêng qua mạng, và react-admin chỉ dùng phần MIT, không dùng gói Enterprise.
-cloudflared (Apache-2.0) chỉ chạy ở máy chủ công khai của đội, còn Cloudflare Tunnel và Access là dịch vụ đóng, nên cấu hình giữ ngoài repository và hệ thống chạy được mà không cần chúng.
+Caddy (Apache-2.0) chỉ chạy ở máy chủ công khai của đội để lấy chứng chỉ HTTPS, còn Cloudflare giữ bản ghi DNS của tên miền và là dịch vụ đóng, nên cấu hình giữ ngoài repository và hệ thống chạy được mà không cần chúng.
 
 ## Công cụ
 

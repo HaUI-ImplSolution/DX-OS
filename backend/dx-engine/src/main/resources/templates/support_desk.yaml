@@ -16,5 +16,12 @@ entities:
       detail: {type: text, label: Mô tả}
       priority: {type: choice, label: Mức ưu tiên, required: true, options: [Thấp, Trung bình, Cao]}
       attachment: {type: file, label: Ảnh chụp hoặc tệp liên quan}
+    ai:
+      tasks:
+        classify_priority:
+          label: Gợi ý mức ưu tiên
+          classifier: support
+          input_fields: [title, detail]
+          output_field: priority
     access: {REQUESTER: own, AGENT: all}
     process: {family: work_item, handler: AGENT, deadline: 8h}

@@ -72,3 +72,7 @@ python3 examples/effort-benchmark/measure.py --details
 Đầu ra `--details` phải khớp trường `measurement` trong dữ liệu nếu YAML và hai mốc nguồn không đổi.
 Ref, file hoặc hàm thiếu làm công cụ thoát 1; chọn `--baseline` hoặc `--core` khác là một phép so sánh mới.
 Để kiểm lại luồng, dựng stack riêng theo [TESTING](../../docs/TESTING.md#3-dựng-stack), áp dụng YAML, tạo tài khoản REQUESTER/AGENT rồi thực hiện các việc trong bảng chức năng.
+
+## Giấy phép
+
+Apache-2.0, như cả dự án DX-OS; toàn văn ở `LICENSE` ở gốc repository.

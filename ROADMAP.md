@@ -11,18 +11,17 @@ Mọi việc dưới đây giữ hướng đó: thêm nghiệp vụ là thêm t�
 
 ## Tiếp theo
 
-- **Chứng minh lõi phục vụ ứng dụng bên ngoài:** một ứng dụng mẫu có giao diện riêng chỉ gọi lõi qua API; một ví dụ cho thấy tệp mô hình sống trong git, chạy kế hoạch trên pull request và áp dụng khi gộp.
-- **Dữ liệu:** truy vấn trực tiếp trên kho lưu trữ dài hạn.
+- **Thử với đơn vị thật:** đưa DX-OS cho một đơn vị có quy trình duyệt để kiểm các giả thuyết về nhu cầu, vì nhu cầu hiện là giả thuyết.
+- **Nâng thành phần lên dòng mới:** gateway APISIX (3.11) và Spring Boot (4.1) đang ở dòng cũ; Dependabot chỉ mở bản vá của hai thành phần này, nên việc nâng làm tay, kèm bộ kiểm của [`docs/TESTING.md`](./docs/TESTING.md).
+- **Tài liệu tiếng Anh:** dịch tiếp các tài liệu chỉ có tiếng Việt, như Vận hành và Kiểm thử; phần đã dịch ở [`docs/en/`](./docs/en/).
 
 ## Sau đó
 
-- **Trí tuệ nhân tạo:** hỏi đáp có trích nguồn và tác tử đề xuất có người duyệt, chỉ dùng mô hình mở hoàn toàn theo định nghĩa của OSI.
-- **Quy trình:** thêm họ mẫu khi có đủ ba miền chạy được bằng tham số.
-- **Tệp mô hình:** nâng tệp cũ khi định dạng đổi.
+- **Quy trình:** thêm họ mẫu (Kiểm tra định kỳ, Đánh giá và chọn lọc) khi có đủ ba miền chạy được bằng tham số.
 
 ## Đã cân nhắc và không làm
 
-Nhập CSV, tìm kiếm hồ sơ, ủy quyền có thời hạn, quyền theo từng trường và vài việc khác đã được cân nhắc rồi giữ nguyên; lý do ở mục "Giới hạn chấp nhận" của [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md), và chỉ mở lại khi có yêu cầu thật.
+Tìm trong nội dung tệp, hỏi đáp có trích nguồn và tác tử nghe sự kiện, ủy quyền có thời hạn, quyền theo từng trường và vài việc khác đã được cân nhắc rồi giữ nguyên; lý do ở mục "Giới hạn chấp nhận" của [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md), và chỉ mở lại khi có yêu cầu thật.
 
 ## Đóng góp vào lộ trình
 

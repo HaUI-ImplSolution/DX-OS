@@ -120,8 +120,8 @@ Chạy lâu thì theo dõi dung lượng bảng.
 
 ## Số đo cho Prometheus
 
-Dịch vụ lõi xuất số đo vận hành theo định dạng Prometheus ở `GET /actuator/prometheus` của cổng `8081` trong mạng Docker, để Prometheus, Grafana Agent hoặc công cụ tương tự đọc.
-Công cụ giám sát bên ngoài là tùy chọn: stack không kèm Prometheus hay Grafana.
+Dịch vụ lõi xuất số đo vận hành theo định dạng Prometheus ở `GET /actuator/prometheus` của cổng `8081` trong mạng Docker, để Prometheus hoặc công cụ tương tự đọc.
+Công cụ giám sát bên ngoài là tùy chọn: stack mặc định không kèm Prometheus, và overlay [Prometheus kèm theo](#prometheus-kèm-theo-tùy-chọn) chạy nó khi bạn bật.
 
 Truy cập:
 
@@ -141,6 +141,7 @@ Nhãn chỉ là tên mô hình, tên thực thể, trạng thái và kết quả
 | `dxos_outbox_oldest_age_seconds` | gauge | không | Tuổi của sự kiện chưa chuyển cũ nhất, bằng giây; 0 khi hàng đợi trống |
 | `dxos_model_applies_total` | counter | `result` (`done`, `failed`) | Số lần áp dụng tệp mô hình theo kết quả, tính từ lịch sử áp dụng |
 | `dxos_models` | gauge | không | Số mô hình đang chạy |
+| `dxos_models_left_out` | gauge | không | Số mô hình đã lưu bị loại khỏi hoạt động vì phiên bản đã lưu không qua bộ kiểm của bản này; khác 0 thì xem lý do ở danh sách mô hình và áp dụng tệp đã sửa |
 
 Dịch vụ cũng xuất các số đo chuẩn của JVM, cơ sở dữ liệu và HTTP (`jvm_*`, `hikaricp_*`, `http_server_requests_*`); nhãn `uri` của chúng là mẫu đường dẫn như `/api/v1/data/{model}/{entity}`, không chứa mã hồ sơ.
 
@@ -168,9 +169,9 @@ scrape_configs:
 
 Tệp `dxos-metrics-password` chứa mật khẩu trên một dòng, không có ký tự xuống dòng ở cuối.
 
-Truy vấn Grafana tham khảo, mỗi dòng là một panel:
+Truy vấn PromQL tham khảo:
 
-| Panel | Truy vấn |
+| Cho biết | Truy vấn |
 |---|---|
 | Hồ sơ theo trạng thái | `sum by (model, entity, status) (dxos_records)` |
 | Hồ sơ quá hạn | `sum by (model, entity) (dxos_records_overdue)` |
@@ -193,6 +194,32 @@ groups:
       - alert: DxosApplyFailed
         expr: increase(dxos_model_applies_total{result="failed"}[1h]) > 0
 ```
+
+## Prometheus kèm theo (tùy chọn)
+
+Overlay `deploy/docker-compose.prometheus.yml` chạy Prometheus đã nối sẵn với số đo ở trên: nó đọc `dxos_*` bằng `METRICS_PASSWORD`.
+Stack mặc định không chạy nó và lõi không đổi.
+
+### Bật
+
+1. Đặt `METRICS_PASSWORD` trong `deploy/.env` (`make_env.sh` sinh sẵn cho bản cài mới; bản cài cũ thì tự đặt, ví dụ bằng `openssl rand -hex 24`) rồi khởi động lại dịch vụ lõi; để trống thì endpoint đóng, và `dxos start` dừng ở bước kiểm máy với dòng FAIL nêu biến còn thiếu.
+2. Đặt `COMPOSE_FILE=docker-compose.yml:docker-compose.prometheus.yml` trong `deploy/.env`, rồi chạy `dxos start`.
+3. Mở `http://127.0.0.1:9090` và chạy các truy vấn ở trên.
+4. Tắt bằng cách bỏ dòng `COMPOSE_FILE` rồi chạy `docker compose up -d --remove-orphans`; muốn xóa cả số đo đã lưu thì `docker volume rm <dự án>_prometheus_data`.
+
+### Thiết lập
+
+- Prometheus mở ở `127.0.0.1:9090`; đổi bằng `PROMETHEUS_BIND` và `PROMETHEUS_HOST_PORT` trong `deploy/.env`.
+  Prometheus không đòi đăng nhập và phục vụ HTTP thường, nên khi mở ra ngoài thì đặt sau VPN hoặc một proxy TLS có đăng nhập.
+- Prometheus đọc `backend:8081` mỗi 30 giây và giữ số đo 15 ngày trong volume `prometheus_data`; đổi thời gian giữ bằng `PROMETHEUS_RETENTION` (ví dụ `30d`) trong `deploy/.env`.
+- Dịch vụ chạy với tối đa 512 MB RAM và nửa lõi CPU, hệ tệp chỉ đọc và không có quyền thừa.
+
+### Giới hạn
+
+- Một Prometheus, không chạy nhiều bản sao; số đo chỉ có từ lúc bật overlay.
+- Không kèm dashboard; muốn dashboard riêng thì nối công cụ của bạn vào Prometheus hoặc đọc thẳng endpoint.
+- Không có Alertmanager; các quy tắc cảnh báo gợi ý ở trên cần người vận hành tự đưa vào Prometheus của mình.
+- Giấy phép của image và các thành phần đi kèm ở ghi chú về Prometheus của [`DEPENDENCIES.txt`](../DEPENDENCIES.txt).
 
 ## Màn hình giám sát
 

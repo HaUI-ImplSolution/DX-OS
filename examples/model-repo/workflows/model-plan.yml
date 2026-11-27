@@ -36,7 +36,7 @@ jobs:
               2) label="has changes" ;;
               *) label="refused"; failed=1 ;;
             esac
-            printf '\n### %s: %s\n\n<details><summary>Plan</summary>\n\n```json\n%s\n```\n\n</details>\n' "$file" "$label" "$output" >> plan.md
+            printf '\n### %s: %s\n\n<details><summary>Plan</summary>\n\n```text\n%s\n```\n\n</details>\n' "$file" "$label" "$output" >> plan.md
           done
           exit "$failed"
 

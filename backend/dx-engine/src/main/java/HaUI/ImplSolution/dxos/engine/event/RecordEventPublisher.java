@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.engine.event;
 
+import HaUI.ImplSolution.dxos.engine.data.WebLinks;
 import HaUI.ImplSolution.dxos.engine.registry.ModelRegistry;
 import java.time.Instant;
 import java.util.LinkedHashMap;
@@ -24,13 +25,19 @@ public class RecordEventPublisher {
   private final ModelRegistry registry;
   private final WebhookTargets targets;
   private final InboxSignal inbox;
+  private final WebLinks links;
 
   public RecordEventPublisher(
-      Outbox outbox, ModelRegistry registry, WebhookTargets targets, InboxSignal inbox) {
+      Outbox outbox,
+      ModelRegistry registry,
+      WebhookTargets targets,
+      InboxSignal inbox,
+      WebLinks links) {
     this.outbox = outbox;
     this.registry = registry;
     this.targets = targets;
     this.inbox = inbox;
+    this.links = links;
   }
 
   public void publish(
@@ -92,7 +99,8 @@ public class RecordEventPublisher {
             actorName,
             at,
             hash,
-            detail);
+            detail,
+            links.record(model, entity, recordId));
     outbox.publish(
         WebhookHandler.TOPIC, "record_event:" + eventId, model, entity, recordId, payload);
   }
@@ -110,13 +118,17 @@ public class RecordEventPublisher {
       String actorName,
       Instant at,
       String hash,
-      String detail) {
+      String detail,
+      String webUrl) {
     Map<String, Object> payload = new LinkedHashMap<>();
     payload.put("schemaVersion", SCHEMA_VERSION);
     payload.put("eventId", eventId);
     payload.put("model", model);
     payload.put("entity", entity);
     payload.put("recordId", recordId);
+    if (webUrl != null) {
+      payload.put("webUrl", webUrl);
+    }
     payload.put("action", action);
     payload.put("fromStatus", fromStatus);
     payload.put("toStatus", toStatus);

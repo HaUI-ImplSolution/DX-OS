@@ -1,0 +1,5 @@
+Codicons (codicon.ttf), the icon font that monaco-editor draws its menus and suggestion icons with.
+Copyright (c) Microsoft Corporation.
+Licensed under the Creative Commons Attribution 4.0 International license (CC-BY-4.0): https://creativecommons.org/licenses/by/4.0/legalcode
+Source: https://github.com/microsoft/vscode-codicons
+The font is shipped as it comes in monaco-editor 0.57.0, without changes.

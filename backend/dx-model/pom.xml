@@ -7,11 +7,12 @@
 	<parent>
 		<groupId>HaUI.ImplSolution</groupId>
 		<artifactId>dx-os-parent</artifactId>
-		<version>2.0.2</version>
+		<version>2.1.0</version>
 	</parent>
 	<artifactId>dx-model</artifactId>
 	<name>dx-model</name>
 	<description>Model file format: reader and validator, no Spring</description>
+	<url>https://github.com/HaUI-ImplSolution/DX-OS/tree/main/backend/dx-model</url>
 	<dependencies>
 		<dependency>
 			<groupId>org.yaml</groupId>
@@ -42,6 +43,19 @@
 							<transformers combine.self="override">
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<mainClass>HaUI.ImplSolution.dxos.model.ModelLint</mainClass>
+								</transformer>
+								<!-- The license of DX-OS and the notices of SnakeYAML travel in the jar. -->
+								<transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+									<resource>META-INF/LICENSE</resource>
+									<file>../licenses/LICENSE</file>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+									<resource>META-INF/NOTICE</resource>
+									<file>../licenses/NOTICE</file>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+									<resource>META-INF/THIRD-PARTY-LICENSES.txt</resource>
+									<file>../licenses/THIRD-PARTY-LICENSES-lint.txt</file>
 								</transformer>
 							</transformers>
 						</configuration>

@@ -33,12 +33,13 @@ const BOX_HEIGHT = 360;
 const LABEL_OFFSET = 18;
 // The arrow the system takes by itself and its label share a colour, so the label is not read as the arrow beside it.
 const AUTO_COLOR = "#c25e00";
+const SELECTED_COLOR = "#9c27b0";
 
 type Anchor = ProcessAnchor & {
   position: Position;
   style: CSSProperties;
 };
-type ProcessNodeData = { label: string; terminal: boolean; caption: string };
+type ProcessNodeData = { label: string; terminal: boolean; initial: boolean; selected: boolean; clickable: boolean; caption: string };
 type ProcessNode = Node<ProcessNodeData, "process">;
 type DirectEdgeData = {
   label: string;
@@ -46,6 +47,8 @@ type DirectEdgeData = {
   labelSide: 1 | -1;
   labelT: number;
   dashed: boolean;
+  action: string;
+  selected: boolean;
 };
 type DirectEdge = Edge<DirectEdgeData, "direct">;
 
@@ -85,12 +88,22 @@ function ProcessStateNode({ data }: NodeProps<ProcessNode>) {
         justifyContent: "center",
         boxSizing: "border-box",
         px: 1,
+        position: "relative",
+        cursor: data.clickable ? "pointer" : "default",
         background: "#ffffff",
         color: "#111111",
         fontSize: 13,
         borderRadius: data.terminal ? 6 : 1,
         border: data.terminal ? "2px solid #2e7d32" : "1px solid #1976d2",
+        boxShadow: data.selected ? `0 0 0 3px ${SELECTED_COLOR}` : "none",
       }}>
+      {data.initial && (
+        <Box
+          component="span"
+          sx={{ position: "absolute", top: -9, left: 6, px: 0.5, fontSize: 10, lineHeight: "16px", borderRadius: 0.5, background: "#1976d2", color: "#ffffff" }}>
+          {t("Bắt đầu")}
+        </Box>
+      )}
       <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: 0, lineHeight: 1.25 }}>
         {data.label}
         {data.caption && (
@@ -167,7 +180,11 @@ function DirectEdge({
             : `M ${sourceX} ${sourceY} L ${targetX} ${targetY}`
         }
         markerEnd={markerEnd}
-        style={data?.dashed ? { ...style, strokeDasharray: "6 4", stroke: AUTO_COLOR } : style}
+        style={{
+          ...style,
+          ...(data?.dashed ? { strokeDasharray: "6 4", stroke: AUTO_COLOR } : {}),
+          ...(data?.selected ? { stroke: SELECTED_COLOR, strokeWidth: 3 } : {}),
+        }}
       />
       <EdgeLabelRenderer>
         <Box
@@ -179,8 +196,9 @@ function DirectEdge({
             px: 0.6,
             py: 0.15,
             backgroundColor: "transparent",
-            color: data?.dashed ? AUTO_COLOR : "#111111",
+            color: data?.selected ? SELECTED_COLOR : data?.dashed ? AUTO_COLOR : "#111111",
             fontStyle: data?.dashed ? "italic" : "normal",
+            fontWeight: data?.selected ? 600 : 400,
             fontSize: 12,
             lineHeight: 1.35,
             whiteSpace: "nowrap",
@@ -197,17 +215,30 @@ const NODE_TYPES = { process: ProcessStateNode };
 const EDGE_TYPES = { direct: DirectEdge };
 
 // The states and actions of the process an entity declares, laid out from the first state to the final ones.
+// Given the select callbacks, a state or an arrow opens where it is edited.
 export default function ProcessDiagram({
   family,
   height = BOX_HEIGHT,
   spacing = 260,
+  selectedState,
+  selectedAction,
+  onSelectState,
+  onSelectAction,
 }: {
   family: ProcessView;
   height?: number | string;
   // Distance between the columns of states; a larger box gives the labels of the arrows room.
   spacing?: number;
+  selectedState?: string;
+  selectedAction?: string;
+  onSelectState?: (state: string) => void;
+  onSelectAction?: (action: string) => void;
 }) {
-  const { nodes, edges } = useMemo(() => adaptProcessDiagram(family, spacing), [family, spacing]);
+  const clickable = onSelectState !== undefined || onSelectAction !== undefined;
+  const { nodes, edges } = useMemo(
+    () => adaptProcessDiagram(family, spacing, { state: selectedState, action: selectedAction, clickable }),
+    [family, spacing, selectedState, selectedAction, clickable],
+  );
   const box = useRef<HTMLDivElement | null>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
   // The diagram is fitted again whenever its box changes width, so it never keeps the size of a first, narrower layout.
@@ -239,6 +270,8 @@ export default function ProcessDiagram({
           minZoom={0.3}
           nodesDraggable={false}
           nodesConnectable={false}
+          onNodeClick={(_, node) => onSelectState?.(node.id)}
+          onEdgeClick={(_, edge) => edge.data && onSelectAction?.(edge.data.action)}
           proOptions={{ hideAttribution: true }}
           // The diagram only shows; its key bindings listen on the whole page and would take Space and
           // Backspace from the model editor beside it.
@@ -254,6 +287,7 @@ export default function ProcessDiagram({
       </SmartEdgeProvider>
       <Typography variant="caption" sx={{ display: "block", mt: 0.5 }}>
         {notes(family)}
+        {clickable ? ` ${t("Bấm vào một trạng thái hoặc mũi tên để sửa.")}` : ""}
       </Typography>
     </Box>
   );
@@ -290,14 +324,25 @@ function notes(process: ProcessView): string {
   return lines.join(" ");
 }
 
-function adaptProcessDiagram(family: ProcessView, spacing: number): { nodes: ProcessNode[]; edges: DirectEdge[] } {
+function adaptProcessDiagram(
+  family: ProcessView,
+  spacing: number,
+  selection: { state?: string; action?: string; clickable: boolean },
+): { nodes: ProcessNode[]; edges: DirectEdge[] } {
   const diagram = buildProcessDiagram(family, spacing);
   const nodes: ProcessNode[] = diagram.nodes.map((node) => ({
     id: node.id,
     type: "process",
     position: node.position,
     measured: { width: PROCESS_NODE_WIDTH, height: PROCESS_NODE_HEIGHT },
-    data: { label: node.label, terminal: node.terminal, caption: node.caption },
+    data: {
+      label: node.label,
+      terminal: node.terminal,
+      initial: node.initial,
+      selected: node.id === selection.state,
+      clickable: selection.clickable,
+      caption: node.caption,
+    },
     style: { width: PROCESS_NODE_WIDTH, height: PROCESS_NODE_HEIGHT },
   }));
   const edges: DirectEdge[] = diagram.edges.map((edge) => ({
@@ -313,6 +358,8 @@ function adaptProcessDiagram(family: ProcessView, spacing: number): { nodes: Pro
       labelSide: edge.labelSide,
       labelT: edge.labelT,
       dashed: edge.dashed,
+      action: edge.action,
+      selected: edge.action === selection.action,
     },
     markerEnd: edge.dashed ? { type: MarkerType.ArrowClosed, color: AUTO_COLOR } : { type: MarkerType.ArrowClosed },
     style: { strokeWidth: 1.5 },

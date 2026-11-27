@@ -13,6 +13,7 @@ import HaUI.ImplSolution.dxos.engine.event.AdminEventPublisher;
 import HaUI.ImplSolution.dxos.engine.event.WebhookTargets;
 import HaUI.ImplSolution.dxos.engine.files.AttachmentCleaner;
 import HaUI.ImplSolution.dxos.engine.process.ProcessDeployer;
+import HaUI.ImplSolution.dxos.engine.process.ProcessRules;
 import HaUI.ImplSolution.dxos.engine.registry.ModelClient;
 import HaUI.ImplSolution.dxos.engine.registry.ModelRegistry;
 import HaUI.ImplSolution.dxos.model.FieldType;
@@ -64,6 +65,11 @@ public class ApplyService {
   // Rows that break a new rule, with some of their ids.
   public record Violation(String entity, String field, String rule, long rows, List<Long> sample) {}
 
+  // Records waiting in the states an action is taken from that lack a field the action now
+  // requires: the action refuses them until the field is filled in.
+  public record Impact(
+      String entity, String action, List<String> states, List<String> fields, long rows) {}
+
   public record Plan(
       String model,
       int fromVersion,
@@ -75,6 +81,7 @@ public class ApplyService {
       List<String> questions,
       List<Violation> violations,
       Map<String, Long> openRecords,
+      List<Impact> impacts,
       List<String> statements) {}
 
   public record Applied(
@@ -254,6 +261,7 @@ public class ApplyService {
             List.of(),
             List.of(),
             Map.of(),
+            List.of(),
             List.of());
       }
     }
@@ -263,6 +271,7 @@ public class ApplyService {
     webhooks.missing(model).ifPresent(rejections::add);
     rejections.addAll(processes.problems(model));
     Map<String, Long> openRecords = openRecords(running, diff);
+    List<Impact> impacts = impacts(running, diff);
     rejections.addAll(processRuleChangesWithOpenRecords(diff, openRecords));
     rejections.addAll(dropDependencyRejections(model, diff));
     List<Violation> violations = List.of();
@@ -301,6 +310,7 @@ public class ApplyService {
         diff.questions,
         violations,
         openRecords,
+        impacts,
         statements);
   }
 
@@ -514,7 +524,7 @@ public class ApplyService {
   // Finishes the apply that stopped, with the file, the renames and the level it was started with.
   public Applied resume(String modelName, Actor actor) {
     Stalled stalled = stalled(modelName);
-    Model model = ModelParser.parse(stalled.content());
+    Model model = ModelParser.parseStored(stalled.content()).model();
     return announced(
         "MODEL_RESUMED",
         actor,
@@ -537,7 +547,7 @@ public class ApplyService {
   public Applied abandon(String modelName, Actor actor) {
     Running running = running(modelName);
     Stalled stalled = stalled(modelName);
-    Model stopped = ModelParser.parse(stalled.content());
+    Model stopped = ModelParser.parseStored(stalled.content()).model();
     if (running == null) {
       return announced(
           "MODEL_ABANDONED",
@@ -676,7 +686,6 @@ public class ApplyService {
         jdbc.queryForList(
             "SELECT DISTINCT ON (model) model, version, hash, applied_by, applied_by_name, applied_at "
                 + "FROM engine.model_version ORDER BY model, version DESC");
-    models.forEach(model -> model.put("held", registry.isHeld((String) model.get("model"))));
     // A model whose first apply stopped has no version yet, but its tables may exist.
     models.addAll(
         jdbc.queryForList(
@@ -685,6 +694,17 @@ public class ApplyService {
                 + "FROM engine.apply_run r WHERE r.id = (SELECT max(id) FROM engine.apply_run "
                 + "WHERE model = r.model) AND r.status IN ('running', 'failed') AND NOT EXISTS "
                 + "(SELECT 1 FROM engine.model_version v WHERE v.model = r.model)"));
+    models.forEach(
+        model -> {
+          String name = (String) model.get("model");
+          model.put("held", registry.isHeld(name));
+          List<String> problems = registry.leftOut().get(name);
+          model.put("leftOut", problems != null);
+          if (problems != null) {
+            model.put("problems", problems);
+          }
+          model.put("warnings", registry.warnings(name));
+        });
     models.sort(Comparator.comparing(model -> (String) model.get("model")));
     return models;
   }
@@ -747,7 +767,7 @@ public class ApplyService {
       throw new InvalidStateException("Model " + modelName + " has no earlier version");
     }
     String content = contents.get(0);
-    Model target = ModelParser.parse(content);
+    Model target = ModelParser.parseStored(content).model();
     Map<String, Map<String, String>> reversed = new LinkedHashMap<>();
     ModelDiff.between(target, running.model(), Map.of())
         .renames
@@ -824,7 +844,7 @@ public class ApplyService {
     return new Running(
         ((Number) row.get("version")).intValue(),
         (String) row.get("hash"),
-        ModelParser.parse((String) row.get("content")));
+        ModelParser.parseStored((String) row.get("content")).model());
   }
 
   private Optional<Map<String, Object>> lastRun(String modelName) {
@@ -1049,6 +1069,46 @@ public class ApplyService {
             : "(" + String.join("and".equals(group.op()) ? " AND " : " OR ", parts) + ")";
       }
     };
+  }
+
+  // For each action that now requires fields: the records in its source states that lack one of
+  // them. A field the running table does not have yet is empty for every record.
+  private List<Impact> impacts(Running running, ModelDiff diff) {
+    List<Impact> impacts = new ArrayList<>();
+    if (running == null) {
+      return impacts;
+    }
+    for (ModelDiff.RequireGain gain : diff.requireGains) {
+      Entity entity = running.model().entities().get(gain.entity());
+      if (entity == null || entity.process() == null) {
+        continue;
+      }
+      Map<String, String> renames = diff.renames.getOrDefault(gain.entity(), Map.of());
+      List<String> columns = new ArrayList<>();
+      boolean fresh = false;
+      for (String field : gain.fields()) {
+        String column = renames.getOrDefault(field, field);
+        if (entity.fields().containsKey(column)) {
+          columns.add(column);
+        } else {
+          fresh = true;
+        }
+      }
+      String states = gain.from().stream().map(Sql::literal).collect(Collectors.joining(", "));
+      Long rows =
+          jdbc.queryForObject(
+              "SELECT count(*) FROM "
+                  + Sql.table(running.model(), entity)
+                  + " t WHERE t.status IN ("
+                  + states
+                  + ") AND "
+                  + (fresh ? "TRUE" : ProcessRules.missingCondition(columns, "t")),
+              Long.class);
+      if (rows != null && rows > 0) {
+        impacts.add(new Impact(gain.entity(), gain.action(), gain.from(), gain.fields(), rows));
+      }
+    }
+    return impacts;
   }
 
   // Records of the touched entities still moving through their process.

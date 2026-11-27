@@ -3,15 +3,15 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
   "version": 1,
-  "serialNumber": "urn:uuid:18bad160-bbe6-4347-a860-7e3c8cb3b2d7",
+  "serialNumber": "urn:uuid:d59582f7-fabe-4549-bee8-ce2505d7a128",
   "metadata": {
-    "timestamp": "2026-11-09T15:23:26.700Z",
+    "timestamp": "2026-11-27T14:51:57.464Z",
     "tools": {
       "components": [
         {
           "type": "application",
           "name": "npm",
-          "version": "9.2.0"
+          "version": "11.16.0"
         },
         {
           "type": "application",
@@ -59,7 +59,7 @@
           "type": "library",
           "name": "cyclonedx-library",
           "group": "@cyclonedx",
-          "version": "10.4.0",
+          "version": "10.5.1",
           "author": "Jan Kowalleck",
           "description": "Core functionality of CycloneDX for JavaScript (Node.js or WebBrowser).",
           "licenses": [
@@ -98,9 +98,17 @@
     "component": {
       "type": "application",
       "name": "dx-os-frontend",
-      "version": "2.0.0",
-      "bom-ref": "dx-os-frontend@2.0.0",
-      "purl": "pkg:npm/dx-os-frontend@2.0.0",
+      "version": "2.1.0",
+      "bom-ref": "dx-os-frontend@2.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/dx-os-frontend@2.1.0",
       "properties": [
         {
           "name": "cdx:npm:package:private",
@@ -119,7 +127,7 @@
       "name": "dagre",
       "group": "@dagrejs",
       "version": "3.1.3",
-      "bom-ref": "dx-os-frontend@2.0.0|@dagrejs/dagre@3.1.3",
+      "bom-ref": "dx-os-frontend@2.1.0|@dagrejs/dagre@3.1.3",
       "author": "Chris Pettitt",
       "description": "Graph layout for JavaScript",
       "licenses": [
@@ -171,7 +179,7 @@
       "name": "react",
       "group": "@emotion",
       "version": "11.14.0",
-      "bom-ref": "dx-os-frontend@2.0.0|@emotion/react@11.14.0",
+      "bom-ref": "dx-os-frontend@2.1.0|@emotion/react@11.14.0",
       "author": "Emotion Contributors",
       "licenses": [
         {
@@ -222,7 +230,7 @@
       "name": "styled",
       "group": "@emotion",
       "version": "11.14.1",
-      "bom-ref": "dx-os-frontend@2.0.0|@emotion/styled@11.14.1",
+      "bom-ref": "dx-os-frontend@2.1.0|@emotion/styled@11.14.1",
       "description": "styled API for emotion",
       "licenses": [
         {
@@ -273,7 +281,7 @@
       "name": "core",
       "group": "@fullcalendar",
       "version": "6.1.22",
-      "bom-ref": "dx-os-frontend@2.0.0|@fullcalendar/core@6.1.22",
+      "bom-ref": "dx-os-frontend@2.1.0|@fullcalendar/core@6.1.22",
       "author": "Adam Shaw",
       "description": "FullCalendar v6 core package (v7 is current: install your framework's v7 package and import plugins from it, e.g. @fullcalendar/react/daygrid). FullCalendar core package for rendering a calendar",
       "licenses": [
@@ -325,7 +333,7 @@
       "name": "daygrid",
       "group": "@fullcalendar",
       "version": "6.1.22",
-      "bom-ref": "dx-os-frontend@2.0.0|@fullcalendar/daygrid@6.1.22",
+      "bom-ref": "dx-os-frontend@2.1.0|@fullcalendar/daygrid@6.1.22",
       "author": "Adam Shaw",
       "description": "FullCalendar v6 only (in v7, this plugin is built into each framework package, e.g. @fullcalendar/react/daygrid). Display events on a month view or \"day grid\" view",
       "licenses": [
@@ -377,7 +385,7 @@
       "name": "interaction",
       "group": "@fullcalendar",
       "version": "6.1.22",
-      "bom-ref": "dx-os-frontend@2.0.0|@fullcalendar/interaction@6.1.22",
+      "bom-ref": "dx-os-frontend@2.1.0|@fullcalendar/interaction@6.1.22",
       "author": "Adam Shaw",
       "description": "FullCalendar v6 only (in v7, this plugin is built into each framework package, e.g. @fullcalendar/react/interaction). Calendar functionality for event drag-n-drop, event resizing, date clicking, and date selecting",
       "licenses": [
@@ -429,7 +437,7 @@
       "name": "react",
       "group": "@fullcalendar",
       "version": "6.1.22",
-      "bom-ref": "dx-os-frontend@2.0.0|@fullcalendar/react@6.1.22",
+      "bom-ref": "dx-os-frontend@2.1.0|@fullcalendar/react@6.1.22",
       "description": "The official React Component for FullCalendar",
       "licenses": [
         {
@@ -480,7 +488,7 @@
       "name": "timegrid",
       "group": "@fullcalendar",
       "version": "6.1.22",
-      "bom-ref": "dx-os-frontend@2.0.0|@fullcalendar/timegrid@6.1.22",
+      "bom-ref": "dx-os-frontend@2.1.0|@fullcalendar/timegrid@6.1.22",
       "author": "Adam Shaw",
       "description": "FullCalendar v6 only (in v7, this plugin is built into each framework package, e.g. @fullcalendar/react/timegrid). Display events on time slots",
       "licenses": [
@@ -532,7 +540,7 @@
       "name": "icons-material",
       "group": "@mui",
       "version": "6.5.0",
-      "bom-ref": "dx-os-frontend@2.0.0|@mui/icons-material@6.5.0",
+      "bom-ref": "dx-os-frontend@2.1.0|@mui/icons-material@6.5.0",
       "author": "MUI Team",
       "description": "Material Design icons distributed as SVG React components.",
       "licenses": [
@@ -588,7 +596,7 @@
       "name": "material",
       "group": "@mui",
       "version": "6.5.0",
-      "bom-ref": "dx-os-frontend@2.0.0|@mui/material@6.5.0",
+      "bom-ref": "dx-os-frontend@2.1.0|@mui/material@6.5.0",
       "author": "MUI Team",
       "description": "Material UI is an open-source React component library that implements Google's Material Design. It's comprehensive and can be used in production out of the box.",
       "licenses": [
@@ -643,8 +651,8 @@
       "type": "library",
       "name": "react-flow-smart-edge",
       "group": "@tisoap",
-      "version": "5.0.0",
-      "bom-ref": "dx-os-frontend@2.0.0|@tisoap/react-flow-smart-edge@5.0.0",
+      "version": "5.0.1",
+      "bom-ref": "dx-os-frontend@2.1.0|@tisoap/react-flow-smart-edge@5.0.1",
       "author": "Tiso Alvarez Puccinelli",
       "description": "Custom React Flow Edge that never intersects with other nodes",
       "licenses": [
@@ -655,7 +663,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/%40tisoap/react-flow-smart-edge@5.0.0",
+      "purl": "pkg:npm/%40tisoap/react-flow-smart-edge@5.0.1",
       "externalReferences": [
         {
           "url": "git+https://github.com/tisoap/react-flow-smart-edge.git",
@@ -673,12 +681,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/@tisoap/react-flow-smart-edge/-/react-flow-smart-edge-5.0.0.tgz",
+          "url": "https://registry.npmjs.org/@tisoap/react-flow-smart-edge/-/react-flow-smart-edge-5.0.1.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "fd8f4b43bea2f816b70403b369710b225b2584f13bfd7fefb3fe65c25ff2643d9c2c87c49010888ee98f9ee50c0d4102bbbb863d06fe3a2195d9872e809d47af"
+              "content": "f0b575a7ea839406a5511c1e02396b471299d7fa0ba6782c08eacfe8c9129842c7f34840c09695118e366f16a134d635cb491faf2c71516e21775b8295950645"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -696,7 +704,7 @@
       "name": "react",
       "group": "@xyflow",
       "version": "12.12.1",
-      "bom-ref": "dx-os-frontend@2.0.0|@xyflow/react@12.12.1",
+      "bom-ref": "dx-os-frontend@2.1.0|@xyflow/react@12.12.1",
       "description": "React Flow - A highly customizable React library for building node-based editors and interactive flow charts.",
       "licenses": [
         {
@@ -746,7 +754,7 @@
       "type": "library",
       "name": "monaco-editor",
       "version": "0.57.0",
-      "bom-ref": "dx-os-frontend@2.0.0|monaco-editor@0.57.0",
+      "bom-ref": "dx-os-frontend@2.1.0|monaco-editor@0.57.0",
       "author": "Microsoft Corporation",
       "description": "A browser based code editor",
       "licenses": [
@@ -797,7 +805,7 @@
       "type": "library",
       "name": "monaco-yaml",
       "version": "5.5.1",
-      "bom-ref": "dx-os-frontend@2.0.0|monaco-yaml@5.5.1",
+      "bom-ref": "dx-os-frontend@2.1.0|monaco-yaml@5.5.1",
       "author": "Kevin Decker",
       "description": "YAML plugin for the Monaco Editor",
       "licenses": [
@@ -848,7 +856,7 @@
       "type": "library",
       "name": "oidc-client-ts",
       "version": "3.5.0",
-      "bom-ref": "dx-os-frontend@2.0.0|oidc-client-ts@3.5.0",
+      "bom-ref": "dx-os-frontend@2.1.0|oidc-client-ts@3.5.0",
       "description": "OpenID Connect (OIDC) & OAuth2 client library",
       "licenses": [
         {
@@ -901,8 +909,8 @@
     {
       "type": "library",
       "name": "ra-i18n-polyglot",
-      "version": "5.15.5",
-      "bom-ref": "dx-os-frontend@2.0.0|ra-i18n-polyglot@5.15.5",
+      "version": "5.15.7",
+      "bom-ref": "dx-os-frontend@2.1.0|ra-i18n-polyglot@5.15.7",
       "description": "Polyglot i18n provider for react-admin",
       "licenses": [
         {
@@ -912,7 +920,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/ra-i18n-polyglot@5.15.5",
+      "purl": "pkg:npm/ra-i18n-polyglot@5.15.7",
       "externalReferences": [
         {
           "url": "git+https://github.com/marmelab/react-admin.git",
@@ -930,12 +938,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/ra-i18n-polyglot/-/ra-i18n-polyglot-5.15.5.tgz",
+          "url": "https://registry.npmjs.org/ra-i18n-polyglot/-/ra-i18n-polyglot-5.15.7.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "8e196568f90a4d0ef1102c245f7cb86bd554f014c1db01982901b07b46d3042c155c666ed6894a161fcadd5b681866fb186049e803edf6732c1fddab58f7a6e2"
+              "content": "94dce714f4eab5d07dac477498b26c221cf7340ead464cc1006bb3fd29072cef2b56243988bc7d1070876ac7a7b1f822567382fa3abc45e5f2a394dd375b6f02"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -951,8 +959,8 @@
     {
       "type": "library",
       "name": "ra-language-english",
-      "version": "5.15.5",
-      "bom-ref": "dx-os-frontend@2.0.0|ra-language-english@5.15.5",
+      "version": "5.15.7",
+      "bom-ref": "dx-os-frontend@2.1.0|ra-language-english@5.15.7",
       "author": "François Zaninotto",
       "description": "English messages for react-admin, the frontend framework for building admin applications on top of REST/GraphQL services",
       "licenses": [
@@ -963,7 +971,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/ra-language-english@5.15.5",
+      "purl": "pkg:npm/ra-language-english@5.15.7",
       "externalReferences": [
         {
           "url": "git+https://github.com/marmelab/react-admin.git",
@@ -981,12 +989,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/ra-language-english/-/ra-language-english-5.15.5.tgz",
+          "url": "https://registry.npmjs.org/ra-language-english/-/ra-language-english-5.15.7.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "0acbc87b0a7ada650288893b721480bd11c6eeb84fb5e4a96888ee4aede02cbfd3fa453c25106a2e5bf7bcb714f96f119adb7d0a98ba8a905bc7a00a5bf06dd6"
+              "content": "5434ab4f9dd269012f51403545fabe45fa823421b119dd8afbfd81b01245b99eb506560ce52e7b68e07f00bd7440f52626aae48916c012840343f06e48313504"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -1002,8 +1010,8 @@
     {
       "type": "library",
       "name": "react-admin",
-      "version": "5.15.5",
-      "bom-ref": "dx-os-frontend@2.0.0|react-admin@5.15.5",
+      "version": "5.15.7",
+      "bom-ref": "dx-os-frontend@2.1.0|react-admin@5.15.7",
       "description": "A frontend Framework for building admin applications on top of REST services, using ES6, React and Material UI",
       "licenses": [
         {
@@ -1013,7 +1021,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/react-admin@5.15.5",
+      "purl": "pkg:npm/react-admin@5.15.7",
       "externalReferences": [
         {
           "url": "git+https://github.com/marmelab/react-admin.git",
@@ -1031,12 +1039,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/react-admin/-/react-admin-5.15.5.tgz",
+          "url": "https://registry.npmjs.org/react-admin/-/react-admin-5.15.7.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "2e309ba59da29f356eab782bfd1be39de3b4bddc2c57ea6f4f06374812f8ed5aaab864dac396626a924f82bcb5420d415c4416f3f6ee5140db81df50a8cf400c"
+              "content": "863e15ea13d8ff2c34d57faacdc7b17a4af14c1ebe48d152fba970492dd045f579dce9cf965616bcfe0f17bbc301337d8be13bef1f7d06025a0e40360d915c99"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -1053,7 +1061,7 @@
       "type": "library",
       "name": "react-dom",
       "version": "18.3.1",
-      "bom-ref": "dx-os-frontend@2.0.0|react-dom@18.3.1",
+      "bom-ref": "dx-os-frontend@2.1.0|react-dom@18.3.1",
       "description": "React package for working with the DOM.",
       "licenses": [
         {
@@ -1103,7 +1111,7 @@
       "type": "library",
       "name": "react-router-dom",
       "version": "6.30.6",
-      "bom-ref": "dx-os-frontend@2.0.0|react-router-dom@6.30.6",
+      "bom-ref": "dx-os-frontend@2.1.0|react-router-dom@6.30.6",
       "author": "Remix Software",
       "description": "Declarative routing for React web applications",
       "licenses": [
@@ -1158,7 +1166,7 @@
       "type": "library",
       "name": "react",
       "version": "18.3.1",
-      "bom-ref": "dx-os-frontend@2.0.0|react@18.3.1",
+      "bom-ref": "dx-os-frontend@2.1.0|react@18.3.1",
       "description": "React is a JavaScript library for building user interfaces.",
       "licenses": [
         {
@@ -1212,7 +1220,7 @@
       "type": "library",
       "name": "yaml",
       "version": "2.9.1",
-      "bom-ref": "dx-os-frontend@2.0.0|yaml@2.9.1",
+      "bom-ref": "dx-os-frontend@2.1.0|yaml@2.9.1",
       "author": "Eemeli Aro",
       "description": "JavaScript parser and stringifier for YAML",
       "licenses": [
@@ -1268,7 +1276,7 @@
       "name": "graphlib",
       "group": "@dagrejs",
       "version": "4.0.6",
-      "bom-ref": "dx-os-frontend@2.0.0|@dagrejs/graphlib@4.0.6",
+      "bom-ref": "dx-os-frontend@2.1.0|@dagrejs/graphlib@4.0.6",
       "author": "Chris Pettitt",
       "description": "A directed and undirected multi-graph library",
       "licenses": [
@@ -1320,7 +1328,7 @@
       "name": "runtime",
       "group": "@babel",
       "version": "7.29.10",
-      "bom-ref": "dx-os-frontend@2.0.0|@babel/runtime@7.29.10",
+      "bom-ref": "dx-os-frontend@2.1.0|@babel/runtime@7.29.10",
       "author": "The Babel Team",
       "description": "babel's modular runtime helpers",
       "licenses": [
@@ -1376,7 +1384,7 @@
       "name": "babel-plugin",
       "group": "@emotion",
       "version": "11.13.5",
-      "bom-ref": "dx-os-frontend@2.0.0|@emotion/babel-plugin@11.13.5",
+      "bom-ref": "dx-os-frontend@2.1.0|@emotion/babel-plugin@11.13.5",
       "author": "Kye Hohenberger",
       "description": "A recommended babel preprocessing plugin for emotion, The Next Generation of CSS-in-JS.",
       "licenses": [
@@ -1428,7 +1436,7 @@
       "name": "cache",
       "group": "@emotion",
       "version": "11.14.0",
-      "bom-ref": "dx-os-frontend@2.0.0|@emotion/cache@11.14.0",
+      "bom-ref": "dx-os-frontend@2.1.0|@emotion/cache@11.14.0",
       "description": "emotion's cache",
       "licenses": [
         {
@@ -1479,7 +1487,7 @@
       "name": "serialize",
       "group": "@emotion",
       "version": "1.3.3",
-      "bom-ref": "dx-os-frontend@2.0.0|@emotion/serialize@1.3.3",
+      "bom-ref": "dx-os-frontend@2.1.0|@emotion/serialize@1.3.3",
       "description": "serialization utils for emotion",
       "licenses": [
         {
@@ -1530,7 +1538,7 @@
       "name": "use-insertion-effect-with-fallbacks",
       "group": "@emotion",
       "version": "1.2.0",
-      "bom-ref": "dx-os-frontend@2.0.0|@emotion/use-insertion-effect-with-fallbacks@1.2.0",
+      "bom-ref": "dx-os-frontend@2.1.0|@emotion/use-insertion-effect-with-fallbacks@1.2.0",
       "description": "A wrapper package that uses `useInsertionEffect` or a fallback for it",
       "licenses": [
         {
@@ -1581,7 +1589,7 @@
       "name": "utils",
       "group": "@emotion",
       "version": "1.4.2",
-      "bom-ref": "dx-os-frontend@2.0.0|@emotion/utils@1.4.2",
+      "bom-ref": "dx-os-frontend@2.1.0|@emotion/utils@1.4.2",
       "description": "internal utils for emotion",
       "licenses": [
         {
@@ -1632,7 +1640,7 @@
       "name": "weak-memoize",
       "group": "@emotion",
       "version": "0.4.0",
-      "bom-ref": "dx-os-frontend@2.0.0|@emotion/weak-memoize@0.4.0",
+      "bom-ref": "dx-os-frontend@2.1.0|@emotion/weak-memoize@0.4.0",
       "description": "A memoization function that uses a WeakMap",
       "licenses": [
         {
@@ -1682,7 +1690,7 @@
       "type": "library",
       "name": "hoist-non-react-statics",
       "version": "3.3.2",
-      "bom-ref": "dx-os-frontend@2.0.0|hoist-non-react-statics@3.3.2",
+      "bom-ref": "dx-os-frontend@2.1.0|hoist-non-react-statics@3.3.2",
       "author": "Michael Ridgway",
       "description": "Copies non-react specific statics from a child component to a parent component",
       "licenses": [
@@ -1733,7 +1741,7 @@
           "type": "library",
           "name": "react-is",
           "version": "16.13.1",
-          "bom-ref": "dx-os-frontend@2.0.0|hoist-non-react-statics@3.3.2|react-is@16.13.1",
+          "bom-ref": "dx-os-frontend@2.1.0|hoist-non-react-statics@3.3.2|react-is@16.13.1",
           "description": "Brand checking of React Elements.",
           "licenses": [
             {
@@ -1786,7 +1794,7 @@
       "name": "is-prop-valid",
       "group": "@emotion",
       "version": "1.4.0",
-      "bom-ref": "dx-os-frontend@2.0.0|@emotion/is-prop-valid@1.4.0",
+      "bom-ref": "dx-os-frontend@2.1.0|@emotion/is-prop-valid@1.4.0",
       "description": "A function to check whether a prop is valid for HTML and SVG elements",
       "licenses": [
         {
@@ -1836,7 +1844,7 @@
       "type": "library",
       "name": "preact",
       "version": "10.12.1",
-      "bom-ref": "dx-os-frontend@2.0.0|preact@10.12.1",
+      "bom-ref": "dx-os-frontend@2.1.0|preact@10.12.1",
       "description": "Fast 3kb React-compatible Virtual DOM library.",
       "licenses": [
         {
@@ -1887,7 +1895,7 @@
       "name": "react",
       "group": "@types",
       "version": "18.3.31",
-      "bom-ref": "dx-os-frontend@2.0.0|@types/react@18.3.31",
+      "bom-ref": "dx-os-frontend@2.1.0|@types/react@18.3.31",
       "description": "TypeScript definitions for react",
       "licenses": [
         {
@@ -1938,7 +1946,7 @@
       "name": "core-downloads-tracker",
       "group": "@mui",
       "version": "6.5.0",
-      "bom-ref": "dx-os-frontend@2.0.0|@mui/core-downloads-tracker@6.5.0",
+      "bom-ref": "dx-os-frontend@2.1.0|@mui/core-downloads-tracker@6.5.0",
       "author": "MUI Team",
       "description": "Internal package to track number of downloads of our design system libraries",
       "licenses": [
@@ -1990,7 +1998,7 @@
       "name": "system",
       "group": "@mui",
       "version": "6.5.0",
-      "bom-ref": "dx-os-frontend@2.0.0|@mui/system@6.5.0",
+      "bom-ref": "dx-os-frontend@2.1.0|@mui/system@6.5.0",
       "author": "MUI Team",
       "description": "MUI System is a set of CSS utilities to help you build custom designs more efficiently. It makes it possible to rapidly lay out custom designs.",
       "licenses": [
@@ -2046,7 +2054,7 @@
       "name": "types",
       "group": "@mui",
       "version": "7.2.24",
-      "bom-ref": "dx-os-frontend@2.0.0|@mui/types@7.2.24",
+      "bom-ref": "dx-os-frontend@2.1.0|@mui/types@7.2.24",
       "author": "MUI Team",
       "description": "Utility types for MUI.",
       "licenses": [
@@ -2098,7 +2106,7 @@
       "name": "utils",
       "group": "@mui",
       "version": "6.4.9",
-      "bom-ref": "dx-os-frontend@2.0.0|@mui/utils@6.4.9",
+      "bom-ref": "dx-os-frontend@2.1.0|@mui/utils@6.4.9",
       "author": "MUI Team",
       "description": "Utility functions for React components.",
       "licenses": [
@@ -2154,7 +2162,7 @@
       "name": "core",
       "group": "@popperjs",
       "version": "2.11.8",
-      "bom-ref": "dx-os-frontend@2.0.0|@popperjs/core@2.11.8",
+      "bom-ref": "dx-os-frontend@2.1.0|@popperjs/core@2.11.8",
       "author": "Federico Zivolo",
       "description": "Tooltip and Popover Positioning Engine",
       "licenses": [
@@ -2206,7 +2214,7 @@
       "name": "react-transition-group",
       "group": "@types",
       "version": "4.4.12",
-      "bom-ref": "dx-os-frontend@2.0.0|@types/react-transition-group@4.4.12",
+      "bom-ref": "dx-os-frontend@2.1.0|@types/react-transition-group@4.4.12",
       "description": "TypeScript definitions for react-transition-group",
       "licenses": [
         {
@@ -2256,7 +2264,7 @@
       "type": "library",
       "name": "clsx",
       "version": "2.1.1",
-      "bom-ref": "dx-os-frontend@2.0.0|clsx@2.1.1",
+      "bom-ref": "dx-os-frontend@2.1.0|clsx@2.1.1",
       "author": "Luke Edwards",
       "description": "A tiny (239B) utility for constructing className strings conditionally.",
       "licenses": [
@@ -2311,7 +2319,7 @@
       "type": "library",
       "name": "csstype",
       "version": "3.2.3",
-      "bom-ref": "dx-os-frontend@2.0.0|csstype@3.2.3",
+      "bom-ref": "dx-os-frontend@2.1.0|csstype@3.2.3",
       "author": "Fredrik Nicol",
       "description": "Strict TypeScript and Flow types for style based on MDN data",
       "licenses": [
@@ -2362,7 +2370,7 @@
       "type": "library",
       "name": "prop-types",
       "version": "15.8.1",
-      "bom-ref": "dx-os-frontend@2.0.0|prop-types@15.8.1",
+      "bom-ref": "dx-os-frontend@2.1.0|prop-types@15.8.1",
       "description": "Runtime type checking for React props and similar objects.",
       "licenses": [
         {
@@ -2412,7 +2420,7 @@
           "type": "library",
           "name": "react-is",
           "version": "16.13.1",
-          "bom-ref": "dx-os-frontend@2.0.0|prop-types@15.8.1|react-is@16.13.1",
+          "bom-ref": "dx-os-frontend@2.1.0|prop-types@15.8.1|react-is@16.13.1",
           "description": "Brand checking of React Elements.",
           "licenses": [
             {
@@ -2464,7 +2472,7 @@
       "type": "library",
       "name": "react-is",
       "version": "19.3.1",
-      "bom-ref": "dx-os-frontend@2.0.0|react-is@19.3.1",
+      "bom-ref": "dx-os-frontend@2.1.0|react-is@19.3.1",
       "description": "Brand checking of React Elements.",
       "licenses": [
         {
@@ -2514,7 +2522,7 @@
       "type": "library",
       "name": "react-transition-group",
       "version": "4.4.5",
-      "bom-ref": "dx-os-frontend@2.0.0|react-transition-group@4.4.5",
+      "bom-ref": "dx-os-frontend@2.1.0|react-transition-group@4.4.5",
       "description": "A react component toolset for managing animations",
       "licenses": [
         {
@@ -2565,7 +2573,7 @@
       "name": "react-dom",
       "group": "@types",
       "version": "18.3.7",
-      "bom-ref": "dx-os-frontend@2.0.0|@types/react-dom@18.3.7",
+      "bom-ref": "dx-os-frontend@2.1.0|@types/react-dom@18.3.7",
       "description": "TypeScript definitions for react-dom",
       "licenses": [
         {
@@ -2620,7 +2628,7 @@
       "name": "system",
       "group": "@xyflow",
       "version": "0.0.84",
-      "bom-ref": "dx-os-frontend@2.0.0|@xyflow/system@0.0.84",
+      "bom-ref": "dx-os-frontend@2.1.0|@xyflow/system@0.0.84",
       "description": "xyflow core system that powers React Flow and Svelte Flow.",
       "licenses": [
         {
@@ -2670,7 +2678,7 @@
       "type": "library",
       "name": "classcat",
       "version": "5.0.5",
-      "bom-ref": "dx-os-frontend@2.0.0|classcat@5.0.5",
+      "bom-ref": "dx-os-frontend@2.1.0|classcat@5.0.5",
       "author": "Jorge Bucaran",
       "description": "Build a class attribute string quickly.",
       "licenses": [
@@ -2721,7 +2729,7 @@
       "type": "library",
       "name": "zustand",
       "version": "4.5.7",
-      "bom-ref": "dx-os-frontend@2.0.0|zustand@4.5.7",
+      "bom-ref": "dx-os-frontend@2.1.0|zustand@4.5.7",
       "author": "Paul Henschel",
       "description": "🐻 Bear necessities for state management in React",
       "licenses": [
@@ -2776,7 +2784,7 @@
       "type": "library",
       "name": "dompurify",
       "version": "3.4.17",
-      "bom-ref": "dx-os-frontend@2.0.0|dompurify@3.4.17",
+      "bom-ref": "dx-os-frontend@2.1.0|dompurify@3.4.17",
       "author": "Dr.-Ing. Mario Heiderich, Cure53",
       "description": "DOMPurify is a DOM-only, super-fast, uber-tolerant XSS sanitizer for HTML, MathML and SVG. It runs as JavaScript and works in all modern browsers, as well as in Node.js (via jsdom). DOMPurify is written by security people who have vast background in web attacks and XSS. Fear not.",
       "licenses": [
@@ -2825,7 +2833,7 @@
       "type": "library",
       "name": "marked",
       "version": "14.0.0",
-      "bom-ref": "dx-os-frontend@2.0.0|marked@14.0.0",
+      "bom-ref": "dx-os-frontend@2.1.0|marked@14.0.0",
       "author": "Christopher Jeffrey",
       "description": "A markdown parser built for speed",
       "licenses": [
@@ -2881,7 +2889,7 @@
       "name": "l10n",
       "group": "@vscode",
       "version": "0.0.18",
-      "bom-ref": "dx-os-frontend@2.0.0|@vscode/l10n@0.0.18",
+      "bom-ref": "dx-os-frontend@2.1.0|@vscode/l10n@0.0.18",
       "author": "Microsoft Corporation",
       "description": "A helper library to assist in localizing subprocesses spun up by VS Code extensions",
       "licenses": [
@@ -2932,7 +2940,7 @@
       "type": "library",
       "name": "jsonc-parser",
       "version": "3.3.1",
-      "bom-ref": "dx-os-frontend@2.0.0|jsonc-parser@3.3.1",
+      "bom-ref": "dx-os-frontend@2.1.0|jsonc-parser@3.3.1",
       "author": "Microsoft Corporation",
       "description": "Scanner and parser for JSON with comments.",
       "licenses": [
@@ -2983,7 +2991,7 @@
       "type": "library",
       "name": "monaco-languageserver-types",
       "version": "0.4.1",
-      "bom-ref": "dx-os-frontend@2.0.0|monaco-languageserver-types@0.4.1",
+      "bom-ref": "dx-os-frontend@2.1.0|monaco-languageserver-types@0.4.1",
       "author": "Remco Haszing",
       "description": "Convert between language server types and Monaco editor types",
       "licenses": [
@@ -3034,7 +3042,7 @@
       "type": "library",
       "name": "monaco-marker-data-provider",
       "version": "1.2.5",
-      "bom-ref": "dx-os-frontend@2.0.0|monaco-marker-data-provider@1.2.5",
+      "bom-ref": "dx-os-frontend@2.1.0|monaco-marker-data-provider@1.2.5",
       "author": "Remco Haszing",
       "description": "Provide Monaco marker data in a similar way as other integrations",
       "licenses": [
@@ -3085,7 +3093,7 @@
       "type": "library",
       "name": "monaco-types",
       "version": "0.1.2",
-      "bom-ref": "dx-os-frontend@2.0.0|monaco-types@0.1.2",
+      "bom-ref": "dx-os-frontend@2.1.0|monaco-types@0.1.2",
       "author": "Remco Haszing",
       "description": "Type-only exports of Monaco editor",
       "licenses": [
@@ -3136,7 +3144,7 @@
       "type": "library",
       "name": "monaco-worker-manager",
       "version": "2.0.1",
-      "bom-ref": "dx-os-frontend@2.0.0|monaco-worker-manager@2.0.1",
+      "bom-ref": "dx-os-frontend@2.1.0|monaco-worker-manager@2.0.1",
       "author": "Remco Haszing",
       "description": "Easily deal with monaco workers",
       "licenses": [
@@ -3187,7 +3195,7 @@
       "type": "library",
       "name": "path-browserify",
       "version": "1.0.1",
-      "bom-ref": "dx-os-frontend@2.0.0|path-browserify@1.0.1",
+      "bom-ref": "dx-os-frontend@2.1.0|path-browserify@1.0.1",
       "author": "James Halliday",
       "description": "the path module from node core for browsers",
       "licenses": [
@@ -3238,7 +3246,7 @@
       "type": "library",
       "name": "prettier",
       "version": "3.9.10",
-      "bom-ref": "dx-os-frontend@2.0.0|prettier@3.9.10",
+      "bom-ref": "dx-os-frontend@2.1.0|prettier@3.9.10",
       "author": "James Long",
       "description": "Prettier is an opinionated code formatter",
       "licenses": [
@@ -3293,7 +3301,7 @@
       "type": "library",
       "name": "proxy-disposable",
       "version": "1.0.0",
-      "bom-ref": "dx-os-frontend@2.0.0|proxy-disposable@1.0.0",
+      "bom-ref": "dx-os-frontend@2.1.0|proxy-disposable@1.0.0",
       "author": "Remco Haszing",
       "description": "Make objects with a dispose method compatible with an ES6 disposable",
       "licenses": [
@@ -3344,7 +3352,7 @@
       "type": "library",
       "name": "vscode-languageserver-textdocument",
       "version": "1.0.16",
-      "bom-ref": "dx-os-frontend@2.0.0|vscode-languageserver-textdocument@1.0.16",
+      "bom-ref": "dx-os-frontend@2.1.0|vscode-languageserver-textdocument@1.0.16",
       "author": "Microsoft Corporation",
       "description": "A simple text document implementation for Node LSP servers",
       "licenses": [
@@ -3395,7 +3403,7 @@
       "type": "library",
       "name": "vscode-languageserver-types",
       "version": "3.18.5",
-      "bom-ref": "dx-os-frontend@2.0.0|vscode-languageserver-types@3.18.5",
+      "bom-ref": "dx-os-frontend@2.1.0|vscode-languageserver-types@3.18.5",
       "author": "Microsoft Corporation",
       "description": "Types used by the Language server for node",
       "licenses": [
@@ -3446,7 +3454,7 @@
       "type": "library",
       "name": "vscode-uri",
       "version": "3.2.0",
-      "bom-ref": "dx-os-frontend@2.0.0|vscode-uri@3.2.0",
+      "bom-ref": "dx-os-frontend@2.1.0|vscode-uri@3.2.0",
       "author": "Microsoft",
       "description": "The URI implementation that is used by VS Code and its extensions",
       "licenses": [
@@ -3497,7 +3505,7 @@
       "type": "library",
       "name": "jwt-decode",
       "version": "4.0.0",
-      "bom-ref": "dx-os-frontend@2.0.0|jwt-decode@4.0.0",
+      "bom-ref": "dx-os-frontend@2.1.0|jwt-decode@4.0.0",
       "author": "Jose F. Romaniello",
       "description": "Decode JWT tokens, mostly useful for browser applications.",
       "licenses": [
@@ -3552,7 +3560,7 @@
       "type": "library",
       "name": "node-polyglot",
       "version": "2.6.0",
-      "bom-ref": "dx-os-frontend@2.0.0|node-polyglot@2.6.0",
+      "bom-ref": "dx-os-frontend@2.1.0|node-polyglot@2.6.0",
       "author": "Spike Brehm",
       "description": "Give your JavaScript the ability to speak many languages.",
       "licenses": [
@@ -3606,8 +3614,8 @@
     {
       "type": "library",
       "name": "ra-core",
-      "version": "5.15.5",
-      "bom-ref": "dx-os-frontend@2.0.0|ra-core@5.15.5",
+      "version": "5.15.7",
+      "bom-ref": "dx-os-frontend@2.1.0|ra-core@5.15.7",
       "description": "Core components of react-admin, a frontend Framework for building admin applications on top of REST services, using ES6, React",
       "licenses": [
         {
@@ -3617,7 +3625,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/ra-core@5.15.5",
+      "purl": "pkg:npm/ra-core@5.15.7",
       "externalReferences": [
         {
           "url": "git+https://github.com/marmelab/react-admin.git",
@@ -3635,12 +3643,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/ra-core/-/ra-core-5.15.5.tgz",
+          "url": "https://registry.npmjs.org/ra-core/-/ra-core-5.15.7.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "a1d3dcb2add0c14637e045281812c13264dadde2b86d4c0992a1704a931090770433575f195d4e3787f083d328069a6cc2fa4f0439910f878415fcd91cbab5db"
+              "content": "dbb16fffad2412da6ee099559dbf61f7048f99ac1a6c10cd82b908122828554ecf5f13a04eb54dfdde60638ea03c1431e7d8a5daa7409bffe3a6ae6b2e922616"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -3658,7 +3666,7 @@
       "name": "react-query",
       "group": "@tanstack",
       "version": "5.105.1",
-      "bom-ref": "dx-os-frontend@2.0.0|@tanstack/react-query@5.105.1",
+      "bom-ref": "dx-os-frontend@2.1.0|@tanstack/react-query@5.105.1",
       "author": "tannerlinsley",
       "description": "Hooks for managing, caching and syncing asynchronous and remote data in React",
       "licenses": [
@@ -3708,8 +3716,8 @@
     {
       "type": "library",
       "name": "ra-ui-materialui",
-      "version": "5.15.5",
-      "bom-ref": "dx-os-frontend@2.0.0|ra-ui-materialui@5.15.5",
+      "version": "5.15.7",
+      "bom-ref": "dx-os-frontend@2.1.0|ra-ui-materialui@5.15.7",
       "description": "UI Components for react-admin with Material UI",
       "licenses": [
         {
@@ -3719,7 +3727,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/ra-ui-materialui@5.15.5",
+      "purl": "pkg:npm/ra-ui-materialui@5.15.7",
       "externalReferences": [
         {
           "url": "git+https://github.com/marmelab/react-admin.git",
@@ -3737,12 +3745,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/ra-ui-materialui/-/ra-ui-materialui-5.15.5.tgz",
+          "url": "https://registry.npmjs.org/ra-ui-materialui/-/ra-ui-materialui-5.15.7.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "d3311f5dd5a59461502a0915adbdbc7780a900c2b8ecb47e536ed03a6657584fdaa13192592c24df120cad3d495edd9d0063ad539e53f49503907fdf8c42c759"
+              "content": "579af33b5e8459dbdcae3e3f10c21a51094fc169148aef54f09c590a78cff54b415201095367b22e1b09e7165cdb27af61c2d64e205b275a4a0da3d101e5a92d"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -3759,7 +3767,7 @@
       "type": "library",
       "name": "react-hook-form",
       "version": "7.91.0",
-      "bom-ref": "dx-os-frontend@2.0.0|react-hook-form@7.91.0",
+      "bom-ref": "dx-os-frontend@2.1.0|react-hook-form@7.91.0",
       "author": "Beier",
       "description": "Performant, flexible and extensible forms library for React Hooks",
       "licenses": [
@@ -3814,7 +3822,7 @@
       "type": "library",
       "name": "react-router",
       "version": "6.30.6",
-      "bom-ref": "dx-os-frontend@2.0.0|react-router@6.30.6",
+      "bom-ref": "dx-os-frontend@2.1.0|react-router@6.30.6",
       "author": "Remix Software",
       "description": "Declarative routing for React",
       "licenses": [
@@ -3869,7 +3877,7 @@
       "type": "library",
       "name": "loose-envify",
       "version": "1.4.0",
-      "bom-ref": "dx-os-frontend@2.0.0|loose-envify@1.4.0",
+      "bom-ref": "dx-os-frontend@2.1.0|loose-envify@1.4.0",
       "author": "Andres Suarez",
       "description": "Fast (and loose) selective `process.env` replacer using js-tokens instead of an AST",
       "licenses": [
@@ -3920,7 +3928,7 @@
       "type": "library",
       "name": "scheduler",
       "version": "0.23.2",
-      "bom-ref": "dx-os-frontend@2.0.0|scheduler@0.23.2",
+      "bom-ref": "dx-os-frontend@2.1.0|scheduler@0.23.2",
       "description": "Cooperative scheduler for the browser environment.",
       "licenses": [
         {
@@ -3971,7 +3979,7 @@
       "name": "router",
       "group": "@remix-run",
       "version": "1.23.4",
-      "bom-ref": "dx-os-frontend@2.0.0|@remix-run/router@1.23.4",
+      "bom-ref": "dx-os-frontend@2.1.0|@remix-run/router@1.23.4",
       "author": "Remix Software",
       "description": "Nested/Data-driven/Framework-agnostic Routing",
       "licenses": [
@@ -4027,7 +4035,7 @@
       "name": "helper-module-imports",
       "group": "@babel",
       "version": "7.29.7",
-      "bom-ref": "dx-os-frontend@2.0.0|@babel/helper-module-imports@7.29.7",
+      "bom-ref": "dx-os-frontend@2.1.0|@babel/helper-module-imports@7.29.7",
       "author": "The Babel Team",
       "description": "Babel helper functions for inserting module loads",
       "licenses": [
@@ -4083,7 +4091,7 @@
       "name": "hash",
       "group": "@emotion",
       "version": "0.9.2",
-      "bom-ref": "dx-os-frontend@2.0.0|@emotion/hash@0.9.2",
+      "bom-ref": "dx-os-frontend@2.1.0|@emotion/hash@0.9.2",
       "description": "A MurmurHash2 implementation",
       "licenses": [
         {
@@ -4134,7 +4142,7 @@
       "name": "memoize",
       "group": "@emotion",
       "version": "0.9.0",
-      "bom-ref": "dx-os-frontend@2.0.0|@emotion/memoize@0.9.0",
+      "bom-ref": "dx-os-frontend@2.1.0|@emotion/memoize@0.9.0",
       "description": "emotion's memoize utility",
       "licenses": [
         {
@@ -4184,7 +4192,7 @@
       "type": "library",
       "name": "babel-plugin-macros",
       "version": "3.1.0",
-      "bom-ref": "dx-os-frontend@2.0.0|babel-plugin-macros@3.1.0",
+      "bom-ref": "dx-os-frontend@2.1.0|babel-plugin-macros@3.1.0",
       "author": "Kent C. Dodds",
       "description": "Allows you to build compile-time libraries",
       "licenses": [
@@ -4243,7 +4251,7 @@
       "type": "library",
       "name": "convert-source-map",
       "version": "1.9.0",
-      "bom-ref": "dx-os-frontend@2.0.0|convert-source-map@1.9.0",
+      "bom-ref": "dx-os-frontend@2.1.0|convert-source-map@1.9.0",
       "author": "Thorsten Lorenz",
       "description": "Converts a source-map from/to  different formats and allows adding/changing properties.",
       "licenses": [
@@ -4294,7 +4302,7 @@
       "type": "library",
       "name": "escape-string-regexp",
       "version": "4.0.0",
-      "bom-ref": "dx-os-frontend@2.0.0|escape-string-regexp@4.0.0",
+      "bom-ref": "dx-os-frontend@2.1.0|escape-string-regexp@4.0.0",
       "author": "Sindre Sorhus",
       "description": "Escape RegExp special characters",
       "licenses": [
@@ -4349,7 +4357,7 @@
       "type": "library",
       "name": "find-root",
       "version": "1.1.0",
-      "bom-ref": "dx-os-frontend@2.0.0|find-root@1.1.0",
+      "bom-ref": "dx-os-frontend@2.1.0|find-root@1.1.0",
       "author": "jsdnxx",
       "description": "find the closest package.json",
       "licenses": [
@@ -4400,7 +4408,7 @@
       "type": "library",
       "name": "source-map",
       "version": "0.5.7",
-      "bom-ref": "dx-os-frontend@2.0.0|source-map@0.5.7",
+      "bom-ref": "dx-os-frontend@2.1.0|source-map@0.5.7",
       "author": "Nick Fitzgerald",
       "description": "Generates and consumes source maps",
       "licenses": [
@@ -4455,7 +4463,7 @@
       "type": "library",
       "name": "stylis",
       "version": "4.2.0",
-      "bom-ref": "dx-os-frontend@2.0.0|stylis@4.2.0",
+      "bom-ref": "dx-os-frontend@2.1.0|stylis@4.2.0",
       "author": "Sultan Tarimo",
       "description": "A Light–weight CSS Preprocessor",
       "licenses": [
@@ -4507,7 +4515,7 @@
       "name": "sheet",
       "group": "@emotion",
       "version": "1.4.0",
-      "bom-ref": "dx-os-frontend@2.0.0|@emotion/sheet@1.4.0",
+      "bom-ref": "dx-os-frontend@2.1.0|@emotion/sheet@1.4.0",
       "description": "emotion's stylesheet",
       "licenses": [
         {
@@ -4558,7 +4566,7 @@
       "name": "unitless",
       "group": "@emotion",
       "version": "0.10.0",
-      "bom-ref": "dx-os-frontend@2.0.0|@emotion/unitless@0.10.0",
+      "bom-ref": "dx-os-frontend@2.1.0|@emotion/unitless@0.10.0",
       "description": "An object of css properties that don't accept values with units",
       "licenses": [
         {
@@ -4609,7 +4617,7 @@
       "name": "prop-types",
       "group": "@types",
       "version": "15.7.15",
-      "bom-ref": "dx-os-frontend@2.0.0|@types/prop-types@15.7.15",
+      "bom-ref": "dx-os-frontend@2.1.0|@types/prop-types@15.7.15",
       "description": "TypeScript definitions for prop-types",
       "licenses": [
         {
@@ -4660,7 +4668,7 @@
       "name": "private-theming",
       "group": "@mui",
       "version": "6.4.9",
-      "bom-ref": "dx-os-frontend@2.0.0|@mui/private-theming@6.4.9",
+      "bom-ref": "dx-os-frontend@2.1.0|@mui/private-theming@6.4.9",
       "author": "MUI Team",
       "description": "Private - The React theme context to be shared between `@mui/styles` and `@mui/material`.",
       "licenses": [
@@ -4716,7 +4724,7 @@
       "name": "styled-engine",
       "group": "@mui",
       "version": "6.5.0",
-      "bom-ref": "dx-os-frontend@2.0.0|@mui/styled-engine@6.5.0",
+      "bom-ref": "dx-os-frontend@2.1.0|@mui/styled-engine@6.5.0",
       "author": "MUI Team",
       "description": "styled() API wrapper package for emotion.",
       "licenses": [
@@ -4771,7 +4779,7 @@
       "type": "library",
       "name": "object-assign",
       "version": "4.1.1",
-      "bom-ref": "dx-os-frontend@2.0.0|object-assign@4.1.1",
+      "bom-ref": "dx-os-frontend@2.1.0|object-assign@4.1.1",
       "author": "Sindre Sorhus",
       "description": "ES2015 `Object.assign()` ponyfill",
       "licenses": [
@@ -4826,7 +4834,7 @@
       "type": "library",
       "name": "dom-helpers",
       "version": "5.2.1",
-      "bom-ref": "dx-os-frontend@2.0.0|dom-helpers@5.2.1",
+      "bom-ref": "dx-os-frontend@2.1.0|dom-helpers@5.2.1",
       "author": "Jason Quense",
       "description": "tiny modular DOM lib for ie9+",
       "licenses": [
@@ -4878,7 +4886,7 @@
       "name": "d3-drag",
       "group": "@types",
       "version": "3.0.7",
-      "bom-ref": "dx-os-frontend@2.0.0|@types/d3-drag@3.0.7",
+      "bom-ref": "dx-os-frontend@2.1.0|@types/d3-drag@3.0.7",
       "description": "TypeScript definitions for d3-drag",
       "licenses": [
         {
@@ -4929,7 +4937,7 @@
       "name": "d3-interpolate",
       "group": "@types",
       "version": "3.0.4",
-      "bom-ref": "dx-os-frontend@2.0.0|@types/d3-interpolate@3.0.4",
+      "bom-ref": "dx-os-frontend@2.1.0|@types/d3-interpolate@3.0.4",
       "description": "TypeScript definitions for d3-interpolate",
       "licenses": [
         {
@@ -4980,7 +4988,7 @@
       "name": "d3-selection",
       "group": "@types",
       "version": "3.0.12",
-      "bom-ref": "dx-os-frontend@2.0.0|@types/d3-selection@3.0.12",
+      "bom-ref": "dx-os-frontend@2.1.0|@types/d3-selection@3.0.12",
       "description": "TypeScript definitions for d3-selection",
       "licenses": [
         {
@@ -5031,7 +5039,7 @@
       "name": "d3-transition",
       "group": "@types",
       "version": "3.0.9",
-      "bom-ref": "dx-os-frontend@2.0.0|@types/d3-transition@3.0.9",
+      "bom-ref": "dx-os-frontend@2.1.0|@types/d3-transition@3.0.9",
       "description": "TypeScript definitions for d3-transition",
       "licenses": [
         {
@@ -5082,7 +5090,7 @@
       "name": "d3-zoom",
       "group": "@types",
       "version": "3.0.9",
-      "bom-ref": "dx-os-frontend@2.0.0|@types/d3-zoom@3.0.9",
+      "bom-ref": "dx-os-frontend@2.1.0|@types/d3-zoom@3.0.9",
       "description": "TypeScript definitions for d3-zoom",
       "licenses": [
         {
@@ -5132,7 +5140,7 @@
       "type": "library",
       "name": "d3-drag",
       "version": "3.0.0",
-      "bom-ref": "dx-os-frontend@2.0.0|d3-drag@3.0.0",
+      "bom-ref": "dx-os-frontend@2.1.0|d3-drag@3.0.0",
       "author": "Mike Bostock",
       "description": "Drag and drop SVG, HTML or Canvas using mouse or touch input.",
       "licenses": [
@@ -5187,7 +5195,7 @@
       "type": "library",
       "name": "d3-interpolate",
       "version": "3.0.1",
-      "bom-ref": "dx-os-frontend@2.0.0|d3-interpolate@3.0.1",
+      "bom-ref": "dx-os-frontend@2.1.0|d3-interpolate@3.0.1",
       "author": "Mike Bostock",
       "description": "Interpolate numbers, colors, strings, arrays, objects, whatever!",
       "licenses": [
@@ -5242,7 +5250,7 @@
       "type": "library",
       "name": "d3-selection",
       "version": "3.0.0",
-      "bom-ref": "dx-os-frontend@2.0.0|d3-selection@3.0.0",
+      "bom-ref": "dx-os-frontend@2.1.0|d3-selection@3.0.0",
       "author": "Mike Bostock",
       "description": "Data-driven DOM manipulation: select elements and join them to data.",
       "licenses": [
@@ -5297,7 +5305,7 @@
       "type": "library",
       "name": "d3-zoom",
       "version": "3.0.0",
-      "bom-ref": "dx-os-frontend@2.0.0|d3-zoom@3.0.0",
+      "bom-ref": "dx-os-frontend@2.1.0|d3-zoom@3.0.0",
       "author": "Mike Bostock",
       "description": "Pan and zoom SVG, HTML or Canvas using mouse or touch input.",
       "licenses": [
@@ -5352,7 +5360,7 @@
       "type": "library",
       "name": "use-sync-external-store",
       "version": "1.7.0",
-      "bom-ref": "dx-os-frontend@2.0.0|use-sync-external-store@1.7.0",
+      "bom-ref": "dx-os-frontend@2.1.0|use-sync-external-store@1.7.0",
       "description": "Backwards compatible shim for React's useSyncExternalStore. Works with any React that supports hooks.",
       "licenses": [
         {
@@ -5403,7 +5411,7 @@
       "name": "trusted-types",
       "group": "@types",
       "version": "2.0.7",
-      "bom-ref": "dx-os-frontend@2.0.0|@types/trusted-types@2.0.7",
+      "bom-ref": "dx-os-frontend@2.1.0|@types/trusted-types@2.0.7",
       "description": "TypeScript definitions for trusted-types",
       "scope": "optional",
       "licenses": [
@@ -5454,7 +5462,7 @@
       "type": "library",
       "name": "vscode-languageserver-protocol",
       "version": "3.18.5",
-      "bom-ref": "dx-os-frontend@2.0.0|vscode-languageserver-protocol@3.18.5",
+      "bom-ref": "dx-os-frontend@2.1.0|vscode-languageserver-protocol@3.18.5",
       "author": "Microsoft Corporation",
       "description": "VSCode Language Server Protocol implementation",
       "licenses": [
@@ -5505,7 +5513,7 @@
       "type": "library",
       "name": "hasown",
       "version": "2.0.4",
-      "bom-ref": "dx-os-frontend@2.0.0|hasown@2.0.4",
+      "bom-ref": "dx-os-frontend@2.1.0|hasown@2.0.4",
       "author": "Jordan Harband",
       "description": "A robust, ES3 compatible, \"has own property\" predicate.",
       "licenses": [
@@ -5560,7 +5568,7 @@
       "type": "library",
       "name": "object.entries",
       "version": "1.1.9",
-      "bom-ref": "dx-os-frontend@2.0.0|object.entries@1.1.9",
+      "bom-ref": "dx-os-frontend@2.1.0|object.entries@1.1.9",
       "author": "Jordan Harband",
       "description": "ES2017 spec-compliant Object.entries shim.",
       "licenses": [
@@ -5615,7 +5623,7 @@
       "type": "library",
       "name": "warning",
       "version": "4.0.3",
-      "bom-ref": "dx-os-frontend@2.0.0|warning@4.0.3",
+      "bom-ref": "dx-os-frontend@2.1.0|warning@4.0.3",
       "author": "Berkeley Martinez",
       "description": "A mirror of Facebook's Warning",
       "licenses": [
@@ -5664,9 +5672,65 @@
     },
     {
       "type": "library",
+      "name": "query-string",
+      "group": "@marmelab",
+      "version": "7.1.4",
+      "bom-ref": "dx-os-frontend@2.1.0|@marmelab/query-string@7.1.4",
+      "author": "Sindre Sorhus",
+      "description": "Parse and stringify URL query strings",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40marmelab/query-string@7.1.4",
+      "externalReferences": [
+        {
+          "url": "git+https://github.com/sindresorhus/query-string.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/sindresorhus/query-string#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        },
+        {
+          "url": "https://github.com/sindresorhus/query-string/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "https://registry.npmjs.org/@marmelab/query-string/-/query-string-7.1.4.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "345c45d3efe293d864438743199f0722bd3f5ad0df6275bc1c02115415688c81c7f749965440fda16f4d1c49e1fd5cdc53f31fe3b1d2f86b73fce169a1277bc9"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=6"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@marmelab/query-string"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "date-fns",
       "version": "3.6.0",
-      "bom-ref": "dx-os-frontend@2.0.0|date-fns@3.6.0",
+      "bom-ref": "dx-os-frontend@2.1.0|date-fns@3.6.0",
       "description": "Modern JavaScript date utility library",
       "licenses": [
         {
@@ -5716,7 +5780,7 @@
       "type": "library",
       "name": "eventemitter3",
       "version": "5.0.4",
-      "bom-ref": "dx-os-frontend@2.0.0|eventemitter3@5.0.4",
+      "bom-ref": "dx-os-frontend@2.1.0|eventemitter3@5.0.4",
       "author": "Arnout Kazemier",
       "description": "EventEmitter3 focuses on performance while maintaining a Node.js AND browser compatible interface.",
       "licenses": [
@@ -5767,7 +5831,7 @@
       "type": "library",
       "name": "inflection",
       "version": "3.0.2",
-      "bom-ref": "dx-os-frontend@2.0.0|inflection@3.0.2",
+      "bom-ref": "dx-os-frontend@2.1.0|inflection@3.0.2",
       "author": "dreamerslab",
       "description": "A port of inflection-js to node.js module",
       "licenses": [
@@ -5822,7 +5886,7 @@
       "type": "library",
       "name": "jsonexport",
       "version": "3.2.0",
-      "bom-ref": "dx-os-frontend@2.0.0|jsonexport@3.2.0",
+      "bom-ref": "dx-os-frontend@2.1.0|jsonexport@3.2.0",
       "author": "Kauê Gimenes",
       "description": "Makes easy to convert JSON to CSV",
       "licenses": [
@@ -5873,7 +5937,7 @@
       "type": "library",
       "name": "lodash",
       "version": "4.18.1",
-      "bom-ref": "dx-os-frontend@2.0.0|lodash@4.18.1",
+      "bom-ref": "dx-os-frontend@2.1.0|lodash@4.18.1",
       "author": "John-David Dalton",
       "description": "Lodash modular utilities.",
       "licenses": [
@@ -5922,64 +5986,9 @@
     },
     {
       "type": "library",
-      "name": "query-string",
-      "version": "7.1.3",
-      "bom-ref": "dx-os-frontend@2.0.0|query-string@7.1.3",
-      "author": "Sindre Sorhus",
-      "description": "Parse and stringify URL query strings",
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT",
-            "acknowledgement": "declared"
-          }
-        }
-      ],
-      "purl": "pkg:npm/query-string@7.1.3",
-      "externalReferences": [
-        {
-          "url": "git+https://github.com/sindresorhus/query-string.git",
-          "type": "vcs",
-          "comment": "as detected from PackageJson property \"repository.url\""
-        },
-        {
-          "url": "https://github.com/sindresorhus/query-string#readme",
-          "type": "website",
-          "comment": "as detected from PackageJson property \"homepage\""
-        },
-        {
-          "url": "https://github.com/sindresorhus/query-string/issues",
-          "type": "issue-tracker",
-          "comment": "as detected from PackageJson property \"bugs.url\""
-        },
-        {
-          "url": "https://registry.npmjs.org/query-string/-/query-string-7.1.3.tgz",
-          "type": "distribution",
-          "hashes": [
-            {
-              "alg": "SHA-512",
-              "content": "861d96621ab87e2f3e6feff62a0f421207b87c33ef1d2e77e1a38ebce65e437f957f698216c6850588f48be897700aba23d573a797e330506538dbdac830b5aa"
-            }
-          ],
-          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
-        }
-      ],
-      "properties": [
-        {
-          "name": "cdx:npm:package:constraint:engine:node",
-          "value": ">=6"
-        },
-        {
-          "name": "cdx:npm:package:path",
-          "value": "node_modules/query-string"
-        }
-      ]
-    },
-    {
-      "type": "library",
       "name": "react-error-boundary",
       "version": "4.1.2",
-      "bom-ref": "dx-os-frontend@2.0.0|react-error-boundary@4.1.2",
+      "bom-ref": "dx-os-frontend@2.1.0|react-error-boundary@4.1.2",
       "author": "Brian Vaughn",
       "description": "Simple reusable React error boundary component",
       "licenses": [
@@ -6031,7 +6040,7 @@
       "name": "query-core",
       "group": "@tanstack",
       "version": "5.105.1",
-      "bom-ref": "dx-os-frontend@2.0.0|@tanstack/query-core@5.105.1",
+      "bom-ref": "dx-os-frontend@2.1.0|@tanstack/query-core@5.105.1",
       "author": "tannerlinsley",
       "description": "The framework agnostic core that powers TanStack Query",
       "licenses": [
@@ -6082,7 +6091,7 @@
       "type": "library",
       "name": "autosuggest-highlight",
       "version": "3.3.4",
-      "bom-ref": "dx-os-frontend@2.0.0|autosuggest-highlight@3.3.4",
+      "bom-ref": "dx-os-frontend@2.1.0|autosuggest-highlight@3.3.4",
       "author": "Misha Moroshko",
       "description": "Utilities for highlighting text in autosuggest and autocomplete components",
       "licenses": [
@@ -6133,7 +6142,7 @@
       "type": "library",
       "name": "css-mediaquery",
       "version": "0.1.2",
-      "bom-ref": "dx-os-frontend@2.0.0|css-mediaquery@0.1.2",
+      "bom-ref": "dx-os-frontend@2.1.0|css-mediaquery@0.1.2",
       "author": "Eric Ferraiuolo",
       "description": "Parses and determines if a given CSS Media Query matches a set of values.",
       "licenses": [
@@ -6184,7 +6193,7 @@
       "type": "library",
       "name": "diacritic",
       "version": "0.0.2",
-      "bom-ref": "dx-os-frontend@2.0.0|diacritic@0.0.2",
+      "bom-ref": "dx-os-frontend@2.1.0|diacritic@0.0.2",
       "author": "Nijiko Yonskai",
       "description": "Removes accents / diacritics from strings, sentences, and paragraphs fast and effeciently.",
       "licenses": [
@@ -6235,7 +6244,7 @@
       "type": "library",
       "name": "react-dropzone",
       "version": "14.4.1",
-      "bom-ref": "dx-os-frontend@2.0.0|react-dropzone@14.4.1",
+      "bom-ref": "dx-os-frontend@2.1.0|react-dropzone@14.4.1",
       "author": "Param Aggarwal",
       "description": "Simple HTML5 drag-drop zone with React.js",
       "licenses": [
@@ -6289,8 +6298,8 @@
     {
       "type": "library",
       "name": "react-hotkeys-hook",
-      "version": "5.3.3",
-      "bom-ref": "dx-os-frontend@2.0.0|react-hotkeys-hook@5.3.3",
+      "version": "5.4.0",
+      "bom-ref": "dx-os-frontend@2.1.0|react-hotkeys-hook@5.4.0",
       "author": "Johannes Klauss",
       "description": "React hook for handling keyboard shortcuts",
       "licenses": [
@@ -6301,7 +6310,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/react-hotkeys-hook@5.3.3",
+      "purl": "pkg:npm/react-hotkeys-hook@5.4.0",
       "externalReferences": [
         {
           "url": "git+https://github.com/JohannesKlauss/react-keymap-hook.git",
@@ -6319,12 +6328,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/react-hotkeys-hook/-/react-hotkeys-hook-5.3.3.tgz",
+          "url": "https://registry.npmjs.org/react-hotkeys-hook/-/react-hotkeys-hook-5.4.0.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "6acc20c96527136e619a1cc74df28398acec6921390c9e0b29a53fa3aad049790377fd4187d4df00541b1e47fa7cbcb5d47be5624a7e7030daac67619820e1a1"
+              "content": "6f16db20e5138841b3cc7eb9558b81a2bda1bf595861b139bb5f93bf9a0c920504d161d24d1ef50a8e8e04e053d7f3128f46ccac03e289b59c5154ee70b38a1a"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -6341,7 +6350,7 @@
       "type": "library",
       "name": "js-tokens",
       "version": "4.0.0",
-      "bom-ref": "dx-os-frontend@2.0.0|js-tokens@4.0.0",
+      "bom-ref": "dx-os-frontend@2.1.0|js-tokens@4.0.0",
       "author": "Simon Lydell",
       "description": "A regex that tokenizes JavaScript.",
       "licenses": [
@@ -6393,7 +6402,7 @@
       "name": "traverse",
       "group": "@babel",
       "version": "7.29.12",
-      "bom-ref": "dx-os-frontend@2.0.0|@babel/traverse@7.29.12",
+      "bom-ref": "dx-os-frontend@2.1.0|@babel/traverse@7.29.12",
       "author": "The Babel Team",
       "description": "The Babel Traverse module maintains the overall tree state, and is responsible for replacing, removing, and adding nodes",
       "licenses": [
@@ -6449,7 +6458,7 @@
       "name": "types",
       "group": "@babel",
       "version": "7.29.11",
-      "bom-ref": "dx-os-frontend@2.0.0|@babel/types@7.29.11",
+      "bom-ref": "dx-os-frontend@2.1.0|@babel/types@7.29.11",
       "author": "The Babel Team",
       "description": "Babel Types is a Lodash-esque utility library for AST nodes",
       "licenses": [
@@ -6504,7 +6513,7 @@
       "type": "library",
       "name": "cosmiconfig",
       "version": "7.1.0",
-      "bom-ref": "dx-os-frontend@2.0.0|cosmiconfig@7.1.0",
+      "bom-ref": "dx-os-frontend@2.1.0|cosmiconfig@7.1.0",
       "author": "David Clark",
       "description": "Find and load configuration from a package.json property, rc file, or CommonJS module",
       "licenses": [
@@ -6559,7 +6568,7 @@
           "type": "library",
           "name": "yaml",
           "version": "1.10.3",
-          "bom-ref": "dx-os-frontend@2.0.0|cosmiconfig@7.1.0|yaml@1.10.3",
+          "bom-ref": "dx-os-frontend@2.1.0|cosmiconfig@7.1.0|yaml@1.10.3",
           "author": "Eemeli Aro",
           "description": "JavaScript parser and stringifier for YAML",
           "licenses": [
@@ -6616,7 +6625,7 @@
       "type": "library",
       "name": "resolve",
       "version": "1.22.13",
-      "bom-ref": "dx-os-frontend@2.0.0|resolve@1.22.13",
+      "bom-ref": "dx-os-frontend@2.1.0|resolve@1.22.13",
       "author": "James Halliday",
       "description": "resolve like require.resolve() on behalf of files asynchronously and synchronously",
       "licenses": [
@@ -6672,7 +6681,7 @@
       "name": "d3-color",
       "group": "@types",
       "version": "3.1.3",
-      "bom-ref": "dx-os-frontend@2.0.0|@types/d3-color@3.1.3",
+      "bom-ref": "dx-os-frontend@2.1.0|@types/d3-color@3.1.3",
       "description": "TypeScript definitions for d3-color",
       "licenses": [
         {
@@ -6722,7 +6731,7 @@
       "type": "library",
       "name": "d3-dispatch",
       "version": "3.0.1",
-      "bom-ref": "dx-os-frontend@2.0.0|d3-dispatch@3.0.1",
+      "bom-ref": "dx-os-frontend@2.1.0|d3-dispatch@3.0.1",
       "author": "Mike Bostock",
       "description": "Register named callbacks and call them with arguments.",
       "licenses": [
@@ -6777,7 +6786,7 @@
       "type": "library",
       "name": "d3-color",
       "version": "3.1.0",
-      "bom-ref": "dx-os-frontend@2.0.0|d3-color@3.1.0",
+      "bom-ref": "dx-os-frontend@2.1.0|d3-color@3.1.0",
       "author": "Mike Bostock",
       "description": "Color spaces! RGB, HSL, Cubehelix, Lab and HCL (Lch).",
       "licenses": [
@@ -6832,7 +6841,7 @@
       "type": "library",
       "name": "d3-transition",
       "version": "3.0.1",
-      "bom-ref": "dx-os-frontend@2.0.0|d3-transition@3.0.1",
+      "bom-ref": "dx-os-frontend@2.1.0|d3-transition@3.0.1",
       "author": "Mike Bostock",
       "description": "Animated transitions for D3 selections.",
       "licenses": [
@@ -6887,7 +6896,7 @@
       "type": "library",
       "name": "vscode-jsonrpc",
       "version": "10.0.0",
-      "bom-ref": "dx-os-frontend@2.0.0|vscode-jsonrpc@10.0.0",
+      "bom-ref": "dx-os-frontend@2.1.0|vscode-jsonrpc@10.0.0",
       "author": "Microsoft Corporation",
       "description": "A json rpc implementation over streams",
       "licenses": [
@@ -6942,7 +6951,7 @@
       "type": "library",
       "name": "function-bind",
       "version": "1.1.2",
-      "bom-ref": "dx-os-frontend@2.0.0|function-bind@1.1.2",
+      "bom-ref": "dx-os-frontend@2.1.0|function-bind@1.1.2",
       "author": "Raynos",
       "description": "Implementation of Function.prototype.bind",
       "licenses": [
@@ -6993,7 +7002,7 @@
       "type": "library",
       "name": "call-bind",
       "version": "1.0.9",
-      "bom-ref": "dx-os-frontend@2.0.0|call-bind@1.0.9",
+      "bom-ref": "dx-os-frontend@2.1.0|call-bind@1.0.9",
       "author": "Jordan Harband",
       "description": "Robustly `.call.bind()` a function",
       "licenses": [
@@ -7048,7 +7057,7 @@
       "type": "library",
       "name": "call-bound",
       "version": "1.0.4",
-      "bom-ref": "dx-os-frontend@2.0.0|call-bound@1.0.4",
+      "bom-ref": "dx-os-frontend@2.1.0|call-bound@1.0.4",
       "author": "Jordan Harband",
       "description": "Robust call-bound JavaScript intrinsics, using `call-bind` and `get-intrinsic`.",
       "licenses": [
@@ -7103,7 +7112,7 @@
       "type": "library",
       "name": "define-properties",
       "version": "1.2.1",
-      "bom-ref": "dx-os-frontend@2.0.0|define-properties@1.2.1",
+      "bom-ref": "dx-os-frontend@2.1.0|define-properties@1.2.1",
       "author": "Jordan Harband",
       "description": "Define multiple non-enumerable properties at once. Uses `Object.defineProperty` when available; falls back to standard assignment in older engines.",
       "licenses": [
@@ -7158,7 +7167,7 @@
       "type": "library",
       "name": "es-object-atoms",
       "version": "1.1.2",
-      "bom-ref": "dx-os-frontend@2.0.0|es-object-atoms@1.1.2",
+      "bom-ref": "dx-os-frontend@2.1.0|es-object-atoms@1.1.2",
       "author": "Jordan Harband",
       "description": "ES Object-related atoms: Object, ToObject, RequireObjectCoercible",
       "licenses": [
@@ -7212,8 +7221,9 @@
     {
       "type": "library",
       "name": "decode-uri-component",
-      "version": "0.2.2",
-      "bom-ref": "dx-os-frontend@2.0.0|decode-uri-component@0.2.2",
+      "group": "@marmelab",
+      "version": "0.2.3",
+      "bom-ref": "dx-os-frontend@2.1.0|@marmelab/decode-uri-component@0.2.3",
       "author": "Sam Verschueren",
       "description": "A better decodeURIComponent",
       "licenses": [
@@ -7224,30 +7234,30 @@
           }
         }
       ],
-      "purl": "pkg:npm/decode-uri-component@0.2.2",
+      "purl": "pkg:npm/%40marmelab/decode-uri-component@0.2.3",
       "externalReferences": [
         {
-          "url": "git+https://github.com/SamVerschueren/decode-uri-component.git",
+          "url": "git+https://github.com/marmelab/decode-uri-component.git",
           "type": "vcs",
           "comment": "as detected from PackageJson property \"repository.url\""
         },
         {
-          "url": "https://github.com/SamVerschueren/decode-uri-component#readme",
+          "url": "https://github.com/marmelab/decode-uri-component#readme",
           "type": "website",
           "comment": "as detected from PackageJson property \"homepage\""
         },
         {
-          "url": "https://github.com/SamVerschueren/decode-uri-component/issues",
+          "url": "https://github.com/marmelab/decode-uri-component/issues",
           "type": "issue-tracker",
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/decode-uri-component/-/decode-uri-component-0.2.2.tgz",
+          "url": "https://registry.npmjs.org/@marmelab/decode-uri-component/-/decode-uri-component-0.2.3.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "16a51843ef28d79f06c864eb305266b3daa1dc2a932af02a82ab139e42c8f2c2aed34dbca2ba8187134c16415e9f4cc6ca0e9ea40083df6a63564e7c9e0204ad"
+              "content": "063984a791eb3c6064100ca73458ae54dee3faeb06cd52d5b1f5fa1617791c9127b7d6556385b1360fa1448f11a5ae534c9cad28192106d479c3b444d9f1915c"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -7260,7 +7270,7 @@
         },
         {
           "name": "cdx:npm:package:path",
-          "value": "node_modules/decode-uri-component"
+          "value": "node_modules/@marmelab/decode-uri-component"
         }
       ]
     },
@@ -7268,7 +7278,7 @@
       "type": "library",
       "name": "filter-obj",
       "version": "1.1.0",
-      "bom-ref": "dx-os-frontend@2.0.0|filter-obj@1.1.0",
+      "bom-ref": "dx-os-frontend@2.1.0|filter-obj@1.1.0",
       "author": "Sindre Sorhus",
       "description": "Filter object keys and values into a new object",
       "licenses": [
@@ -7323,7 +7333,7 @@
       "type": "library",
       "name": "split-on-first",
       "version": "1.1.0",
-      "bom-ref": "dx-os-frontend@2.0.0|split-on-first@1.1.0",
+      "bom-ref": "dx-os-frontend@2.1.0|split-on-first@1.1.0",
       "author": "Sindre Sorhus",
       "description": "Split a string on the first occurance of a given separator",
       "licenses": [
@@ -7378,7 +7388,7 @@
       "type": "library",
       "name": "strict-uri-encode",
       "version": "2.0.0",
-      "bom-ref": "dx-os-frontend@2.0.0|strict-uri-encode@2.0.0",
+      "bom-ref": "dx-os-frontend@2.1.0|strict-uri-encode@2.0.0",
       "author": "Kevin Mårtensson",
       "description": "A stricter URI encode adhering to RFC 3986",
       "licenses": [
@@ -7433,7 +7443,7 @@
       "type": "library",
       "name": "remove-accents",
       "version": "0.4.4",
-      "bom-ref": "dx-os-frontend@2.0.0|remove-accents@0.4.4",
+      "bom-ref": "dx-os-frontend@2.1.0|remove-accents@0.4.4",
       "author": "Marin Atanasov",
       "description": "Converting the accented characters to their corresponding non-accented ASCII characters.",
       "licenses": [
@@ -7484,7 +7494,7 @@
       "type": "library",
       "name": "attr-accept",
       "version": "2.2.5",
-      "bom-ref": "dx-os-frontend@2.0.0|attr-accept@2.2.5",
+      "bom-ref": "dx-os-frontend@2.1.0|attr-accept@2.2.5",
       "author": "Andrey Okonetchnikov @okonetchnikov",
       "description": "JavaScript implementation of the \"accept\" attribute for HTML5 <input type=\"file\">",
       "licenses": [
@@ -7539,7 +7549,7 @@
       "type": "library",
       "name": "file-selector",
       "version": "2.1.2",
-      "bom-ref": "dx-os-frontend@2.0.0|file-selector@2.1.2",
+      "bom-ref": "dx-os-frontend@2.1.0|file-selector@2.1.2",
       "author": "Roland Groza",
       "description": "Convert DataTransfer object to a list of File objects",
       "licenses": [
@@ -7595,7 +7605,7 @@
       "name": "code-frame",
       "group": "@babel",
       "version": "7.29.7",
-      "bom-ref": "dx-os-frontend@2.0.0|@babel/code-frame@7.29.7",
+      "bom-ref": "dx-os-frontend@2.1.0|@babel/code-frame@7.29.7",
       "author": "The Babel Team",
       "description": "Generate errors that contain a code frame that point to source locations.",
       "licenses": [
@@ -7651,7 +7661,7 @@
       "name": "generator",
       "group": "@babel",
       "version": "7.29.12",
-      "bom-ref": "dx-os-frontend@2.0.0|@babel/generator@7.29.12",
+      "bom-ref": "dx-os-frontend@2.1.0|@babel/generator@7.29.12",
       "author": "The Babel Team",
       "description": "Turns an AST into code.",
       "licenses": [
@@ -7707,7 +7717,7 @@
       "name": "helper-globals",
       "group": "@babel",
       "version": "7.29.7",
-      "bom-ref": "dx-os-frontend@2.0.0|@babel/helper-globals@7.29.7",
+      "bom-ref": "dx-os-frontend@2.1.0|@babel/helper-globals@7.29.7",
       "author": "The Babel Team",
       "description": "A collection of JavaScript globals for Babel internal usage",
       "licenses": [
@@ -7763,7 +7773,7 @@
       "name": "parser",
       "group": "@babel",
       "version": "7.29.12",
-      "bom-ref": "dx-os-frontend@2.0.0|@babel/parser@7.29.12",
+      "bom-ref": "dx-os-frontend@2.1.0|@babel/parser@7.29.12",
       "author": "The Babel Team",
       "description": "A JavaScript parser",
       "licenses": [
@@ -7819,7 +7829,7 @@
       "name": "template",
       "group": "@babel",
       "version": "7.29.7",
-      "bom-ref": "dx-os-frontend@2.0.0|@babel/template@7.29.7",
+      "bom-ref": "dx-os-frontend@2.1.0|@babel/template@7.29.7",
       "author": "The Babel Team",
       "description": "Generate an AST from a string template.",
       "licenses": [
@@ -7874,7 +7884,7 @@
       "type": "library",
       "name": "debug",
       "version": "4.4.3",
-      "bom-ref": "dx-os-frontend@2.0.0|debug@4.4.3",
+      "bom-ref": "dx-os-frontend@2.1.0|debug@4.4.3",
       "author": "Josh Junon",
       "description": "Lightweight debugging utility for Node.js and the browser",
       "licenses": [
@@ -7930,7 +7940,7 @@
       "name": "helper-string-parser",
       "group": "@babel",
       "version": "7.29.11",
-      "bom-ref": "dx-os-frontend@2.0.0|@babel/helper-string-parser@7.29.11",
+      "bom-ref": "dx-os-frontend@2.1.0|@babel/helper-string-parser@7.29.11",
       "author": "The Babel Team",
       "description": "A utility package to parse strings",
       "licenses": [
@@ -7986,7 +7996,7 @@
       "name": "helper-validator-identifier",
       "group": "@babel",
       "version": "7.29.7",
-      "bom-ref": "dx-os-frontend@2.0.0|@babel/helper-validator-identifier@7.29.7",
+      "bom-ref": "dx-os-frontend@2.1.0|@babel/helper-validator-identifier@7.29.7",
       "author": "The Babel Team",
       "description": "Validate identifier/keywords name",
       "licenses": [
@@ -8042,7 +8052,7 @@
       "name": "parse-json",
       "group": "@types",
       "version": "4.0.2",
-      "bom-ref": "dx-os-frontend@2.0.0|@types/parse-json@4.0.2",
+      "bom-ref": "dx-os-frontend@2.1.0|@types/parse-json@4.0.2",
       "description": "TypeScript definitions for parse-json",
       "licenses": [
         {
@@ -8092,7 +8102,7 @@
       "type": "library",
       "name": "import-fresh",
       "version": "3.3.1",
-      "bom-ref": "dx-os-frontend@2.0.0|import-fresh@3.3.1",
+      "bom-ref": "dx-os-frontend@2.1.0|import-fresh@3.3.1",
       "author": "Sindre Sorhus",
       "description": "Import a module while bypassing the cache",
       "licenses": [
@@ -8147,7 +8157,7 @@
       "type": "library",
       "name": "parse-json",
       "version": "5.2.0",
-      "bom-ref": "dx-os-frontend@2.0.0|parse-json@5.2.0",
+      "bom-ref": "dx-os-frontend@2.1.0|parse-json@5.2.0",
       "author": "Sindre Sorhus",
       "description": "Parse JSON with more helpful errors",
       "licenses": [
@@ -8202,7 +8212,7 @@
       "type": "library",
       "name": "path-type",
       "version": "4.0.0",
-      "bom-ref": "dx-os-frontend@2.0.0|path-type@4.0.0",
+      "bom-ref": "dx-os-frontend@2.1.0|path-type@4.0.0",
       "author": "Sindre Sorhus",
       "description": "Check if a path is a file, directory, or symlink",
       "licenses": [
@@ -8257,7 +8267,7 @@
       "type": "library",
       "name": "es-errors",
       "version": "1.3.0",
-      "bom-ref": "dx-os-frontend@2.0.0|es-errors@1.3.0",
+      "bom-ref": "dx-os-frontend@2.1.0|es-errors@1.3.0",
       "author": "Jordan Harband",
       "description": "A simple cache for a few of the JS Error constructors.",
       "licenses": [
@@ -8312,7 +8322,7 @@
       "type": "library",
       "name": "is-core-module",
       "version": "2.17.0",
-      "bom-ref": "dx-os-frontend@2.0.0|is-core-module@2.17.0",
+      "bom-ref": "dx-os-frontend@2.1.0|is-core-module@2.17.0",
       "author": "Jordan Harband",
       "description": "Is this specifier a node.js core module?",
       "licenses": [
@@ -8367,7 +8377,7 @@
       "type": "library",
       "name": "path-parse",
       "version": "1.0.7",
-      "bom-ref": "dx-os-frontend@2.0.0|path-parse@1.0.7",
+      "bom-ref": "dx-os-frontend@2.1.0|path-parse@1.0.7",
       "author": "Javier Blanco",
       "description": "Node.js path.parse() ponyfill",
       "licenses": [
@@ -8418,7 +8428,7 @@
       "type": "library",
       "name": "supports-preserve-symlinks-flag",
       "version": "1.0.0",
-      "bom-ref": "dx-os-frontend@2.0.0|supports-preserve-symlinks-flag@1.0.0",
+      "bom-ref": "dx-os-frontend@2.1.0|supports-preserve-symlinks-flag@1.0.0",
       "author": "Jordan Harband",
       "description": "Determine if the current node version supports the `--preserve-symlinks` flag.",
       "licenses": [
@@ -8473,7 +8483,7 @@
       "type": "library",
       "name": "d3-ease",
       "version": "3.0.1",
-      "bom-ref": "dx-os-frontend@2.0.0|d3-ease@3.0.1",
+      "bom-ref": "dx-os-frontend@2.1.0|d3-ease@3.0.1",
       "author": "Mike Bostock",
       "description": "Easing functions for smooth animation.",
       "licenses": [
@@ -8528,7 +8538,7 @@
       "type": "library",
       "name": "d3-timer",
       "version": "3.0.1",
-      "bom-ref": "dx-os-frontend@2.0.0|d3-timer@3.0.1",
+      "bom-ref": "dx-os-frontend@2.1.0|d3-timer@3.0.1",
       "author": "Mike Bostock",
       "description": "An efficient queue capable of managing thousands of concurrent animations.",
       "licenses": [
@@ -8583,7 +8593,7 @@
       "type": "library",
       "name": "call-bind-apply-helpers",
       "version": "1.0.2",
-      "bom-ref": "dx-os-frontend@2.0.0|call-bind-apply-helpers@1.0.2",
+      "bom-ref": "dx-os-frontend@2.1.0|call-bind-apply-helpers@1.0.2",
       "author": "Jordan Harband",
       "description": "Helper functions around Function call/apply/bind, for use in `call-bind`",
       "licenses": [
@@ -8638,7 +8648,7 @@
       "type": "library",
       "name": "es-define-property",
       "version": "1.0.1",
-      "bom-ref": "dx-os-frontend@2.0.0|es-define-property@1.0.1",
+      "bom-ref": "dx-os-frontend@2.1.0|es-define-property@1.0.1",
       "author": "Jordan Harband",
       "description": "`Object.defineProperty`, but not IE 8's broken one.",
       "licenses": [
@@ -8693,7 +8703,7 @@
       "type": "library",
       "name": "get-intrinsic",
       "version": "1.3.0",
-      "bom-ref": "dx-os-frontend@2.0.0|get-intrinsic@1.3.0",
+      "bom-ref": "dx-os-frontend@2.1.0|get-intrinsic@1.3.0",
       "author": "Jordan Harband",
       "description": "Get and robustly cache all JS language-level intrinsics at first require time",
       "licenses": [
@@ -8748,7 +8758,7 @@
       "type": "library",
       "name": "set-function-length",
       "version": "1.2.2",
-      "bom-ref": "dx-os-frontend@2.0.0|set-function-length@1.2.2",
+      "bom-ref": "dx-os-frontend@2.1.0|set-function-length@1.2.2",
       "author": "Jordan Harband",
       "description": "Set a function's length property",
       "licenses": [
@@ -8803,7 +8813,7 @@
       "type": "library",
       "name": "define-data-property",
       "version": "1.1.4",
-      "bom-ref": "dx-os-frontend@2.0.0|define-data-property@1.1.4",
+      "bom-ref": "dx-os-frontend@2.1.0|define-data-property@1.1.4",
       "author": "Jordan Harband",
       "description": "Define a data property on an object. Will fall back to assignment in an engine without descriptors.",
       "licenses": [
@@ -8858,7 +8868,7 @@
       "type": "library",
       "name": "has-property-descriptors",
       "version": "1.0.2",
-      "bom-ref": "dx-os-frontend@2.0.0|has-property-descriptors@1.0.2",
+      "bom-ref": "dx-os-frontend@2.1.0|has-property-descriptors@1.0.2",
       "author": "Jordan Harband",
       "description": "Does the environment have full property descriptor support? Handles IE 8's broken defineProperty/gOPD.",
       "licenses": [
@@ -8909,7 +8919,7 @@
       "type": "library",
       "name": "object-keys",
       "version": "1.1.1",
-      "bom-ref": "dx-os-frontend@2.0.0|object-keys@1.1.1",
+      "bom-ref": "dx-os-frontend@2.1.0|object-keys@1.1.1",
       "author": "Jordan Harband",
       "description": "An Object.keys replacement, in case Object.keys is not available. From https://github.com/es-shims/es5-shim",
       "licenses": [
@@ -8964,7 +8974,7 @@
       "type": "library",
       "name": "tslib",
       "version": "2.9.1",
-      "bom-ref": "dx-os-frontend@2.0.0|tslib@2.9.1",
+      "bom-ref": "dx-os-frontend@2.1.0|tslib@2.9.1",
       "author": "Microsoft Corp.",
       "description": "Runtime library for TypeScript helper functions",
       "licenses": [
@@ -9015,7 +9025,7 @@
       "type": "library",
       "name": "picocolors",
       "version": "1.1.1",
-      "bom-ref": "dx-os-frontend@2.0.0|picocolors@1.1.1",
+      "bom-ref": "dx-os-frontend@2.1.0|picocolors@1.1.1",
       "author": "Alexey Raspopov",
       "description": "The tiniest and the fastest library for terminal output formatting with ANSI colors",
       "licenses": [
@@ -9067,7 +9077,7 @@
       "name": "gen-mapping",
       "group": "@jridgewell",
       "version": "0.3.13",
-      "bom-ref": "dx-os-frontend@2.0.0|@jridgewell/gen-mapping@0.3.13",
+      "bom-ref": "dx-os-frontend@2.1.0|@jridgewell/gen-mapping@0.3.13",
       "author": "Justin Ridgewell",
       "description": "Generate source maps",
       "licenses": [
@@ -9119,7 +9129,7 @@
       "name": "trace-mapping",
       "group": "@jridgewell",
       "version": "0.3.31",
-      "bom-ref": "dx-os-frontend@2.0.0|@jridgewell/trace-mapping@0.3.31",
+      "bom-ref": "dx-os-frontend@2.1.0|@jridgewell/trace-mapping@0.3.31",
       "author": "Justin Ridgewell",
       "description": "Trace the original position through a source map",
       "licenses": [
@@ -9170,7 +9180,7 @@
       "type": "library",
       "name": "jsesc",
       "version": "3.1.0",
-      "bom-ref": "dx-os-frontend@2.0.0|jsesc@3.1.0",
+      "bom-ref": "dx-os-frontend@2.1.0|jsesc@3.1.0",
       "author": "Mathias Bynens",
       "description": "Given some data, jsesc returns the shortest possible stringified & ASCII-safe representation of that data.",
       "licenses": [
@@ -9225,7 +9235,7 @@
       "type": "library",
       "name": "ms",
       "version": "2.1.3",
-      "bom-ref": "dx-os-frontend@2.0.0|ms@2.1.3",
+      "bom-ref": "dx-os-frontend@2.1.0|ms@2.1.3",
       "description": "Tiny millisecond conversion utility",
       "licenses": [
         {
@@ -9275,7 +9285,7 @@
       "type": "library",
       "name": "parent-module",
       "version": "1.0.1",
-      "bom-ref": "dx-os-frontend@2.0.0|parent-module@1.0.1",
+      "bom-ref": "dx-os-frontend@2.1.0|parent-module@1.0.1",
       "author": "Sindre Sorhus",
       "description": "Get the path of the parent module",
       "licenses": [
@@ -9330,7 +9340,7 @@
       "type": "library",
       "name": "resolve-from",
       "version": "4.0.0",
-      "bom-ref": "dx-os-frontend@2.0.0|resolve-from@4.0.0",
+      "bom-ref": "dx-os-frontend@2.1.0|resolve-from@4.0.0",
       "author": "Sindre Sorhus",
       "description": "Resolve the path of a module like `require.resolve()` but from a given path",
       "licenses": [
@@ -9385,7 +9395,7 @@
       "type": "library",
       "name": "error-ex",
       "version": "1.3.4",
-      "bom-ref": "dx-os-frontend@2.0.0|error-ex@1.3.4",
+      "bom-ref": "dx-os-frontend@2.1.0|error-ex@1.3.4",
       "description": "Easy error subclassing and stack customization",
       "licenses": [
         {
@@ -9435,7 +9445,7 @@
       "type": "library",
       "name": "json-parse-even-better-errors",
       "version": "2.3.1",
-      "bom-ref": "dx-os-frontend@2.0.0|json-parse-even-better-errors@2.3.1",
+      "bom-ref": "dx-os-frontend@2.1.0|json-parse-even-better-errors@2.3.1",
       "author": "Kat Marchán",
       "description": "JSON.parse with context information on error",
       "licenses": [
@@ -9486,7 +9496,7 @@
       "type": "library",
       "name": "lines-and-columns",
       "version": "1.2.4",
-      "bom-ref": "dx-os-frontend@2.0.0|lines-and-columns@1.2.4",
+      "bom-ref": "dx-os-frontend@2.1.0|lines-and-columns@1.2.4",
       "author": "Brian Donovan",
       "description": "Maps lines and columns to character offsets and back.",
       "licenses": [
@@ -9537,7 +9547,7 @@
       "type": "library",
       "name": "get-proto",
       "version": "1.0.1",
-      "bom-ref": "dx-os-frontend@2.0.0|get-proto@1.0.1",
+      "bom-ref": "dx-os-frontend@2.1.0|get-proto@1.0.1",
       "author": "Jordan Harband",
       "description": "Robustly get the [[Prototype]] of an object",
       "licenses": [
@@ -9592,7 +9602,7 @@
       "type": "library",
       "name": "gopd",
       "version": "1.2.0",
-      "bom-ref": "dx-os-frontend@2.0.0|gopd@1.2.0",
+      "bom-ref": "dx-os-frontend@2.1.0|gopd@1.2.0",
       "author": "Jordan Harband",
       "description": "`Object.getOwnPropertyDescriptor`, but accounts for IE's broken implementation.",
       "licenses": [
@@ -9647,7 +9657,7 @@
       "type": "library",
       "name": "has-symbols",
       "version": "1.1.0",
-      "bom-ref": "dx-os-frontend@2.0.0|has-symbols@1.1.0",
+      "bom-ref": "dx-os-frontend@2.1.0|has-symbols@1.1.0",
       "author": "Jordan Harband",
       "description": "Determine if the JS environment has Symbol support. Supports spec, or shams.",
       "licenses": [
@@ -9702,7 +9712,7 @@
       "type": "library",
       "name": "math-intrinsics",
       "version": "1.1.0",
-      "bom-ref": "dx-os-frontend@2.0.0|math-intrinsics@1.1.0",
+      "bom-ref": "dx-os-frontend@2.1.0|math-intrinsics@1.1.0",
       "author": "Jordan Harband",
       "description": "ES Math-related intrinsics and helpers, robustly cached.",
       "licenses": [
@@ -9758,7 +9768,7 @@
       "name": "sourcemap-codec",
       "group": "@jridgewell",
       "version": "1.6.0",
-      "bom-ref": "dx-os-frontend@2.0.0|@jridgewell/sourcemap-codec@1.6.0",
+      "bom-ref": "dx-os-frontend@2.1.0|@jridgewell/sourcemap-codec@1.6.0",
       "author": "Justin Ridgewell",
       "description": "Encode/decode sourcemap mappings",
       "licenses": [
@@ -9810,7 +9820,7 @@
       "name": "resolve-uri",
       "group": "@jridgewell",
       "version": "3.1.2",
-      "bom-ref": "dx-os-frontend@2.0.0|@jridgewell/resolve-uri@3.1.2",
+      "bom-ref": "dx-os-frontend@2.1.0|@jridgewell/resolve-uri@3.1.2",
       "author": "Justin Ridgewell",
       "description": "Resolve a URI relative to an optional base URI",
       "licenses": [
@@ -9865,7 +9875,7 @@
       "type": "library",
       "name": "callsites",
       "version": "3.1.0",
-      "bom-ref": "dx-os-frontend@2.0.0|callsites@3.1.0",
+      "bom-ref": "dx-os-frontend@2.1.0|callsites@3.1.0",
       "author": "Sindre Sorhus",
       "description": "Get callsites from the V8 stack trace API",
       "licenses": [
@@ -9920,7 +9930,7 @@
       "type": "library",
       "name": "is-arrayish",
       "version": "0.2.1",
-      "bom-ref": "dx-os-frontend@2.0.0|is-arrayish@0.2.1",
+      "bom-ref": "dx-os-frontend@2.1.0|is-arrayish@0.2.1",
       "author": "Qix",
       "description": "Determines if an object can be used as an array",
       "licenses": [
@@ -9971,7 +9981,7 @@
       "type": "library",
       "name": "dunder-proto",
       "version": "1.0.1",
-      "bom-ref": "dx-os-frontend@2.0.0|dunder-proto@1.0.1",
+      "bom-ref": "dx-os-frontend@2.1.0|dunder-proto@1.0.1",
       "author": "Jordan Harband",
       "description": "If available, the `Object.prototype.__proto__` accessor and mutator, call-bound",
       "licenses": [
@@ -10025,1162 +10035,1162 @@
   ],
   "dependencies": [
     {
-      "ref": "dx-os-frontend@2.0.0",
+      "ref": "dx-os-frontend@2.1.0",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@dagrejs/dagre@3.1.3",
-        "dx-os-frontend@2.0.0|@emotion/react@11.14.0",
-        "dx-os-frontend@2.0.0|@emotion/styled@11.14.1",
-        "dx-os-frontend@2.0.0|@fullcalendar/core@6.1.22",
-        "dx-os-frontend@2.0.0|@fullcalendar/daygrid@6.1.22",
-        "dx-os-frontend@2.0.0|@fullcalendar/interaction@6.1.22",
-        "dx-os-frontend@2.0.0|@fullcalendar/react@6.1.22",
-        "dx-os-frontend@2.0.0|@fullcalendar/timegrid@6.1.22",
-        "dx-os-frontend@2.0.0|@mui/icons-material@6.5.0",
-        "dx-os-frontend@2.0.0|@mui/material@6.5.0",
-        "dx-os-frontend@2.0.0|@tisoap/react-flow-smart-edge@5.0.0",
-        "dx-os-frontend@2.0.0|@xyflow/react@12.12.1",
-        "dx-os-frontend@2.0.0|monaco-editor@0.57.0",
-        "dx-os-frontend@2.0.0|monaco-yaml@5.5.1",
-        "dx-os-frontend@2.0.0|oidc-client-ts@3.5.0",
-        "dx-os-frontend@2.0.0|ra-i18n-polyglot@5.15.5",
-        "dx-os-frontend@2.0.0|ra-language-english@5.15.5",
-        "dx-os-frontend@2.0.0|react-admin@5.15.5",
-        "dx-os-frontend@2.0.0|react-dom@18.3.1",
-        "dx-os-frontend@2.0.0|react-router-dom@6.30.6",
-        "dx-os-frontend@2.0.0|react@18.3.1",
-        "dx-os-frontend@2.0.0|yaml@2.9.1"
+        "dx-os-frontend@2.1.0|@dagrejs/dagre@3.1.3",
+        "dx-os-frontend@2.1.0|@emotion/react@11.14.0",
+        "dx-os-frontend@2.1.0|@emotion/styled@11.14.1",
+        "dx-os-frontend@2.1.0|@fullcalendar/core@6.1.22",
+        "dx-os-frontend@2.1.0|@fullcalendar/daygrid@6.1.22",
+        "dx-os-frontend@2.1.0|@fullcalendar/interaction@6.1.22",
+        "dx-os-frontend@2.1.0|@fullcalendar/react@6.1.22",
+        "dx-os-frontend@2.1.0|@fullcalendar/timegrid@6.1.22",
+        "dx-os-frontend@2.1.0|@mui/icons-material@6.5.0",
+        "dx-os-frontend@2.1.0|@mui/material@6.5.0",
+        "dx-os-frontend@2.1.0|@tisoap/react-flow-smart-edge@5.0.1",
+        "dx-os-frontend@2.1.0|@xyflow/react@12.12.1",
+        "dx-os-frontend@2.1.0|monaco-editor@0.57.0",
+        "dx-os-frontend@2.1.0|monaco-yaml@5.5.1",
+        "dx-os-frontend@2.1.0|oidc-client-ts@3.5.0",
+        "dx-os-frontend@2.1.0|ra-i18n-polyglot@5.15.7",
+        "dx-os-frontend@2.1.0|ra-language-english@5.15.7",
+        "dx-os-frontend@2.1.0|react-admin@5.15.7",
+        "dx-os-frontend@2.1.0|react-dom@18.3.1",
+        "dx-os-frontend@2.1.0|react-router-dom@6.30.6",
+        "dx-os-frontend@2.1.0|react@18.3.1",
+        "dx-os-frontend@2.1.0|yaml@2.9.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@dagrejs/dagre@3.1.3",
+      "ref": "dx-os-frontend@2.1.0|@dagrejs/dagre@3.1.3",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@dagrejs/graphlib@4.0.6"
+        "dx-os-frontend@2.1.0|@dagrejs/graphlib@4.0.6"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@emotion/react@11.14.0",
+      "ref": "dx-os-frontend@2.1.0|@emotion/react@11.14.0",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@babel/runtime@7.29.10",
-        "dx-os-frontend@2.0.0|@emotion/babel-plugin@11.13.5",
-        "dx-os-frontend@2.0.0|@emotion/cache@11.14.0",
-        "dx-os-frontend@2.0.0|@emotion/serialize@1.3.3",
-        "dx-os-frontend@2.0.0|@emotion/use-insertion-effect-with-fallbacks@1.2.0",
-        "dx-os-frontend@2.0.0|@emotion/utils@1.4.2",
-        "dx-os-frontend@2.0.0|@emotion/weak-memoize@0.4.0",
-        "dx-os-frontend@2.0.0|hoist-non-react-statics@3.3.2",
-        "dx-os-frontend@2.0.0|react@18.3.1"
+        "dx-os-frontend@2.1.0|@babel/runtime@7.29.10",
+        "dx-os-frontend@2.1.0|@emotion/babel-plugin@11.13.5",
+        "dx-os-frontend@2.1.0|@emotion/cache@11.14.0",
+        "dx-os-frontend@2.1.0|@emotion/serialize@1.3.3",
+        "dx-os-frontend@2.1.0|@emotion/use-insertion-effect-with-fallbacks@1.2.0",
+        "dx-os-frontend@2.1.0|@emotion/utils@1.4.2",
+        "dx-os-frontend@2.1.0|@emotion/weak-memoize@0.4.0",
+        "dx-os-frontend@2.1.0|hoist-non-react-statics@3.3.2",
+        "dx-os-frontend@2.1.0|react@18.3.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@emotion/styled@11.14.1",
+      "ref": "dx-os-frontend@2.1.0|@emotion/styled@11.14.1",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@babel/runtime@7.29.10",
-        "dx-os-frontend@2.0.0|@emotion/babel-plugin@11.13.5",
-        "dx-os-frontend@2.0.0|@emotion/is-prop-valid@1.4.0",
-        "dx-os-frontend@2.0.0|@emotion/react@11.14.0",
-        "dx-os-frontend@2.0.0|@emotion/serialize@1.3.3",
-        "dx-os-frontend@2.0.0|@emotion/use-insertion-effect-with-fallbacks@1.2.0",
-        "dx-os-frontend@2.0.0|@emotion/utils@1.4.2",
-        "dx-os-frontend@2.0.0|react@18.3.1"
+        "dx-os-frontend@2.1.0|@babel/runtime@7.29.10",
+        "dx-os-frontend@2.1.0|@emotion/babel-plugin@11.13.5",
+        "dx-os-frontend@2.1.0|@emotion/is-prop-valid@1.4.0",
+        "dx-os-frontend@2.1.0|@emotion/react@11.14.0",
+        "dx-os-frontend@2.1.0|@emotion/serialize@1.3.3",
+        "dx-os-frontend@2.1.0|@emotion/use-insertion-effect-with-fallbacks@1.2.0",
+        "dx-os-frontend@2.1.0|@emotion/utils@1.4.2",
+        "dx-os-frontend@2.1.0|react@18.3.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@fullcalendar/core@6.1.22",
+      "ref": "dx-os-frontend@2.1.0|@fullcalendar/core@6.1.22",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|preact@10.12.1"
+        "dx-os-frontend@2.1.0|preact@10.12.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@fullcalendar/daygrid@6.1.22",
+      "ref": "dx-os-frontend@2.1.0|@fullcalendar/daygrid@6.1.22",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@fullcalendar/core@6.1.22"
+        "dx-os-frontend@2.1.0|@fullcalendar/core@6.1.22"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@fullcalendar/interaction@6.1.22",
+      "ref": "dx-os-frontend@2.1.0|@fullcalendar/interaction@6.1.22",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@fullcalendar/core@6.1.22"
+        "dx-os-frontend@2.1.0|@fullcalendar/core@6.1.22"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@fullcalendar/react@6.1.22",
+      "ref": "dx-os-frontend@2.1.0|@fullcalendar/react@6.1.22",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@fullcalendar/core@6.1.22",
-        "dx-os-frontend@2.0.0|react-dom@18.3.1",
-        "dx-os-frontend@2.0.0|react@18.3.1"
+        "dx-os-frontend@2.1.0|@fullcalendar/core@6.1.22",
+        "dx-os-frontend@2.1.0|react-dom@18.3.1",
+        "dx-os-frontend@2.1.0|react@18.3.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@fullcalendar/timegrid@6.1.22",
+      "ref": "dx-os-frontend@2.1.0|@fullcalendar/timegrid@6.1.22",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@fullcalendar/core@6.1.22",
-        "dx-os-frontend@2.0.0|@fullcalendar/daygrid@6.1.22"
+        "dx-os-frontend@2.1.0|@fullcalendar/core@6.1.22",
+        "dx-os-frontend@2.1.0|@fullcalendar/daygrid@6.1.22"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@mui/icons-material@6.5.0",
+      "ref": "dx-os-frontend@2.1.0|@mui/icons-material@6.5.0",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@babel/runtime@7.29.10",
-        "dx-os-frontend@2.0.0|@mui/material@6.5.0",
-        "dx-os-frontend@2.0.0|@types/react@18.3.31",
-        "dx-os-frontend@2.0.0|react@18.3.1"
+        "dx-os-frontend@2.1.0|@babel/runtime@7.29.10",
+        "dx-os-frontend@2.1.0|@mui/material@6.5.0",
+        "dx-os-frontend@2.1.0|@types/react@18.3.31",
+        "dx-os-frontend@2.1.0|react@18.3.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@mui/material@6.5.0",
+      "ref": "dx-os-frontend@2.1.0|@mui/material@6.5.0",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@babel/runtime@7.29.10",
-        "dx-os-frontend@2.0.0|@emotion/react@11.14.0",
-        "dx-os-frontend@2.0.0|@emotion/styled@11.14.1",
-        "dx-os-frontend@2.0.0|@mui/core-downloads-tracker@6.5.0",
-        "dx-os-frontend@2.0.0|@mui/system@6.5.0",
-        "dx-os-frontend@2.0.0|@mui/types@7.2.24",
-        "dx-os-frontend@2.0.0|@mui/utils@6.4.9",
-        "dx-os-frontend@2.0.0|@popperjs/core@2.11.8",
-        "dx-os-frontend@2.0.0|@types/react-transition-group@4.4.12",
-        "dx-os-frontend@2.0.0|@types/react@18.3.31",
-        "dx-os-frontend@2.0.0|clsx@2.1.1",
-        "dx-os-frontend@2.0.0|csstype@3.2.3",
-        "dx-os-frontend@2.0.0|prop-types@15.8.1",
-        "dx-os-frontend@2.0.0|react-dom@18.3.1",
-        "dx-os-frontend@2.0.0|react-is@19.3.1",
-        "dx-os-frontend@2.0.0|react-transition-group@4.4.5",
-        "dx-os-frontend@2.0.0|react@18.3.1"
+        "dx-os-frontend@2.1.0|@babel/runtime@7.29.10",
+        "dx-os-frontend@2.1.0|@emotion/react@11.14.0",
+        "dx-os-frontend@2.1.0|@emotion/styled@11.14.1",
+        "dx-os-frontend@2.1.0|@mui/core-downloads-tracker@6.5.0",
+        "dx-os-frontend@2.1.0|@mui/system@6.5.0",
+        "dx-os-frontend@2.1.0|@mui/types@7.2.24",
+        "dx-os-frontend@2.1.0|@mui/utils@6.4.9",
+        "dx-os-frontend@2.1.0|@popperjs/core@2.11.8",
+        "dx-os-frontend@2.1.0|@types/react-transition-group@4.4.12",
+        "dx-os-frontend@2.1.0|@types/react@18.3.31",
+        "dx-os-frontend@2.1.0|clsx@2.1.1",
+        "dx-os-frontend@2.1.0|csstype@3.2.3",
+        "dx-os-frontend@2.1.0|prop-types@15.8.1",
+        "dx-os-frontend@2.1.0|react-dom@18.3.1",
+        "dx-os-frontend@2.1.0|react-is@19.3.1",
+        "dx-os-frontend@2.1.0|react-transition-group@4.4.5",
+        "dx-os-frontend@2.1.0|react@18.3.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@tisoap/react-flow-smart-edge@5.0.0",
+      "ref": "dx-os-frontend@2.1.0|@tisoap/react-flow-smart-edge@5.0.1",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@xyflow/react@12.12.1",
-        "dx-os-frontend@2.0.0|react-dom@18.3.1",
-        "dx-os-frontend@2.0.0|react@18.3.1"
+        "dx-os-frontend@2.1.0|@xyflow/react@12.12.1",
+        "dx-os-frontend@2.1.0|react-dom@18.3.1",
+        "dx-os-frontend@2.1.0|react@18.3.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@xyflow/react@12.12.1",
+      "ref": "dx-os-frontend@2.1.0|@xyflow/react@12.12.1",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@types/react-dom@18.3.7",
-        "dx-os-frontend@2.0.0|@types/react@18.3.31",
-        "dx-os-frontend@2.0.0|@xyflow/system@0.0.84",
-        "dx-os-frontend@2.0.0|classcat@5.0.5",
-        "dx-os-frontend@2.0.0|react-dom@18.3.1",
-        "dx-os-frontend@2.0.0|react@18.3.1",
-        "dx-os-frontend@2.0.0|zustand@4.5.7"
+        "dx-os-frontend@2.1.0|@types/react-dom@18.3.7",
+        "dx-os-frontend@2.1.0|@types/react@18.3.31",
+        "dx-os-frontend@2.1.0|@xyflow/system@0.0.84",
+        "dx-os-frontend@2.1.0|classcat@5.0.5",
+        "dx-os-frontend@2.1.0|react-dom@18.3.1",
+        "dx-os-frontend@2.1.0|react@18.3.1",
+        "dx-os-frontend@2.1.0|zustand@4.5.7"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|monaco-editor@0.57.0",
+      "ref": "dx-os-frontend@2.1.0|monaco-editor@0.57.0",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|dompurify@3.4.17",
-        "dx-os-frontend@2.0.0|marked@14.0.0"
+        "dx-os-frontend@2.1.0|dompurify@3.4.17",
+        "dx-os-frontend@2.1.0|marked@14.0.0"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|monaco-yaml@5.5.1",
+      "ref": "dx-os-frontend@2.1.0|monaco-yaml@5.5.1",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@vscode/l10n@0.0.18",
-        "dx-os-frontend@2.0.0|jsonc-parser@3.3.1",
-        "dx-os-frontend@2.0.0|monaco-editor@0.57.0",
-        "dx-os-frontend@2.0.0|monaco-languageserver-types@0.4.1",
-        "dx-os-frontend@2.0.0|monaco-marker-data-provider@1.2.5",
-        "dx-os-frontend@2.0.0|monaco-types@0.1.2",
-        "dx-os-frontend@2.0.0|monaco-worker-manager@2.0.1",
-        "dx-os-frontend@2.0.0|path-browserify@1.0.1",
-        "dx-os-frontend@2.0.0|prettier@3.9.10",
-        "dx-os-frontend@2.0.0|proxy-disposable@1.0.0",
-        "dx-os-frontend@2.0.0|vscode-languageserver-textdocument@1.0.16",
-        "dx-os-frontend@2.0.0|vscode-languageserver-types@3.18.5",
-        "dx-os-frontend@2.0.0|vscode-uri@3.2.0",
-        "dx-os-frontend@2.0.0|yaml@2.9.1"
+        "dx-os-frontend@2.1.0|@vscode/l10n@0.0.18",
+        "dx-os-frontend@2.1.0|jsonc-parser@3.3.1",
+        "dx-os-frontend@2.1.0|monaco-editor@0.57.0",
+        "dx-os-frontend@2.1.0|monaco-languageserver-types@0.4.1",
+        "dx-os-frontend@2.1.0|monaco-marker-data-provider@1.2.5",
+        "dx-os-frontend@2.1.0|monaco-types@0.1.2",
+        "dx-os-frontend@2.1.0|monaco-worker-manager@2.0.1",
+        "dx-os-frontend@2.1.0|path-browserify@1.0.1",
+        "dx-os-frontend@2.1.0|prettier@3.9.10",
+        "dx-os-frontend@2.1.0|proxy-disposable@1.0.0",
+        "dx-os-frontend@2.1.0|vscode-languageserver-textdocument@1.0.16",
+        "dx-os-frontend@2.1.0|vscode-languageserver-types@3.18.5",
+        "dx-os-frontend@2.1.0|vscode-uri@3.2.0",
+        "dx-os-frontend@2.1.0|yaml@2.9.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|oidc-client-ts@3.5.0",
+      "ref": "dx-os-frontend@2.1.0|oidc-client-ts@3.5.0",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|jwt-decode@4.0.0"
+        "dx-os-frontend@2.1.0|jwt-decode@4.0.0"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|ra-i18n-polyglot@5.15.5",
+      "ref": "dx-os-frontend@2.1.0|ra-i18n-polyglot@5.15.7",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|node-polyglot@2.6.0",
-        "dx-os-frontend@2.0.0|ra-core@5.15.5"
+        "dx-os-frontend@2.1.0|node-polyglot@2.6.0",
+        "dx-os-frontend@2.1.0|ra-core@5.15.7"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|ra-language-english@5.15.5",
+      "ref": "dx-os-frontend@2.1.0|ra-language-english@5.15.7",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|ra-core@5.15.5"
+        "dx-os-frontend@2.1.0|ra-core@5.15.7"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|react-admin@5.15.5",
+      "ref": "dx-os-frontend@2.1.0|react-admin@5.15.7",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@emotion/react@11.14.0",
-        "dx-os-frontend@2.0.0|@emotion/styled@11.14.1",
-        "dx-os-frontend@2.0.0|@mui/icons-material@6.5.0",
-        "dx-os-frontend@2.0.0|@mui/material@6.5.0",
-        "dx-os-frontend@2.0.0|@tanstack/react-query@5.105.1",
-        "dx-os-frontend@2.0.0|ra-core@5.15.5",
-        "dx-os-frontend@2.0.0|ra-i18n-polyglot@5.15.5",
-        "dx-os-frontend@2.0.0|ra-language-english@5.15.5",
-        "dx-os-frontend@2.0.0|ra-ui-materialui@5.15.5",
-        "dx-os-frontend@2.0.0|react-dom@18.3.1",
-        "dx-os-frontend@2.0.0|react-hook-form@7.91.0",
-        "dx-os-frontend@2.0.0|react-router-dom@6.30.6",
-        "dx-os-frontend@2.0.0|react-router@6.30.6",
-        "dx-os-frontend@2.0.0|react@18.3.1"
+        "dx-os-frontend@2.1.0|@emotion/react@11.14.0",
+        "dx-os-frontend@2.1.0|@emotion/styled@11.14.1",
+        "dx-os-frontend@2.1.0|@mui/icons-material@6.5.0",
+        "dx-os-frontend@2.1.0|@mui/material@6.5.0",
+        "dx-os-frontend@2.1.0|@tanstack/react-query@5.105.1",
+        "dx-os-frontend@2.1.0|ra-core@5.15.7",
+        "dx-os-frontend@2.1.0|ra-i18n-polyglot@5.15.7",
+        "dx-os-frontend@2.1.0|ra-language-english@5.15.7",
+        "dx-os-frontend@2.1.0|ra-ui-materialui@5.15.7",
+        "dx-os-frontend@2.1.0|react-dom@18.3.1",
+        "dx-os-frontend@2.1.0|react-hook-form@7.91.0",
+        "dx-os-frontend@2.1.0|react-router-dom@6.30.6",
+        "dx-os-frontend@2.1.0|react-router@6.30.6",
+        "dx-os-frontend@2.1.0|react@18.3.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|react-dom@18.3.1",
+      "ref": "dx-os-frontend@2.1.0|react-dom@18.3.1",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|loose-envify@1.4.0",
-        "dx-os-frontend@2.0.0|react@18.3.1",
-        "dx-os-frontend@2.0.0|scheduler@0.23.2"
+        "dx-os-frontend@2.1.0|loose-envify@1.4.0",
+        "dx-os-frontend@2.1.0|react@18.3.1",
+        "dx-os-frontend@2.1.0|scheduler@0.23.2"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|react-router-dom@6.30.6",
+      "ref": "dx-os-frontend@2.1.0|react-router-dom@6.30.6",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@remix-run/router@1.23.4",
-        "dx-os-frontend@2.0.0|react-dom@18.3.1",
-        "dx-os-frontend@2.0.0|react-router@6.30.6",
-        "dx-os-frontend@2.0.0|react@18.3.1"
+        "dx-os-frontend@2.1.0|@remix-run/router@1.23.4",
+        "dx-os-frontend@2.1.0|react-dom@18.3.1",
+        "dx-os-frontend@2.1.0|react-router@6.30.6",
+        "dx-os-frontend@2.1.0|react@18.3.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|react@18.3.1",
+      "ref": "dx-os-frontend@2.1.0|react@18.3.1",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|loose-envify@1.4.0"
+        "dx-os-frontend@2.1.0|loose-envify@1.4.0"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|yaml@2.9.1"
+      "ref": "dx-os-frontend@2.1.0|yaml@2.9.1"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@dagrejs/graphlib@4.0.6"
+      "ref": "dx-os-frontend@2.1.0|@dagrejs/graphlib@4.0.6"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@babel/runtime@7.29.10"
+      "ref": "dx-os-frontend@2.1.0|@babel/runtime@7.29.10"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@emotion/babel-plugin@11.13.5",
+      "ref": "dx-os-frontend@2.1.0|@emotion/babel-plugin@11.13.5",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@babel/helper-module-imports@7.29.7",
-        "dx-os-frontend@2.0.0|@babel/runtime@7.29.10",
-        "dx-os-frontend@2.0.0|@emotion/hash@0.9.2",
-        "dx-os-frontend@2.0.0|@emotion/memoize@0.9.0",
-        "dx-os-frontend@2.0.0|@emotion/serialize@1.3.3",
-        "dx-os-frontend@2.0.0|babel-plugin-macros@3.1.0",
-        "dx-os-frontend@2.0.0|convert-source-map@1.9.0",
-        "dx-os-frontend@2.0.0|escape-string-regexp@4.0.0",
-        "dx-os-frontend@2.0.0|find-root@1.1.0",
-        "dx-os-frontend@2.0.0|source-map@0.5.7",
-        "dx-os-frontend@2.0.0|stylis@4.2.0"
+        "dx-os-frontend@2.1.0|@babel/helper-module-imports@7.29.7",
+        "dx-os-frontend@2.1.0|@babel/runtime@7.29.10",
+        "dx-os-frontend@2.1.0|@emotion/hash@0.9.2",
+        "dx-os-frontend@2.1.0|@emotion/memoize@0.9.0",
+        "dx-os-frontend@2.1.0|@emotion/serialize@1.3.3",
+        "dx-os-frontend@2.1.0|babel-plugin-macros@3.1.0",
+        "dx-os-frontend@2.1.0|convert-source-map@1.9.0",
+        "dx-os-frontend@2.1.0|escape-string-regexp@4.0.0",
+        "dx-os-frontend@2.1.0|find-root@1.1.0",
+        "dx-os-frontend@2.1.0|source-map@0.5.7",
+        "dx-os-frontend@2.1.0|stylis@4.2.0"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@emotion/cache@11.14.0",
+      "ref": "dx-os-frontend@2.1.0|@emotion/cache@11.14.0",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@emotion/memoize@0.9.0",
-        "dx-os-frontend@2.0.0|@emotion/sheet@1.4.0",
-        "dx-os-frontend@2.0.0|@emotion/utils@1.4.2",
-        "dx-os-frontend@2.0.0|@emotion/weak-memoize@0.4.0",
-        "dx-os-frontend@2.0.0|stylis@4.2.0"
+        "dx-os-frontend@2.1.0|@emotion/memoize@0.9.0",
+        "dx-os-frontend@2.1.0|@emotion/sheet@1.4.0",
+        "dx-os-frontend@2.1.0|@emotion/utils@1.4.2",
+        "dx-os-frontend@2.1.0|@emotion/weak-memoize@0.4.0",
+        "dx-os-frontend@2.1.0|stylis@4.2.0"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@emotion/serialize@1.3.3",
+      "ref": "dx-os-frontend@2.1.0|@emotion/serialize@1.3.3",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@emotion/hash@0.9.2",
-        "dx-os-frontend@2.0.0|@emotion/memoize@0.9.0",
-        "dx-os-frontend@2.0.0|@emotion/unitless@0.10.0",
-        "dx-os-frontend@2.0.0|@emotion/utils@1.4.2",
-        "dx-os-frontend@2.0.0|csstype@3.2.3"
+        "dx-os-frontend@2.1.0|@emotion/hash@0.9.2",
+        "dx-os-frontend@2.1.0|@emotion/memoize@0.9.0",
+        "dx-os-frontend@2.1.0|@emotion/unitless@0.10.0",
+        "dx-os-frontend@2.1.0|@emotion/utils@1.4.2",
+        "dx-os-frontend@2.1.0|csstype@3.2.3"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@emotion/use-insertion-effect-with-fallbacks@1.2.0",
+      "ref": "dx-os-frontend@2.1.0|@emotion/use-insertion-effect-with-fallbacks@1.2.0",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|react@18.3.1"
+        "dx-os-frontend@2.1.0|react@18.3.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@emotion/utils@1.4.2"
+      "ref": "dx-os-frontend@2.1.0|@emotion/utils@1.4.2"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@emotion/weak-memoize@0.4.0"
+      "ref": "dx-os-frontend@2.1.0|@emotion/weak-memoize@0.4.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|hoist-non-react-statics@3.3.2",
+      "ref": "dx-os-frontend@2.1.0|hoist-non-react-statics@3.3.2",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|hoist-non-react-statics@3.3.2|react-is@16.13.1"
+        "dx-os-frontend@2.1.0|hoist-non-react-statics@3.3.2|react-is@16.13.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|hoist-non-react-statics@3.3.2|react-is@16.13.1"
+      "ref": "dx-os-frontend@2.1.0|hoist-non-react-statics@3.3.2|react-is@16.13.1"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@emotion/is-prop-valid@1.4.0",
+      "ref": "dx-os-frontend@2.1.0|@emotion/is-prop-valid@1.4.0",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@emotion/memoize@0.9.0"
+        "dx-os-frontend@2.1.0|@emotion/memoize@0.9.0"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|preact@10.12.1"
+      "ref": "dx-os-frontend@2.1.0|preact@10.12.1"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@types/react@18.3.31",
+      "ref": "dx-os-frontend@2.1.0|@types/react@18.3.31",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@types/prop-types@15.7.15",
-        "dx-os-frontend@2.0.0|csstype@3.2.3"
+        "dx-os-frontend@2.1.0|@types/prop-types@15.7.15",
+        "dx-os-frontend@2.1.0|csstype@3.2.3"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@mui/core-downloads-tracker@6.5.0"
+      "ref": "dx-os-frontend@2.1.0|@mui/core-downloads-tracker@6.5.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@mui/system@6.5.0",
+      "ref": "dx-os-frontend@2.1.0|@mui/system@6.5.0",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@babel/runtime@7.29.10",
-        "dx-os-frontend@2.0.0|@emotion/react@11.14.0",
-        "dx-os-frontend@2.0.0|@emotion/styled@11.14.1",
-        "dx-os-frontend@2.0.0|@mui/private-theming@6.4.9",
-        "dx-os-frontend@2.0.0|@mui/styled-engine@6.5.0",
-        "dx-os-frontend@2.0.0|@mui/types@7.2.24",
-        "dx-os-frontend@2.0.0|@mui/utils@6.4.9",
-        "dx-os-frontend@2.0.0|@types/react@18.3.31",
-        "dx-os-frontend@2.0.0|clsx@2.1.1",
-        "dx-os-frontend@2.0.0|csstype@3.2.3",
-        "dx-os-frontend@2.0.0|prop-types@15.8.1",
-        "dx-os-frontend@2.0.0|react@18.3.1"
+        "dx-os-frontend@2.1.0|@babel/runtime@7.29.10",
+        "dx-os-frontend@2.1.0|@emotion/react@11.14.0",
+        "dx-os-frontend@2.1.0|@emotion/styled@11.14.1",
+        "dx-os-frontend@2.1.0|@mui/private-theming@6.4.9",
+        "dx-os-frontend@2.1.0|@mui/styled-engine@6.5.0",
+        "dx-os-frontend@2.1.0|@mui/types@7.2.24",
+        "dx-os-frontend@2.1.0|@mui/utils@6.4.9",
+        "dx-os-frontend@2.1.0|@types/react@18.3.31",
+        "dx-os-frontend@2.1.0|clsx@2.1.1",
+        "dx-os-frontend@2.1.0|csstype@3.2.3",
+        "dx-os-frontend@2.1.0|prop-types@15.8.1",
+        "dx-os-frontend@2.1.0|react@18.3.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@mui/types@7.2.24",
+      "ref": "dx-os-frontend@2.1.0|@mui/types@7.2.24",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@types/react@18.3.31"
+        "dx-os-frontend@2.1.0|@types/react@18.3.31"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@mui/utils@6.4.9",
+      "ref": "dx-os-frontend@2.1.0|@mui/utils@6.4.9",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@babel/runtime@7.29.10",
-        "dx-os-frontend@2.0.0|@mui/types@7.2.24",
-        "dx-os-frontend@2.0.0|@types/prop-types@15.7.15",
-        "dx-os-frontend@2.0.0|@types/react@18.3.31",
-        "dx-os-frontend@2.0.0|clsx@2.1.1",
-        "dx-os-frontend@2.0.0|prop-types@15.8.1",
-        "dx-os-frontend@2.0.0|react-is@19.3.1",
-        "dx-os-frontend@2.0.0|react@18.3.1"
+        "dx-os-frontend@2.1.0|@babel/runtime@7.29.10",
+        "dx-os-frontend@2.1.0|@mui/types@7.2.24",
+        "dx-os-frontend@2.1.0|@types/prop-types@15.7.15",
+        "dx-os-frontend@2.1.0|@types/react@18.3.31",
+        "dx-os-frontend@2.1.0|clsx@2.1.1",
+        "dx-os-frontend@2.1.0|prop-types@15.8.1",
+        "dx-os-frontend@2.1.0|react-is@19.3.1",
+        "dx-os-frontend@2.1.0|react@18.3.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@popperjs/core@2.11.8"
+      "ref": "dx-os-frontend@2.1.0|@popperjs/core@2.11.8"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@types/react-transition-group@4.4.12",
+      "ref": "dx-os-frontend@2.1.0|@types/react-transition-group@4.4.12",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@types/react@18.3.31"
+        "dx-os-frontend@2.1.0|@types/react@18.3.31"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|clsx@2.1.1"
+      "ref": "dx-os-frontend@2.1.0|clsx@2.1.1"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|csstype@3.2.3"
+      "ref": "dx-os-frontend@2.1.0|csstype@3.2.3"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|prop-types@15.8.1",
+      "ref": "dx-os-frontend@2.1.0|prop-types@15.8.1",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|loose-envify@1.4.0",
-        "dx-os-frontend@2.0.0|object-assign@4.1.1",
-        "dx-os-frontend@2.0.0|prop-types@15.8.1|react-is@16.13.1"
+        "dx-os-frontend@2.1.0|loose-envify@1.4.0",
+        "dx-os-frontend@2.1.0|object-assign@4.1.1",
+        "dx-os-frontend@2.1.0|prop-types@15.8.1|react-is@16.13.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|prop-types@15.8.1|react-is@16.13.1"
+      "ref": "dx-os-frontend@2.1.0|prop-types@15.8.1|react-is@16.13.1"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|react-is@19.3.1"
+      "ref": "dx-os-frontend@2.1.0|react-is@19.3.1"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|react-transition-group@4.4.5",
+      "ref": "dx-os-frontend@2.1.0|react-transition-group@4.4.5",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@babel/runtime@7.29.10",
-        "dx-os-frontend@2.0.0|dom-helpers@5.2.1",
-        "dx-os-frontend@2.0.0|loose-envify@1.4.0",
-        "dx-os-frontend@2.0.0|prop-types@15.8.1",
-        "dx-os-frontend@2.0.0|react-dom@18.3.1",
-        "dx-os-frontend@2.0.0|react@18.3.1"
+        "dx-os-frontend@2.1.0|@babel/runtime@7.29.10",
+        "dx-os-frontend@2.1.0|dom-helpers@5.2.1",
+        "dx-os-frontend@2.1.0|loose-envify@1.4.0",
+        "dx-os-frontend@2.1.0|prop-types@15.8.1",
+        "dx-os-frontend@2.1.0|react-dom@18.3.1",
+        "dx-os-frontend@2.1.0|react@18.3.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@types/react-dom@18.3.7",
+      "ref": "dx-os-frontend@2.1.0|@types/react-dom@18.3.7",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@types/react@18.3.31"
+        "dx-os-frontend@2.1.0|@types/react@18.3.31"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@xyflow/system@0.0.84",
+      "ref": "dx-os-frontend@2.1.0|@xyflow/system@0.0.84",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@types/d3-drag@3.0.7",
-        "dx-os-frontend@2.0.0|@types/d3-interpolate@3.0.4",
-        "dx-os-frontend@2.0.0|@types/d3-selection@3.0.12",
-        "dx-os-frontend@2.0.0|@types/d3-transition@3.0.9",
-        "dx-os-frontend@2.0.0|@types/d3-zoom@3.0.9",
-        "dx-os-frontend@2.0.0|d3-drag@3.0.0",
-        "dx-os-frontend@2.0.0|d3-interpolate@3.0.1",
-        "dx-os-frontend@2.0.0|d3-selection@3.0.0",
-        "dx-os-frontend@2.0.0|d3-zoom@3.0.0"
+        "dx-os-frontend@2.1.0|@types/d3-drag@3.0.7",
+        "dx-os-frontend@2.1.0|@types/d3-interpolate@3.0.4",
+        "dx-os-frontend@2.1.0|@types/d3-selection@3.0.12",
+        "dx-os-frontend@2.1.0|@types/d3-transition@3.0.9",
+        "dx-os-frontend@2.1.0|@types/d3-zoom@3.0.9",
+        "dx-os-frontend@2.1.0|d3-drag@3.0.0",
+        "dx-os-frontend@2.1.0|d3-interpolate@3.0.1",
+        "dx-os-frontend@2.1.0|d3-selection@3.0.0",
+        "dx-os-frontend@2.1.0|d3-zoom@3.0.0"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|classcat@5.0.5"
+      "ref": "dx-os-frontend@2.1.0|classcat@5.0.5"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|zustand@4.5.7",
+      "ref": "dx-os-frontend@2.1.0|zustand@4.5.7",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@types/react@18.3.31",
-        "dx-os-frontend@2.0.0|react@18.3.1",
-        "dx-os-frontend@2.0.0|use-sync-external-store@1.7.0"
+        "dx-os-frontend@2.1.0|@types/react@18.3.31",
+        "dx-os-frontend@2.1.0|react@18.3.1",
+        "dx-os-frontend@2.1.0|use-sync-external-store@1.7.0"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|dompurify@3.4.17",
+      "ref": "dx-os-frontend@2.1.0|dompurify@3.4.17",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@types/trusted-types@2.0.7"
+        "dx-os-frontend@2.1.0|@types/trusted-types@2.0.7"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|marked@14.0.0"
+      "ref": "dx-os-frontend@2.1.0|marked@14.0.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@vscode/l10n@0.0.18"
+      "ref": "dx-os-frontend@2.1.0|@vscode/l10n@0.0.18"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|jsonc-parser@3.3.1"
+      "ref": "dx-os-frontend@2.1.0|jsonc-parser@3.3.1"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|monaco-languageserver-types@0.4.1",
+      "ref": "dx-os-frontend@2.1.0|monaco-languageserver-types@0.4.1",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|monaco-types@0.1.2",
-        "dx-os-frontend@2.0.0|vscode-languageserver-protocol@3.18.5",
-        "dx-os-frontend@2.0.0|vscode-uri@3.2.0"
+        "dx-os-frontend@2.1.0|monaco-types@0.1.2",
+        "dx-os-frontend@2.1.0|vscode-languageserver-protocol@3.18.5",
+        "dx-os-frontend@2.1.0|vscode-uri@3.2.0"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|monaco-marker-data-provider@1.2.5",
+      "ref": "dx-os-frontend@2.1.0|monaco-marker-data-provider@1.2.5",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|monaco-types@0.1.2"
+        "dx-os-frontend@2.1.0|monaco-types@0.1.2"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|monaco-types@0.1.2"
+      "ref": "dx-os-frontend@2.1.0|monaco-types@0.1.2"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|monaco-worker-manager@2.0.1",
+      "ref": "dx-os-frontend@2.1.0|monaco-worker-manager@2.0.1",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|monaco-editor@0.57.0"
+        "dx-os-frontend@2.1.0|monaco-editor@0.57.0"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|path-browserify@1.0.1"
+      "ref": "dx-os-frontend@2.1.0|path-browserify@1.0.1"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|prettier@3.9.10"
+      "ref": "dx-os-frontend@2.1.0|prettier@3.9.10"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|proxy-disposable@1.0.0"
+      "ref": "dx-os-frontend@2.1.0|proxy-disposable@1.0.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|vscode-languageserver-textdocument@1.0.16"
+      "ref": "dx-os-frontend@2.1.0|vscode-languageserver-textdocument@1.0.16"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|vscode-languageserver-types@3.18.5"
+      "ref": "dx-os-frontend@2.1.0|vscode-languageserver-types@3.18.5"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|vscode-uri@3.2.0"
+      "ref": "dx-os-frontend@2.1.0|vscode-uri@3.2.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|jwt-decode@4.0.0"
+      "ref": "dx-os-frontend@2.1.0|jwt-decode@4.0.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|node-polyglot@2.6.0",
+      "ref": "dx-os-frontend@2.1.0|node-polyglot@2.6.0",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|hasown@2.0.4",
-        "dx-os-frontend@2.0.0|object.entries@1.1.9",
-        "dx-os-frontend@2.0.0|warning@4.0.3"
+        "dx-os-frontend@2.1.0|hasown@2.0.4",
+        "dx-os-frontend@2.1.0|object.entries@1.1.9",
+        "dx-os-frontend@2.1.0|warning@4.0.3"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|ra-core@5.15.5",
+      "ref": "dx-os-frontend@2.1.0|ra-core@5.15.7",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@tanstack/react-query@5.105.1",
-        "dx-os-frontend@2.0.0|date-fns@3.6.0",
-        "dx-os-frontend@2.0.0|eventemitter3@5.0.4",
-        "dx-os-frontend@2.0.0|inflection@3.0.2",
-        "dx-os-frontend@2.0.0|jsonexport@3.2.0",
-        "dx-os-frontend@2.0.0|lodash@4.18.1",
-        "dx-os-frontend@2.0.0|query-string@7.1.3",
-        "dx-os-frontend@2.0.0|react-dom@18.3.1",
-        "dx-os-frontend@2.0.0|react-error-boundary@4.1.2",
-        "dx-os-frontend@2.0.0|react-hook-form@7.91.0",
-        "dx-os-frontend@2.0.0|react-is@19.3.1",
-        "dx-os-frontend@2.0.0|react-router-dom@6.30.6",
-        "dx-os-frontend@2.0.0|react-router@6.30.6",
-        "dx-os-frontend@2.0.0|react@18.3.1"
+        "dx-os-frontend@2.1.0|@marmelab/query-string@7.1.4",
+        "dx-os-frontend@2.1.0|@tanstack/react-query@5.105.1",
+        "dx-os-frontend@2.1.0|date-fns@3.6.0",
+        "dx-os-frontend@2.1.0|eventemitter3@5.0.4",
+        "dx-os-frontend@2.1.0|inflection@3.0.2",
+        "dx-os-frontend@2.1.0|jsonexport@3.2.0",
+        "dx-os-frontend@2.1.0|lodash@4.18.1",
+        "dx-os-frontend@2.1.0|react-dom@18.3.1",
+        "dx-os-frontend@2.1.0|react-error-boundary@4.1.2",
+        "dx-os-frontend@2.1.0|react-hook-form@7.91.0",
+        "dx-os-frontend@2.1.0|react-is@19.3.1",
+        "dx-os-frontend@2.1.0|react-router-dom@6.30.6",
+        "dx-os-frontend@2.1.0|react-router@6.30.6",
+        "dx-os-frontend@2.1.0|react@18.3.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@tanstack/react-query@5.105.1",
+      "ref": "dx-os-frontend@2.1.0|@tanstack/react-query@5.105.1",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@tanstack/query-core@5.105.1",
-        "dx-os-frontend@2.0.0|@types/react@18.3.31",
-        "dx-os-frontend@2.0.0|react@18.3.1"
+        "dx-os-frontend@2.1.0|@tanstack/query-core@5.105.1",
+        "dx-os-frontend@2.1.0|@types/react@18.3.31",
+        "dx-os-frontend@2.1.0|react@18.3.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|ra-ui-materialui@5.15.5",
+      "ref": "dx-os-frontend@2.1.0|ra-ui-materialui@5.15.7",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@mui/icons-material@6.5.0",
-        "dx-os-frontend@2.0.0|@mui/material@6.5.0",
-        "dx-os-frontend@2.0.0|@mui/system@6.5.0",
-        "dx-os-frontend@2.0.0|@mui/utils@6.4.9",
-        "dx-os-frontend@2.0.0|@tanstack/react-query@5.105.1",
-        "dx-os-frontend@2.0.0|autosuggest-highlight@3.3.4",
-        "dx-os-frontend@2.0.0|clsx@2.1.1",
-        "dx-os-frontend@2.0.0|css-mediaquery@0.1.2",
-        "dx-os-frontend@2.0.0|csstype@3.2.3",
-        "dx-os-frontend@2.0.0|diacritic@0.0.2",
-        "dx-os-frontend@2.0.0|dompurify@3.4.17",
-        "dx-os-frontend@2.0.0|inflection@3.0.2",
-        "dx-os-frontend@2.0.0|jsonexport@3.2.0",
-        "dx-os-frontend@2.0.0|lodash@4.18.1",
-        "dx-os-frontend@2.0.0|query-string@7.1.3",
-        "dx-os-frontend@2.0.0|ra-core@5.15.5",
-        "dx-os-frontend@2.0.0|react-dom@18.3.1",
-        "dx-os-frontend@2.0.0|react-dropzone@14.4.1",
-        "dx-os-frontend@2.0.0|react-error-boundary@4.1.2",
-        "dx-os-frontend@2.0.0|react-hook-form@7.91.0",
-        "dx-os-frontend@2.0.0|react-hotkeys-hook@5.3.3",
-        "dx-os-frontend@2.0.0|react-is@19.3.1",
-        "dx-os-frontend@2.0.0|react-router-dom@6.30.6",
-        "dx-os-frontend@2.0.0|react-router@6.30.6",
-        "dx-os-frontend@2.0.0|react-transition-group@4.4.5",
-        "dx-os-frontend@2.0.0|react@18.3.1"
+        "dx-os-frontend@2.1.0|@marmelab/query-string@7.1.4",
+        "dx-os-frontend@2.1.0|@mui/icons-material@6.5.0",
+        "dx-os-frontend@2.1.0|@mui/material@6.5.0",
+        "dx-os-frontend@2.1.0|@mui/system@6.5.0",
+        "dx-os-frontend@2.1.0|@mui/utils@6.4.9",
+        "dx-os-frontend@2.1.0|@tanstack/react-query@5.105.1",
+        "dx-os-frontend@2.1.0|autosuggest-highlight@3.3.4",
+        "dx-os-frontend@2.1.0|clsx@2.1.1",
+        "dx-os-frontend@2.1.0|css-mediaquery@0.1.2",
+        "dx-os-frontend@2.1.0|csstype@3.2.3",
+        "dx-os-frontend@2.1.0|diacritic@0.0.2",
+        "dx-os-frontend@2.1.0|dompurify@3.4.17",
+        "dx-os-frontend@2.1.0|inflection@3.0.2",
+        "dx-os-frontend@2.1.0|jsonexport@3.2.0",
+        "dx-os-frontend@2.1.0|lodash@4.18.1",
+        "dx-os-frontend@2.1.0|ra-core@5.15.7",
+        "dx-os-frontend@2.1.0|react-dom@18.3.1",
+        "dx-os-frontend@2.1.0|react-dropzone@14.4.1",
+        "dx-os-frontend@2.1.0|react-error-boundary@4.1.2",
+        "dx-os-frontend@2.1.0|react-hook-form@7.91.0",
+        "dx-os-frontend@2.1.0|react-hotkeys-hook@5.4.0",
+        "dx-os-frontend@2.1.0|react-is@19.3.1",
+        "dx-os-frontend@2.1.0|react-router-dom@6.30.6",
+        "dx-os-frontend@2.1.0|react-router@6.30.6",
+        "dx-os-frontend@2.1.0|react-transition-group@4.4.5",
+        "dx-os-frontend@2.1.0|react@18.3.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|react-hook-form@7.91.0",
+      "ref": "dx-os-frontend@2.1.0|react-hook-form@7.91.0",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@types/react@18.3.31",
-        "dx-os-frontend@2.0.0|react@18.3.1"
+        "dx-os-frontend@2.1.0|@types/react@18.3.31",
+        "dx-os-frontend@2.1.0|react@18.3.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|react-router@6.30.6",
+      "ref": "dx-os-frontend@2.1.0|react-router@6.30.6",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@remix-run/router@1.23.4",
-        "dx-os-frontend@2.0.0|react@18.3.1"
+        "dx-os-frontend@2.1.0|@remix-run/router@1.23.4",
+        "dx-os-frontend@2.1.0|react@18.3.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|loose-envify@1.4.0",
+      "ref": "dx-os-frontend@2.1.0|loose-envify@1.4.0",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|js-tokens@4.0.0"
+        "dx-os-frontend@2.1.0|js-tokens@4.0.0"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|scheduler@0.23.2",
+      "ref": "dx-os-frontend@2.1.0|scheduler@0.23.2",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|loose-envify@1.4.0"
+        "dx-os-frontend@2.1.0|loose-envify@1.4.0"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@remix-run/router@1.23.4"
+      "ref": "dx-os-frontend@2.1.0|@remix-run/router@1.23.4"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@babel/helper-module-imports@7.29.7",
+      "ref": "dx-os-frontend@2.1.0|@babel/helper-module-imports@7.29.7",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@babel/traverse@7.29.12",
-        "dx-os-frontend@2.0.0|@babel/types@7.29.11"
+        "dx-os-frontend@2.1.0|@babel/traverse@7.29.12",
+        "dx-os-frontend@2.1.0|@babel/types@7.29.11"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@emotion/hash@0.9.2"
+      "ref": "dx-os-frontend@2.1.0|@emotion/hash@0.9.2"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@emotion/memoize@0.9.0"
+      "ref": "dx-os-frontend@2.1.0|@emotion/memoize@0.9.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|babel-plugin-macros@3.1.0",
+      "ref": "dx-os-frontend@2.1.0|babel-plugin-macros@3.1.0",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@babel/runtime@7.29.10",
-        "dx-os-frontend@2.0.0|cosmiconfig@7.1.0",
-        "dx-os-frontend@2.0.0|resolve@1.22.13"
+        "dx-os-frontend@2.1.0|@babel/runtime@7.29.10",
+        "dx-os-frontend@2.1.0|cosmiconfig@7.1.0",
+        "dx-os-frontend@2.1.0|resolve@1.22.13"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|convert-source-map@1.9.0"
+      "ref": "dx-os-frontend@2.1.0|convert-source-map@1.9.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|escape-string-regexp@4.0.0"
+      "ref": "dx-os-frontend@2.1.0|escape-string-regexp@4.0.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|find-root@1.1.0"
+      "ref": "dx-os-frontend@2.1.0|find-root@1.1.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|source-map@0.5.7"
+      "ref": "dx-os-frontend@2.1.0|source-map@0.5.7"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|stylis@4.2.0"
+      "ref": "dx-os-frontend@2.1.0|stylis@4.2.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@emotion/sheet@1.4.0"
+      "ref": "dx-os-frontend@2.1.0|@emotion/sheet@1.4.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@emotion/unitless@0.10.0"
+      "ref": "dx-os-frontend@2.1.0|@emotion/unitless@0.10.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@types/prop-types@15.7.15"
+      "ref": "dx-os-frontend@2.1.0|@types/prop-types@15.7.15"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@mui/private-theming@6.4.9",
+      "ref": "dx-os-frontend@2.1.0|@mui/private-theming@6.4.9",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@babel/runtime@7.29.10",
-        "dx-os-frontend@2.0.0|@mui/utils@6.4.9",
-        "dx-os-frontend@2.0.0|@types/react@18.3.31",
-        "dx-os-frontend@2.0.0|prop-types@15.8.1",
-        "dx-os-frontend@2.0.0|react@18.3.1"
+        "dx-os-frontend@2.1.0|@babel/runtime@7.29.10",
+        "dx-os-frontend@2.1.0|@mui/utils@6.4.9",
+        "dx-os-frontend@2.1.0|@types/react@18.3.31",
+        "dx-os-frontend@2.1.0|prop-types@15.8.1",
+        "dx-os-frontend@2.1.0|react@18.3.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@mui/styled-engine@6.5.0",
+      "ref": "dx-os-frontend@2.1.0|@mui/styled-engine@6.5.0",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@babel/runtime@7.29.10",
-        "dx-os-frontend@2.0.0|@emotion/cache@11.14.0",
-        "dx-os-frontend@2.0.0|@emotion/react@11.14.0",
-        "dx-os-frontend@2.0.0|@emotion/serialize@1.3.3",
-        "dx-os-frontend@2.0.0|@emotion/sheet@1.4.0",
-        "dx-os-frontend@2.0.0|@emotion/styled@11.14.1",
-        "dx-os-frontend@2.0.0|csstype@3.2.3",
-        "dx-os-frontend@2.0.0|prop-types@15.8.1",
-        "dx-os-frontend@2.0.0|react@18.3.1"
+        "dx-os-frontend@2.1.0|@babel/runtime@7.29.10",
+        "dx-os-frontend@2.1.0|@emotion/cache@11.14.0",
+        "dx-os-frontend@2.1.0|@emotion/react@11.14.0",
+        "dx-os-frontend@2.1.0|@emotion/serialize@1.3.3",
+        "dx-os-frontend@2.1.0|@emotion/sheet@1.4.0",
+        "dx-os-frontend@2.1.0|@emotion/styled@11.14.1",
+        "dx-os-frontend@2.1.0|csstype@3.2.3",
+        "dx-os-frontend@2.1.0|prop-types@15.8.1",
+        "dx-os-frontend@2.1.0|react@18.3.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|object-assign@4.1.1"
+      "ref": "dx-os-frontend@2.1.0|object-assign@4.1.1"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|dom-helpers@5.2.1",
+      "ref": "dx-os-frontend@2.1.0|dom-helpers@5.2.1",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@babel/runtime@7.29.10",
-        "dx-os-frontend@2.0.0|csstype@3.2.3"
+        "dx-os-frontend@2.1.0|@babel/runtime@7.29.10",
+        "dx-os-frontend@2.1.0|csstype@3.2.3"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@types/d3-drag@3.0.7",
+      "ref": "dx-os-frontend@2.1.0|@types/d3-drag@3.0.7",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@types/d3-selection@3.0.12"
+        "dx-os-frontend@2.1.0|@types/d3-selection@3.0.12"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@types/d3-interpolate@3.0.4",
+      "ref": "dx-os-frontend@2.1.0|@types/d3-interpolate@3.0.4",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@types/d3-color@3.1.3"
+        "dx-os-frontend@2.1.0|@types/d3-color@3.1.3"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@types/d3-selection@3.0.12"
+      "ref": "dx-os-frontend@2.1.0|@types/d3-selection@3.0.12"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@types/d3-transition@3.0.9",
+      "ref": "dx-os-frontend@2.1.0|@types/d3-transition@3.0.9",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@types/d3-selection@3.0.12"
+        "dx-os-frontend@2.1.0|@types/d3-selection@3.0.12"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@types/d3-zoom@3.0.9",
+      "ref": "dx-os-frontend@2.1.0|@types/d3-zoom@3.0.9",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@types/d3-interpolate@3.0.4",
-        "dx-os-frontend@2.0.0|@types/d3-selection@3.0.12"
+        "dx-os-frontend@2.1.0|@types/d3-interpolate@3.0.4",
+        "dx-os-frontend@2.1.0|@types/d3-selection@3.0.12"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|d3-drag@3.0.0",
+      "ref": "dx-os-frontend@2.1.0|d3-drag@3.0.0",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|d3-dispatch@3.0.1",
-        "dx-os-frontend@2.0.0|d3-selection@3.0.0"
+        "dx-os-frontend@2.1.0|d3-dispatch@3.0.1",
+        "dx-os-frontend@2.1.0|d3-selection@3.0.0"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|d3-interpolate@3.0.1",
+      "ref": "dx-os-frontend@2.1.0|d3-interpolate@3.0.1",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|d3-color@3.1.0"
+        "dx-os-frontend@2.1.0|d3-color@3.1.0"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|d3-selection@3.0.0"
+      "ref": "dx-os-frontend@2.1.0|d3-selection@3.0.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|d3-zoom@3.0.0",
+      "ref": "dx-os-frontend@2.1.0|d3-zoom@3.0.0",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|d3-dispatch@3.0.1",
-        "dx-os-frontend@2.0.0|d3-drag@3.0.0",
-        "dx-os-frontend@2.0.0|d3-interpolate@3.0.1",
-        "dx-os-frontend@2.0.0|d3-selection@3.0.0",
-        "dx-os-frontend@2.0.0|d3-transition@3.0.1"
+        "dx-os-frontend@2.1.0|d3-dispatch@3.0.1",
+        "dx-os-frontend@2.1.0|d3-drag@3.0.0",
+        "dx-os-frontend@2.1.0|d3-interpolate@3.0.1",
+        "dx-os-frontend@2.1.0|d3-selection@3.0.0",
+        "dx-os-frontend@2.1.0|d3-transition@3.0.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|use-sync-external-store@1.7.0",
+      "ref": "dx-os-frontend@2.1.0|use-sync-external-store@1.7.0",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|react@18.3.1"
+        "dx-os-frontend@2.1.0|react@18.3.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@types/trusted-types@2.0.7"
+      "ref": "dx-os-frontend@2.1.0|@types/trusted-types@2.0.7"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|vscode-languageserver-protocol@3.18.5",
+      "ref": "dx-os-frontend@2.1.0|vscode-languageserver-protocol@3.18.5",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|vscode-jsonrpc@10.0.0",
-        "dx-os-frontend@2.0.0|vscode-languageserver-types@3.18.5"
+        "dx-os-frontend@2.1.0|vscode-jsonrpc@10.0.0",
+        "dx-os-frontend@2.1.0|vscode-languageserver-types@3.18.5"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|hasown@2.0.4",
+      "ref": "dx-os-frontend@2.1.0|hasown@2.0.4",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|function-bind@1.1.2"
+        "dx-os-frontend@2.1.0|function-bind@1.1.2"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|object.entries@1.1.9",
+      "ref": "dx-os-frontend@2.1.0|object.entries@1.1.9",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|call-bind@1.0.9",
-        "dx-os-frontend@2.0.0|call-bound@1.0.4",
-        "dx-os-frontend@2.0.0|define-properties@1.2.1",
-        "dx-os-frontend@2.0.0|es-object-atoms@1.1.2"
+        "dx-os-frontend@2.1.0|call-bind@1.0.9",
+        "dx-os-frontend@2.1.0|call-bound@1.0.4",
+        "dx-os-frontend@2.1.0|define-properties@1.2.1",
+        "dx-os-frontend@2.1.0|es-object-atoms@1.1.2"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|warning@4.0.3",
+      "ref": "dx-os-frontend@2.1.0|warning@4.0.3",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|loose-envify@1.4.0"
+        "dx-os-frontend@2.1.0|loose-envify@1.4.0"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|date-fns@3.6.0"
+      "ref": "dx-os-frontend@2.1.0|@marmelab/query-string@7.1.4",
+      "dependsOn": [
+        "dx-os-frontend@2.1.0|@marmelab/decode-uri-component@0.2.3",
+        "dx-os-frontend@2.1.0|filter-obj@1.1.0",
+        "dx-os-frontend@2.1.0|split-on-first@1.1.0",
+        "dx-os-frontend@2.1.0|strict-uri-encode@2.0.0"
+      ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|eventemitter3@5.0.4"
+      "ref": "dx-os-frontend@2.1.0|date-fns@3.6.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|inflection@3.0.2"
+      "ref": "dx-os-frontend@2.1.0|eventemitter3@5.0.4"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|jsonexport@3.2.0"
+      "ref": "dx-os-frontend@2.1.0|inflection@3.0.2"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|lodash@4.18.1"
+      "ref": "dx-os-frontend@2.1.0|jsonexport@3.2.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|query-string@7.1.3",
-      "dependsOn": [
-        "dx-os-frontend@2.0.0|decode-uri-component@0.2.2",
-        "dx-os-frontend@2.0.0|filter-obj@1.1.0",
-        "dx-os-frontend@2.0.0|split-on-first@1.1.0",
-        "dx-os-frontend@2.0.0|strict-uri-encode@2.0.0"
-      ]
+      "ref": "dx-os-frontend@2.1.0|lodash@4.18.1"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|react-error-boundary@4.1.2",
+      "ref": "dx-os-frontend@2.1.0|react-error-boundary@4.1.2",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@babel/runtime@7.29.10",
-        "dx-os-frontend@2.0.0|react@18.3.1"
+        "dx-os-frontend@2.1.0|@babel/runtime@7.29.10",
+        "dx-os-frontend@2.1.0|react@18.3.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@tanstack/query-core@5.105.1"
+      "ref": "dx-os-frontend@2.1.0|@tanstack/query-core@5.105.1"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|autosuggest-highlight@3.3.4",
+      "ref": "dx-os-frontend@2.1.0|autosuggest-highlight@3.3.4",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|remove-accents@0.4.4"
+        "dx-os-frontend@2.1.0|remove-accents@0.4.4"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|css-mediaquery@0.1.2"
+      "ref": "dx-os-frontend@2.1.0|css-mediaquery@0.1.2"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|diacritic@0.0.2"
+      "ref": "dx-os-frontend@2.1.0|diacritic@0.0.2"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|react-dropzone@14.4.1",
+      "ref": "dx-os-frontend@2.1.0|react-dropzone@14.4.1",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|attr-accept@2.2.5",
-        "dx-os-frontend@2.0.0|file-selector@2.1.2",
-        "dx-os-frontend@2.0.0|prop-types@15.8.1",
-        "dx-os-frontend@2.0.0|react@18.3.1"
+        "dx-os-frontend@2.1.0|attr-accept@2.2.5",
+        "dx-os-frontend@2.1.0|file-selector@2.1.2",
+        "dx-os-frontend@2.1.0|prop-types@15.8.1",
+        "dx-os-frontend@2.1.0|react@18.3.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|react-hotkeys-hook@5.3.3",
+      "ref": "dx-os-frontend@2.1.0|react-hotkeys-hook@5.4.0",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|react-dom@18.3.1",
-        "dx-os-frontend@2.0.0|react@18.3.1"
+        "dx-os-frontend@2.1.0|react-dom@18.3.1",
+        "dx-os-frontend@2.1.0|react@18.3.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|js-tokens@4.0.0"
+      "ref": "dx-os-frontend@2.1.0|js-tokens@4.0.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@babel/traverse@7.29.12",
+      "ref": "dx-os-frontend@2.1.0|@babel/traverse@7.29.12",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@babel/code-frame@7.29.7",
-        "dx-os-frontend@2.0.0|@babel/generator@7.29.12",
-        "dx-os-frontend@2.0.0|@babel/helper-globals@7.29.7",
-        "dx-os-frontend@2.0.0|@babel/parser@7.29.12",
-        "dx-os-frontend@2.0.0|@babel/template@7.29.7",
-        "dx-os-frontend@2.0.0|@babel/types@7.29.11",
-        "dx-os-frontend@2.0.0|debug@4.4.3"
+        "dx-os-frontend@2.1.0|@babel/code-frame@7.29.7",
+        "dx-os-frontend@2.1.0|@babel/generator@7.29.12",
+        "dx-os-frontend@2.1.0|@babel/helper-globals@7.29.7",
+        "dx-os-frontend@2.1.0|@babel/parser@7.29.12",
+        "dx-os-frontend@2.1.0|@babel/template@7.29.7",
+        "dx-os-frontend@2.1.0|@babel/types@7.29.11",
+        "dx-os-frontend@2.1.0|debug@4.4.3"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@babel/types@7.29.11",
+      "ref": "dx-os-frontend@2.1.0|@babel/types@7.29.11",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@babel/helper-string-parser@7.29.11",
-        "dx-os-frontend@2.0.0|@babel/helper-validator-identifier@7.29.7"
+        "dx-os-frontend@2.1.0|@babel/helper-string-parser@7.29.11",
+        "dx-os-frontend@2.1.0|@babel/helper-validator-identifier@7.29.7"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|cosmiconfig@7.1.0",
+      "ref": "dx-os-frontend@2.1.0|cosmiconfig@7.1.0",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@types/parse-json@4.0.2",
-        "dx-os-frontend@2.0.0|import-fresh@3.3.1",
-        "dx-os-frontend@2.0.0|parse-json@5.2.0",
-        "dx-os-frontend@2.0.0|path-type@4.0.0",
-        "dx-os-frontend@2.0.0|cosmiconfig@7.1.0|yaml@1.10.3"
+        "dx-os-frontend@2.1.0|@types/parse-json@4.0.2",
+        "dx-os-frontend@2.1.0|import-fresh@3.3.1",
+        "dx-os-frontend@2.1.0|parse-json@5.2.0",
+        "dx-os-frontend@2.1.0|path-type@4.0.0",
+        "dx-os-frontend@2.1.0|cosmiconfig@7.1.0|yaml@1.10.3"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|cosmiconfig@7.1.0|yaml@1.10.3"
+      "ref": "dx-os-frontend@2.1.0|cosmiconfig@7.1.0|yaml@1.10.3"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|resolve@1.22.13",
+      "ref": "dx-os-frontend@2.1.0|resolve@1.22.13",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|es-errors@1.3.0",
-        "dx-os-frontend@2.0.0|is-core-module@2.17.0",
-        "dx-os-frontend@2.0.0|path-parse@1.0.7",
-        "dx-os-frontend@2.0.0|supports-preserve-symlinks-flag@1.0.0"
+        "dx-os-frontend@2.1.0|es-errors@1.3.0",
+        "dx-os-frontend@2.1.0|is-core-module@2.17.0",
+        "dx-os-frontend@2.1.0|path-parse@1.0.7",
+        "dx-os-frontend@2.1.0|supports-preserve-symlinks-flag@1.0.0"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@types/d3-color@3.1.3"
+      "ref": "dx-os-frontend@2.1.0|@types/d3-color@3.1.3"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|d3-dispatch@3.0.1"
+      "ref": "dx-os-frontend@2.1.0|d3-dispatch@3.0.1"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|d3-color@3.1.0"
+      "ref": "dx-os-frontend@2.1.0|d3-color@3.1.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|d3-transition@3.0.1",
+      "ref": "dx-os-frontend@2.1.0|d3-transition@3.0.1",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|d3-color@3.1.0",
-        "dx-os-frontend@2.0.0|d3-dispatch@3.0.1",
-        "dx-os-frontend@2.0.0|d3-ease@3.0.1",
-        "dx-os-frontend@2.0.0|d3-interpolate@3.0.1",
-        "dx-os-frontend@2.0.0|d3-selection@3.0.0",
-        "dx-os-frontend@2.0.0|d3-timer@3.0.1"
+        "dx-os-frontend@2.1.0|d3-color@3.1.0",
+        "dx-os-frontend@2.1.0|d3-dispatch@3.0.1",
+        "dx-os-frontend@2.1.0|d3-ease@3.0.1",
+        "dx-os-frontend@2.1.0|d3-interpolate@3.0.1",
+        "dx-os-frontend@2.1.0|d3-selection@3.0.0",
+        "dx-os-frontend@2.1.0|d3-timer@3.0.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|vscode-jsonrpc@10.0.0"
+      "ref": "dx-os-frontend@2.1.0|vscode-jsonrpc@10.0.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|function-bind@1.1.2"
+      "ref": "dx-os-frontend@2.1.0|function-bind@1.1.2"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|call-bind@1.0.9",
+      "ref": "dx-os-frontend@2.1.0|call-bind@1.0.9",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|call-bind-apply-helpers@1.0.2",
-        "dx-os-frontend@2.0.0|es-define-property@1.0.1",
-        "dx-os-frontend@2.0.0|get-intrinsic@1.3.0",
-        "dx-os-frontend@2.0.0|set-function-length@1.2.2"
+        "dx-os-frontend@2.1.0|call-bind-apply-helpers@1.0.2",
+        "dx-os-frontend@2.1.0|es-define-property@1.0.1",
+        "dx-os-frontend@2.1.0|get-intrinsic@1.3.0",
+        "dx-os-frontend@2.1.0|set-function-length@1.2.2"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|call-bound@1.0.4",
+      "ref": "dx-os-frontend@2.1.0|call-bound@1.0.4",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|call-bind-apply-helpers@1.0.2",
-        "dx-os-frontend@2.0.0|get-intrinsic@1.3.0"
+        "dx-os-frontend@2.1.0|call-bind-apply-helpers@1.0.2",
+        "dx-os-frontend@2.1.0|get-intrinsic@1.3.0"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|define-properties@1.2.1",
+      "ref": "dx-os-frontend@2.1.0|define-properties@1.2.1",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|define-data-property@1.1.4",
-        "dx-os-frontend@2.0.0|has-property-descriptors@1.0.2",
-        "dx-os-frontend@2.0.0|object-keys@1.1.1"
+        "dx-os-frontend@2.1.0|define-data-property@1.1.4",
+        "dx-os-frontend@2.1.0|has-property-descriptors@1.0.2",
+        "dx-os-frontend@2.1.0|object-keys@1.1.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|es-object-atoms@1.1.2",
+      "ref": "dx-os-frontend@2.1.0|es-object-atoms@1.1.2",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|es-errors@1.3.0"
+        "dx-os-frontend@2.1.0|es-errors@1.3.0"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|decode-uri-component@0.2.2"
+      "ref": "dx-os-frontend@2.1.0|@marmelab/decode-uri-component@0.2.3"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|filter-obj@1.1.0"
+      "ref": "dx-os-frontend@2.1.0|filter-obj@1.1.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|split-on-first@1.1.0"
+      "ref": "dx-os-frontend@2.1.0|split-on-first@1.1.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|strict-uri-encode@2.0.0"
+      "ref": "dx-os-frontend@2.1.0|strict-uri-encode@2.0.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|remove-accents@0.4.4"
+      "ref": "dx-os-frontend@2.1.0|remove-accents@0.4.4"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|attr-accept@2.2.5"
+      "ref": "dx-os-frontend@2.1.0|attr-accept@2.2.5"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|file-selector@2.1.2",
+      "ref": "dx-os-frontend@2.1.0|file-selector@2.1.2",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|tslib@2.9.1"
+        "dx-os-frontend@2.1.0|tslib@2.9.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@babel/code-frame@7.29.7",
+      "ref": "dx-os-frontend@2.1.0|@babel/code-frame@7.29.7",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@babel/helper-validator-identifier@7.29.7",
-        "dx-os-frontend@2.0.0|js-tokens@4.0.0",
-        "dx-os-frontend@2.0.0|picocolors@1.1.1"
+        "dx-os-frontend@2.1.0|@babel/helper-validator-identifier@7.29.7",
+        "dx-os-frontend@2.1.0|js-tokens@4.0.0",
+        "dx-os-frontend@2.1.0|picocolors@1.1.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@babel/generator@7.29.12",
+      "ref": "dx-os-frontend@2.1.0|@babel/generator@7.29.12",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@babel/parser@7.29.12",
-        "dx-os-frontend@2.0.0|@babel/types@7.29.11",
-        "dx-os-frontend@2.0.0|@jridgewell/gen-mapping@0.3.13",
-        "dx-os-frontend@2.0.0|@jridgewell/trace-mapping@0.3.31",
-        "dx-os-frontend@2.0.0|jsesc@3.1.0"
+        "dx-os-frontend@2.1.0|@babel/parser@7.29.12",
+        "dx-os-frontend@2.1.0|@babel/types@7.29.11",
+        "dx-os-frontend@2.1.0|@jridgewell/gen-mapping@0.3.13",
+        "dx-os-frontend@2.1.0|@jridgewell/trace-mapping@0.3.31",
+        "dx-os-frontend@2.1.0|jsesc@3.1.0"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@babel/helper-globals@7.29.7"
+      "ref": "dx-os-frontend@2.1.0|@babel/helper-globals@7.29.7"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@babel/parser@7.29.12",
+      "ref": "dx-os-frontend@2.1.0|@babel/parser@7.29.12",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@babel/types@7.29.11"
+        "dx-os-frontend@2.1.0|@babel/types@7.29.11"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@babel/template@7.29.7",
+      "ref": "dx-os-frontend@2.1.0|@babel/template@7.29.7",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@babel/code-frame@7.29.7",
-        "dx-os-frontend@2.0.0|@babel/parser@7.29.12",
-        "dx-os-frontend@2.0.0|@babel/types@7.29.11"
+        "dx-os-frontend@2.1.0|@babel/code-frame@7.29.7",
+        "dx-os-frontend@2.1.0|@babel/parser@7.29.12",
+        "dx-os-frontend@2.1.0|@babel/types@7.29.11"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|debug@4.4.3",
+      "ref": "dx-os-frontend@2.1.0|debug@4.4.3",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|ms@2.1.3"
+        "dx-os-frontend@2.1.0|ms@2.1.3"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@babel/helper-string-parser@7.29.11"
+      "ref": "dx-os-frontend@2.1.0|@babel/helper-string-parser@7.29.11"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@babel/helper-validator-identifier@7.29.7"
+      "ref": "dx-os-frontend@2.1.0|@babel/helper-validator-identifier@7.29.7"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@types/parse-json@4.0.2"
+      "ref": "dx-os-frontend@2.1.0|@types/parse-json@4.0.2"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|import-fresh@3.3.1",
+      "ref": "dx-os-frontend@2.1.0|import-fresh@3.3.1",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|parent-module@1.0.1",
-        "dx-os-frontend@2.0.0|resolve-from@4.0.0"
+        "dx-os-frontend@2.1.0|parent-module@1.0.1",
+        "dx-os-frontend@2.1.0|resolve-from@4.0.0"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|parse-json@5.2.0",
+      "ref": "dx-os-frontend@2.1.0|parse-json@5.2.0",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@babel/code-frame@7.29.7",
-        "dx-os-frontend@2.0.0|error-ex@1.3.4",
-        "dx-os-frontend@2.0.0|json-parse-even-better-errors@2.3.1",
-        "dx-os-frontend@2.0.0|lines-and-columns@1.2.4"
+        "dx-os-frontend@2.1.0|@babel/code-frame@7.29.7",
+        "dx-os-frontend@2.1.0|error-ex@1.3.4",
+        "dx-os-frontend@2.1.0|json-parse-even-better-errors@2.3.1",
+        "dx-os-frontend@2.1.0|lines-and-columns@1.2.4"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|path-type@4.0.0"
+      "ref": "dx-os-frontend@2.1.0|path-type@4.0.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|es-errors@1.3.0"
+      "ref": "dx-os-frontend@2.1.0|es-errors@1.3.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|is-core-module@2.17.0",
+      "ref": "dx-os-frontend@2.1.0|is-core-module@2.17.0",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|hasown@2.0.4"
+        "dx-os-frontend@2.1.0|hasown@2.0.4"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|path-parse@1.0.7"
+      "ref": "dx-os-frontend@2.1.0|path-parse@1.0.7"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|supports-preserve-symlinks-flag@1.0.0"
+      "ref": "dx-os-frontend@2.1.0|supports-preserve-symlinks-flag@1.0.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|d3-ease@3.0.1"
+      "ref": "dx-os-frontend@2.1.0|d3-ease@3.0.1"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|d3-timer@3.0.1"
+      "ref": "dx-os-frontend@2.1.0|d3-timer@3.0.1"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|call-bind-apply-helpers@1.0.2",
+      "ref": "dx-os-frontend@2.1.0|call-bind-apply-helpers@1.0.2",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|es-errors@1.3.0",
-        "dx-os-frontend@2.0.0|function-bind@1.1.2"
+        "dx-os-frontend@2.1.0|es-errors@1.3.0",
+        "dx-os-frontend@2.1.0|function-bind@1.1.2"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|es-define-property@1.0.1"
+      "ref": "dx-os-frontend@2.1.0|es-define-property@1.0.1"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|get-intrinsic@1.3.0",
+      "ref": "dx-os-frontend@2.1.0|get-intrinsic@1.3.0",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|call-bind-apply-helpers@1.0.2",
-        "dx-os-frontend@2.0.0|es-define-property@1.0.1",
-        "dx-os-frontend@2.0.0|es-errors@1.3.0",
-        "dx-os-frontend@2.0.0|es-object-atoms@1.1.2",
-        "dx-os-frontend@2.0.0|function-bind@1.1.2",
-        "dx-os-frontend@2.0.0|get-proto@1.0.1",
-        "dx-os-frontend@2.0.0|gopd@1.2.0",
-        "dx-os-frontend@2.0.0|has-symbols@1.1.0",
-        "dx-os-frontend@2.0.0|hasown@2.0.4",
-        "dx-os-frontend@2.0.0|math-intrinsics@1.1.0"
+        "dx-os-frontend@2.1.0|call-bind-apply-helpers@1.0.2",
+        "dx-os-frontend@2.1.0|es-define-property@1.0.1",
+        "dx-os-frontend@2.1.0|es-errors@1.3.0",
+        "dx-os-frontend@2.1.0|es-object-atoms@1.1.2",
+        "dx-os-frontend@2.1.0|function-bind@1.1.2",
+        "dx-os-frontend@2.1.0|get-proto@1.0.1",
+        "dx-os-frontend@2.1.0|gopd@1.2.0",
+        "dx-os-frontend@2.1.0|has-symbols@1.1.0",
+        "dx-os-frontend@2.1.0|hasown@2.0.4",
+        "dx-os-frontend@2.1.0|math-intrinsics@1.1.0"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|set-function-length@1.2.2",
+      "ref": "dx-os-frontend@2.1.0|set-function-length@1.2.2",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|define-data-property@1.1.4",
-        "dx-os-frontend@2.0.0|es-errors@1.3.0",
-        "dx-os-frontend@2.0.0|function-bind@1.1.2",
-        "dx-os-frontend@2.0.0|get-intrinsic@1.3.0",
-        "dx-os-frontend@2.0.0|gopd@1.2.0",
-        "dx-os-frontend@2.0.0|has-property-descriptors@1.0.2"
+        "dx-os-frontend@2.1.0|define-data-property@1.1.4",
+        "dx-os-frontend@2.1.0|es-errors@1.3.0",
+        "dx-os-frontend@2.1.0|function-bind@1.1.2",
+        "dx-os-frontend@2.1.0|get-intrinsic@1.3.0",
+        "dx-os-frontend@2.1.0|gopd@1.2.0",
+        "dx-os-frontend@2.1.0|has-property-descriptors@1.0.2"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|define-data-property@1.1.4",
+      "ref": "dx-os-frontend@2.1.0|define-data-property@1.1.4",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|es-define-property@1.0.1",
-        "dx-os-frontend@2.0.0|es-errors@1.3.0",
-        "dx-os-frontend@2.0.0|gopd@1.2.0"
+        "dx-os-frontend@2.1.0|es-define-property@1.0.1",
+        "dx-os-frontend@2.1.0|es-errors@1.3.0",
+        "dx-os-frontend@2.1.0|gopd@1.2.0"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|has-property-descriptors@1.0.2",
+      "ref": "dx-os-frontend@2.1.0|has-property-descriptors@1.0.2",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|es-define-property@1.0.1"
+        "dx-os-frontend@2.1.0|es-define-property@1.0.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|object-keys@1.1.1"
+      "ref": "dx-os-frontend@2.1.0|object-keys@1.1.1"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|tslib@2.9.1"
+      "ref": "dx-os-frontend@2.1.0|tslib@2.9.1"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|picocolors@1.1.1"
+      "ref": "dx-os-frontend@2.1.0|picocolors@1.1.1"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@jridgewell/gen-mapping@0.3.13",
+      "ref": "dx-os-frontend@2.1.0|@jridgewell/gen-mapping@0.3.13",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@jridgewell/sourcemap-codec@1.6.0",
-        "dx-os-frontend@2.0.0|@jridgewell/trace-mapping@0.3.31"
+        "dx-os-frontend@2.1.0|@jridgewell/sourcemap-codec@1.6.0",
+        "dx-os-frontend@2.1.0|@jridgewell/trace-mapping@0.3.31"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@jridgewell/trace-mapping@0.3.31",
+      "ref": "dx-os-frontend@2.1.0|@jridgewell/trace-mapping@0.3.31",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|@jridgewell/resolve-uri@3.1.2",
-        "dx-os-frontend@2.0.0|@jridgewell/sourcemap-codec@1.6.0"
+        "dx-os-frontend@2.1.0|@jridgewell/resolve-uri@3.1.2",
+        "dx-os-frontend@2.1.0|@jridgewell/sourcemap-codec@1.6.0"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|jsesc@3.1.0"
+      "ref": "dx-os-frontend@2.1.0|jsesc@3.1.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|ms@2.1.3"
+      "ref": "dx-os-frontend@2.1.0|ms@2.1.3"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|parent-module@1.0.1",
+      "ref": "dx-os-frontend@2.1.0|parent-module@1.0.1",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|callsites@3.1.0"
+        "dx-os-frontend@2.1.0|callsites@3.1.0"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|resolve-from@4.0.0"
+      "ref": "dx-os-frontend@2.1.0|resolve-from@4.0.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|error-ex@1.3.4",
+      "ref": "dx-os-frontend@2.1.0|error-ex@1.3.4",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|is-arrayish@0.2.1"
+        "dx-os-frontend@2.1.0|is-arrayish@0.2.1"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|json-parse-even-better-errors@2.3.1"
+      "ref": "dx-os-frontend@2.1.0|json-parse-even-better-errors@2.3.1"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|lines-and-columns@1.2.4"
+      "ref": "dx-os-frontend@2.1.0|lines-and-columns@1.2.4"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|get-proto@1.0.1",
+      "ref": "dx-os-frontend@2.1.0|get-proto@1.0.1",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|dunder-proto@1.0.1",
-        "dx-os-frontend@2.0.0|es-object-atoms@1.1.2"
+        "dx-os-frontend@2.1.0|dunder-proto@1.0.1",
+        "dx-os-frontend@2.1.0|es-object-atoms@1.1.2"
       ]
     },
     {
-      "ref": "dx-os-frontend@2.0.0|gopd@1.2.0"
+      "ref": "dx-os-frontend@2.1.0|gopd@1.2.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|has-symbols@1.1.0"
+      "ref": "dx-os-frontend@2.1.0|has-symbols@1.1.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|math-intrinsics@1.1.0"
+      "ref": "dx-os-frontend@2.1.0|math-intrinsics@1.1.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@jridgewell/sourcemap-codec@1.6.0"
+      "ref": "dx-os-frontend@2.1.0|@jridgewell/sourcemap-codec@1.6.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|@jridgewell/resolve-uri@3.1.2"
+      "ref": "dx-os-frontend@2.1.0|@jridgewell/resolve-uri@3.1.2"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|callsites@3.1.0"
+      "ref": "dx-os-frontend@2.1.0|callsites@3.1.0"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|is-arrayish@0.2.1"
+      "ref": "dx-os-frontend@2.1.0|is-arrayish@0.2.1"
     },
     {
-      "ref": "dx-os-frontend@2.0.0|dunder-proto@1.0.1",
+      "ref": "dx-os-frontend@2.1.0|dunder-proto@1.0.1",
       "dependsOn": [
-        "dx-os-frontend@2.0.0|call-bind-apply-helpers@1.0.2",
-        "dx-os-frontend@2.0.0|es-errors@1.3.0",
-        "dx-os-frontend@2.0.0|gopd@1.2.0"
+        "dx-os-frontend@2.1.0|call-bind-apply-helpers@1.0.2",
+        "dx-os-frontend@2.1.0|es-errors@1.3.0",
+        "dx-os-frontend@2.1.0|gopd@1.2.0"
       ]
     }
   ]

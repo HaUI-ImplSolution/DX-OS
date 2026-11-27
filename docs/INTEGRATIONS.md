@@ -18,6 +18,9 @@ targets:
     format: chat
 ```
 
+Ứng dụng chạy cùng máy với DX-OS nhận webhook ở `http://host.docker.internal:<cổng>/<đường dẫn>`: backend có `extra_hosts: host.docker.internal:host-gateway`, nên không cần đặt địa chỉ IP của máy.
+Ứng dụng không chạy trong Docker thì phải nghe trên địa chỉ mà cổng mạng của Docker tới được, không chỉ trên `127.0.0.1`.
+
 `format` là `json` (thông điệp nguyên văn, mặc định) hoặc `chat` (xem "Câu cho Mattermost và Slack" dưới đây); đích mặc định đặt dạng bằng `DXOS_WEBHOOK_FORMAT`.
 
 Mô hình không ghi `webhook` thì dùng `DXOS_WEBHOOK_URL` trong `.env`; để trống và không ghi đích thì mô hình không gửi gì.
@@ -33,6 +36,7 @@ Backend gửi `POST` JSON với các trường:
 |---|---|
 | `eventId` | Số của dòng lịch sử, tăng dần; cũng nằm ở header `X-Dxos-Event-Id` |
 | `model`, `entity`, `recordId` | Hồ sơ nào |
+| `webUrl` | Trang của hồ sơ trên giao diện web, xem [Liên kết sang giao diện web](./EXTENSIONS.md#liên-kết-sang-giao-diện-web-của-dx-os); không có khi chạy `dxos start --core` |
 | `action` | Hành động, ví dụ `created`, `updated`, `deleted`, `assigned`, `due_soon`, `overdue`, `file_added`, `completion_skipped`, `auto_closed`, hoặc tên hành động của quy trình |
 | `fromStatus`, `toStatus` | Trạng thái trước và sau |
 | `actor`, `actorName` | Mã người dùng và tên người làm, gửi ra ngoài hệ thống; `system` với dòng quá hạn |
@@ -176,3 +180,71 @@ Timer của user chỉ chạy khi user còn phiên đăng nhập, trừ khi bậ
 ### Mạng
 
 Lần chạy đầu DuckDB tải extension `postgres` và `httpfs` từ mạng và lưu ở `deploy/duckdb`; các lần sau chạy không cần mạng.
+
+## Cầu nối MQTT (tùy chọn)
+
+Thiết bị hiện trường thường nói MQTT chứ không gọi HTTP.
+Overlay `deploy/docker-compose.mqtt.yml` thêm một broker MQTT và một cầu nối nhỏ: cầu nối nhận bản tin theo chủ đề rồi tạo hồ sơ qua API dữ liệu chung bằng một client máy, như mọi ứng dụng ngoài.
+Lõi không đổi và không giữ trạng thái thiết bị; stack mặc định cũng không đổi.
+
+### Bật
+
+1. Chép `deploy/mqtt/mqtt.env.example` thành `deploy/mqtt.env` (ngoài Git) và điền `MQTT_PASSWORD`, sinh bằng `openssl rand -hex 24`.
+2. Áp dụng mô hình có thực thể nhận số đo, ví dụ mẫu "Sự cố thiết bị" (`plant`) của thư viện mẫu, rồi đăng ký client của cầu nối: `dxos client add itot-mqtt --model plant --role SENSOR --env MQTT_BRIDGE`.
+   Dán hai dòng `MQTT_BRIDGE_CLIENT_ID` và `MQTT_BRIDGE_CLIENT_SECRET` mà lệnh in ra vào `deploy/mqtt.env`.
+3. Đặt `COMPOSE_FILE=docker-compose.yml:docker-compose.mqtt.yml` trong `deploy/.env`, rồi chạy `dxos start`.
+4. Tắt bằng cách bỏ dòng `COMPOSE_FILE` rồi chạy `docker compose up -d --remove-orphans`; muốn xóa cả dữ liệu của broker thì `docker volume rm <dự án>_mqtt_data`.
+
+Broker không chạy khi `MQTT_PASSWORD` trống và ghi lý do vào log.
+Client chưa đăng ký hoặc mô hình chưa áp dụng thì cầu nối ghi lý do vào log và thử lại, nên đăng ký hoặc áp dụng sau đó là đủ.
+
+### Broker
+
+- Mosquitto 2.0.23; mọi kết nối cần `MQTT_USER` và `MQTT_PASSWORD`, không có kết nối ẩn danh.
+- Cổng 1883 chỉ mở ở `127.0.0.1`; đặt `MQTT_BIND=0.0.0.0` (và `MQTT_HOST_PORT` nếu cần) trong `deploy/.env` để mở cho thiết bị.
+  Broker nói MQTT thường, không TLS, nên khi mở ra mạng không tin cậy thì đặt sau VPN hoặc sau một proxy TLS.
+- Phiên của cầu nối được giữ và bản tin đi bằng QoS 1: cầu nối tắt thì broker giữ bản tin (tối đa 10.000 bản, mỗi bản tối đa 64 KB) và giao khi nó chạy lại.
+- Dữ liệu của broker nằm ở volume `mqtt_data`; đây là hàng đợi chứ không phải kho lưu, và `dxos backup` không sao lưu nó.
+
+### Tuyến
+
+Cầu nối đọc danh sách tuyến từ biến `MQTT_BRIDGE_ROUTES` trong `deploy/mqtt.env` (một dòng JSON, được giữ khi cập nhật bản cài), hoặc nếu không đặt thì từ `deploy/mqtt/bridge.json`, tuyến sự cố của mẫu `plant`.
+Mỗi tuyến nối một chủ đề với một thực thể:
+
+| Khóa | Ý nghĩa |
+|---|---|
+| `topic` | Bộ lọc chủ đề của MQTT, có thể dùng `+` và `#` |
+| `model`, `entity` | Thực thể sẽ nhận hồ sơ; vai của client phải ghi được vào đó |
+| `record` | Các trường của hồ sơ; giá trị là hằng hoặc chuỗi có mẫu |
+| `when` | Tùy chọn: `{"field": "reading", "op": ">", "value": 80}`; chỉ bản tin có trường của payload thỏa điều kiện mới thành hồ sơ (`op` là `>`, `>=`, `<`, `<=`, `==` hoặc `!=`) |
+| `skip_if_open` | Tùy chọn: `{"field": "device", "value": "{topic.1}"}`; bỏ qua bản tin khi thực thể (có quy trình) còn một hồ sơ chưa đóng với trường đó bằng giá trị đó |
+| `key` | Tùy chọn: mã quan sát, thường `{payload.observation}`; không đặt thì dùng hash của cả bản tin |
+
+Trong chuỗi, `{topic.N}` là mức thứ N của chủ đề (từ 0) và `{payload.tên}` là một trường của payload JSON; chuỗi chỉ gồm một mẫu giữ nguyên kiểu của giá trị, nên số vẫn là số.
+Ví dụ, bản tin `{"metric": "Nhiệt độ (°C)", "reading": 91.5, "observation": "pump-01-1"}` gửi tới `plant/pump-01/reading` tạo một sự cố cho `pump-01` khi `reading` vượt 80 và `pump-01` chưa có sự cố đang mở.
+
+### Độ tin cậy
+
+- Cầu nối chỉ xác nhận bản tin với broker sau khi xử lý xong, nên bản tin không mất khi cầu nối hoặc lõi tạm ngừng.
+- Lỗi tạm (lõi ngừng, 5xx, 429, mạng, token) được thử lại, giãn cách tới 30 giây, cho đến khi qua; lỗi 401 và 403 cũng được thử lại vì đó là lỗi cấu hình chứ không phải lỗi của bản tin.
+- Bản tin lõi từ chối bằng 400 hoặc 409, bản tin không phải JSON, thiếu trường mà tuyến cần hoặc không khớp tuyến nào được ghi vào log rồi bỏ qua, không làm cầu nối dừng.
+- Mỗi hồ sơ gửi kèm `Idempotency-Key` sinh từ `model`, `entity` và `key`, nên bản tin giao hai lần chỉ tạo một hồ sơ trong 24 giờ khóa còn được giữ; sau đó chỉ một trường khai `unique` (như `observation` của mẫu `plant`) mới chặn được dòng trùng.
+- Cầu nối gọi cổng `apisix` trong mạng Docker, với địa chỉ công khai của `GATEWAY_PUBLIC_URL` ở header `Host`, nên token do Keycloak cấp có cùng issuer với token của mọi ứng dụng khác.
+- Log ở `docker compose logs mqtt-bridge`.
+
+### Thử
+
+`python3 examples/itot-simulator/simulator.py run --transport mqtt` publish số đo của thiết bị giả lập; cách chạy cả đường đi ở [`examples/itot-simulator/README.md`](../examples/itot-simulator/README.md).
+Gửi tay một bản tin:
+
+```
+docker compose exec mosquitto sh -c 'mosquitto_pub -h 127.0.0.1 -u "$MQTT_USER" -P "$MQTT_PASSWORD" -q 1 -t plant/pump-01/reading -m "{\"metric\":\"Nhiệt độ\",\"reading\":91.5,\"observation\":\"pump-01-1\"}"'
+```
+
+### Giới hạn
+
+- MQTT 3.1.1, QoS 0 và 1, không TLS; một broker và một cầu nối, không chạy nhiều bản sao.
+- Cầu nối chỉ tạo hồ sơ; việc xác nhận hay mở lại một sự cố là việc của người xử lý hoặc của hệ thống giám sát qua API.
+- Điều kiện `when` so một trường của payload với một giá trị; công thức phức tạp hơn nằm ở thiết bị hoặc ở hệ thống giám sát.
+- Lõi không giữ trạng thái thời gian thực của thiết bị, nên cầu nối không tạo bản sao số.
+- Giấy phép các thành phần của hai image (Mosquitto, Python) và thành phần đi kèm ở ghi chú về cầu nối MQTT của [`DEPENDENCIES.txt`](../DEPENDENCIES.txt).

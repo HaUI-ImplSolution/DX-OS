@@ -27,6 +27,7 @@ import {
   SimpleForm,
   SimpleList,
   TextField,
+  SearchInput,
   TextInput,
   SaveButton,
   SelectArrayInput,
@@ -55,17 +56,32 @@ import DateTimeViInput from "./DateTimeViInput";
 import ExportCsvButton from "./ExportCsvButton";
 import KanbanBoard from "./KanbanBoard";
 import PrintButton from "./PrintButton";
+import RecordAssistant from "../assistant/RecordAssistant";
 import { conditionMet, conditionText } from "./condition";
 import { PersonField, PersonInput } from "./people";
 import { StatusChip } from "./StatusChip";
 import { resourceName, type EntityMeta, type FieldMeta, type ModelMeta } from "./types";
 import { t } from "../shell/t";
-import { intlLocale, timeAgo } from "../shell/format";
+import { formatDate, formatNumber, intlLocale, timeAgo } from "../shell/format";
 
 interface Catalog {
   model: string;
   units: Record<string, string>;
   entities: Record<string, EntityMeta>;
+}
+
+// The value of a field on a phone list card, formatted as the detail page shows it.
+function mobileFieldValue(type: FieldMeta["type"], value: unknown, units: Catalog["units"]): string {
+  switch (type) {
+    case "number":
+      return formatNumber(value);
+    case "date":
+      return formatDate(value);
+    case "unit":
+      return units[String(value)] ?? String(value);
+    default:
+      return String(value);
+  }
 }
 
 // The field that names a record when another record refers to it.
@@ -124,12 +140,12 @@ function outputField(field: FieldMeta, catalog: Catalog) {
           source={field.name}
           label={field.label}
           locales={intlLocale()}
-          options={{ day: "2-digit", month: "2-digit", year: "numeric" }}
+          options={{ day: "2-digit", month: "2-digit", year: "numeric", timeZone: "UTC" }}
           emptyText="—"
         />
       );
     case "number":
-      return <NumberField key={field.name} source={field.name} label={field.label} emptyText="—" />;
+      return <NumberField key={field.name} source={field.name} label={field.label} locales={intlLocale()} emptyText="—" />;
     case "datetime":
       return <DateField key={field.name} source={field.name} label={field.label} locales={intlLocale()} showTime options={DATE_OPTIONS} emptyText="—" />;
     case "unit":
@@ -376,6 +392,7 @@ function ShowBody({ model, entity, catalog }: { model: string; entity: EntityMet
         </Box>
         <Box sx={{ display: "grid", gap: 2 }}>
           {entity.hasProcess && <AssignPanel model={model} entity={entity} />}
+          <RecordAssistant key={`${model}/${entity.name}/${record.id}`} model={model} entity={entity} />
           <FilesPanel model={model} entity={entity} />
         </Box>
       </Box>
@@ -401,7 +418,12 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
     units: Object.fromEntries(model.units.map((unit) => [unit.name, unit.label])),
     entities: Object.fromEntries(model.entities.map((e) => [e.name, e])),
   };
+  // Words typed here match, ignoring case and diacritics, any text, code or single-choice field.
+  const searchable = entity.fields.some(
+    (field) => !field.multiple && (field.type === "text" || field.type === "code" || field.type === "choice"),
+  );
   const filters = [
+    ...(searchable ? [<SearchInput key="q" source="q" alwaysOn placeholder={t("Tìm theo chữ")} />] : []),
     ...(entity.hasProcess
       ? [
           <SelectInput
@@ -433,10 +455,6 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
           <DateInput key={`${field.name}.gte`} source={`${field.name}.gte`} label={t("{label} từ", { label: field.label })} />,
           <DateInput key={`${field.name}.lte`} source={`${field.name}.lte`} label={t("{label} đến", { label: field.label })} />,
         ];
-      }
-      // A code is searched by any part of it.
-      if (field.type === "code") {
-        return [<TextInput key={`${field.name}.like`} source={`${field.name}.like`} label={field.label} alwaysOn />];
       }
       // A field with several values is filtered by one option it holds.
       if ((field.type === "choice" || field.type === "unit") && field.multiple) {
@@ -538,7 +556,7 @@ export function screens(model: ModelMeta, entity: EntityMeta) {
                 .slice(0, 2)
                 .map((field) => (
                   <Box component="span" key={field.name} sx={{ fontSize: 13 }}>
-                    {field.label}: {catalog.units[String(record[field.name])] ?? String(record[field.name])}
+                    {field.label}: {mobileFieldValue(field.type, record[field.name], catalog.units)}
                   </Box>
                 ))}
             </Box>

@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
-"""Checks of the command line of deploy/dxos (plan, apply, lint, conformance, archive) and of the IT/OT simulator.
+"""Checks of the command line of deploy/dxos (plan, apply, lint, conformance, archive, projects) and of the IT/OT simulator.
 
 They run the real scripts against the stack that deploy/.env describes and apply a model of their
 own, so they need nothing from the scripts before them:
@@ -61,7 +61,7 @@ def dxos(work, *args):
 
 
 def plan(work, file):
-    code, out, err = dxos(work, "plan", file)
+    code, out, err = dxos(work, "plan", "--json", file)
     try:
         return code, json.loads(out)["data"]
     except (ValueError, KeyError):
@@ -99,6 +99,15 @@ def incidents(token, name):
     return body["data"]["items"] if status == 200 else None
 
 
+def listing(admin, path):
+    status, body = kc.api(admin, "GET", path)
+    return body["data"] if status == 200 else []
+
+
+def project_view(admin, project):
+    return next((p for p in listing(admin, "/projects") if p["name"] == project), None)
+
+
 def check(case, ok, detail=""):
     # The output of the commands is shown only for a check that fails.
     rt.check(case, ok, "" if ok else detail)
@@ -129,6 +138,8 @@ def main():
     admin = kc.token("admin1")
     name = f"cli{int(time.time())}"
     work = tempfile.mkdtemp(prefix="dxos-cli-")
+    stamp = int(time.time())
+    pa, pb, app, loose = f"pa{stamp}", f"pb{stamp}", f"pc{stamp}", f"pl{stamp}"
     try:
         write = lambda file, fields: open(os.path.join(work, file), "w").write(MODEL.format(name=name, fields=fields))
         write("v1.yaml", DETAIL)
@@ -139,7 +150,7 @@ def main():
         code, data = plan(work, "v1.yaml")
         check("CLI-01 plan prints the plan of a new model and exits 0", code == 0 and data.get("action") == "create" and data.get("level") == "SAFE", str(data)[:200])
         code, out, err = dxos(work, "apply", "v1.yaml")
-        check("CLI-02 apply of a new model applies it", code == 0 and '"status": "applied"' in out and [v["version"] for v in versions(admin, name)] == [1], f"{code} {out[-200:]} {err}")
+        check("CLI-02 apply of a new model applies it", code == 0 and f"Applied model {name}: version 1" in out and [v["version"] for v in versions(admin, name)] == [1], f"{code} {out[-200:]} {err}")
         code, out, err = dxos(work, "apply", "v1.yaml")
         check("CLI-03 apply of the same file changes nothing and exits 0", code == 0 and "Nothing to apply" in out and len(versions(admin, name)) == 1, f"{code} {out} {err}")
         code, data = plan(work, "v2.yaml")
@@ -201,8 +212,8 @@ def main():
         code, out, err = dxos(work, "archive", "check", "--store", run_id)
         check("CLI-20 archive check --store passes on the run in the store", code == 0 and "Archive matches its manifest" in out and "SHA-256 matches" in out, f"{code} {out[-200:]} {err[-200:]}")
         code, out, err = dxos(work, "archive", "auto")
-        code_list, listing, _ = dxos(work, "archive", "list")
-        runs_of_model = [line for line in listing.splitlines() if line.startswith(name + " ")]
+        code_list, archive_list, _ = dxos(work, "archive", "list")
+        runs_of_model = [line for line in archive_list.splitlines() if line.startswith(name + " ")]
         check("CLI-21 archive auto writes nothing for records newer than ARCHIVE_AFTER_DAYS and list shows the one run", code == 0 and f"{name}: nothing" in out and len(runs_of_model) == 1, f"{code} {out[-200:]} {err[-200:]} {runs_of_model}")
 
         # model format: preview first, replace atomically only on request, and keep future files intact.
@@ -239,8 +250,46 @@ def main():
         code, out, err = dxos(work, "archive", "query", run_id, "--file", "incident.parquet", "SELECT count(*) FROM archive")
         check("CLI-33 archive query without parameters prints only the result", code == 0 and out.strip() == "1", f"{code} {out[-200:]} {err[-200:]}")
 
+        # projects: nothing is inferred, a project that holds something is not removed, and an application
+        # may sit in another project than the model it calls.
+        code, out, err = dxos(work, "project", "add", pa, "--label", "Alpha", "--description", "first")
+        view = project_view(admin, pa)
+        check("CLI-39 project add creates a project that holds nothing yet", code == 0 and view is not None and view["label"] == "Alpha" and view["models"] == [] and view["clients"] == [], f"{code} {out} {err} {view}")
+        code, out, err = dxos(work, "project", "add", pb)
+        view = project_view(admin, pb)
+        check("CLI-40 the label of a project defaults to its name", code == 0 and view is not None and view["label"] == pb, f"{code} {out} {err} {view}")
+        code, out, err = dxos(work, "client", "add", app, "--model", name, "--role", "SENSOR", "--project", pa)
+        code_loose, out_loose, err_loose = dxos(work, "client", "add", loose, "--model", name, "--role", "SENSOR")
+        clients = {c["name"]: c for c in listing(admin, "/clients")}
+        check("CLI-41 client add --project puts the application in the project, and one without stays in none", code == 0 and code_loose == 0 and clients.get(app, {}).get("project") == pa and loose in clients and clients[loose].get("project") is None, f"{code} {err} {code_loose} {err_loose} {clients.get(app)} {clients.get(loose)}")
+        code, out, err = dxos(work, "model", "project", name, pa)
+        models = {m["model"]: m for m in listing(admin, "/models")}
+        view = project_view(admin, pa)
+        check("CLI-42 model project puts the model in the project, and the project lists the model and the application", code == 0 and models.get(name, {}).get("project") == pa and view is not None and view["models"] == [name] and [c["name"] for c in view["clients"]] == [app], f"{code} {out} {err} {view}")
+        code, out, err = dxos(work, "client", "project", app, pb)
+        clients = {c["name"]: c for c in listing(admin, "/clients")}
+        models = {m["model"]: m for m in listing(admin, "/models")}
+        check("CLI-43 an application can sit in another project than its model", code == 0 and clients.get(app, {}).get("project") == pb and models.get(name, {}).get("project") == pa, f"{code} {out} {err} {clients.get(app)} {models.get(name)}")
+        code, out, err = dxos(work, "project", "remove", pa)
+        check("CLI-44 a project that still holds a model is not removed", code == 1 and project_view(admin, pa) is not None, f"{code} {out} {err}")
+        code, out, err = dxos(work, "model", "project", name, "nosuch")
+        check("CLI-45 a project that does not exist is refused", code == 1 and models.get(name, {}).get("project") == pa, f"{code} {out} {err}")
+        code, out, err = dxos(work, "model", "project", name, "-")
+        code_remove, out_remove, err_remove = dxos(work, "project", "remove", pa)
+        models = {m["model"]: m for m in listing(admin, "/models")}
+        check("CLI-46 a model taken out of its project is in none, and the empty project is removed", code == 0 and models.get(name, {}).get("project") is None and code_remove == 0 and project_view(admin, pa) is None, f"{code} {err} {code_remove} {out_remove} {err_remove}")
+        code, out, err = dxos(work, "project", "remove", pb)
+        code_app, out_app, err_app = dxos(work, "client", "remove", app)
+        code_free, out_free, err_free = dxos(work, "project", "remove", pb)
+        check("CLI-47 a project that holds an application is not removed until the application is", code == 1 and code_app == 0 and code_free == 0 and project_view(admin, pb) is None, f"{code} {err} {code_app} {err_app} {code_free} {err_free}")
+
         lint_and_conformance(admin, work, name)
     finally:
+        for client in (app, loose):
+            dxos(work, "client", "remove", client)
+        dxos(work, "model", "project", name, "-")
+        for project in (pa, pb):
+            dxos(work, "project", "remove", project)
         shutil.rmtree(work, ignore_errors=True)
         for username in ("cli_tech", f"cf_{name}"[:40]):
             uid = kc.kc("GET", f"/users?username={username}&exact=true")[1]

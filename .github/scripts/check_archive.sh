@@ -7,6 +7,7 @@
 #
 # The archive must have the legal and documentation files at its root and no file that looks like a secret.
 # Tags before v1.1.0 have no NOTICE or COPYRIGHT.txt and are not packaged again; from v2.0.0 the file is DEPENDENCIES.txt.
+# From v2.1.0 the tables of the packages are required too.
 set -euo pipefail
 
 archive="${1:?usage: check_archive.sh <archive.tar.gz> <version>}"
@@ -19,7 +20,11 @@ tar -tzf "$archive" > "$list"
 dependencies=DEPENDENCIES.txt
 case "$version" in 1.*) dependencies=COPYRIGHT.txt ;; esac
 
-for file in LICENSE NOTICE "$dependencies" README.md CHANGELOG.md; do
+# From v2.1.0 DEPENDENCIES.txt points to the tables of every package and of the packages inside the images.
+packages=()
+case "$version" in 1.*|2.0.*) ;; *) packages=(docs/DEPENDENCY_INVENTORY.md docs/IMAGE_PACKAGES.md) ;; esac
+
+for file in LICENSE NOTICE "$dependencies" README.md CHANGELOG.md "${packages[@]}"; do
   grep -qx "dx-os-${version}/${file}" "$list" \
     || { echo "::error::The archive has no ${file}"; exit 1; }
 done

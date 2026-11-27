@@ -8,8 +8,9 @@ Web đăng nhập OIDC qua Keycloak và dựng mọi màn hình từ metadata c�
 | Đường dẫn | Nội dung |
 |---|---|
 | `src/App.tsx` | Đăng nhập OIDC, xử lý callback, đăng xuất một lần |
-| `src/shell/` | `auth` (OIDC), `api` (gọi backend, bóc `ApiResponse`), `errorMessages` và `backendMessages` (thông báo của backend bằng tiếng Việt), `locale`, `i18n` và `viMessages` (chữ của react-admin), `theme` (sáng và tối), `format`, `PageHeader` |
+| `src/shell/` | `auth` (OIDC), `api` (gọi backend, bóc `ApiResponse`), `errorMessages` và `backendMessages` (thông báo của backend bằng tiếng Việt), `liveChanges` (luồng sự kiện báo hồ sơ đổi để màn hình tải lại), `locale`, `i18n` và `viMessages` (chữ của react-admin), `theme` (sáng và tối), `format`, `PageHeader` |
 | `src/admin/` | Ứng dụng react-admin: đọc metadata, `dataProvider`, `authProvider`, màn hình dựng theo thực thể (danh sách có chọn cột và truy vấn đã lưu, chi tiết, biểu mẫu), hộp việc, lịch |
+| `src/assistant/` | Trợ lý nghiệp vụ: trang trợ lý, gợi ý giá trị trường ở hồ sơ và đánh dấu hồ sơ cần xem lại ở hộp việc |
 | `src/console/` | Bảng điều khiển của người triển khai: mô hình đang chạy (kèm tiếp tục hoặc hủy bỏ lần áp dụng dừng giữa chừng), thư viện mẫu, trình soạn và kế hoạch, hàng đợi sự kiện, sơ đồ quy trình, người dùng (vai, đơn vị, tạo, khóa, mật khẩu, lịch sử thay đổi), nhãn tiếng Việt của kế hoạch (`labels`) |
 
 ## Ngôn ngữ
@@ -29,7 +30,11 @@ npm run dev        # http://localhost:5173
 npm run build      # tsc -b rồi vite build, ra dist/
 npx tsc --noEmit   # kiểm kiểu
 npm run lint       # phân tích tĩnh bằng Biome
+npm test           # test đơn vị bằng Vitest, chạy trên Node
+npm run coverage   # test kèm độ phủ của mã web
 ```
+
+Test nằm cạnh mã ở `src/**/*.test.ts` và chỉ kiểm phần logic thuần; thành phần React do Playwright và các script e2e kiểm (xem [`docs/TESTING.md`](../docs/TESTING.md), mục Độ phủ).
 
 Dev cần backend và Keycloak chạy qua gateway (`docker compose up -d` trong `deploy/`); client `dxos-web` đã cho phép redirect `http://localhost:5173/*`.
 
@@ -47,6 +52,6 @@ Trong Compose, ba biến này để rỗng hoặc `dxos-web`: gateway phục v�
 
 ## Đóng gói
 
-`Dockerfile` build hai giai đoạn: `node:22-alpine` chạy `npm run build`, rồi `nginx:1.30-alpine` phục vụ `dist/`.
+`Dockerfile` build hai giai đoạn: `node:22-alpine` chạy `npm run build`, rồi `nginx:1.30-alpine-slim` phục vụ `dist/`.
 `nginx.conf` trả `index.html` cho mọi đường dẫn (SPA).
 Service không publish cổng, gateway APISIX phục vụ web.

@@ -84,6 +84,9 @@ Trên bản cài, lệnh chạy trong image backend đã cài, không mở mạn
 Trên máy không có DX-OS, tải `dxos-lint.jar` ở trang Release và chạy `java -jar dxos-lint.jar <tệp>...` với Java 21; đặt `DXOS_LINT_JAR` thì `dxos lint` dùng tệp này thay cho image.
 Ví dụ workflow CI cho kho mô hình ở [`examples/model-repo`](../examples/model-repo).
 
+Một khóa viết hai lần trong cùng một khối bị từ chối, kèm dòng và cột của lần viết thứ hai (`key BORROWER is written twice`), để một dòng quyền hay một trường không biến mất lặng lẽ.
+Mô hình đã lưu từ trước có khóa trùng vẫn chạy, khóa sau được dùng, và hiện cảnh báo trên tab Mô hình đang chạy; sửa tệp rồi áp dụng lại để hết cảnh báo.
+
 Lint chỉ kiểm tệp, nên `dxos plan` còn so tệp với mô hình đang chạy, đích webhook và dữ liệu hiện có.
 Kết quả lint hợp lệ không có nghĩa là `apply` thành công; kết quả lint có lỗi thì `plan` cũng từ chối đúng những lỗi đó.
 
@@ -245,15 +248,17 @@ Một lần đổi vừa tăng vừa giảm, như `own` sang `read`, hoặc khô
   Hành động bị từ chối trả 403 `ERR_ACTION_NOT_ALLOWED` với `data.reason` là `CHECK_DENIED` và `data.code` là mã dịch vụ trả về.
   Dịch vụ không trả lời hoặc trả lời sai thì cách xử lý do `on_error` của đích quyết định, cách khai và giao thức ở [`docs/INTEGRATIONS.md`](INTEGRATIONS.md#kiểm-tra-trước-khi-chuyển-trạng-thái).
   Hành động tự đóng của `auto_close` không hỏi dịch vụ.
-- Khi có `family`, mục khai báo ghi đè từng khóa của khung; viết `null` để bỏ một trạng thái hoặc hành động của khung.
+- Khi có `family`, mục khai báo ghi đè từng khóa của mẫu quy trình; viết `null` để bỏ một trạng thái hoặc hành động của mẫu.
 - `withdraw` và trạng thái `withdrawn` là tên dành riêng: khai `withdraw: {from: [...]}` thì nền tảng tự thêm trạng thái `withdrawn`, và hành động này luôn do người nộp thực hiện.
 - Tên hành động `created`, `updated`, `deleted`, `assigned`, `file_added`, `file_removed`, `completion_skipped`, `auto_closed`, `overdue`, `due_soon`, `escalated`, `check_denied`, `check_unavailable` và `check_skipped` là tên dành riêng, vì lịch sử hồ sơ dùng chúng cho các dòng do nền tảng ghi.
 - Mỗi trạng thái không phải cuối phải có hành động đi ra, và ít nhất một hành động đi ra không có `when`, để hồ sơ luôn có lối đi; mọi trạng thái phải tới được từ `initial`, trạng thái cuối không có hành động đi ra, và phải có ít nhất một trạng thái cuối.
 - `auto_close` là thời gian chờ người nộp trước khi hệ thống thay họ làm một hành động.
   Họ `work_item` nhận dạng ngắn `auto_close: 7d` (hành động `confirm`); các trường hợp khác viết `auto_close: {after: 7d, action: <hành động của người nộp>}`.
-- Quy trình khác khung gốc chạy trên BPMN riêng, sinh từ các trạng thái và hành động khai báo khi áp dụng mô hình.
+  Hành động của `auto_close` không được đặt `needs_note: true`, vì hệ thống không viết ghi chú; tệp vi phạm bị từ chối khi kiểm, còn phiên bản đã lưu vi phạm chạy với `auto_close` bị bỏ và có cảnh báo (xem [`OPERATIONS.md`](OPERATIONS.md#mô-hình-đã-lưu-không-còn-qua-bộ-kiểm)).
+- Quy trình khác mẫu gốc chạy trên BPMN riêng, sinh từ các trạng thái và hành động khai báo khi áp dụng mô hình.
 - Đổi trạng thái đầu, thêm hoặc bỏ trạng thái, hay đổi `from`, `to`, `by`, `when` của một hành động khi còn hồ sơ chưa ở trạng thái cuối thì kế hoạch bị từ chối.
 - Đổi nhãn, `role`, `require`, các trạng thái của `withdraw` hay danh sách `handler` thì an toàn và có hiệu lực ngay, kể cả với hồ sơ đang mở.
+- Thêm `require` cho một hành động vẫn là thay đổi an toàn, nhưng hồ sơ đang chờ ở trạng thái nguồn của hành động mà còn thiếu trường đó (trống hoặc chỉ có khoảng trắng cũng là thiếu) bị hành động từ chối cho đến khi bổ sung; kế hoạch nêu hành động, trường và số hồ sơ như vậy ở `impacts`.
 - Bỏ một trạng thái còn hồ sơ nằm ở đó, hoặc bỏ `terminal` của trạng thái còn hồ sơ đã đóng, cũng bị từ chối, vì hồ sơ đã đóng không chạy tiếp được.
 
 ```yaml
@@ -373,6 +378,7 @@ Cả hai chỉ cho người đọc được hồ sơ, như màn hình hồ sơ; 
 
 Trường `type: file`; tải lên bằng `POST /api/v1/data/{model}/{entity}/{id}/files`, quyền theo quyền của bản ghi.
 Loại tệp nhận được đặt bằng `engine.files.allowed-extensions`, và tệp luôn tải về dạng đính kèm.
+Tệp RAR luôn bị từ chối, kể cả khi đổi đuôi hay khi danh sách loại tệp để trống, vì ClamAV của dự án không mở được RAR.
 Mỗi hồ sơ giữ tối đa 20 tệp, đặt bằng `engine.files.max-per-record`.
 
 ## Webhook
@@ -390,3 +396,32 @@ Tin của dòng `escalated` có thêm `level` (mức, từ 1) và `round` (lần
 - Đổi kiểu của một trường đang có (kể cả từ một lựa chọn sang nhiều lựa chọn) bị từ chối; thêm một trường mới thay vì đổi kiểu.
 - Đổi tên một trường có `min`, `max` hay `pattern` giữ nguyên dữ liệu và đổi tên cả các ràng buộc của nó.
 - Xem trước, áp dụng, quay về và các lệnh liên quan ở [`docs/OPERATIONS.md`](OPERATIONS.md#cài-đặt-và-lệnh-dxos) và [`API.md`](./API.md).
+
+## Nhiệm vụ trợ lý nghiệp vụ
+
+Mỗi thực thể có thể khai báo từ một đến tám nhiệm vụ dưới `ai.tasks`, với khóa là tên nhiệm vụ.
+Mỗi nhiệm vụ cần `classifier`, `input_fields` và `output_field`.
+`label` mặc định là tên nhiệm vụ.
+Khóa `classifier` là bắt buộc, khớp `^[a-z][a-z0-9_]{0,39}$` và là tên tệp trọng số mà trợ lý đã nạp.
+Trợ lý có sẵn `onestop`, `support` và `clinic`.
+Nghiệp vụ khác làm theo [hướng dẫn thêm bộ phân loại](../tools/classifier/README.md#thêm-bộ-phân-loại-cho-nghiệp-vụ-mới).
+`input_fields` chỉ gồm các trường `text`, theo thứ tự dùng khi huấn luyện.
+`output_field` là một trường `choice` đơn trị có tập lựa chọn trùng với tập nhãn nghiệp vụ của bộ phân loại.
+
+```yaml
+ai:
+  tasks:
+    classify_kind:
+      label: Gợi ý loại hồ sơ
+      classifier: onestop
+      input_fields: [reason]
+      output_field: kind
+```
+
+Trường đầu ra của nhiệm vụ không được dùng để cấp nhóm thành viên.
+Khai báo nhiệm vụ không cấp thêm quyền; người xác nhận vẫn phải có quyền sửa hồ sơ.
+Thêm, sửa hoặc bỏ nhiệm vụ hiện trong kế hoạch với loại `CHANGE_AI_TASKS`.
+Khi trợ lý đã nạp trọng số cho nhiệm vụ, nút **Rà loại hồ sơ** ở Hộp việc rà tối đa 25 hồ sơ đủ điều kiện trên trang mỗi lượt qua `POST /assistant-api/v1/me/reviews`.
+Hồ sơ có giá trị khác gợi ý được đánh dấu **Cần rà**, kèm giá trị đề xuất và cụm chữ căn cứ.
+Bấm dấu **Cần rà** mở khối trợ lý trên trang chi tiết và tạo đề xuất cho nhiệm vụ tương ứng để người dùng kiểm tra và xác nhận.
+Dịch vụ trợ lý chạy ở chế độ full, xem [`assistant/README.md`](../assistant/README.md).

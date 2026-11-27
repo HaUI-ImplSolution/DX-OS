@@ -81,6 +81,9 @@ public final class ModelParser {
       List.of("id", "status", "created_at", "updated_at", "decided_at");
 
   private final List<Problem> problems = new ArrayList<>();
+  // The problems that a stored file is read with anyway, because the parser drops the part at
+  // fault.
+  private final List<Problem> tolerated = new ArrayList<>();
 
   private final Set<String> unitNames = new LinkedHashSet<>();
   private final Set<String> calendarNames = new LinkedHashSet<>();
@@ -96,6 +99,20 @@ public final class ModelParser {
     }
     return model;
   }
+
+  // A file that was stored before a check was tightened. It is read without the problems that the
+  // parser can drop or read as before (listed in tolerated, the model then keeps running) and
+  // refused with every problem when any other is left. New files go through parse.
+  public static ParsedStored parseStored(String yaml) {
+    ModelParser parser = new ModelParser();
+    Model model = parser.read(ModelUpgrader.upgrade(yaml).content());
+    if (model == null || parser.problems.size() > parser.tolerated.size()) {
+      throw new ModelException(parser.problems);
+    }
+    return new ParsedStored(model, List.copyOf(parser.tolerated));
+  }
+
+  public record ParsedStored(Model model, List<Problem> tolerated) {}
 
   private Model read(String yaml) {
     Node root;
@@ -114,6 +131,12 @@ public final class ModelParser {
       problem(root, "the file must be a mapping with format, name, roles and entities");
       return null;
     }
+    // A key written twice keeps only the last, which can drop a line the author wrote, such as a
+    // role of an access. A new file is refused; a stored one runs as it always did.
+    List<Problem> repeated = new ArrayList<>();
+    ModelExtends.repeated(top, repeated);
+    problems.addAll(repeated);
+    tolerated.addAll(repeated);
     Map<String, Node> keys =
         mapping(
             top, Set.of("format", "name", "webhook", "roles", "units", "calendars", "entities"));
@@ -148,7 +171,7 @@ public final class ModelParser {
       }
     }
     checkScopes(entities);
-    if (!problems.isEmpty()) {
+    if (problems.size() > tolerated.size()) {
       return null;
     }
     return new Model(
@@ -474,7 +497,8 @@ public final class ModelParser {
     }
     Map<String, Node> keys =
         mapping(
-            map, Set.of("label", "fields", "access", "process", "owner_via", "ui", "documents"));
+            map,
+            Set.of("label", "fields", "access", "process", "owner_via", "ui", "documents", "ai"));
 
     Map<String, Field> fields = readFields(map, keys.get("fields"), entityNames);
     if (fields.values().stream().filter(field -> field.type() == FieldType.CODE).count() > 1) {
@@ -515,7 +539,83 @@ public final class ModelParser {
         process,
         ownerVia,
         ui,
-        documents);
+        documents,
+        readAiTasks(keys.get("ai"), fields, process));
+  }
+
+  private Map<String, Model.AiTask> readAiTasks(
+      Node node, Map<String, Field> fields, Process process) {
+    if (node == null) return Map.of();
+    if (!(node instanceof MappingNode ai)) {
+      problem(node, "ai must be a mapping with tasks");
+      return Map.of();
+    }
+    Node tasksNode = mapping(ai, Set.of("tasks")).get("tasks");
+    if (!(tasksNode instanceof MappingNode tasks)
+        || tasks.getValue().isEmpty()
+        || tasks.getValue().size() > 8) {
+      problem(node, "ai.tasks must contain between 1 and 8 tasks");
+      return Map.of();
+    }
+    Map<String, Model.AiTask> result = new LinkedHashMap<>();
+    for (NodeTuple tuple : tasks.getValue()) {
+      String name = readName(tuple.getKeyNode(), tuple.getKeyNode(), "task name");
+      if (name == null) continue;
+      if (!(tuple.getValueNode() instanceof MappingNode task)) {
+        problem(tuple.getValueNode(), "a task must be a mapping");
+        continue;
+      }
+      Map<String, Node> keys =
+          mapping(task, Set.of("label", "classifier", "input_fields", "output_field"));
+      String classifier = readName(task, keys.get("classifier"), "classifier");
+      if (classifier != null && !Tag.STR.equals(keys.get("classifier").getTag())) {
+        problem(task, "classifier must be a name in a string");
+      }
+      List<String> input = inputNames(task, keys.get("input_fields"));
+      for (String field : input) {
+        Field f = fields.get(field);
+        if (f == null || f.type() != FieldType.TEXT) {
+          problem(task, "classifier input_fields must name text fields of this entity");
+        }
+      }
+      String output = keys.get("output_field") == null ? "" : scalar(keys.get("output_field"));
+      Field target = fields.get(output);
+      if (target == null || target.multiple() || target.type() != FieldType.CHOICE) {
+        problem(task, "classifier output_field must name a single choice field");
+      }
+      if (process != null
+          && process.after() != null
+          && process.after().values().stream()
+              .flatMap(List::stream)
+              .anyMatch(effect -> output.equals(effect.groupField()))) {
+        problem(task, "output_field must not supply a membership group");
+      }
+      String label = keys.get("label") == null ? name : scalar(keys.get("label"));
+      if (label.isBlank() || label.length() > 200) {
+        problem(task, "a task needs a label up to 200 characters");
+      }
+      if (result.containsKey(name))
+        problem(tuple.getKeyNode(), "task " + name + " is declared twice");
+      result.put(name, new Model.AiTask(label, input, output, classifier));
+    }
+    return result;
+  }
+
+  private List<String> inputNames(Node parent, Node node) {
+    if (!(node instanceof SequenceNode sequence)
+        || sequence.getValue().isEmpty()
+        || sequence.getValue().size() > 12) {
+      problem(parent, "input_fields must contain between 1 and 12 names");
+      return List.of();
+    }
+    List<String> names = new ArrayList<>();
+    for (Node item : sequence.getValue()) {
+      String value = scalar(item);
+      if (!NAME.matcher(value).matches() || names.contains(value))
+        problem(item, "input_fields requires unique valid names");
+      names.add(value);
+    }
+    return names;
   }
 
   // The print templates of an entity. A placeholder names a field of the entity or one of the
@@ -2425,7 +2525,7 @@ public final class ModelParser {
       return new AutoClose(null, null);
     }
     if (found.needsNote()) {
-      problem(node, "the action of auto_close cannot need a note, as the system writes none");
+      tolerated(node, "the action of auto_close cannot need a note, as the system writes none");
       return new AutoClose(null, null);
     }
     return new AutoClose(after, action);
@@ -2483,6 +2583,12 @@ public final class ModelParser {
 
   private static String scalar(Node node) {
     return node instanceof ScalarNode scalar ? scalar.getValue() : "";
+  }
+
+  // A problem that a stored file may keep: the caller drops the part at fault.
+  private void tolerated(Node node, String message) {
+    problem(node, message);
+    tolerated.add(problems.get(problems.size() - 1));
   }
 
   private void problem(Node node, String message) {

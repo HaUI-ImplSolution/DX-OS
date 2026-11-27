@@ -16,6 +16,8 @@ Bạn chỉ thấy hồ sơ của chính mình.
 3. Nếu có ô **Đơn vị xử lý**, chọn nơi sẽ xử lý hồ sơ.
 4. Lưu.
 
+Khi hộp việc của bạn trống, trang đó có sẵn nút **Tạo** cho từng loại hồ sơ bạn được tạo; bấm một nút để mở biểu mẫu tương ứng.
+
 Ô chọn một bản ghi khác (ví dụ sản phẩm hay phòng) cho gõ một phần của tên để thu hẹp danh sách, kể cả bản ghi nằm ngoài những mục hiện sẵn; gõ đúng dấu tiếng Việt, và không có bản ghi khớp thì ô báo không có kết quả.
 
 Hồ sơ vào trạng thái đầu của quy trình, thường là **Chờ xử lý**, và người xử lý thấy nó trong hộp việc của họ.
@@ -23,7 +25,7 @@ Hồ sơ vào trạng thái đầu của quy trình, thường là **Chờ xử 
 ## Đính kèm tệp
 
 Mở hồ sơ rồi thêm tệp vào phần tệp đính kèm.
-Một số loại tệp bị từ chối, ví dụ tệp HTML.
+Một số loại tệp bị từ chối, ví dụ tệp HTML và tệp RAR (kể cả tệp RAR đổi đuôi).
 Chỉ người đã thêm một tệp mới gỡ được tệp đó.
 
 ## In giấy tờ
@@ -37,12 +39,12 @@ Chỉ người xem được hồ sơ mới in được.
 Nghiệp vụ có thể cho mỗi hồ sơ một mã ngắn, ví dụ `HS-2026-00007`.
 Mã hiện ở cột đầu của danh sách và ở đầu trang chi tiết, kèm nút sao chép; dùng nó khi hỏi hay tra cứu hồ sơ với người xử lý.
 Bạn không nhập mã: hệ thống tự cấp khi hồ sơ được tạo và mã không đổi nữa.
-Gõ một phần của mã vào ô tìm theo mã của danh sách thì chỉ còn các hồ sơ có mã đó.
+Gõ một phần của mã vào ô **Tìm theo chữ** của danh sách thì chỉ còn các hồ sơ có mã đó.
 
 ## Theo dõi hồ sơ
 
 - Trạng thái của hồ sơ hiện ở danh sách và ở đầu trang chi tiết.
-- **Lịch sử xử lý** ở trang chi tiết cho biết ai làm gì và lúc nào, kèm lý do khi người xử lý từ chối hoặc trả lại.
+- **Lịch sử xử lý** ở trang chi tiết cho biết ai làm gì và lúc nào, kèm lý do khi người xử lý từ chối hoặc trả lại và tên tệp khi có người thêm hoặc gỡ tệp.
   Lịch sử không sửa được.
 - Trang đang mở tự làm mới khi hồ sơ đổi, bạn không phải tải lại.
 - Nếu hồ sơ có hạn xử lý, hạn hiện ở trang chi tiết.

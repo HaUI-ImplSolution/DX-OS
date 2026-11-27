@@ -16,14 +16,14 @@ Một tiêu chí chỉ được ✅ khi mọi dòng của nó và mọi điều 
 
 | Tiêu chí PoF | Điểm | Tình trạng | Điều còn mở |
 | --- | --- | --- | --- |
-| 1. Kho mã nguồn và lịch sử phát triển | 5 | ⚠️ | Lịch sử issue mỏng so với số pull request |
+| 1. Kho mã nguồn và lịch sử phát triển | 5 | ✅ | |
 | 2. Giấy phép và tính tương thích | 10 | ✅ | |
 | 3. Release và quản lý phiên bản | 5 | ✅ | |
 | 4. Build và cài đặt từ mã nguồn | 10 | ⚠️ | Bài dựng từ bản clone chưa chạy lại trên máy sạch |
 | 5. Thư viện, phụ thuộc, nguồn gốc | 10 | ✅ | |
 | 6. Tài liệu, quản lý lỗi, giao tiếp | 10 | ⚠️ | Chưa kiểm được private vulnerability reporting |
 
-Không có lỗi loại trừ: repository công khai, có `LICENSE`, đã có release (hiện đến `v2.0.2`), không phát hiện bí mật.
+Không có lỗi loại trừ: repository công khai, có `LICENSE`, đã có release (hiện đến `v2.1.0`), không phát hiện bí mật.
 
 ## 2. Điều kiện kiểm tra trước khi chấm
 
@@ -31,9 +31,9 @@ Không có lỗi loại trừ: repository công khai, có `LICENSE`, đã có re
 |---|---|---|---|
 | 1 | Repository công khai, có web viewer | ✅ | `HaUI-ImplSolution/DX-OS`, `visibility: public`, API trả 200 không đăng nhập |
 | 2 | Giấy phép OSI, có `LICENSE` toàn văn, có thông báo | ✅ | `LICENSE` Apache-2.0, GitHub nhận đúng `Apache-2.0`; `NOTICE`; `DEPENDENCIES.txt` |
-| 3 | Có release hoặc tag trước hạn nộp, không dùng định dạng độc quyền | ✅ | 9 release `v1.0.0` đến `v2.0.2`, mỗi release có `.tar.gz` |
-| 4 | Có hướng dẫn build và cài, chạy lại được | ⚠️ | `README.md` mục Chạy thử; `dxos-install.sh` của `v2.0.0` đã chạy được trên máy sạch, còn bài dựng từ bản clone (`docker compose up -d --build`) chưa chạy lại trên máy sạch |
-| 5 | Khai báo thư viện, phiên bản, nguồn, giấy phép | ✅ | `DEPENDENCIES.txt`, `sbom/`, `.github/component-catalog.json` |
+| 3 | Có release hoặc tag trước hạn nộp, không dùng định dạng độc quyền | ✅ | 10 release `v1.0.0` đến `v2.1.0`, mỗi release có `.tar.gz` |
+| 4 | Có hướng dẫn build và cài, chạy lại được | ⚠️ | `README.md` mục Bắt đầu nhanh; `dxos-install.sh` của `v2.0.0` đã chạy được trên máy sạch, còn bài dựng từ bản clone (`docker compose up -d --build`) chưa chạy lại trên máy sạch |
+| 5 | Khai báo thư viện, phiên bản, nguồn, giấy phép | ✅ | `DEPENDENCIES.txt`, `sbom/`, `.github/licenses/component-catalog.json` |
 | 6 | README, CHANGELOG, bug tracker, tài liệu đúng trạng thái | ✅ | Xem tiêu chí 6 |
 | 7 | Không lộ bí mật hay dữ liệu cá nhân | ✅ | Xem mục 9 |
 | 8 | Lịch sử Git liên tục, commit hợp lý | ✅ | Xem tiêu chí 1 |
@@ -44,11 +44,11 @@ Không có lỗi loại trừ: repository công khai, có `LICENSE`, đã có re
 |---|---|---|---|
 | ✅ | Kho công khai trên Internet, có web viewer | GitHub: duyệt mã, lịch sử, blame trên trình duyệt | −3 |
 | ✅ | Truy cập mở, không cần đăng nhập | API không đăng nhập trả 200 cho repository, release, tag, `LICENSE` | −3 |
-| ✅ | Repository được dùng thật | 998 commit trên nhánh làm việc; 201 pull request đã gộp (GitHub); CI chạy trên mọi pull request | −5 |
-| ✅ | Lịch sử trải đều | Mười một tuần ISO liên tiếp từ W36 đến W46 đều có commit: 3, 80, 82, 53, 93, 97, 85, 84, 136, 119, 166 | |
-| ✅ | Nhiều người đóng góp | 3 sinh viên: `KhuongSpring` 718, `nddKhanh` 144, `tung51652-alt` 127 commit, cộng `dependabot` 7 | |
+| ✅ | Repository được dùng thật | 1273 commit trên nhánh làm việc; 270 pull request đã gộp (GitHub); CI chạy trên mọi pull request | −5 |
+| ✅ | Lịch sử trải đều | Mười ba tuần ISO liên tiếp từ W36 đến W48 đều có commit: 3, 80, 82, 53, 93, 97, 85, 84, 138, 119, 192, 127, 120 | |
+| ✅ | Nhiều người đóng góp | 3 sinh viên: `KhuongSpring` 938, `nddKhanh` 165, `tung51652-alt` 159 commit, cộng `dependabot` 9 và `Khuong-PlanB` 2 | |
 | ✅ | Nhận diện tác giả | `.mailmap` gom các danh tính về một tên mỗi người | |
-| ⚠️ | Bug tracker có lịch sử | 55 issue (36 đã đóng) so với 201 pull request đã gộp; khoảng 20 issue đã xong nhưng còn mở vì pull request tính năng gộp vào `Khuong/main` chứ chưa vào `main`, GitHub chỉ tự đóng issue khi `Closes #n` nằm trên nhánh mặc định; một pull request DEV TO MAIN sắp tới sẽ đóng các issue đó | |
+| ✅ | Bug tracker có lịch sử | 114 issue (113 đã đóng) và 270 pull request đã gộp | |
 
 ```bash
 git log --pretty='%h %ad %an %s' --date=short | tail -20     # lịch sử có trải đều không
@@ -60,15 +60,16 @@ git shortlog -sn                                             # đóng góp có n
 | Trạng thái | Yêu cầu | Bằng chứng | Mức trừ nếu thiếu |
 |---|---|---|---|
 | ✅ | Giấy phép được OSI công nhận | `LICENSE` Apache-2.0 | điều kiện loại trừ |
-| ✅ | Ghi giấy phép trong từng tệp mã | Dòng `SPDX-License-Identifier` ở đầu mọi tệp Java, TypeScript, JavaScript, Python, shell, YAML: `Apache-2.0`; `check_licenses.py` báo 0 vấn đề | −5 |
-| ✅ | Không xung đột giấy phép giữa các thành phần | `DEPENDENCIES.txt`; mã, tài liệu, ảnh, video và sơ đồ theo Apache-2.0, hai tệp phông theo OFL-1.1, đều được OSI công nhận và tương thích nhau; job `Check licenses` của workflow `Compliance` kiểm giấy phép của từng gói trong `sbom/`, ngoại lệ có lý do ở `.github/dependency-exceptions.json` | −5 |
+| ✅ | Ghi giấy phép trong từng tệp mã | Dòng `SPDX-License-Identifier` ở đầu mọi tệp Java, TypeScript, JavaScript, Python, shell, YAML: `Apache-2.0`; `check_licenses.py` báo 0 vấn đề; `pom.xml`, các `package.json`, `CITATION.cff` và chân trang trang docs cùng khai Apache-2.0, và `LICENSE`, `NOTICE` đi kèm cả GitHub Release | −5 |
+| ✅ | Không xung đột giấy phép giữa các thành phần | `DEPENDENCIES.txt`; mã, tài liệu, ảnh, video và sơ đồ theo Apache-2.0, hai tệp phông theo OFL-1.1, đều được OSI công nhận; dữ liệu của bộ phân loại theo CC-BY-4.0; các giấy phép này tương thích nhau; job `Check licenses` của workflow `Compliance` kiểm giấy phép của từng gói trong `sbom/`, ngoại lệ có lý do ở `.github/licenses/dependency-exceptions.json` | −5 |
 | ✅ | Có thông báo về mục đích của giấy phép | `NOTICE`, mục "Mục đích của giấy phép": vì sao chọn Apache-2.0, bốn quyền tự do, quyền sáng chế, và cách khai giấy phép của từng tệp | −5 |
 | ✅ | Có bản sao toàn văn giấy phép | `LICENSE` | −5 |
-| ✅ | Mọi giấy phép được OSI công nhận | `check_licenses.py` chỉ cho phép giấy phép OSI; hai gói ngoại lệ (dữ liệu CC-BY-4.0 và CC0-1.0 chỉ dùng lúc dựng trang docs) nêu tên kèm lý do ở `.github/dependency-exceptions.json` | |
-| ✅ | GitHub nhận một giấy phép | `LICENSE` là Apache-2.0 và là tệp duy nhất mà tab License liệt kê; các tệp thành phần tên `DEPENDENCIES.txt`, `component-catalog.json`, `dependency-exceptions.json` không chứa chữ license hay copyright để GitHub không coi là giấy phép thứ hai | |
+| ✅ | Mọi giấy phép được OSI công nhận | `check_licenses.py` chỉ cho phép giấy phép OSI; các ngoại lệ (dữ liệu, phông, mô-đun công cộng trong `pgschema`, thư viện của plugin build và dữ liệu đóng trong PDFBox) nêu tên kèm lý do ở `.github/licenses/dependency-exceptions.json`; dữ liệu của bộ phân loại theo CC-BY-4.0 chỉ được nhận ở đúng các đường dẫn nêu trong `check_licenses.py`; gói có sẵn trong image bên thứ ba, kể cả lớp nền của image phát hành, nêu ở phần "Giấy phép ngoài danh sách OSI" của `DEPENDENCIES.txt` | |
+| ✅ | GitHub nhận một giấy phép | `LICENSE` là Apache-2.0 và là tệp duy nhất mà tab License liệt kê; danh mục thành phần nằm ở `DEPENDENCIES.txt`, `docs/DEPENDENCY_INVENTORY.md` và `.github/licenses/`, không đặt tên như tệp giấy phép ở thư mục gốc nên GitHub không coi là giấy phép thứ hai | |
 
 ```bash
 python3 .github/scripts/check_licenses.py      # header, giấy phép của SBOM, danh mục image và mô hình
+python3 .github/scripts/check_license_inventory.py check   # docs/DEPENDENCY_INVENTORY.md: mọi gói, kể cả dev, test và plugin
 head -3 LICENSE                                # toàn văn, không phải liên kết
 ```
 
@@ -76,11 +77,11 @@ head -3 LICENSE                                # toàn văn, không phải liên
 
 | Trạng thái | Yêu cầu | Bằng chứng | Mức trừ nếu thiếu |
 |---|---|---|---|
-| ✅ | Có ít nhất một release trước hạn nộp | Trang Releases: `v1.0.0`, `v1.0.1`, `v1.0.2`, `v1.0.3`, `v1.1.0`, `v1.1.1`, `v2.0.0`, `v2.0.1`, `v2.0.2` | −5 |
-| ✅ | Release là sản phẩm dự thi | `main` chứa mọi việc đã gộp và tag `v2.0.2` đặt trên `main` | −5 |
+| ✅ | Có ít nhất một release trước hạn nộp | Trang Releases: `v1.0.0`, `v1.0.1`, `v1.0.2`, `v1.0.3`, `v1.1.0`, `v1.1.1`, `v2.0.0`, `v2.0.1`, `v2.0.2`, `v2.1.0` | −5 |
+| ✅ | Release là sản phẩm dự thi | `main` chứa mọi việc đã gộp và tag `v2.1.0` đặt trên `main` | −5 |
 | ✅ | Phát hành theo phiên bản | Thẻ SemVer; `CHANGELOG.md` theo Keep a Changelog có mục cho mọi bản và `[Unreleased]` | −3 |
 | ✅ | Định dạng mở cho gói phát hành | Workflow `Release Package` chạy khi đẩy tag `v*`, đính kèm `dx-os-X.Y.Z.tar.gz`, `.sha256` và SBOM `.cdx.json`; không có `.zip` | −3 |
-| ✅ | Gói được kiểm trước khi đăng | `check_archive.sh` kiểm gói có `LICENSE`, `NOTICE`, `DEPENDENCIES.txt`, `README.md`, `CHANGELOG.md` và không có tệp giống bí mật; chạy ở job `Install from the release archive` của workflow `Platform` của mọi pull request và trong `Release Package` trước khi đăng | |
+| ✅ | Gói được kiểm trước khi đăng | `check_archive.sh` kiểm gói có `LICENSE`, `NOTICE`, `DEPENDENCIES.txt`, `README.md`, `CHANGELOG.md` và không có tệp giống bí mật; chạy ở job `Test the install` của workflow `Platform` của mọi pull request và trong `Release Package` trước khi đăng | |
 | ✅ | Image theo phiên bản | Workflow `Release Images` đẩy image `vX.Y.Z` lên GHCR; `dxos-install.sh` kéo image này, bản `2.0.0` cài được bằng một lệnh | |
 
 GitHub tự đính kèm `Source code (zip)` vào mỗi release và không xóa được; phần mô tả release ghi rõ `dx-os-X.Y.Z.tar.gz` mới là gói phát hành chính thức.
@@ -89,12 +90,12 @@ GitHub tự đính kèm `Source code (zip)` vào mỗi release và không xóa �
 
 | Trạng thái | Yêu cầu | Bằng chứng | Mức trừ nếu thiếu |
 |---|---|---|---|
-| ✅ | Có hướng dẫn dịch từ mã nguồn | `README.md` mục Chạy thử, phần Từ mã nguồn; `README_EN.md` | −5 |
+| ✅ | Có hướng dẫn dịch từ mã nguồn | `README.md` mục Bắt đầu nhanh, mục từ mã nguồn; `README_EN.md` | −5 |
 | ✅ | Không cấu hình bằng cách sửa tay tệp mã | Mọi tham số ở `deploy/.env`, mẫu `deploy/.env.example`; `deploy/make_env.sh` sinh mật khẩu ngẫu nhiên; job `Validate the Compose file` của workflow `Platform` kiểm Compose dừng khi thiếu bí mật | −5 |
 | ✅ | Cấu hình được trước khi dịch | `deploy/make_env.sh` rồi mới `docker compose up -d --build` | −5 |
 | ✅ | Dịch bằng công cụ nguồn mở | Docker, Compose, Git, Maven wrapper, npm | −5 |
-| ✅ | Chạy được ngoài thư mục mã nguồn | `dxos-install.sh` cài vào `~/.dxos`, `install.sh` từ chối cài vào chính thư mục mã nguồn; job `Install from the release archive` của workflow `Platform` cài từ gói, gói sai SHA-256 bị từ chối, mọi tệp Compose mount đều có | −5 |
-| ✅ | Hệ thống dựng từ trạng thái rỗng dùng được qua trình duyệt | Job `Browser end-to-end`: dựng image của commit, khởi động stack rỗng, Playwright đăng nhập bằng Keycloak, áp dụng một mẫu và thấy mô hình chạy (`e2e/web/tests/console.spec.ts`) | |
+| ✅ | Chạy được ngoài thư mục mã nguồn | `dxos-install.sh` cài vào `~/.dxos`, `install.sh` từ chối cài vào chính thư mục mã nguồn; job `Test the install` của workflow `Platform` cài từ gói, gói sai SHA-256 bị từ chối, mọi tệp Compose mount đều có | −5 |
+| ✅ | Hệ thống dựng từ trạng thái rỗng dùng được qua trình duyệt | Job `Test in a browser`: dựng image của commit, khởi động stack rỗng, Playwright đăng nhập bằng Keycloak, áp dụng một mẫu và thấy mô hình chạy (`e2e/web/tests/console.spec.ts`) | |
 | ✅ | Chạy lại chuỗi trên máy sạch | `dxos-install.sh` của release `v2.0.0` cài vào `~/.dxos` trên máy chủ không còn stack cũ, `dxos start` kéo image từ GHCR, áp dụng `onestop.yaml` và `dxos demo` chạy được | |
 
 Bài kiểm tra bắt buộc làm trước ngày chấm, giả lập thao tác của giám khảo:
@@ -115,9 +116,9 @@ dxos start
 
 | Trạng thái | Yêu cầu | Bằng chứng | Mức trừ nếu thiếu |
 |---|---|---|---|
-| ✅ | Tài liệu làm rõ thư viện và gói đã dùng | `DEPENDENCIES.txt` (tên, phiên bản, giấy phép, vai trò); `sbom/*.cdx.json` kể cả gói gián tiếp, đính kèm mỗi release; lý do chọn ở [Thành phần được chọn và không chọn](./dependencies.md) | |
+| ✅ | Tài liệu làm rõ thư viện và gói đã dùng | `DEPENDENCIES.txt` (vai trò của thành phần cấp cao) và `docs/DEPENDENCY_INVENTORY.md` (từng gói kể cả gói dev, test, plugin build và gói gián tiếp, mỗi gói có phiên bản và giấy phép, do máy sinh và kiểm), `docs/IMAGE_PACKAGES.md` (gói bên trong các image bên thứ ba); mỗi image phát hành kèm `LICENSE`, `NOTICE` và giấy phép của thư viện ở `/licenses`; `sbom/*.cdx.json` của phần chạy thật, đính kèm mỗi release; lý do chọn ở [Thành phần được chọn và không chọn](./dependencies.md) | |
 | ✅ | Ưu tiên thư viện sẵn có | Dùng image chính thức, ghim tag và digest trong `deploy/docker-compose.yml`; Keycloak dựng từ bản phát hành chính thức kiểm SHA-1; binary `pgschema` lấy từ image chính thức ghim digest | −5 |
-| ✅ | Không phát hành kèm gói của dự án phụ thuộc | `git ls-files` không có `vendor/`, `node_modules/`, `third_party/` | −5 |
+| ✅ | Không phát hành kèm gói của dự án phụ thuộc | Gói mã nguồn `.tar.gz` là `git archive` của cây mã, và `git ls-files` không có `vendor/`, `node_modules/`, `third_party/`; thư viện của image và của `dxos-lint.jar` (chỉ SnakeYAML) lấy từ Maven Central và npm theo tệp khóa, không sửa, kèm giấy phép ở `/licenses` hoặc `META-INF`; image `sso` chứa bản Keycloak chính thức kiểm SHA-1, image `backend` chứa tệp chạy `pgschema` ghim digest, và image `clamav` dựng trên image ClamAV chính thức chỉ xóa tệp `libclamunrar`; không có mã nào bị sửa | −5 |
 | ✅ | Không chỉnh sửa mã nguồn gói đính kèm | Không có tệp `.patch`; tùy biến bằng cấu hình (route APISIX, realm Keycloak, biến môi trường) | −5 |
 | ✅ | Phụ thuộc được cập nhật và quét | Dependabot; workflow `Dependencies` chặn khi có lỗ hổng HIGH hoặc CRITICAL đã có bản vá | |
 | ✅ | SBOM khớp với tệp khóa | Job `Check SBOMs against lockfiles` dựng lại SBOM của web và trang docs rồi so với `sbom/` ở mọi pull request; SBOM của backend so với kết quả của `cyclonedx-maven-plugin` (221 gói, 0 khác biệt) | |
@@ -130,9 +131,9 @@ git ls-files | grep -E '(^|/)(vendor|third_party|node_modules)/|\.patch$' && ech
 
 | Trạng thái | Yêu cầu | Bằng chứng | Mức trừ nếu thiếu |
 |---|---|---|---|
-| ✅ | Có bug tracker | GitHub Issues đã bật; mẫu `bug_report.yml`, `feature_request.yml`; 55 issue | −5 |
-| ✅ | Có changelog | `CHANGELOG.md` theo Keep a Changelog, mục `[Unreleased]` và mục cho mọi bản đến `[2.0.2]` | −5 |
-| ✅ | Có README và hướng dẫn | `README.md`, `README_EN.md`; `ARCHITECTURE.md`; `docs/TESTING.md`; `docs/OPERATIONS.md`; API qua đặc tả OpenAPI và `check_docs.py` kiểm tài liệu khớp OpenAPI; job `Check required files and scripts` báo lỗi nếu thiếu một tài liệu bắt buộc hoặc `CHANGELOG.md` mất mục `[Unreleased]`; job `Build the docs site` dựng trang docs, trong đó có các tài liệu của `docs/` và `deploy/` chép lại mỗi lần dựng, và dừng khi có liên kết hỏng | −5 |
+| ✅ | Có bug tracker | GitHub Issues đã bật; mẫu `bug_report.yml`, `feature_request.yml`; 114 issue | −5 |
+| ✅ | Có changelog | `CHANGELOG.md` theo Keep a Changelog, mục `[Unreleased]` và mục cho mọi bản đến `[2.1.0]` | −5 |
+| ✅ | Có README và hướng dẫn | `README.md`, `README_EN.md`; `ARCHITECTURE.md`; `docs/TESTING.md`; `docs/OPERATIONS.md`; API qua đặc tả OpenAPI và `check_docs.py` kiểm tài liệu khớp OpenAPI; job `Check required files` báo lỗi nếu thiếu một tài liệu bắt buộc hoặc `CHANGELOG.md` mất mục `[Unreleased]`; job `Build the docs site` dựng trang docs, trong đó có các tài liệu của `docs/` và `deploy/` chép lại mỗi lần dựng, và dừng khi có liên kết hỏng | −5 |
 | ✅ | Hướng dẫn đóng góp | `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, mẫu pull request | |
 | ✅ | Chính sách bảo mật | `SECURITY.md` | |
 | ✅ | Bảo vệ nhánh và tag | Hai ruleset đang `active` (API GitHub, 14/11): `main` (cấm xóa, cấm ghi đè lịch sử, bắt buộc pull request, 16 check phải xanh; một đối tượng được bỏ qua) và `tags-v-immutable` (cấm sửa và xóa tag `v*`); khớp với `.github/rulesets/main.json` và `tags.json` | |
@@ -153,7 +154,7 @@ git ls-files | grep -E '(^|/)(vendor|third_party|node_modules)/|\.patch$' && ech
 |---|---|---|
 | Repository không công khai | Không chấm PoF | Không vi phạm |
 | Không có `LICENSE` hoặc giấy phép không rõ | −5 đến −10 | Không vi phạm |
-| Không có release hoặc tag | −5 | Không vi phạm; `v2.0.2` là tag mới nhất |
+| Không có release hoặc tag | −5 | Không vi phạm; `v2.1.0` là tag mới nhất |
 | Không build hoặc cài được từ mã nguồn | −5 đến −10 | Rủi ro thấp; còn cần chạy lại trên máy sạch với image phát hành |
 | Không có README hoặc hướng dẫn chạy | −5 | Không vi phạm |
 | Không có CHANGELOG hoặc bug tracker | −3 đến −5 | Không vi phạm |

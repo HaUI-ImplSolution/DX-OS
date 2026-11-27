@@ -15,7 +15,8 @@ ENV VITE_API_BASE_URL=$VITE_API_BASE_URL \
     VITE_KEYCLOAK_CLIENT_ID=$VITE_KEYCLOAK_CLIENT_ID
 RUN npm run build
 
-FROM nginx:1.30-alpine@sha256:e9b2d7624fd7957f4ed44ae0a272d93fb73aeb8512ba8916f8118ae6143fd115
+FROM nginx:1.30-alpine-slim@sha256:e9eaa7298465eab06d618c51556fdcf3fb5061f9ff40bd28ee898fbd7ee7f900
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY licenses/ /licenses/
 EXPOSE 80

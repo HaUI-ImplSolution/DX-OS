@@ -4,6 +4,7 @@ package HaUI.ImplSolution.dxos.engine.apply;
 
 import HaUI.ImplSolution.dxos.core.api.dto.ApiResponse;
 import HaUI.ImplSolution.dxos.core.api.user.UserContext;
+import HaUI.ImplSolution.dxos.engine.projects.ProjectLinks;
 import HaUI.ImplSolution.dxos.model.ModelParser;
 import HaUI.ImplSolution.dxos.model.ModelUpgrader;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,11 +31,14 @@ public class ModelController {
   private final ApplyService service;
   private final TemplateResolver templates;
   private final UserContext user;
+  private final ProjectLinks projects;
 
-  public ModelController(ApplyService service, TemplateResolver templates, UserContext user) {
+  public ModelController(
+      ApplyService service, TemplateResolver templates, UserContext user, ProjectLinks projects) {
     this.service = service;
     this.templates = templates;
     this.user = user;
+    this.projects = projects;
   }
 
   @GetMapping
@@ -44,9 +48,16 @@ public class ModelController {
           "applied_by is the user id of who applied the version, applied_by_name the name"
               + " the token gave then; it is empty for versions saved without one. held is true while"
               + " an apply of the model runs or stopped before it finished; the model is then closed to"
-              + " its users. A model whose first apply stopped is listed with version 0.")
+              + " its users. A model whose first apply stopped is listed with version 0. project is"
+              + " the project the model belongs to, null while it is unclassified. leftOut is true"
+              + " when the stored version fails the checks of this release, so the model is not"
+              + " running; problems lists why, and its data and stored versions are kept. warnings lists what a running model was read without, for a check made"
+              + " stricter after the version was stored; applying a corrected file clears it.")
   public ApiResponse<List<Map<String, Object>>> list() {
-    return ApiResponse.success(service.models());
+    List<Map<String, Object>> models = service.models();
+    Map<String, String> projectOf = projects.ofModels();
+    models.forEach(model -> model.put("project", projectOf.get((String) model.get("model"))));
+    return ApiResponse.success(models);
   }
 
   @PostMapping(
@@ -60,7 +71,9 @@ public class ModelController {
               + " MIGRATION, LOSS), what is refused, existing rows that break a new rule, open records"
               + " of the touched processes and the statements to run. Changes that collide with"
               + " another model, affect open process records, or have attachments or executions are"
-              + " refused. A file that did not change but whose tables, client, roles or unit groups"
+              + " refused. impacts names each action that now requires fields and counts the records in"
+              + " its source states that lack one of them; the action refuses those records until the"
+              + " field is filled in, and the plan stays SAFE. A file that did not change but whose tables, client, roles or unit groups"
               + " no longer match it has action repair, with the changes REPAIR_SCHEMA, REPAIR_CLIENT,"
               + " REPAIR_ROLE and REPAIR_UNIT. No record or table changes.")
   public ApiResponse<ApplyService.Plan> plan(@RequestBody String content) {

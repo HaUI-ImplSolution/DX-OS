@@ -24,6 +24,8 @@ Cơ sở dữ liệu `keycloak` và vai `keycloak_app` do [`deploy/postgres/init
   Realm đã import từ trước chưa có ba quyền client: cấp tay ở Admin Console (Clients, `dxos-backend-admin`, Service accounts roles, Assign role, lọc theo client `realm-management`), nếu không áp dụng mô hình báo lỗi 403 ở bước `ENSURE_CLIENT`.
 - Realm chỉ import lần đầu; Keycloak đã có dữ liệu thì thêm client hoặc vai qua Admin Console (cấu hình như `realm-dxos.json`, secret của `dxos-monitor` là `MONITOR_OIDC_CLIENT_SECRET`) hoặc dựng lại bằng `deploy/reset.sh`.
 - Realm import lấy `GATEWAY_PUBLIC_URL` làm redirect URI của `dxos-web` (cùng `localhost` cho dev), nên đổi `PUBLIC_HOST` trước lần khởi động đầu tiên của Keycloak.
+- Hồ sơ người dùng của realm không bắt buộc `lastName`, nên người dùng có tên một từ không bị hỏi thêm hồ sơ ở lần đăng nhập đầu.
+  Realm đã import từ trước: **Realm settings → User profile → lastName**, tắt **Required field** (cần `KEYCLOAK_ADMIN_CONSOLE=true`).
 
 ## Xác thực hai bước và mật khẩu
 
@@ -65,7 +67,7 @@ Compose khi đó tự bật `KC_HOSTNAME` và `KC_HOSTNAME_BACKCHANNEL_DYNAMIC`;
   3. **Realm settings → Security defenses → Brute force detection**: bật, chế độ **Lockout temporarily**, **Max login failures** 5, **Wait increment** 1 phút, **Max wait** 15 phút.
 - IP trong sự kiện là IP thật khi Keycloak đọc `X-Forwarded-For` do gateway đặt.
 - Từ Keycloak 26.8 Admin REST API chỉ nhận token có audience của chính nó, nên client `dxos-backend-admin` mang scope `kc-admin-api` ngay trong `realm-dxos.json`; không có scope này thì mọi lần áp dụng mô hình trả 502 `ERR_ACCOUNT_SERVICE_DENIED`.
-  Realm đã import từ trước chạy `deploy/keycloak-admin-scope.sh` để gán scope đó (`deploy/update.sh` gọi nó; chạy lại không đổi gì).
+  Realm đã import từ trước chạy `deploy/lib/keycloak-admin-scope.sh` để gán scope đó (`deploy/update.sh` gọi nó; chạy lại không đổi gì).
   Làm tay thì vào **Clients → dxos-backend-admin → Client scopes → Add client scope → kc-admin-api → Default**.
 
 ## Hostname nội bộ và hostname trình duyệt

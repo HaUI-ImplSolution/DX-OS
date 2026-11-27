@@ -51,6 +51,7 @@ Mỗi client giữ đúng một vai của một mô hình.
 API của mô hình khác, API quản trị và API người dùng trả `403`.
 Đổi sang vai khác của cùng mô hình bằng `dxos client role <tên> --role <vai>` hoặc nút **Đổi vai** ở tab **Ứng dụng ngoài**; client id và secret giữ nguyên, còn token đã cấp giữ vai cũ đến khi hết hạn.
 Đổi sang mô hình khác thì xóa client rồi đăng ký lại; hồ sơ client đã tạo vẫn còn.
+Một bản cài dùng chung cho nhiều hệ thống tích hợp thì gom client và mô hình của từng hệ thống thành một dự án, bằng `--project` khi đăng ký hoặc ở tab **Dự án**; xem [phần Dự án của `OPERATIONS.md`](OPERATIONS.md#dự-án).
 
 ### 2. Lấy token và OpenAPI của mô hình
 
@@ -100,6 +101,19 @@ Invoke-RestMethod -Headers @{ Authorization = "Bearer $token" } `
 OpenAPI này được sinh từ phiên bản mô hình đang chạy và chỉ chứa các thực thể người gọi được đọc.
 Dùng nó để sinh client hoặc làm đầu vào cho kiểm thử hợp đồng; không sao chép một schema cũ vào mã rồi coi đó là nguồn thật.
 
+Client sinh bằng [OpenAPI Generator](https://openapi-generator.tech) (Apache-2.0), chạy trong Docker trên tệp `equipment.openapi.json` vừa lấy:
+
+```bash
+docker run --rm -u "$(id -u):$(id -g)" -v "$PWD:/local" \
+  openapitools/openapi-generator-cli:v7.27.0 generate \
+  -i /local/equipment.openapi.json -g typescript-fetch -o /local/client
+```
+
+`-g` chọn ngôn ngữ, ví dụ `typescript-fetch`, `python` hoặc `java`; `docker run ... openapi-generator-cli:v7.27.0 list` in đủ danh sách.
+Token lấy như trên và đặt vào header `Authorization` của client sinh ra.
+Sinh lại client sau mỗi lần mô hình đổi, và kiểm lại mã gọi nó.
+Công cụ này do ứng dụng ngoài tự chạy; DX-OS không đóng gói nó, giấy phép ở ghi chú về OpenAPI Generator của `DEPENDENCIES.txt`.
+
 ### 3. Gọi dữ liệu và quy trình
 
 API dữ liệu nằm dưới `/api/v1/data/{model}/{entity}`.
@@ -119,6 +133,7 @@ Invoke-RestMethod -Headers @{ Authorization = "Bearer $token" } `
 Khi tạo hồ sơ hoặc gọi hành động, sinh một khóa ổn định cho chính yêu cầu nghiệp vụ và gửi ở header `Idempotency-Key`.
 Gửi lại cùng khóa và cùng nội dung nhận lại kết quả đầu; dùng cùng khóa cho nội dung khác trả `409`.
 Khi sửa hồ sơ, gửi `version` đã đọc và xử lý `ERR_CONCURRENT_MODIFICATION` thay vì ghi đè.
+Có sẵn một tệp CSV cần nạp thì dùng `dxos import` ([`OPERATIONS.md`](./OPERATIONS.md#nhập-hồ-sơ-từ-tệp-csv)) thay vì tự viết script.
 
 Không ghi trực tiếp PostgreSQL và không đổi cột `status` qua API dữ liệu.
 Mọi chuyển trạng thái đi qua `/actions/{action}` để các quy tắc, Flowable, lịch sử và sự kiện cùng được áp dụng.
@@ -129,7 +144,7 @@ Cách xử lý lỗi của một lời gọi:
 |---|---|---|
 | `401` | Cổng vào, khi token thiếu hoặc không hợp lệ; thân trả về là HTML, không phải JSON | Lấy token mới rồi gọi lại một lần |
 | `403` | Backend, `ERR_ACTION_NOT_ALLOWED` kèm `data.reason` (ví dụ `OWNER_ONLY`, `ASSIGNED_TO_OTHER`, `CHECK_DENIED`) | Không thử lại; đổi vai hoặc sửa yêu cầu |
-| `409` | Backend, `data.reason` là `WRONG_STATE`, `RECORD_CLOSED`, `IDEMPOTENCY_KEY_REUSED` hoặc `CONDITION_NOT_MET`; sửa hồ sơ trả `ERR_CONCURRENT_MODIFICATION` | Đọc lại hồ sơ rồi quyết định; `IDEMPOTENCY_KEY_REUSED` nghĩa là khóa đã dùng cho nội dung khác |
+| `409` | Backend, `data.reason` là `WRONG_STATE`, `RECORD_CLOSED`, `IDEMPOTENCY_KEY_REUSED`, `CONDITION_NOT_MET` hoặc `MODEL_VERSION_CHANGED`; sửa hồ sơ trả `ERR_CONCURRENT_MODIFICATION` | Đọc lại hồ sơ rồi quyết định; `IDEMPOTENCY_KEY_REUSED` nghĩa là khóa đã dùng cho nội dung khác; `MODEL_VERSION_CHANGED` nghĩa là mô hình đã đổi sau lần đọc metadata |
 | `429` | Cổng vào hoặc backend | Chờ rồi gọi lại; chỉ backend (`ERR_TOO_MANY_REQUESTS`) gửi `Retry-After`, cổng vào gửi `X-RateLimit-Reset` là số giây còn lại của cửa sổ |
 | `503` và timeout | Backend, hoặc mạng giữa hai bên | Thử lại có giới hạn số lần và giãn cách tăng dần, giữ nguyên `Idempotency-Key` |
 
@@ -145,6 +160,7 @@ Kiểm ít nhất các tình huống sau:
 - Đổi tên hoặc bỏ trường trong bản mô hình thử và để kiểm thử hợp đồng chỉ ra chỗ tích hợp phải đổi.
 
 [`examples/itot-simulator`](../examples/itot-simulator/README.md) minh họa dịch vụ ngoài lấy token máy, tạo hồ sơ, thực hiện hành động và chống gửi trùng; nó chỉ cần Python 3.9 trở lên nên chạy được cả trên Windows.
+Với `--transport mqtt` nó publish số đo lên broker của [cầu nối MQTT](./INTEGRATIONS.md#cầu-nối-mqtt-tùy-chọn), như một thiết bị thật.
 Lệnh `setup` của ví dụ tự gọi Keycloak để ví dụ chạy độc lập; bản triển khai thật dùng `dxos client add` để client xuất hiện trong quản trị và danh mục dữ liệu.
 
 ### 5. Đóng gói và nâng cấp
@@ -221,6 +237,16 @@ Giữ cursor chỉ sau khi toàn bộ trang đã được lưu thành công.
 
 Đóng gói receiver tách khỏi DX-OS, giữ secret trong secret runtime và sao lưu kho khử trùng cùng cursor.
 Theo dõi `schemaVersion`, kiểm payload thử trước khi nâng và triển khai receiver chấp nhận cả phiên bản cũ lẫn mới trong khoảng chuyển tiếp khi hợp đồng thay đổi.
+
+## Liên kết sang giao diện web của DX-OS
+
+Ứng dụng ngoài đưa người duyệt sang giao diện web của DX-OS bằng một liên kết.
+Hộp việc là trang chủ của địa chỉ công khai (`GATEWAY_PUBLIC_URL`), ví dụ `http://localhost:9080/`.
+Một hồ sơ nằm ở `<địa chỉ công khai>/<mô hình>-<thực thể>/<id>/show`, ví dụ `http://localhost:9080/retail-return_request/12/show`.
+Người mở liên kết đăng nhập bằng tài khoản DX-OS và chỉ thấy hồ sơ khi vai của họ được đọc.
+
+API dữ liệu trả sẵn địa chỉ này ở trường `webUrl` của hồ sơ, và thông điệp webhook cùng feed `GET /api/v1/events` mang cùng trường, nên ứng dụng không tự ghép địa chỉ.
+`webUrl` do hệ thống tính, không phải trường của mô hình, và không có khi chạy `dxos start --core` vì chế độ này không có ứng dụng web.
 
 ## Giao diện ngoài
 

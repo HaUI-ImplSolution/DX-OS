@@ -1,0 +1,56 @@
+# SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
+# SPDX-License-Identifier: Apache-2.0
+# Optional Prometheus for the dxos_* metrics of the core, loaded only when deploy/.env sets
+# COMPOSE_FILE=docker-compose.yml:docker-compose.prometheus.yml (see docs/MONITORING.md).
+# It reads METRICS_PASSWORD from deploy/.env, the password of the metrics endpoint.
+# Prometheus has no login and is published on 127.0.0.1 only; PROMETHEUS_BIND in deploy/.env changes that,
+# and then it should sit behind a VPN or a proxy with TLS and a login.
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "5"
+
+x-hardened: &hardened
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+
+volumes:
+  prometheus_data:
+
+services:
+  prometheus:
+    <<: *hardened
+    logging: *default-logging
+    image: prom/prometheus:v3.13.5@sha256:aafa9d694e6a883c02db516d9f6e5b84e14195f49a2a6456a4cca815edda72b9
+    user: "65534:65534"
+    restart: unless-stopped
+    read_only: true
+    mem_limit: 512m
+    cpus: 0.5
+    pids_limit: 128
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      METRICS_PASSWORD: ${METRICS_PASSWORD:-}
+      PROMETHEUS_RETENTION: ${PROMETHEUS_RETENTION:-15d}
+    entrypoint: [sh, -c]
+    command:
+      - |
+        [ -n "$$METRICS_PASSWORD" ] || { echo "METRICS_PASSWORD is empty in deploy/.env; the metrics endpoint is closed without it" >&2; exit 1; }
+        printf '%s' "$$METRICS_PASSWORD" > /tmp/dxos-metrics-password
+        exec /bin/prometheus --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --storage.tsdb.retention.time=$$PROMETHEUS_RETENTION --web.listen-address=0.0.0.0:9090
+    ports:
+      - "${PROMETHEUS_BIND:-127.0.0.1}:${PROMETHEUS_HOST_PORT:-9090}:9090"
+    volumes:
+      - prometheus_data:/prometheus
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    tmpfs: ["/tmp:rw,nosuid,nodev,noexec,size=1m,uid=65534,gid=65534"]
+    healthcheck:
+      test: [CMD-SHELL, "wget -q -O /dev/null http://127.0.0.1:9090/-/healthy"]
+      interval: 15s
+      timeout: 5s
+      retries: 4

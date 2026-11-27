@@ -9,16 +9,16 @@ Phần lớn ảnh chụp ở giao diện tiếng Việt; bộ ảnh giao diện
 
 ## Video
 
-Từ một yêu cầu gửi đi đến khi hồ sơ được duyệt và in ra: cán bộ mở hồ sơ trong hộp việc, duyệt, rồi in giấy xác nhận.
+Từ một yêu cầu gửi đi đến khi hồ sơ được duyệt và in ra: cán bộ mở hồ sơ trong hộp việc, duyệt, rồi in kết quả xử lý.
 
 <video controls muted loop playsInline width="100%" poster={require('./images/vi/inbox.png').default}>
-  <source src={require('./images/video/request-flow.mp4').default} type="video/mp4" />
+  <source src={require('./images/video/request-flow.webm').default} type="video/webm" />
 </video>
 
 Đổi nghiệp vụ: sửa tệp mô hình, xem kế hoạch thay đổi, áp dụng; hệ thống chuyển sang phiên bản mới và dữ liệu cũ vẫn còn.
 
 <video controls muted loop playsInline width="100%" poster={require('./images/vi/plan.png').default}>
-  <source src={require('./images/video/model-change.mp4').default} type="video/mp4" />
+  <source src={require('./images/video/model-change.webm').default} type="video/webm" />
 </video>
 
 ## Đăng nhập
@@ -37,13 +37,18 @@ Thư viện mẫu cho chọn một mô hình có sẵn và đổi tiếp.
 
 ![Thư viện mẫu](./images/vi/templates.png)
 
-Soạn bằng form: chỉ sửa những chỗ được đổi, các dòng chú thích trong tệp được giữ, và sơ đồ quy trình vẽ theo mô hình đang soạn.
+Soạn bằng form: cây bên trái cho thấy cả mô hình, bấm một trạng thái hay mũi tên trên sơ đồ quy trình là tới chỗ sửa nó; chỉ sửa những chỗ được đổi, các dòng chú thích trong tệp được giữ.
 
 ![Soạn bằng form](./images/vi/editor-form.png)
 
 Soạn tệp mô hình, xem kế hoạch (mức an toàn, thực thể và trường bị ảnh hưởng, câu lệnh SQL sẽ chạy) và sơ đồ quy trình vẽ theo tệp đang soạn.
 
 ![Soạn, xem kế hoạch và áp dụng](./images/vi/plan.png)
+
+Mở một mẫu khi bản đang soạn còn thay đổi chưa áp dụng thì hộp thoại hỏi trước khi thay.
+Hủy giữ nguyên bản nháp và tab hiện tại; Thay thế mở mẫu.
+
+![Hỏi trước khi thay bản đang soạn](./images/vi/console-replace-draft.png)
 
 Hàng đợi sự kiện: thông điệp gửi tới hệ thống ngoài sau mỗi thay đổi đã lưu.
 Thông điệp lỗi được thử lại dần, kèm lỗi gần nhất và nút thử lại ngay.
@@ -116,6 +121,20 @@ Cổng vào gom các ứng dụng của hệ thống.
 
 ![Cổng vào](./images/vi/portal.png)
 
+## Trợ lý nghiệp vụ
+
+Người xử lý liên kết tài khoản DX-OS một lần ở trang Trợ lý nghiệp vụ, trang này cũng liệt kê các đề xuất đã tạo.
+
+![Trang Trợ lý nghiệp vụ](./images/vi/assistant.png)
+
+Nút Rà loại hồ sơ ở Hộp việc rà các hồ sơ đang chờ; hồ sơ có loại khác gợi ý hiện Cần rà cùng loại đề xuất, độ tự tin và cụm chữ căn cứ.
+
+![Hộp việc sau khi rà loại hồ sơ](./images/vi/assistant-inbox.png)
+
+Trên trang hồ sơ, trợ lý tạo đề xuất kèm căn cứ trích từ nội dung hồ sơ; giá trị chỉ được ghi sau khi người dùng bấm Xác nhận lưu.
+
+![Đề xuất của trợ lý trên trang hồ sơ](./images/vi/assistant-record.png)
+
 ## Trên điện thoại
 
 Giao diện co lại thành thẻ trên màn hình hẹp.
@@ -137,6 +156,8 @@ Chữ của giao diện đổi theo nút chọn ngôn ngữ; chữ do tệp mô 
 ![Thư viện mẫu, tiếng Anh](./images/en/templates.png)
 
 ![Soạn bằng form, tiếng Anh](./images/en/editor-form.png)
+
+![Hỏi trước khi thay bản đang soạn, tiếng Anh](./images/en/console-replace-draft.png)
 
 ![Hàng đợi sự kiện, thông điệp lỗi, tiếng Anh](./images/en/outbox-error.png)
 
@@ -165,6 +186,12 @@ Chữ của giao diện đổi theo nút chọn ngôn ngữ; chữ do tệp mô 
 ![Thống kê, tiếng Anh](./images/en/stats.png)
 
 ![Hộp việc, tiếng Anh](./images/en/inbox.png)
+
+![Hộp việc sau khi rà loại hồ sơ, tiếng Anh](./images/en/assistant-inbox.png)
+
+![Trang Trợ lý nghiệp vụ, tiếng Anh](./images/en/assistant.png)
+
+![Đề xuất của trợ lý trên trang hồ sơ, tiếng Anh](./images/en/assistant-record.png)
 
 ![Chi tiết hồ sơ, tiếng Anh](./images/en/detail.png)
 

@@ -1,0 +1,12 @@
+Sources of the software in the dxos-assistant image
+
+The image is built from DX-OS (Apache-2.0, https://github.com/HaUI-ImplSolution/DX-OS, the Dockerfile is assistant/Dockerfile) on the base image node:24.16.0-alpine.
+The image holds the assistant service, its libraries (notices in THIRD-PARTY-LICENSES.txt) and Node.js without npm and yarn (MIT with the licenses of its bundled parts in /usr/local/LICENSE, source at https://github.com/nodejs/node/tree/v24.16.0).
+The classifier weights in /app/classifiers (onestop.json, support.json and clinic.json) are trained by the DX-OS team and are under Apache-2.0 (LICENSE).
+They were trained on sentences under CC-BY-4.0: sentences written by the team or drafted by Claude (Anthropic), and sentences from MASSIVE vi-VN 1.0 (Amazon), whose attribution is in NOTICE.
+The training data is not in the image; the code, the data, the data card and the training command are in tools/classifier of DX-OS.
+The base image holds Alpine Linux v3.24, whose package sources are in the aports tree at https://git.alpinelinux.org/aports (branch 3.24-stable) and in the source packages next to the binary packages at https://dl-cdn.alpinelinux.org/alpine/v3.24/.
+Some of these packages are under the GNU General Public License, the GNU Lesser General Public License and similar licenses.
+Their names, versions and licenses are listed for every image in docs/IMAGE_PACKAGES.md of DX-OS (https://github.com/HaUI-ImplSolution/DX-OS/blob/main/docs/IMAGE_PACKAGES.md).
+For any component of this image under such a license, the maintainers give the source to anyone who asks for it, for three years after the release of the image:
+open an issue at https://github.com/HaUI-ImplSolution/DX-OS/issues naming the image, its tag and the component.

@@ -5,7 +5,7 @@
 #   models  the model files of a repository, compared with the running models;
 #   infra   the deployment of this install (deploy/, the gateway routes, the image tag), compared with
 #           a DX-OS repository at a ref, and upgraded to it.
-# Sourced by dxos, which provides DEPLOY_DIR, PREFIX, STOPPED_MARK, env_value, die, api, json_field,
+# Sourced by dxos, which provides DEPLOY_DIR, PREFIX, STOPPED_MARK, env_value, runtime_files, die, api, json_field,
 # cmd_apply, compose and wait_ready.
 
 GITOPS_DIR="$DEPLOY_DIR/gitops"
@@ -201,18 +201,10 @@ gitops_models() {
 
 # --- infra ---
 
-# The files an install keeps as runtime files; the same selection as runtime_files in install.sh.
-gitops_runtime_files() {
-  (cd "$1" && find deploy sso/realm-dxos.json e2e/api/kc.py e2e/api/check_api.py e2e/api/check_conformance.py \
-    \( -path deploy/data -o -path deploy/backups -o -path deploy/gitops -o -name __pycache__ \) -prune -o \
-    -type f ! \( -name '.env*' ! -name '.env.example' \) ! -name 'VPS.md' \
-    ! -path deploy/apisix/local.yaml -print) | LC_ALL=C sort
-}
-
 # Compares the deployment of the clone with this install: prints "<changed> <added> <removed>".
 gitops_infra_diff() {
   local root="$G_DIR/repo" changed=0 added=0 removed=0 file listed
-  listed="$(gitops_runtime_files "$root")"
+  listed="$(runtime_files "$root")"
   while IFS= read -r file; do
     [[ -n "$file" ]] || continue
     if [[ ! -f "$PREFIX/$file" ]]; then added=$((added + 1))

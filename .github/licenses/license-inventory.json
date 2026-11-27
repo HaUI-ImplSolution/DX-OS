@@ -1,0 +1,413 @@
+{
+  "_comment": "Components that no lockfile or POM lists: tools run in CI or by a developer, system tools of the machine that runs the stack, fonts, model weights and Python libraries. Each row is checked against .github/licenses/osi-approved.json; .github/scripts/check_license_inventory.py puts them in docs/DEPENDENCY_INVENTORY.md.",
+  "tools": [
+    {
+      "name": "Maven",
+      "version": "3.10.0",
+      "license": "Apache-2.0",
+      "scope": "build",
+      "note": "downloaded by the Maven Wrapper"
+    },
+    {
+      "name": "Maven Wrapper",
+      "version": "3.3.4",
+      "license": "Apache-2.0",
+      "scope": "build"
+    },
+    {
+      "name": "gitleaks",
+      "version": "8.30.1",
+      "license": "MIT",
+      "scope": "ci",
+      "note": "image ghcr.io/gitleaks/gitleaks"
+    },
+    {
+      "name": "Trivy",
+      "version": "0.58.1",
+      "license": "Apache-2.0",
+      "scope": "ci",
+      "note": "image aquasec/trivy"
+    },
+    {
+      "name": "actionlint",
+      "version": "1.7.12",
+      "license": "MIT",
+      "scope": "ci",
+      "note": "image rhysd/actionlint"
+    },
+    {
+      "name": "reuse",
+      "version": "6.3.0",
+      "license": "Apache-2.0 AND GPL-3.0-or-later",
+      "scope": "ci",
+      "note": "run with pipx; the tool is not part of the product"
+    },
+    {
+      "name": "@cyclonedx/cyclonedx-npm",
+      "version": "6.0.1",
+      "license": "Apache-2.0",
+      "scope": "ci",
+      "note": "run with npx"
+    },
+    {
+      "name": "cyclonedx-maven-plugin",
+      "version": "2.9.1",
+      "license": "Apache-2.0",
+      "scope": "build",
+      "note": "run by hand to write sbom/backend.cdx.json"
+    },
+    {
+      "name": "restic",
+      "version": "0.17.3",
+      "license": "BSD-2-Clause",
+      "scope": "runtime",
+      "note": "image restic/restic, used by deploy/backup.sh"
+    },
+    {
+      "name": "DuckDB",
+      "version": "1.4.1",
+      "license": "MIT",
+      "scope": "runtime",
+      "note": "image duckdb/duckdb, used by dxos archive"
+    },
+    {
+      "name": "DuckDB httpfs",
+      "version": "1.4.1",
+      "license": "MIT",
+      "scope": "runtime",
+      "note": "extension loaded by DuckDB on first use"
+    },
+    {
+      "name": "DuckDB postgres",
+      "version": "1.4.1",
+      "license": "MIT",
+      "scope": "runtime",
+      "note": "extension loaded by DuckDB on first use"
+    },
+    {
+      "name": "com.h3xstream.findsecbugs:findsecbugs-plugin",
+      "version": "1.14.0",
+      "license": "LGPL-3.0-or-later",
+      "scope": "build",
+      "note": "SpotBugs plugin named in backend/pom.xml; Maven does not list it"
+    },
+    {
+      "name": "com.google.googlejavaformat:google-java-format",
+      "version": "1.27.0",
+      "license": "Apache-2.0",
+      "scope": "build",
+      "note": "formatter that spotless-maven-plugin resolves when it runs; Maven does not list it"
+    },
+    {
+      "name": "com.google.guava:guava",
+      "version": "32.1.3-jre",
+      "license": "Apache-2.0",
+      "scope": "build",
+      "note": "library of google-java-format"
+    },
+    {
+      "name": "com.google.guava:failureaccess",
+      "version": "1.0.1",
+      "license": "Apache-2.0",
+      "scope": "build",
+      "note": "library of google-java-format"
+    },
+    {
+      "name": "com.google.guava:listenablefuture",
+      "version": "9999.0-empty-to-avoid-conflict-with-guava",
+      "license": "Apache-2.0",
+      "scope": "build",
+      "note": "library of google-java-format"
+    },
+    {
+      "name": "com.google.code.findbugs:jsr305",
+      "version": "3.0.2",
+      "license": "Apache-2.0",
+      "scope": "build",
+      "note": "library of google-java-format"
+    },
+    {
+      "name": "org.checkerframework:checker-qual",
+      "version": "3.37.0",
+      "license": "MIT",
+      "scope": "build",
+      "note": "library of google-java-format"
+    },
+    {
+      "name": "com.google.errorprone:error_prone_annotations",
+      "version": "2.21.1",
+      "license": "Apache-2.0",
+      "scope": "build",
+      "note": "library of google-java-format"
+    },
+    {
+      "name": "com.google.j2objc:j2objc-annotations",
+      "version": "2.8",
+      "license": "Apache-2.0",
+      "scope": "build",
+      "note": "library of google-java-format"
+    },
+    {
+      "name": "Marp CLI",
+      "version": "machine",
+      "license": "MIT",
+      "scope": "dev",
+      "note": "renders the slides of docs/TRINH_BAY.md on a developer machine"
+    },
+    {
+      "name": "FFmpeg",
+      "version": "machine",
+      "license": "GPL-2.0-or-later",
+      "scope": "dev",
+      "note": "encodes the videos of website/docs/images/video to WebM (VP9) on a developer machine; the Ubuntu build is GPL"
+    }
+  ],
+  "system": [
+    {
+      "name": "Docker Engine",
+      "version": "machine",
+      "license": "Apache-2.0",
+      "scope": "runtime",
+      "note": "installed on the machine that runs the stack"
+    },
+    {
+      "name": "Docker Compose",
+      "version": "machine",
+      "license": "Apache-2.0",
+      "scope": "runtime",
+      "note": "installed on the machine that runs the stack"
+    },
+    {
+      "name": "Git",
+      "version": "machine",
+      "license": "GPL-2.0-only",
+      "scope": "runtime",
+      "note": "dxos gitops"
+    },
+    {
+      "name": "OpenSSH",
+      "version": "machine",
+      "license": "BSD-2-Clause",
+      "scope": "runtime",
+      "note": "dxos gitops; the licence of the project is BSD with a few files under other BSD-style licences"
+    },
+    {
+      "name": "curl",
+      "version": "machine",
+      "license": "curl",
+      "scope": "runtime",
+      "note": "dxos installer and dxos calls to the API"
+    },
+    {
+      "name": "jq",
+      "version": "machine",
+      "license": "MIT",
+      "scope": "runtime",
+      "note": "dxos reads JSON"
+    },
+    {
+      "name": "Python 3",
+      "version": "machine",
+      "license": "Python-2.0",
+      "scope": "runtime",
+      "note": "dxos helper scripts and the e2e checks, standard library only"
+    },
+    {
+      "name": "Bash",
+      "version": "machine",
+      "license": "GPL-3.0-or-later",
+      "scope": "runtime",
+      "note": "deploy scripts"
+    }
+  ],
+  "python": [
+    {
+      "name": "PyYAML",
+      "version": "machine",
+      "license": "MIT",
+      "scope": "test",
+      "note": "read by e2e/api/check_routes.py; install with pip"
+    }
+  ],
+  "assets": [
+    {
+      "name": "Noto Sans",
+      "version": "2022",
+      "license": "OFL-1.1",
+      "scope": "prod",
+      "note": "font embedded in the PDF of the print templates"
+    },
+    {
+      "name": "Codicons (codicon.ttf in monaco-editor)",
+      "version": "0.57.0",
+      "license": "CC-BY-4.0",
+      "scope": "prod",
+      "note": "icon font of the model editor in the web app; attribution in third-party-licenses.txt"
+    },
+    {
+      "name": "Adobe Core 14 font metrics (AFM files in pdfbox)",
+      "version": "3.0.8",
+      "license": "APAFML",
+      "scope": "prod",
+      "note": "inside the pdfbox jar of the backend image"
+    },
+    {
+      "name": "Font Awesome shapes (in pdfbox)",
+      "version": "3.0.8",
+      "license": "CC-BY-4.0",
+      "scope": "prod",
+      "note": "inside the pdfbox jar of the backend image"
+    },
+    {
+      "name": "CMYK ICC profile (in pdfbox)",
+      "version": "3.0.8",
+      "license": "CC0-1.0",
+      "scope": "prod",
+      "note": "inside the pdfbox jar of the backend image"
+    },
+    {
+      "name": "Liberation, Lohit and Noto Sans Devanagari fonts (in pdfbox and fontbox)",
+      "version": "3.0.8",
+      "license": "OFL-1.1",
+      "scope": "prod",
+      "note": "inside the pdfbox and fontbox jars of the backend image"
+    },
+    {
+      "name": "DX-OS record classifier weights",
+      "version": "vi-2026-11-25-v1",
+      "license": "Apache-2.0",
+      "scope": "prod",
+      "note": "tools/classifier/model; three of them are in the assistant image"
+    },
+    {
+      "name": "DX-OS record classifier data",
+      "version": "vi-2026-11-25-v1",
+      "license": "CC-BY-4.0",
+      "scope": "build",
+      "note": "sentences and label definitions, written by the team or drafted by Claude (see tools/classifier/data/DATA_CARD.md), used to train and test the classifier"
+    },
+    {
+      "name": "MASSIVE vi-VN",
+      "version": "1.0",
+      "license": "CC-BY-4.0",
+      "scope": "build",
+      "note": "downloaded when the classifier is trained; not in the repository or an image"
+    },
+    {
+      "name": "SLURP",
+      "version": "as included in MASSIVE 1.0",
+      "license": "CC-BY-4.0",
+      "scope": "build",
+      "note": "English source text that MASSIVE localizes; downloaded only as part of MASSIVE; the SLURP audio (CC-BY-NC-4.0) is not part of MASSIVE and is not used"
+    }
+  ],
+  "actions": {
+    "actions/attest-build-provenance": "MIT",
+    "actions/cache/restore": "MIT",
+    "actions/cache/save": "MIT",
+    "actions/checkout": "MIT",
+    "actions/deploy-pages": "MIT",
+    "actions/setup-java": "MIT",
+    "actions/setup-node": "MIT",
+    "actions/upload-artifact": "MIT",
+    "actions/upload-pages-artifact": "MIT",
+    "docker/build-push-action": "Apache-2.0",
+    "docker/login-action": "Apache-2.0",
+    "docker/setup-buildx-action": "Apache-2.0",
+    "github/codeql-action/upload-sarif": "MIT",
+    "ossf/scorecard-action": "Apache-2.0"
+  },
+  "clamav": [
+    {
+      "name": "YARA (yara_* files of libclamav)",
+      "version": "1.5.4",
+      "license": "Apache-2.0",
+      "scope": "image",
+      "note": "modified files, as the ClamAV README lists them"
+    },
+    {
+      "name": "LZMA SDK (7z)",
+      "version": "1.5.4",
+      "license": "Public domain",
+      "scope": "image",
+      "note": "libclamav/7z"
+    },
+    {
+      "name": "zlib",
+      "version": "1.5.4",
+      "license": "Zlib",
+      "scope": "image",
+      "note": "NSIS parser of libclamav"
+    },
+    {
+      "name": "bzip2",
+      "version": "1.5.4",
+      "license": "bzip2-1.0.6",
+      "scope": "image",
+      "note": "NSIS parser of libclamav"
+    },
+    {
+      "name": "OpenBSD libc regex",
+      "version": "1.5.4",
+      "license": "BSD-3-Clause",
+      "scope": "image",
+      "note": "libclamav/regex"
+    },
+    {
+      "name": "file (textdet)",
+      "version": "1.5.4",
+      "license": "BSD-2-Clause",
+      "scope": "image",
+      "note": "libclamav/textdet.c"
+    },
+    {
+      "name": "str.c (strtol, strtoul)",
+      "version": "1.5.4",
+      "license": "BSD-3-Clause",
+      "scope": "image",
+      "note": "University of California"
+    },
+    {
+      "name": "pngcheck (png.c)",
+      "version": "1.5.4",
+      "license": "MIT",
+      "scope": "image",
+      "note": "MIT/X11-style, as the ClamAV README says"
+    },
+    {
+      "name": "getopt.c",
+      "version": "1.5.4",
+      "license": "MIT",
+      "scope": "image",
+      "note": "Benjamin Sittler"
+    },
+    {
+      "name": "curl (parts)",
+      "version": "1.5.4",
+      "license": "curl",
+      "scope": "image",
+      "note": "libclamav"
+    },
+    {
+      "name": "libmspack",
+      "version": "1.5.4",
+      "license": "LGPL-2.1-only",
+      "scope": "image",
+      "note": "libclammspack"
+    },
+    {
+      "name": "LLVM (libclamav/c++/llvm)",
+      "version": "1.5.4",
+      "license": "NCSA",
+      "scope": "image",
+      "note": "University of Illinois/NCSA Open Source License"
+    },
+    {
+      "name": "PCRE",
+      "version": "1.5.4",
+      "license": "BSD-3-Clause",
+      "scope": "image",
+      "note": "libclamav"
+    }
+  ]
+}

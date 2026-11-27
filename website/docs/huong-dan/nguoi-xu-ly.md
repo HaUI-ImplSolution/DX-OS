@@ -28,9 +28,11 @@ Nghiệp vụ có thể thêm hoặc đổi hành động, và có hành động
 Nếu nghiệp vụ có mẫu in, trang chi tiết hồ sơ hiện nút **In** ở những trạng thái mẫu cho phép; ví dụ giấy xác nhận chỉ in được khi hồ sơ đã duyệt.
 Bấm nút để tải tệp PDF của hồ sơ.
 
-## Tìm hồ sơ theo mã
+## Tìm hồ sơ
 
-Nếu nghiệp vụ cấp mã hồ sơ, danh sách có cột mã và ô tìm theo mã: gõ cả mã hoặc một phần của nó để lọc.
+Ô **Tìm theo chữ** ở đầu danh sách nhận một hoặc vài từ; hồ sơ hiện ra khi chứa đủ các từ đó trong các trường chữ, mã hoặc lựa chọn của nó.
+Không cần gõ dấu và không phân biệt hoa thường, nên `don nghi` tìm được "Đơn xin nghỉ phép".
+Nghiệp vụ cấp mã hồ sơ thì gõ cả mã hoặc một phần của nó vào cùng ô.
 Mã nằm ở đầu trang chi tiết kèm nút sao chép, tiện dán vào trao đổi hay biên bản.
 
 ## Nhận và giao việc
@@ -50,6 +52,19 @@ Nghiệp vụ có khai leo thang thì lịch sử ghi thêm mỗi lần hồ sơ
 Chọn nhiều hồ sơ trong danh sách rồi bấm hành động; mỗi lần tối đa 50 hồ sơ.
 Mỗi hồ sơ vẫn đi qua đủ luật của nó: hồ sơ không làm được thì được báo kèm lý do, các hồ sơ còn lại vẫn chạy.
 Không có nút hoàn tác; hồ sơ xử lý nhầm thì xử lý tiếp theo đường quy trình, ví dụ mở lại hoặc trả lại nếu quy trình có.
+
+## Trợ lý nghiệp vụ
+
+Trang chi tiết của những loại hồ sơ có khai nhiệm vụ hiện khối **Trợ lý nghiệp vụ**.
+Lần đầu, mở mục **Trợ lý nghiệp vụ** trên menu và bấm **Liên kết DX-OS**.
+Chọn nhiệm vụ rồi bấm **Tạo đề xuất**: trợ lý đưa giá trị gợi ý kèm căn cứ và độ tự tin, hoặc báo chưa đủ căn cứ.
+Giá trị chỉ được lưu khi bạn xác nhận.
+
+Ở Hộp việc, nút **Rà loại hồ sơ** rà tối đa 25 hồ sơ mỗi lượt.
+Hồ sơ có giá trị khác gợi ý được tô màu, gắn **Cần rà** và đưa lên đầu trang.
+Bấm dấu **Cần rà** để mở hồ sơ và xem đề xuất.
+Đánh dấu giữ được khoảng hai phút; hồ sơ không đọc được thì được báo số lượng và rà lại được.
+Gợi ý có thể sai, nên đối chiếu nội dung hồ sơ trước khi xác nhận.
 
 ## Các cách xem khác
 

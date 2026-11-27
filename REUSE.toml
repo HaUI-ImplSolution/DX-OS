@@ -11,6 +11,27 @@ precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 HaUI-ImplSolution"
 SPDX-License-Identifier = "Apache-2.0"
 
+# Classifier data is released under CC-BY-4.0 to the extent HaUI-ImplSolution holds rights; see tools/classifier/data/DATA_CARD.md.
+[[annotations]]
+path = [
+    "tools/classifier/labels.json",
+    "tools/classifier/data/seeds/*.jsonl",
+    "tools/classifier/data/negatives.jsonl",
+    "tools/classifier/eval/tuning/*.csv",
+    "tools/classifier/eval/acceptance/*.csv",
+    "assistant/test/fixtures/classifier.json",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "2026 HaUI-ImplSolution"
+SPDX-License-Identifier = "CC-BY-4.0"
+
+# Classifier source metadata and model weights carry the project's license.
+[[annotations]]
+path = ["tools/classifier/data/sources.json", "tools/classifier/model/*.json"]
+precedence = "override"
+SPDX-FileCopyrightText = "2026 HaUI-ImplSolution"
+SPDX-License-Identifier = "Apache-2.0"
+
 # Maven Wrapper, copied unchanged from Apache Maven.
 [[annotations]]
 path = ["backend/mvnw", "backend/mvnw.cmd", "backend/.mvn/wrapper/maven-wrapper.properties"]
@@ -38,3 +59,11 @@ path = [
 precedence = "override"
 SPDX-FileCopyrightText = "2022 The Noto Project Authors"
 SPDX-License-Identifier = "OFL-1.1"
+
+# The license and notice texts of the libraries in the images, collected by .github/scripts/check_third_party_notices.py;
+# a text may quote an SPDX line of its own project, which is not a license of the file.
+[[annotations]]
+path = ["backend/licenses/THIRD-PARTY-LICENSES-*.txt", "sso/licenses/THIRD-PARTY-LICENSES-*.txt", "clamav/licenses/THIRD-PARTY-LICENSES-*.txt"]
+precedence = "override"
+SPDX-FileCopyrightText = "2026 HaUI-ImplSolution"
+SPDX-License-Identifier = "Apache-2.0"

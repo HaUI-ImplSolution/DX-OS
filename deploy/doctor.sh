@@ -9,7 +9,9 @@
 set -uo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
+source lib/env.sh
 source lib/web-url.sh
+source lib/windows-ports.sh
 
 FAILS=0
 WARNS=0
@@ -18,16 +20,18 @@ warn() { printf '  [WARN] %s\n' "$*"; WARNS=$((WARNS + 1)); }
 fail() { printf '  [FAIL] %s\n' "$*"; FAILS=$((FAILS + 1)); }
 
 # Value of KEY in .env (last assignment), empty when absent or blank.
-env_value() { grep -E "^$1=" .env | tail -n1 | cut -d= -f2-; }
+ENV_VALUE_FILE=.env
 # Port number of a *_HOST_PORT value such as 9080 or 127.0.0.1:9082.
 port_of() { printf '%s' "${1##*:}"; }
 
+DOCKER_REACHABLE=false
 echo "Docker"
 if ! command -v docker >/dev/null 2>&1; then
   fail "docker is not installed"
 elif ! docker info >/dev/null 2>&1; then
   fail "the Docker daemon is not reachable by this user"
 else
+  DOCKER_REACHABLE=true
   version="$(docker compose version --short 2>/dev/null | sed 's/^v//')"
   if [[ -z "$version" ]]; then
     fail "Docker Compose v2 is missing (docker compose version)"
@@ -118,6 +122,14 @@ else
     ok "virus scan of uploads is on (clamd at $scan_host)"
   fi
 
+  if [[ ":$(env_value COMPOSE_FILE):" == *:docker-compose.prometheus.yml:* ]]; then
+    if [[ -z "$(env_value METRICS_PASSWORD)" ]]; then
+      fail "COMPOSE_FILE has docker-compose.prometheus.yml but METRICS_PASSWORD is empty: Prometheus would not start and dxos start would stop (set it, for example to openssl rand -hex 24)"
+    else
+      ok "Prometheus has its metrics password"
+    fi
+  fi
+
   mode="$(env_value DXOS_MODE)"
   profiles=",$(env_value COMPOSE_PROFILES),"
   if [[ -z "$mode" ]]; then
@@ -125,9 +137,9 @@ else
   elif [[ "$mode" != core && "$mode" != full ]]; then
     fail "DXOS_MODE is '$mode' (it is core or full)"
   elif [[ "$mode" == full && "$profiles" != *,app,* ]]; then
-    fail "DXOS_MODE=full but COMPOSE_PROFILES has no app: the web app, the portal and the monitor would not start (dxos start --full sets both)"
+    fail "DXOS_MODE=full but COMPOSE_PROFILES has no app: the web app, the portal, the monitor and the assistant would not start (dxos start --full sets both)"
   elif [[ "$mode" == core && "$profiles" == *,app,* ]]; then
-    fail "DXOS_MODE=core but COMPOSE_PROFILES has app: the web app, the portal and the monitor would start (dxos start --core sets both)"
+    fail "DXOS_MODE=core but COMPOSE_PROFILES has app: the web app, the portal, the monitor and the assistant would start (dxos start --core sets both)"
   else
     ok "mode $mode"
   fi
@@ -135,16 +147,39 @@ else
   if docker compose config --quiet >/dev/null 2>&1; then ok "docker compose config is valid"; else fail "docker compose config fails: run it in deploy/ to see why"; fi
 
   echo "Ports"
-  if [[ -n "$(docker compose ps -q apisix 2>/dev/null)" ]]; then
-    ok "the stack is running, port checks skipped"
-  else
-    for key in APISIX_HOST_PORT POSTGRES_HOST_PORT; do
-      value="$(env_value "$key")"
-      [[ -n "$value" ]] || continue
-      port="$(port_of "$value")"
-      if (exec 3<>"/dev/tcp/127.0.0.1/$port") 2>/dev/null; then fail "$key: port $port is already in use"; else ok "$key: port $port is free"; fi
-    done
-  fi
+  # Each published port: the .env key, the service and the port inside its container. A port that
+  # this stack's own container holds is fine, also when the stack is only partly up; any other
+  # program on it is a conflict. In WSL, Windows is asked as well, since a Windows program is invisible from here.
+  for entry in APISIX_HOST_PORT:apisix:9080 POSTGRES_HOST_PORT:postgres:5432; do
+    key="${entry%%:*}"
+    rest="${entry#*:}"
+    service="${rest%%:*}"
+    inside="${rest#*:}"
+    value="$(env_value "$key")"
+    [[ -n "$value" ]] || continue
+    port="$(port_of "$value")"
+    held=""
+    if [[ "$DOCKER_REACHABLE" == true ]]; then held="$(port_of "$(docker compose port "$service" "$inside" 2>/dev/null | head -n1)")"; fi
+    windows_state=unknown
+    if windows_probe_available; then windows_state="$(windows_port_state "$key")"; fi
+    if [[ "$held" == "$port" && "$port" != 0 ]]; then
+      if [[ "$windows_state" == foreign ]]; then
+        fail "$key: port $port is held by this stack's $service, but on Windows a program outside this stack answers on it; change $key in deploy/.env or stop that program"
+      else
+        ok "$key: port $port is held by this stack's $service"
+      fi
+    elif (exec 3<>"/dev/tcp/127.0.0.1/$port") 2>/dev/null; then
+      if [[ "$DOCKER_REACHABLE" != true ]]; then
+        warn "$key: port $port is in use, and Docker does not answer, so it is not known whether this stack's $service holds it"
+        continue
+      fi
+      fail "$key: port $port is in use by a program outside this stack; dxos stop does not free it, so change $key in deploy/.env or stop that program"
+    elif [[ "$windows_state" == foreign ]]; then
+      fail "$key: port $port is free in WSL but a program on Windows holds it; change $key in deploy/.env or stop that program"
+    else
+      ok "$key: port $port is free"
+    fi
+  done
 fi
 
 echo

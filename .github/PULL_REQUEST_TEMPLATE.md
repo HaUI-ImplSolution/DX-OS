@@ -10,21 +10,42 @@ Closes #
 
 <!-- Các bước để người review chạy và thấy thay đổi hoạt động. -->
 
-## Đã kiểm tra
-
-- [ ] `./mvnw spotless:check` và `./mvnw verify` (backend)
-- [ ] `npx tsc --noEmit` và `npm run lint` (frontend)
-- [ ] `npm run build` trong `website/` (trang docs)
-- [ ] `python3 .github/scripts/check_licenses.py`
-- [ ] `reuse lint` (mọi file có header SPDX hoặc khai trong `REUSE.toml`)
-
 ## Danh sách kiểm
 
-- [ ] Đã cập nhật `@Operation` khi đổi API
-- [ ] Tài liệu liên quan (`README.md`, `docs/`, `website/docs/`) cập nhật trong cùng pull request
-- [ ] `CHANGELOG.md` mục `[Unreleased]` có một dòng cho mỗi thay đổi người dùng thấy
-- [ ] Cấu hình mới có trong `deploy/.env.example` kèm chú thích
-- [ ] Dependency mới có giấy phép OSI, đã cập nhật `DEPENDENCIES.txt` và `sbom/`
-- [ ] Không fork, vá hay đóng gói mã nguồn của dự án khác
+### Backend
+
+- [ ] `./mvnw spotless:check` và `./mvnw verify`
+- [ ] `@Operation` cập nhật khi đổi API
 - [ ] Mã lõi không chứa tên thực thể, vai hay luồng của một lĩnh vực
-- [ ] Không có secret, `.env`, dữ liệu thật hay trọng số mô hình trong diff
+
+### Frontend
+
+- [ ] `npx tsc --noEmit`, `npm run lint` và `npm test`
+
+### Trợ lý và bộ phân loại
+
+- [ ] `npm test` trong `assistant/`
+- [ ] Đổi dữ liệu hoặc trọng số: chạy lại `tools/classifier/evaluate.py`
+- [ ] Đổi trọng số: sinh lại bộ đối chiếu bằng `make_parity_fixture.py`
+- [ ] `MODEL_CARD.md` và `DATA_CARD.md` khớp số đo và nguồn dữ liệu
+- [ ] Dữ liệu không chứa hồ sơ thật
+
+### Giấy phép và dependency
+
+- [ ] `python3 .github/scripts/check_licenses.py`
+- [ ] `reuse lint`
+- [ ] Dependency mới: giấy phép OSI, có trong `DEPENDENCIES.txt` và `sbom/`
+- [ ] Trọng số, dữ liệu hoặc image mới: khai trong `component-catalog.json` và `REUSE.toml`
+- [ ] Image mới: có `/licenses` gồm `LICENSE`, `NOTICE`, `SOURCES.txt`
+- [ ] Không fork, vá hay đóng gói mã nguồn của dự án khác
+
+### Triển khai
+
+- [ ] Cấu hình mới có trong `deploy/.env.example` kèm chú thích
+- [ ] Không có secret hay `.env` trong diff
+
+### Tài liệu
+
+- [ ] `npm run build` trong `website/`
+- [ ] `README.md`, `docs/`, `website/docs/` cập nhật trong cùng pull request
+- [ ] `CHANGELOG.md` mục `[Unreleased]` có một dòng cho mỗi thay đổi người dùng thấy

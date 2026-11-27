@@ -1,0 +1,74 @@
+{
+  "ARCHITECTURE.md": {
+    "vi": "121d08dc0b8c61a7",
+    "en": "8319ad28e11965a2"
+  },
+  "README.md": {
+    "vi": "76f6213ec97bc026",
+    "en": "6194dd2dfd5845f1"
+  },
+  "docs/API.md": {
+    "vi": "8beb8285432efc50",
+    "en": "fd4e163dc65ca00d"
+  },
+  "docs/EXTENSIONS.md": {
+    "vi": "f9fe780fc8c4f867",
+    "en": "f909b08998ed47e9"
+  },
+  "docs/FEATURES.md": {
+    "vi": "f4729ebdfe7edd23",
+    "en": "c742e2c9bf59515a"
+  },
+  "docs/GLOSSARY.md": {
+    "vi": "cafde08072b0080a",
+    "en": "aa69280dba137ecd"
+  },
+  "docs/INTEGRATIONS.md": {
+    "vi": "a51bb927f9a858cd",
+    "en": "8661d371dd004f42"
+  },
+  "docs/MODEL.md": {
+    "vi": "5a38c06105c1df1b",
+    "en": "e91ffc6cb5e93054"
+  },
+  "docs/MONITORING.md": {
+    "vi": "86e9ee88adf3872e",
+    "en": "073903372c55a1aa"
+  },
+  "docs/QUICKSTART.md": {
+    "vi": "64d94048c9614080",
+    "en": "569115d9531d4acb"
+  },
+  "docs/REPORTING.md": {
+    "vi": "eb8ce4a635b12dc4",
+    "en": "e6374b7e4c4e60ee"
+  },
+  "docs/SIZING.md": {
+    "vi": "0dad2a23352c8b39",
+    "en": "3dd5a9c0125e2a04"
+  },
+  "docs/STORAGE.md": {
+    "vi": "162c267ace264d9d",
+    "en": "28d4bc1d7a3414a4"
+  },
+  "website/docs/hinh-anh.mdx": {
+    "vi": "9b49dc067cd5164e",
+    "en": "5c8a0548e813c2e8"
+  },
+  "website/docs/huong-dan/nguoi-nop.md": {
+    "vi": "0cb4157e47e71c37",
+    "en": "aab5821e9ed0adc5"
+  },
+  "website/docs/huong-dan/nguoi-trien-khai.md": {
+    "vi": "8a29ed0d1ace2010",
+    "en": "0ec47405100306d7"
+  },
+  "website/docs/huong-dan/nguoi-xu-ly.md": {
+    "vi": "02367d8137ed1aa3",
+    "en": "c331151c71a5a3e4"
+  },
+  "website/docs/intro.md": {
+    "vi": "511f88001e6e0817",
+    "en": "ed4178893fd8be05"
+  }
+}

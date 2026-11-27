@@ -48,7 +48,7 @@ jobs:
           grep -q KEYCLOAK_DB_PASSWORD compose-error.log
 
   gateway:
-    name: Validate the gateway routes
+    name: Validate gateway routes
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -94,7 +94,7 @@ jobs:
           PYTHON
 
   install:
-    name: Install from the release archive
+    name: Test the install
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -148,7 +148,7 @@ jobs:
               done
 
   backup:
-    name: Back up and restore
+    name: Test backup and restore
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -225,7 +225,7 @@ jobs:
 
       - name: Name the images by the files they are built from
         id: key
-        run: echo "key=dxos-images-${{ hashFiles('backend/**', '!backend/**/src/test/**', '!backend/**/target/**', 'frontend/**', 'portal/**', 'sso/**', 'deploy/docker-compose.yml') }}" >> "$GITHUB_OUTPUT"
+        run: echo "key=dxos-images-${{ hashFiles('backend/**', '!backend/**/src/test/**', '!backend/**/target/**', 'frontend/**', 'portal/**', 'sso/**', 'assistant/**', 'tools/classifier/model/**', 'deploy/docker-compose.yml') }}" >> "$GITHUB_OUTPUT"
 
       - name: Look for the images of these files in the cache
         id: cache
@@ -259,7 +259,7 @@ jobs:
           key: ${{ steps.key.outputs.key }}
 
   api-e2e:
-    name: "API end-to-end (${{ matrix.group }})"
+    name: "Test the API (${{ matrix.group }})"
     needs: images
     runs-on: ubuntu-24.04
     timeout-minutes: 60
@@ -283,7 +283,7 @@ jobs:
       - name: Create an env file with random secrets
         run: deploy/make_env.sh deploy/.env
 
-      # Only the core mode run of the API end-to-end job keeps the scan: ClamAV needs about 1 GB and the other runs do not test it.
+      # Only the core mode run of the Test the API job keeps the scan: ClamAV needs about 1 GB and the other runs do not test it.
       - name: Leave the virus scan out
         if: matrix.mode != 'core'
         run: sed -i 's/^COMPOSE_PROFILES=.*/COMPOSE_PROFILES=app/; s/^STORAGE_SCAN_HOST=.*/STORAGE_SCAN_HOST=/' deploy/.env
@@ -368,7 +368,7 @@ jobs:
           path: ${{ runner.temp }}/compose.log
 
   gateway-surface:
-    name: "Gateway surface (${{ matrix.mode }} mode)"
+    name: "Test gateway surface (${{ matrix.mode }} mode)"
     needs: images
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -437,7 +437,7 @@ jobs:
         run: docker compose logs --no-color --timestamps --tail=300 | tail -n 400
 
   browser-e2e:
-    name: Browser end-to-end
+    name: Test in a browser
     needs: images
     runs-on: ubuntu-24.04
     timeout-minutes: 30

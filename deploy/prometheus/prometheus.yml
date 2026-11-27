@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 # SPDX-License-Identifier: Apache-2.0
-# Scrape configuration of the optional Prometheus (docker-compose.grafana.yml).
+# Scrape configuration of the optional Prometheus (docker-compose.prometheus.yml).
 # The password file is written at start from METRICS_PASSWORD of deploy/.env.
 global:
   scrape_interval: 30s

@@ -61,9 +61,8 @@ ALLOWED = {
     # GPL-2.0-only with the Classpath exception, the SPDX id that the Java SBOMs use for it.
     "GPL-2.0-with-classpath-exception",
 }
-# Images run as separate processes, unmodified and reached over the network: the copyleft ones are GPL-2.0-only
-# (ClamAV) and AGPL-3.0-only (the optional Grafana), which a network service obliges only when it is modified.
-ALLOWED_IMAGES = ALLOWED | {"PostgreSQL", "GPL-2.0-only", "AGPL-3.0-only"}
+# Images run as separate processes, unmodified and reached over the network: the copyleft ones are GPL-2.0-only (ClamAV).
+ALLOWED_IMAGES = ALLOWED | {"PostgreSQL", "GPL-2.0-only"}
 ARTIFACT_EXTENSIONS = {"onnx", "pt", "pth", "ckpt", "safetensors", "gguf", "pdf", "zip", "parquet", "csv", "xlsx"}
 FROM_LINE = re.compile(r"^FROM\s+(?:--platform=\S+\s+)?(\S+)", re.MULTILINE)
 IMAGE_LINE = re.compile(r"^\s*image:\s*[\"']?([^\s\"'#]+)", re.MULTILINE)

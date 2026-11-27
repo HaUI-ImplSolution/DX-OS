@@ -219,9 +219,6 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/licenses/dependency-excepti
 | Prometheus 3.13.5 (image             | Apache-2.0                           | Đọc số đo dxos_* của lõi; tùy chọn,  |
 | prom/prometheus) [11]                |                                      | không sửa mã                         |
 +--------------------------------------+--------------------------------------+--------------------------------------+
-| Grafana 12.4.15 (image               | AGPL-3.0-only (một số gói Apache-2.0)| Vẽ dashboard số đo của lõi; tùy      |
-| grafana/grafana, bản OSS) [11]       |                                      | chọn, không sửa mã                   |
-+--------------------------------------+--------------------------------------+--------------------------------------+
 | Maven Wrapper 3.3.4 [7] (mvnw,       | Apache-2.0                           | Chạy Maven ở phiên bản đã ghim;      |
 | mvnw.cmd, maven-wrapper.properties)  |                                      | chép nguyên từ Apache Maven          |
 +--------------------------------------+--------------------------------------+--------------------------------------+
@@ -250,11 +247,11 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/licenses/dependency-excepti
 |                                      |                                      |                                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | DuckDB httpfs (duckdb/duckdb-httpfs) | MIT                                  | Extension DuckDB đọc kho S3; tải lúc |
-|                                      |                                      | chạy lần đầu                         |
+| [13]                                 |                                      | chạy lần đầu                         |
 |                                      |                                      |                                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
 | DuckDB postgres (duckdb/duckdb-      | MIT                                  | Extension DuckDB đọc PostgreSQL; tải |
-| postgres)                            |                                      | lúc chạy lần đầu                     |
+| postgres) [13]                       |                                      | lúc chạy lần đầu                     |
 |                                      |                                      |                                      |
 |                                      |                                      |                                      |
 +--------------------------------------+--------------------------------------+--------------------------------------+
@@ -310,7 +307,7 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/licenses/dependency-excepti
     Image phát hành kèm GPL-2.0 của ClamAV và giấy phép của các phần bên thứ ba dựng sẵn trong nó ở /licenses/THIRD-PARTY-LICENSES-clamav.txt; nguồn ở github.com/Cisco-Talos/clamav tag clamav-1.5.4.
     Bộ chữ ký virus trong image mang văn bản GPL-2.0 ở tệp COPYING trong mỗi tệp .cvd, và được giữ nguyên.
     Chữ ký virus do freshclam trong container tải từ mạng phân phối chính thức của ClamAV vào volume `clamav_data` của từng bản cài; dự án không mirror, không cache chung và không đóng gói chữ ký.
-    Tài liệu chính thức không có văn bản điều khoản riêng cho kho chữ ký; điều kiện sử dụng nằm ở các trang sau (đọc ngày 2026-11-11):
+    Tài liệu chính thức không có văn bản điều khoản riêng cho kho chữ ký; điều kiện sử dụng nằm ở các trang sau:
     - Chỉ freshclam và cvdupdate là cách tải được hỗ trợ; mã 429 là bị giới hạn tốc độ, mã 403, 503 và 1020 là bị chặn hoặc dùng bản đã hết hỗ trợ (https://docs.clamav.net/faq/faq-freshclam.html).
     - Image chính thức chạy freshclam mặc định một lần mỗi ngày (https://docs.clamav.net/manual/Installing/Docker.html).
     - Mirror riêng chỉ nên dựng khi cần, và phải dùng freshclam hoặc cvdupdate (https://docs.clamav.net/appendix/CvdPrivateMirror.html).
@@ -355,7 +352,7 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/licenses/dependency-excepti
 
 [10] Cầu nối MQTT tùy chọn chạy hai image nguyên bản, không sửa và không phân phối lại; chúng chỉ được kéo khi bật deploy/docker-compose.mqtt.yml.
     Giấy phép của dự án nguồn được kiểm ở đúng phiên bản bằng .github/scripts/check_upstream_licenses.py: Mosquitto 2.0.23 (EPL-2.0 hoặc EDL-1.0, LICENSE.txt) và CPython 3.13.18 (Python-2.0, PSF License Version 2).
-    Thành phần của hai image (Alpine 3.24.4), đọc ngày 2026-11-24 từ metadata apk và từ tệp giấy phép của dự án gốc ở đúng phiên bản; đầy đủ từng gói ở docs/IMAGE_PACKAGES.md:
+    Thành phần của hai image (Alpine 3.24.4), đọc từ metadata apk và từ tệp giấy phép của dự án gốc ở đúng phiên bản; đầy đủ từng gói ở docs/IMAGE_PACKAGES.md:
     - eclipse-mosquitto: Mosquitto liên kết với OpenSSL 3.5.9 (Apache-2.0), libwebsockets 4.3.5 (MIT) và musl 1.2.6 (MIT); cJSON 1.7.19 (MIT) và zlib 1.3.2 (Zlib) đi kèm.
     - python: CPython 3.13.18 (Python-2.0) cùng OpenSSL 3.5.9, libffi 3.5.2 (MIT), gdbm 1.26 và readline 8.3.3 (GPL-3.0-or-later), ncurses 6.6 (X11), libuuid, xz-libs (0BSD) và zlib.
     - Cả hai có gói nền Alpine: BusyBox, apk-tools, ssl_client (GPL-2.0-only), musl-utils, ca-certificates (MPL-2.0, MIT), alpine-keys (MIT) và tzdata (phạm vi công cộng).
@@ -365,18 +362,15 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/licenses/dependency-excepti
     Mã của dự án ở deploy/mqtt/ và examples/itot-simulator theo Apache-2.0 và chỉ dùng thư viện chuẩn của Python.
     Đây là đọc metadata và tài liệu của các dự án, không phải tư vấn pháp lý.
 
-[11] Prometheus và Grafana tùy chọn chạy hai image nguyên bản, không sửa và không phân phối lại; chúng chỉ được kéo khi bật deploy/docker-compose.grafana.yml.
-    Giấy phép của dự án nguồn được kiểm ở đúng phiên bản bằng .github/scripts/check_upstream_licenses.py: Prometheus v3.13.5 (Apache-2.0) và Grafana v12.4.15 (AGPL-3.0-only).
-    Grafana theo AGPL-3.0-only, đúng như dự án khai ở LICENSING.md; AGPL là giấy phép OSI công nhận và chỉ buộc mở mã nguồn khi sửa chương trình rồi cho người khác dùng qua mạng.
-    Dự án chạy Grafana nguyên bản ở dịch vụ riêng, và chỉ thêm tệp cấu hình, nguồn dữ liệu và dashboard của chính mình (Apache-2.0).
-    Image grafana/grafana là bản OSS; deploy/docker-compose.grafana.yml đặt GF_PLUGINS_PREINSTALL_DISABLED nên Grafana không tải thêm plugin nào lúc chạy, và dự án không dùng bản Enterprise.
-    Thành phần của image prometheus, đọc ngày 2026-11-24: Prometheus 3.13.5 cùng 234 mô-đun Go biên dịch vào tệp chạy, BusyBox 1.38.0 (GPL-2.0-only) và bộ chứng chỉ CA (MPL-2.0).
+[11] Prometheus tùy chọn chạy image nguyên bản, không sửa và không phân phối lại; image chỉ được kéo khi bật deploy/docker-compose.prometheus.yml.
+    Giấy phép của dự án nguồn được kiểm ở đúng phiên bản bằng .github/scripts/check_upstream_licenses.py: Prometheus v3.13.5 (Apache-2.0).
+    Thành phần của image: Prometheus 3.13.5 cùng 234 mô-đun Go biên dịch vào tệp chạy, BusyBox 1.38.0 (GPL-2.0-only) và bộ chứng chỉ CA (MPL-2.0).
     Giấy phép của từng mô-đun Go tra ở đúng phiên bản bằng deps.dev: Apache-2.0, MIT, BSD-2-Clause, BSD-3-Clause, ISC và MPL-2.0; github.com/opencontainers/go-digest v1.0.0 khai Apache-2.0 cho mã và CC-BY-SA-4.0 cho tài liệu.
-    Thành phần của image grafana (Alpine 3.24.3): Grafana 12.4.15 cùng 510 mô-đun Go biên dịch vào tệp chạy, và các gói nền Alpine theo GPL, LGPL, MIT, BSD-3-Clause, X11, Zlib hoặc Apache-2.0 (như OpenSSL 3.5.9); curl theo giấy phép curl.
-    Mô-đun Go của Grafana tra cùng cách: Apache-2.0, MIT, BSD, ISC, MPL-2.0, MIT-0; AGPL-3.0 cho github.com/grafana/alerting, loki và tempo là mã của chính Grafana Labs; github.com/apparentlymart/go-textseg v15.0.0 khai MIT, Apache-2.0 và Unicode-DFS-2016.
-    Giấy phép OSI không liệt kê trong hai image: tzdata ở phạm vi công cộng và tài liệu CC-BY-SA-4.0 của go-digest; giấy phép curl của curl 8.23.0 do OSI công nhận.
-    Phần giao diện web của Grafana đóng gói sẵn các thư viện npm mà dự án nguồn không liệt kê theo phiên bản cho image; dự án chưa kiểm từng thư viện đó và dựa vào khai báo giấy phép của Grafana (AGPL-3.0-only, vài thư mục Apache-2.0).
-    Các gói GPL của hai image chạy như tiến trình riêng, không sửa và không liên kết với mã của dự án.
+    Giao diện web nhúng trong tệp chạy gồm bản mặc định và bản cũ (bật bằng --enable-feature=old-ui).
+    Giấy phép của các gói npm trong hai bản, đọc từ tarball đúng phiên bản: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, 0BSD và BlueOak-1.0.0; throttle-debounce 2.3.0 kèm cả văn bản GPL-2.0, dự án dẫn theo MIT như gói khai.
+    Giao diện mặc định tự phát danh sách giấy phép các gói của nó ở /assets/third-party-licenses.txt.
+    Giấy phép OSI không liệt kê trong image: tài liệu CC-BY-SA-4.0 của go-digest, phông biểu tượng Codicon của Microsoft (CC-BY-4.0) và biểu tượng Font Awesome Free 6.7.2 của giao diện cũ (CC-BY-4.0).
+    BusyBox chạy như tiến trình riêng, không sửa và không liên kết với mã của dự án.
     Đây là đọc metadata và tài liệu của các dự án, không phải tư vấn pháp lý.
 
 [12] Trọng số của bộ phân loại hồ sơ là tệp JSON do đội huấn luyện, theo Apache-2.0.
@@ -386,6 +380,8 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/licenses/dependency-excepti
     - tools/classifier/model/clinic.json: 96a48d3ebb8e06d8ddf3afadedf9d4a154c7f0cc681936389984688d44bb51cc
     .github/scripts/check_licenses.py kiểm mỗi tệp trọng số mà assistant/Dockerfile copy vào image có một dòng ở đây và mã băm khớp tệp thật; huấn luyện lại thì cập nhật dòng.
     Dữ liệu huấn luyện theo CC-BY-4.0, nêu ở mục 7.
+
+[13] Tệp nhị phân của hai extension DuckDB liên kết sẵn thư viện khác, như OpenSSL (Apache-2.0), libcurl (curl) và AWS SDK for C++ (Apache-2.0); extension postgres dùng libpq (PostgreSQL License).
 
 6. TRANG CHỦ VÀ NGUỒN
 =====================
@@ -439,6 +435,7 @@ Mọi giấy phép của dự án và của thành phần dùng đều thuộc d
 .github/scripts/check_licenses.py chỉ nhận một gói ngoài danh sách khi gói được nêu tên kèm lý do ở .github/licenses/dependency-exceptions.json.
 Với REUSE.toml, script chặn mọi giấy phép ngoài danh sách, trừ CC-BY-4.0 ở đúng các đường dẫn dữ liệu của bộ phân loại.
 .github/scripts/check_license_inventory.py áp cùng luật cho mọi gói ở docs/DEPENDENCY_INVENTORY.md, kể cả gói dev, gói test và plugin build.
+.github/scripts/check_license_texts.py đọc tệp giấy phép trong gói npm production của frontend, assistant và thư viện Maven compile, runtime của backend, và báo đỏ khi văn bản hạn chế việc sử dụng hoặc không phải giấy phép mở.
 
 Dữ liệu chỉ đọc lúc dựng trang tài liệu, không có trong trang đã dựng:
   - caniuse-lite: CC-BY-4.0.
@@ -486,8 +483,14 @@ Gói ngoài OSI trong các lớp đó hiện ở cột Ngoài OSI của docs/IMA
 Gói hệ điều hành và gói ngôn ngữ trong image bên thứ ba (kéo nguyên bản hoặc làm lớp nền ở trên) giữ giấy phép của nhà phân phối.
 Giấy phép ngoài OSI của chúng ở cột Ngoài OSI của docs/IMAGE_PACKAGES.md; ví dụ nổi bật:
   - libbz2 1.0.8 (giấy phép bzip2, kiểu BSD), sqlite-libs 3.53.4 (phạm vi công cộng) và ncurses 6.6 (giấy phép X11): image python của cầu nối MQTT.
-  - tzdata (phạm vi công cộng): các image eclipse-mosquitto, python và grafana.
+  - tzdata (phạm vi công cộng): các image eclipse-mosquitto và python.
   - Tài liệu của go-digest (CC-BY-SA-4.0), mô-đun Go biên dịch vào image prometheus; mã của nó theo Apache-2.0.
+  - Phông Codicon và biểu tượng Font Awesome Free (CC-BY-4.0): giao diện web nhúng trong image prometheus.
+
+Phông Glyphicons Halflings đi cùng Bootstrap 3 và PatternFly 3 nhúng trong hai image: image chrislusf/seaweedfs (kéo nguyên bản) và bản phân phối Keycloak trong image sso (theme đăng nhập keycloak).
+Tệp phông ghi bản quyền của Jan Kovarik kèm "All rights reserved" và không mang văn bản giấy phép riêng.
+Bootstrap phát hành theo MIT, và tài liệu Bootstrap 3 nêu tác giả cho Bootstrap dùng bộ phông này miễn phí, kèm đề nghị dẫn liên kết về Glyphicons.
+Dự án không sửa và không tách phông ra khỏi hai thành phần đó.
 
 Tên giấy phép theo SPDX: CPython theo Python-2.0 (PSF License Version 2, OSI công nhận), curl theo curl (OSI công nhận), EDL-1.0 là văn bản của BSD-3-Clause và luôn đi cùng EPL-2.0 để chọn.
 Trạng thái OSI của từng tên đối chiếu với danh sách SPDX (license-list-data) và trang opensource.org/license.

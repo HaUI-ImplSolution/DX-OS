@@ -121,13 +121,11 @@ else
     ok "virus scan of uploads is on (clamd at $scan_host)"
   fi
 
-  if [[ ":$(env_value COMPOSE_FILE):" == *:docker-compose.grafana.yml:* ]]; then
+  if [[ ":$(env_value COMPOSE_FILE):" == *:docker-compose.prometheus.yml:* ]]; then
     if [[ -z "$(env_value METRICS_PASSWORD)" ]]; then
-      fail "COMPOSE_FILE has docker-compose.grafana.yml but METRICS_PASSWORD is empty: Prometheus would not start and dxos start would stop (set it, for example to openssl rand -hex 24)"
-    elif ! grep -qE '^GF_SECURITY_ADMIN_PASSWORD=.+' grafana.env 2>/dev/null; then
-      fail "COMPOSE_FILE has docker-compose.grafana.yml but GF_SECURITY_ADMIN_PASSWORD is empty or missing in deploy/grafana.env: Grafana would not start and dxos start would stop"
+      fail "COMPOSE_FILE has docker-compose.prometheus.yml but METRICS_PASSWORD is empty: Prometheus would not start and dxos start would stop (set it, for example to openssl rand -hex 24)"
     else
-      ok "Prometheus and Grafana have their passwords"
+      ok "Prometheus has its metrics password"
     fi
   fi
 

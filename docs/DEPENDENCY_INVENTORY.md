@@ -20,7 +20,7 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 | Go: pgschema trong image backend | 16 |
 | Keycloak trong image sso | 438 |
 | ClamAV: phần nhúng trong image clamav | 13 |
-| Image | 22 |
+| Image | 21 |
 | Công cụ CI và dựng | 23 |
 | Công cụ của máy chạy | 8 |
 | Thư viện Python | 1 |
@@ -2755,7 +2755,6 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 | `eclipse-temurin` | 21-jre-alpine | GPL-2.0-with-classpath-exception | image |  |
 | `eclipse-temurin` | 21-jre-jammy | GPL-2.0-with-classpath-exception | image |  |
 | `gitleaks/gitleaks` | v8.30.1 | MIT | image |  |
-| `grafana/grafana` | 12.4.15 | AGPL-3.0-only | image |  |
 | `nginx` | 1.30-alpine-slim | BSD-2-Clause | image |  |
 | `node` | 22-alpine | MIT | image |  |
 | `node` | 24.16.0-alpine | MIT | image |  |

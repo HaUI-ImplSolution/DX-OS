@@ -155,7 +155,7 @@ Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằ
 | `dxos version` | In bản đang cài (thẻ image) và thư mục cài |
 | `dxos uninstall [--purge]` | Xóa container và lệnh `dxos`; `--purge` xóa cả dữ liệu, kho sao lưu trong `deploy/backups` và thư mục cài, phải gõ xác nhận; kho ở `BACKUP_DIR` hoặc `BACKUP_REPOSITORY` ngoài thư mục cài được giữ nguyên |
 
-Prometheus và Grafana là thành phần tùy chọn nằm ngoài stack mặc định; cách bật và đọc dashboard ở [`MONITORING.md`](./MONITORING.md#prometheus-và-grafana-kèm-theo-tùy-chọn).
+Prometheus là thành phần tùy chọn nằm ngoài stack mặc định; cách bật ở [`MONITORING.md`](./MONITORING.md#prometheus-kèm-theo-tùy-chọn).
 Cầu nối MQTT là thành phần tùy chọn nằm ngoài stack mặc định; cách bật, cấu hình tuyến và giới hạn ở [`INTEGRATIONS.md`](./INTEGRATIONS.md#cầu-nối-mqtt-tùy-chọn).
 Trợ lý nghiệp vụ chạy cùng stack ở chế độ full; cấu hình, thay khóa và gỡ ở [`assistant/README.md`](../assistant/README.md).
 File route riêng `deploy/apisix/local.yaml` được giữ khi cập nhật và ghép với cấu hình lõi mới sau khi kiểm; cấu hình xung đột làm cập nhật dừng trước khi thay container.
@@ -667,7 +667,7 @@ Quét tắt thì tệp nhiễm được lưu bình thường, và `dxos doctor` 
 Chữ ký virus tải về lần đầu mất vài phút và được giữ trong volume `clamav_data`.
 Image chính thức tự cập nhật chữ ký một lần mỗi ngày từ mạng phân phối của ClamAV; không dùng `curl` hay script riêng để tải chúng, vì ClamAV có thể giới hạn hoặc chặn cách tải đó.
 Mã 429 trong log của `clamav` là bị giới hạn tốc độ (hay gặp ở IP máy chủ đám mây dùng chung), và chữ ký cũ vẫn dùng được cho đến lần cập nhật sau.
-ClamAV chặn tải chữ ký với phiên bản đã hết hỗ trợ, nên nâng image `clamav/clamav` trong `deploy/docker-compose.yml` khi bản đang ghim tới hạn (chính sách ở https://docs.clamav.net/faq/faq-eol.html).
+ClamAV chặn tải chữ ký với phiên bản đã hết hỗ trợ, nên nâng image `clamav/clamav` trong `clamav/Dockerfile` khi bản đang ghim tới hạn (chính sách ở https://docs.clamav.net/faq/faq-eol.html).
 Mỗi lần clamd nạp lại chữ ký (hằng ngày và sau khi khởi động) nó không quét được khoảng 10 giây, và người dùng gặp 503 trong lúc đó; chờ rồi tải lại.
 Thử bằng tệp EICAR (chuỗi kiểm thử chuẩn của ngành diệt virus): tệp chỉ gồm đúng chuỗi đó, đổi tên `.pdf` rồi đính vào một yêu cầu; `e2e/api/check_demo.py` tự làm bước này khi `STORAGE_SCAN_HOST` có giá trị, cùng với tệp sạch và tệp tải lên lúc ClamAV dừng, và nhóm chế độ lõi của job `API end-to-end` chạy nó trong CI.
 

@@ -59,6 +59,9 @@ jobs:
       - name: DEPENDENCIES.txt lists every package of the lockfiles, each with a license the OSI approves
         run: python3 .github/scripts/check_license_inventory.py check
 
+      - name: The license files inside the shipped packages restrict nothing
+        run: python3 .github/scripts/check_license_texts.py
+
       - name: Every image the stack runs has its table of packages
         run: python3 .github/scripts/check_image_packages.py check
 

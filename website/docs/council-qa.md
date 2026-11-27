@@ -28,7 +28,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 | 17 | Bảo mật: gọi thẳng API để lách quy trình thì sao? |
 | 18 | Giấy phép tuân thủ thế nào? |
 | 19 | Mã có phần do công cụ AI viết, đội kiểm soát thế nào? |
-| 20 | Bảng giám sát dùng Grafana theo AGPL, có trái cam kết nguồn mở không? |
+| 20 | Sao không kèm Grafana cho số đo của lõi? |
 
 ## 1. Open-Core nằm ở đâu, thành phần nào chạy headless?
 
@@ -195,7 +195,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 ## 18. Giấy phép tuân thủ thế nào?
 
 - Mã của đội theo Apache-2.0, có `LICENSE` toàn văn, `NOTICE` và dòng SPDX ở đầu mỗi tệp mã.
-- Mã, tài liệu và ảnh của repository theo Apache-2.0, hai tệp phông theo OFL-1.1; không có thành phần AGPL nào trong cây mã; Grafana (AGPL-3.0) chỉ là image tùy chọn, chạy nguyên bản ở dịch vụ riêng.
+- Mã, tài liệu và ảnh của repository theo Apache-2.0, hai tệp phông theo OFL-1.1; không có thành phần AGPL nào trong cây mã.
 - Mỗi bản phát hành có gói `.tar.gz` kèm `.sha256` và SBOM CycloneDX; không dùng định dạng đóng.
 - Job `Check licenses` của workflow `Compliance` chạy ở mọi pull request: kiểm header, giấy phép của từng gói trong SBOM, danh mục image, và `docs/DEPENDENCY_INVENTORY.md` liệt kê mọi gói kể cả gói dev, test và plugin build; mỗi image phát hành kèm `LICENSE`, `NOTICE` và giấy phép của thư viện ở `/licenses`, và `docs/IMAGE_PACKAGES.md` liệt kê gói bên trong các image bên thứ ba.
 - Cam kết của đội chặt hơn thể lệ: cả công cụ, mô hình AI và dữ liệu đều phải mở; thành phần không đạt đã gỡ khỏi bản phát hành.
@@ -212,14 +212,11 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 - Quy tắc nằm ở mục "Công cụ AI hỗ trợ" của `CONTRIBUTING.md`.
 - **Bằng chứng:** `git log --grep "Co-Authored-By"`; `CONTRIBUTING.md`; job `Check licenses` và `Scan for secrets` của workflow `Compliance`.
 
-## 20. Bảng giám sát dùng Grafana theo AGPL, có trái cam kết nguồn mở không?
+## 20. Sao không kèm Grafana cho số đo của lõi?
 
-- Không: AGPL-3.0 nằm trong danh sách giấy phép được OSI công nhận, đúng yêu cầu nguồn mở của thể lệ.
-- Grafana chỉ là image tùy chọn, tắt mặc định; chỉ chạy khi đặt `COMPOSE_FILE` có `docker-compose.grafana.yml`, lõi và cây mã không phụ thuộc vào nó.
-- Đội chạy image gốc như một dịch vụ riêng, nối với lõi qua HTTP; không sửa mã Grafana, không nhúng, không liên kết thư viện của nó.
-- Nghĩa vụ công bố mã của AGPL chỉ phát sinh khi sửa chương trình rồi cho người khác dùng qua mạng; đội không sửa nên không có nghĩa vụ thêm.
-- Repository chỉ chứa tệp cấu hình và dashboard của đội, theo Apache-2.0; không chứa mã của Grafana.
-- Lõi đã phát số đo theo chuẩn Prometheus nên Grafana đọc thẳng, đội không phải tự viết trang biểu đồ.
-- Dashboard là một tệp JSON chuẩn; ai không muốn dùng Grafana của đội thì nạp tệp đó vào Grafana của mình, hoặc chỉ dùng Prometheus (Apache-2.0).
-- Phiên bản và kết quả rà từng thành phần của image ghi ở ghi chú về Prometheus và Grafana của `DEPENDENCIES.txt`.
-- **Bằng chứng:** `deploy/docker-compose.grafana.yml`, `deploy/grafana/dashboards/dxos.json`, ghi chú về Prometheus và Grafana của `DEPENDENCIES.txt`; `python3 .github/scripts/check_licenses.py`; mục "Prometheus và Grafana kèm theo" của `docs/MONITORING.md`.
+- Vì giấy phép: image `grafana/grafana:12.4.15` đóng gói trong giao diện web hai gói `@locker/near-membrane-shared` và `@locker/near-membrane-shared-dom` 0.14.0.
+- `package.json` của hai gói ghi MIT, nhưng tệp `LICENSE.txt` phát hành kèm là Terms of Use của Salesforce.
+- Điều khoản đó cấm người dùng ở nước bị Mỹ cấm vận, buộc người dùng bồi thường cho Salesforce và cho Salesforce thu dữ liệu sử dụng; theo đội đọc, nó không đạt định nghĩa nguồn mở của OSI.
+- Mã của Grafana vẫn khai AGPL-3.0; phần không đạt là hai gói đi kèm, nên đội không đưa image này vào dự án.
+- Lõi phát số đo theo định dạng Prometheus: dự án kèm Prometheus (Apache-2.0) tùy chọn, và người triển khai nối công cụ giám sát của mình vào.
+- **Bằng chứng:** `npm pack @locker/near-membrane-shared@0.14.0` rồi mở `package/LICENSE.txt`; source map `public/build/*.js.map` trong image Grafana nêu hai gói; `deploy/docker-compose.prometheus.yml`.

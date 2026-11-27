@@ -44,7 +44,7 @@ cd ../frontend && npm install && npm run dev
 | Backend | `./mvnw spotless:check` rồi `./mvnw verify` trong `backend/`; các nhóm test và cách đo độ phủ ở [`docs/TESTING.md`](./docs/TESTING.md), «Test của backend» |
 | Frontend | `npx tsc --noEmit` rồi `npm run lint` trong `frontend/` |
 | Toàn stack | Các script `e2e/api/check_*.py` theo thứ tự ở [`docs/TESTING.md`](./docs/TESTING.md), mục 4, trên stack mới dựng |
-| Giấy phép | `python3 .github/scripts/check_licenses.py`; `python3 .github/scripts/check_license_inventory.py check` |
+| Giấy phép | `python3 .github/scripts/check_licenses.py`; `python3 .github/scripts/check_license_inventory.py check`; `python3 .github/scripts/check_license_texts.py` (cần mạng) |
 | Header giấy phép | `pipx run --spec reuse==6.3.0 reuse lint` |
 | Giấy phép của phiên bản đang dùng | `GITHUB_TOKEN=... python3 .github/scripts/check_upstream_licenses.py` và `python3 -m unittest discover -s .github/scripts/tests` |
 | Trích dẫn giữa các tài liệu | `python3 .github/scripts/check_doc_refs.py` |

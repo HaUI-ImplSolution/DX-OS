@@ -2248,7 +2248,7 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 | `actions/cache/save` | v6.1.0 | MIT | ci |  |
 | `actions/checkout` | v7.0.1 | MIT | ci |  |
 | `actions/deploy-pages` | v5.0.1 | MIT | ci |  |
-| `actions/setup-java` | v6.2.0 | MIT | ci |  |
+| `actions/setup-java` | v6.3.0 | MIT | ci |  |
 | `actions/setup-node` | v7.1.0 | MIT | ci |  |
 | `actions/upload-artifact` | v7.0.2 | MIT | ci |  |
 | `actions/upload-pages-artifact` | v5.0.0 | MIT | ci |  |
@@ -2256,7 +2256,7 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 | `docker/login-action` | v4.8.0 | Apache-2.0 | ci |  |
 | `docker/setup-buildx-action` | v4.4.1 | Apache-2.0 | ci |  |
 | `github/codeql-action/upload-sarif` | v4.39.3 | MIT | ci |  |
-| `ossf/scorecard-action` | v2.5.0 | Apache-2.0 | ci |  |
+| `ossf/scorecard-action` | v2.6.0 | Apache-2.0 | ci |  |
 
 ## Go: pgschema trong image backend
 

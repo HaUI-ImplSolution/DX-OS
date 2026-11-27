@@ -42,7 +42,7 @@ body:
     id: version
     attributes:
       label: Phiên bản
-      description: "Kết quả của lệnh: git describe --tags --always"
+      description: "Kết quả của lệnh: dxos version (chạy từ mã nguồn: git describe --tags --always)"
       placeholder: v2.1.0
     validations:
       required: true
@@ -51,7 +51,7 @@ body:
     attributes:
       label: Thành phần
       multiple: true
-      options: [web, backend, tệp mô hình, gateway, SSO, deploy, trang docs]
+      options: [web, backend, tệp mô hình, gateway, SSO, deploy, trợ lý phân loại, portal, CI và giấy phép, trang docs]
   - type: dropdown
     id: run
     attributes:

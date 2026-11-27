@@ -23,6 +23,7 @@ Mức hoàn thiện của từng tính năng và bài kiểm của nó ở [`web
 | Kiểu của web | `cd frontend && npx tsc --noEmit` | Workflow `Frontend` |
 | Phân tích tĩnh của web | `cd frontend && npm run lint` | Workflow `Frontend` |
 | Test đơn vị của web (Vitest, 220 test: nhà cung cấp dữ liệu (`body()` và từng lời gọi), điều kiện, xuất CSV, định dạng số và thời gian, đường dẫn của mọi lời gọi API, sơ đồ quy trình, thông báo lỗi, điều hướng của bộ dựng mô hình, nơi dùng và đổi tên của trường và vai trò, hàng của quy trình, luồng sự kiện thay đổi trực tiếp, ngôn ngữ giao diện, phiên đăng nhập và vai trò, ghi đè tệp YAML giữ nguyên chú thích, chuỗi mô tả lịch sử hồ sơ và kế hoạch áp dụng) | `cd frontend && npm test`; kèm độ phủ: `npm run coverage` | Workflow `Frontend` |
+| Độ phủ | `python3 .github/scripts/check_coverage.py backend` sau `./mvnw verify`; `cd frontend && npm run coverage` | `Backend` (bảng ở tóm tắt của lượt chạy) và `Frontend` |
 | Giấy phép và header | `python3 .github/scripts/check_licenses.py`; `python3 .github/scripts/check_license_inventory.py check` (thêm `--maven` cho gói Maven, cần JDK 21); `pipx run --spec reuse==6.3.0 reuse lint` | `Check licenses` của `Compliance`; Maven ở `Scan the backend SBOM` của `Dependencies` |
 | Văn bản giấy phép trong gói đi vào sản phẩm | `python3 .github/scripts/check_license_texts.py` (cần mạng) | `Check licenses` của `Compliance` |
 | Gói trong image và văn bản giấy phép của image | `python3 .github/scripts/check_image_packages.py check` (thêm `--full` để đọc lại image, cần Docker); `python3 .github/scripts/check_third_party_notices.py check` (cần JDK 21) | `Check licenses` của `Compliance`; `Check the packages inside the images` theo lịch; `Scan the backend SBOM` của `Dependencies` |
@@ -242,7 +243,8 @@ Mỗi mục nêu điều phải thấy; lệnh và biến cấu hình chi tiết
     Mục Vai trò có ma trận vai trò × thực thể; ô báo đỏ khi vai trò xử lý quy trình mà không xem được hồ sơ.
     Xóa trường, vai trò hay thực thể đang được dùng thì hộp xác nhận liệt kê các chỗ dùng.
     Đổi tên một vai trò thì quyền, vai xử lý, `role` của hành động và `escalate.to` đổi theo; đổi tên một trường thì mọi chỗ hộp xác nhận liệt kê đều đổi theo, nên Xem kế hoạch không báo lỗi tham chiếu.
-    Ở chế độ form, bảng "Viết được gì trong tệp" nằm dưới khung chính và chỉ nêu phần đang sửa (mỗi trang một nhóm khóa; các bước của quy trình chỉ nêu khóa của bước đó); sơ đồ quy trình nằm ở Quy trình → Tổng quan và mở to được. Ở chế độ YAML bảng đầy đủ vẫn ở cột phải cùng thẻ sơ đồ.
+    Ở chế độ form, bảng "Viết được gì trong tệp" nằm dưới khung chính và chỉ nêu phần đang sửa (mỗi trang một nhóm khóa; các bước của quy trình chỉ nêu khóa của bước đó); sơ đồ quy trình nằm ở Quy trình → Tổng quan và mở to được.
+    Ở chế độ YAML bảng đầy đủ vẫn ở cột phải cùng thẻ sơ đồ.
     Mọi biểu tượng thùng rác trong form màu đỏ.
     Ở Quy trình → Tổng quan, bấm một trạng thái trên sơ đồ mở Trạng thái với dòng đó được chọn, bấm một mũi tên mở hành động đó, bấm mũi tên tự đóng mở Thời hạn.
     Thêm vai trò xử lý chưa có quyền xem hồ sơ thì cây và trang hiện cảnh báo màu cam; cho quyền thì hết.

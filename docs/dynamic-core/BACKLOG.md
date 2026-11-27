@@ -23,6 +23,7 @@ Việc còn lại trước hạn nằm ở mục 2.
 
 | Việc | Ghi chú |
 |---|---|
+| Nâng thành phần lên dòng mới | APISIX 3.11 và Spring Boot 4.1 đang ở dòng cũ; Dependabot chỉ mở bản vá của hai thành phần này, nên nâng làm tay: đọc ghi chú phát hành rồi chạy các kiểm của `docs/TESTING.md` (kiểm cổng và e2e) |
 | Tài liệu tiếng Anh | Phần lớn tài liệu chỉ có tiếng Việt; `README_EN.md` đã có, các tài liệu còn lại chưa |
 | Cảnh báo Scorecard và huy hiệu | Tab Security có 5 cảnh báo của Scorecard chưa duyệt (Maintained, CodeReview, Vulnerabilities, TokenPermissions hai cảnh báo); huy hiệu OpenSSF Best Practices mức passing còn ba tiêu chí khuyến nghị chưa đạt (`test_most`, `warnings_strict`, `dynamic_analysis`), và lời giải thích từng tiêu chí trỏ về tệp trên `main` nên chỉ khớp khi nhánh tích hợp vào `main` |
 | Bản chạy công khai | Chưa được CI kiểm hằng ngày (`deploy/online-check.sh` chạy tay hoặc theo cron), và chưa có phương án chạy tại chỗ nếu mạng ở buổi thi có sự cố vì bản công khai chạy trên một máy chủ EC2 qua Internet |

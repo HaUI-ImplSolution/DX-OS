@@ -121,7 +121,7 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/licenses/dependency-excepti
 +----------------------------------------+----------------------------------+----------------------------------------+
 | google-java-format                     | Apache-2.0                       | Chỉ khi build, bộ định dạng mã Java    |
 +----------------------------------------+----------------------------------+----------------------------------------+
-| JaCoCo (jacoco-maven-plugin 0.8.13)    | EPL-2.0                          | Chỉ khi build, đo độ phủ test           |
+| JaCoCo (jacoco-maven-plugin 0.8.13)    | EPL-2.0                          | Chỉ khi build, đo độ phủ test          |
 +----------------------------------------+----------------------------------+----------------------------------------+
 | maven-shade-plugin                     | Apache-2.0                       | Chỉ khi build, gói dxos-lint.jar       |
 +----------------------------------------+----------------------------------+----------------------------------------+
@@ -150,6 +150,7 @@ ngoại lệ, nếu có, ghi kèm lý do ở .github/licenses/dependency-excepti
 | @xyflow/react                                                | MIT          | Sơ đồ quy trình, chỉ để xem          |
 +--------------------------------------------------------------+--------------+--------------------------------------+
 | @dagrejs/dagre, @dagrejs/graphlib                            | MIT          | Bố trí node của sơ đồ quy trình      |
++--------------------------------------------------------------+--------------+--------------------------------------+
 | @tisoap/react-flow-smart-edge                                | MIT          | Định tuyến cạnh tránh node           |
 +--------------------------------------------------------------+--------------+--------------------------------------+
 | @fullcalendar/core, daygrid, timegrid, interaction, react    | MIT          | Lịch của thực thể đặt chỗ            |

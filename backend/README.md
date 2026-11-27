@@ -27,6 +27,8 @@ Cần JDK 21 (`JAVA_HOME` trỏ tới JDK 21 nếu máy mặc định là bản 
 `ArchitectureTest` trong `dx-engine` kiểm các luật phân lớp và ranh giới gói của các module.
 Test của client Keycloak, bộ gửi webhook và bộ dò dịch vụ chạy với WireMock (chỉ ở scope test, không cần Docker); test nào mất vài giây gắn `@Tag("slow")`.
 
+`./mvnw verify` ghi báo cáo độ phủ JaCoCo của từng module ở `target/site/jacoco/`; `python3 .github/scripts/check_coverage.py backend` (chạy ở thư mục gốc repo) cộng chúng lại.
+
 Chạy cả stack ở [`deploy/`](../deploy/): `docker compose up -d`.
 
 ## Cấu hình

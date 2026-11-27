@@ -7,9 +7,9 @@ Giới thiệu đầy đủ ở [`README.md`](../README.md).
 
 Không cần cài gì:
 
-1. **Hệ thống là gì (1 phút):** [`README.md`](../README.md), mục Giới thiệu và sơ đồ ở mục Kiến trúc; từ nào lạ thì tra ở [`GLOSSARY.md`](./GLOSSARY.md).
+1. **Hệ thống là gì (1 phút):** [`README.md`](../README.md), mục Giới thiệu và sơ đồ ở mục Cách hoạt động; từ nào lạ thì tra ở [`GLOSSARY.md`](./GLOSSARY.md).
 2. **Dùng thử (2 phút):** <https://khuongdev.io.vn/>.
-   Tài khoản thử và mật khẩu ở [`README.md`](../README.md#chạy-thử), mục Chạy thử.
+   Tài khoản thử và mật khẩu ở [`DEMO.md`](./DEMO.md#tài-khoản-thử), mục Tài khoản thử.
    Bấm gì ở từng bước, theo vai: [người nộp](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-nop), [người xử lý](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-xu-ly) và [người triển khai](https://haui-implsolution.github.io/DX-OS/docs/huong-dan/nguoi-trien-khai).
 3. **Đổi nghiệp vụ bằng tệp (1 phút):** hai đoạn video ở [trang hình ảnh](https://haui-implsolution.github.io/DX-OS/docs/hinh-anh): một hồ sơ đi từ nộp đến duyệt, và một lần sửa tệp mô hình rồi áp dụng mà dữ liệu cũ vẫn còn.
 4. **Mức hoàn thiện (30 giây):** [ma trận bằng chứng](https://haui-implsolution.github.io/DX-OS/docs/evidence-matrix) cho từng tính năng: cách kiểm, bước CI, lệnh chạy lại và giới hạn đã biết.
@@ -21,6 +21,7 @@ Tự cài và nối vào ứng dụng của bạn thì theo [`QUICKSTART.md`](./
 
 | Tệp | Nội dung |
 |---|---|
+| [`FEATURES.md`](./FEATURES.md) | Danh sách đầy đủ những gì DX-OS làm được, viết bằng lời thường |
 | [`QUICKSTART.md`](./QUICKSTART.md) | Từ máy sạch đến một quy trình chạy được: không có code (giao diện web) hoặc có code (ứng dụng của bạn gọi API) |
 | [`MODEL.md`](./MODEL.md) | Cách viết tệp mô hình: trường, ràng buộc, quyền, quy trình, tài liệu in |
 | [`API.md`](./API.md) | Đường dẫn API Core và API trợ lý nghiệp vụ |
@@ -31,7 +32,7 @@ Tự cài và nối vào ứng dụng của bạn thì theo [`QUICKSTART.md`](./
 | [`INTEGRATIONS.md`](./INTEGRATIONS.md) | Webhook có chữ ký, dòng sự kiện, lịch sử chống sửa và cầu nối MQTT tùy chọn |
 | [`REPORTING.md`](./REPORTING.md) | Nối công cụ báo cáo vào dữ liệu chỉ đọc |
 | [`STORAGE.md`](./STORAGE.md) | Kho tệp đính kèm SeaweedFS: cách hoạt động và cấu hình |
-| [`TESTING.md`](./TESTING.md) | Các loại kiểm, cách dựng stack, các script kiểm API và danh sách kiểm tay trước khi phát hành |
+| [`TESTING.md`](./TESTING.md) | Các loại kiểm, độ phủ, cách dựng stack, các script kiểm API và danh sách kiểm tay trước khi phát hành |
 | [`DEMO.md`](./DEMO.md) | Kịch bản trình diễn 15 phút và cách xử lý khi sự cố |
 | [`TRINH_BAY.md`](./TRINH_BAY.md) | Bài trình bày chung kết 15 phút dạng slide Markdown (Marp), theo bốn phần của đề |
 | [`SIZING.md`](./SIZING.md) | Số người dùng đồng thời và cấu hình nhỏ nhất, kèm cách đo lại |
@@ -44,7 +45,7 @@ Tự cài và nối vào ứng dụng của bạn thì theo [`QUICKSTART.md`](./
 | [`dynamic-core/`](./dynamic-core/README.md) | Hướng thiết kế của lõi, [đối chiếu với đề thi](./dynamic-core/DANH_GIA.md) và [việc còn lại](./dynamic-core/BACKLOG.md) |
 | [`diagrams/`](./diagrams) | Nguồn draw.io của sơ đồ kiến trúc |
 
-Kiến trúc ở [`ARCHITECTURE.md`](../ARCHITECTURE.md) và mục lục đầy đủ ở [`README.md`](../README.md#tài-liệu), mục Tài liệu.
+Kiến trúc ở [`ARCHITECTURE.md`](../ARCHITECTURE.md) và các liên kết chính ở [`README.md`](../README.md#tài-liệu), mục Tài liệu.
 Các tài liệu sản phẩm cũng đọc được trên [trang docs](https://haui-implsolution.github.io/DX-OS/), có mục lục và liên kết giữa các trang.
 
 ## Giới hạn đã biết

@@ -5,6 +5,21 @@ Phần trình chiếu đi cùng ở [`TRINH_BAY.md`](./TRINH_BAY.md); ba phần 
 Mỗi bước nêu việc làm, tài khoản dùng, kết quả mong đợi và cách xử lý khi sự cố.
 Khung kiểm gốc là tám mục "Thế nào là đạt" ở [`docs/dynamic-core/README.md`](./dynamic-core/README.md#thế-nào-là-đạt), chạy tự động bằng `python3 e2e/api/check_demo.py`.
 
+## Tài khoản thử
+
+Bản `2.1.0` chạy công khai tại <https://khuongdev.io.vn/> với mô hình Một cửa sinh viên và 40 hồ sơ mẫu.
+Bốn tài khoản `judge_*` dùng chung mật khẩu `15c9777835f0dfcf4e8d`; trên bản tự cài, `dxos demo` tạo cùng bốn tài khoản với mật khẩu riêng.
+
+| Tài khoản | Vai | Thấy gì |
+|---|---|---|
+| `judge_student` | Sinh viên | Hồ sơ của chính mình |
+| `judge_officer` | Cán bộ Phòng Đào tạo | Hồ sơ của đơn vị Đào tạo |
+| `judge_officer2` | Cán bộ Phòng Công tác sinh viên | Hồ sơ của đơn vị Công tác sinh viên |
+| `judge_supervisor` | Người giám sát | Mọi hồ sơ, chỉ đọc |
+| `admin` | Quản trị | Bảng điều khiển ở `/console` |
+
+Bảng điều khiển `/console` và màn hình giám sát chỉ dành cho quản trị viên, nên bốn tài khoản `judge_*` không vào được; tài khoản `admin` chỉ có trên bản tự cài.
+
 ## Chuẩn bị trước ngày trình diễn
 
 1. Cài bản `2.1.0` trên máy chủ công khai bằng `dxos-install.sh`, rồi `dxos start` kèm tệp `onestop.yaml` ở [`backend/dx-engine/src/main/resources/templates/`](../backend/dx-engine/src/main/resources/templates/onestop.yaml).
@@ -15,13 +30,7 @@ Khung kiểm gốc là tám mục "Thế nào là đạt" ở [`docs/dynamic-cor
 5. Tập trọn kịch bản một lần trên đúng máy sẽ trình diễn, kể cả các bước đổi mô hình ở phần 4, vì chúng làm thay đổi mô hình đang chạy.
 6. Mở sẵn bốn cửa sổ trình duyệt riêng, mỗi cửa sổ đã đăng nhập một tài khoản: `judge_student`, `judge_officer`, `judge_officer2` và `admin`.
 
-| Tài khoản | Vai | Thấy gì |
-|---|---|---|
-| `judge_student` | Sinh viên | Hồ sơ của chính mình |
-| `judge_officer` | Cán bộ Phòng Đào tạo | Hồ sơ của đơn vị Đào tạo |
-| `judge_officer2` | Cán bộ Phòng Công tác sinh viên | Hồ sơ của đơn vị Công tác sinh viên |
-| `judge_supervisor` | Người giám sát | Mọi hồ sơ, chỉ đọc |
-| `admin` | Quản trị | Bảng điều khiển ở `/console` |
+Bảng tài khoản ở mục [Tài khoản thử](#tài-khoản-thử).
 
 ## Tiến trình
 
@@ -132,7 +141,8 @@ Các bước từ máy sạch ở [`examples/appliance-store`](../examples/appli
 - **Cửa sổ ứng dụng (`nhanvien`):** mở một đơn bán, gửi yêu cầu đổi trả; trạng thái "Chờ duyệt" kèm liên kết "Mở trên DX-OS".
 - **Cửa sổ `manager` ở DX-OS:** mở liên kết, duyệt phiếu ở hộp việc; quay lại ứng dụng thấy "Đã duyệt" mà không bấm gì.
 - **Bảo hành:** gửi yêu cầu bảo hành, để quá hạn xử lý (2 phút) rồi mở lại trang ở ứng dụng: nhãn "Quá hạn" hiện ra (khi bật webhook thì hiện không cần mở trang).
-- **Vì sao không tự viết (ba phép thử ở mục "Vì sao không tự viết vòng duyệt" của README, mỗi phép chừng một phút):** tài khoản máy của ứng dụng không tự duyệt được phiếu của mình (403), sửa một dòng lịch sử thì `dxos history verify` chỉ ra dòng đó, đổi quy trình có kế hoạch và mức rủi ro (`SAFE`, `LOSS`, từ chối khi còn phiếu mở). Chọn hai phép nếu thiếu thời gian.
+- **Vì sao không tự viết (ba phép thử ở mục "Vì sao không tự viết vòng duyệt" của README, mỗi phép chừng một phút):** tài khoản máy của ứng dụng không tự duyệt được phiếu của mình (403), sửa một dòng lịch sử thì `dxos history verify` chỉ ra dòng đó, đổi quy trình có kế hoạch và mức rủi ro (`SAFE`, `LOSS`, từ chối khi còn phiếu mở).
+  Chọn hai phép nếu thiếu thời gian.
 - **Điều cần nói:** ứng dụng không có mã quy trình, phân quyền hay lịch sử; phần tích hợp là một mẫu dùng nguyên, một tệp mở rộng mẫu, vài biến môi trường và 109 dòng mã.
 
 Sự cố: nếu ứng dụng không cập nhật trạng thái, kiểm `DXOS_BASE_URL` và `extra_hosts`; khi bật webhook thì mở tab Hàng đợi sự kiện ở `/console` để xem thông điệp bị dừng, kiểm địa chỉ trong `deploy/webhooks/targets.yml`, rồi bấm Thử lại.

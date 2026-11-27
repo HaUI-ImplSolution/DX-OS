@@ -8,7 +8,7 @@ Giấy phép của từng thành phần ở [`DEPENDENCIES.txt`](../DEPENDENCIES
 
 | Tệp | Nguồn |
 |---|---|
-| `backend.cdx.json` | Maven, `backend` (gốc `dx-os-parent`, cả ba module `dx-core`, `dx-engine`, `dx-monitor`) |
+| `backend.cdx.json` | Maven, `backend` (gốc `dx-os-parent`, cả bốn module `dx-model`, `dx-core`, `dx-engine`, `dx-monitor`) |
 | `frontend.cdx.json` | npm, `frontend` |
 | `website.cdx.json` | npm, `website` (trang tài liệu) |
 | `assistant.cdx.json` | npm, `assistant` |

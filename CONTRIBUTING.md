@@ -22,18 +22,41 @@ cd ../backend && ./mvnw verify              # build và test backend
 cd ../frontend && npm install && npm run dev
 ```
 
+## Cấu trúc repository
+
+| Thư mục | Tầng | Nội dung |
+|---|---|---|
+| `backend/dx-model` | Lõi | Định dạng tệp mô hình: đọc và kiểm tra |
+| `backend/dx-core` | Lõi | Thư viện dùng chung: bảo mật, audit, lưu trữ, trạng thái, client Keycloak |
+| `backend/dx-engine` | Lõi | Dịch vụ lõi: áp dụng mô hình, API chung, Flowable |
+| `backend/dx-monitor` | Ứng dụng | Màn hình giám sát và truy vết |
+| `frontend` | Ứng dụng | Giao diện react-admin dựng từ metadata, có tiếng Việt và tiếng Anh |
+| `assistant` | Ứng dụng | Trợ lý nghiệp vụ: dịch vụ Node.js đề xuất giá trị một trường bằng bộ phân loại tự huấn luyện ([`assistant/README.md`](./assistant/README.md)) |
+| `portal` | Ứng dụng | Trang liên kết các địa chỉ và trạng thái dịch vụ |
+| `sso` | Lõi | Keycloak realm |
+| `deploy` | Dùng chung | Compose, gateway APISIX, bộ cài và lệnh `dxos`, script vận hành |
+| `examples` | Ngoài lõi | Chương trình mẫu: [`history-witness`](./examples/history-witness/README.md), [`itot-simulator`](./examples/itot-simulator/README.md), [`order_approval`](./examples/order_approval/README.md), [`appliance-store`](./examples/appliance-store/README.md), [`model-repo`](./examples/model-repo/README.md) và [`effort-benchmark`](./examples/effort-benchmark/README.md) |
+| `tools` | Công cụ | Công cụ của người phát triển, như đếm mã tự viết và huấn luyện bộ phân loại hồ sơ ([`classifier`](./tools/classifier/README.md)) |
+| `e2e` | Kiểm thử | Kiểm tự động trên stack đang chạy: API (`api/`), giao diện web bằng Playwright (`web/`) và tệp mô hình sai mẫu (`fixtures/`) |
+| `website` | Tài liệu | Trang tài liệu (Docusaurus), đăng lên GitHub Pages |
+| `docs` | Tài liệu | Hướng dẫn kiểm thử, tệp mô hình, API, vận hành, giám sát, tích hợp, báo cáo, lưu trữ tệp; hướng thiết kế ở `dynamic-core/` |
+| `sbom` | Giấy phép | Danh mục thành phần CycloneDX của backend, web, trợ lý và trang tài liệu |
+| `LICENSES` | Giấy phép | Toàn văn giấy phép của kho theo chuẩn REUSE |
+| `.github` | Dùng chung | Workflow CI, mẫu issue và pull request, quy tắc nhánh, script kiểm tra |
+
 ## Quy trình
 
 1. Tạo nhánh từ `Khuong/main`, nhánh tích hợp; `main` chỉ nhận bản đã phát hành.
    Đặt tên nhánh `<loại>/<số issue>-<mô tả ngắn>`, ví dụ `feat/272-prometheus-metrics`, với loại là `feat`, `fix`, `docs`, `refactor`, `test` hoặc `chore`.
    Thành viên nhóm tạo nhánh thẳng trên repository; người ngoài nhóm fork repository, tạo nhánh trên bản fork và gửi pull request từ đó.
 2. Sửa nhỏ, mỗi thay đổi một mục đích.
-   Tính năng mới đi kèm kiểm tự động: một test backend ở `backend/*/src/test`, hoặc một mục kiểm trong script `e2e/api/check_*.py` khi tính năng chỉ chạy trên stack thật.
+   Tính năng mới đi kèm kiểm tự động: một test backend ở `backend/*/src/test`, một test Vitest ở `frontend/src` khi là logic thuần của web, hoặc một mục kiểm trong script `e2e/api/check_*.py` khi tính năng chỉ chạy trên stack thật.
    Sửa lỗi thì thêm kiểm bắt đúng lỗi đó khi làm được.
 3. Chạy các lệnh kiểm ở bảng dưới trước khi gửi.
 4. Gửi pull request vào `Khuong/main` và điền danh sách kiểm trong mẫu, kèm `Closes #<số issue>` khi pull request đủ đóng issue.
    Một check đỏ vì lỗi mạng hoặc hạn mức của dịch vụ mà job tải về (Maven Central, GitHub API) thì CI tự chạy lại, không cần chạy tay.
    Bước dựng image chạy lại ngay trong job tối đa ba lần, và workflow `Rerun` chạy lại các job lỗi của một run tối đa hai lần khi mọi job lỗi đều là lỗi loại đó; danh sách lỗi ở [`.github/scripts/transient_errors.txt`](.github/scripts/transient_errors.txt).
+   `Rerun` đọc log của job lỗi tối đa ba lần và chờ một đến hai phút trước khi chạy lại, để hạn mức của dịch vụ có thời gian qua.
    Lỗi biên dịch, test hỏng hay giấy phép sai không được chạy lại.
    Workflow `Platform` dựng năm image của repo một lần ở job `images` và giữ trong cache của Actions theo hash của các tệp tạo ra chúng, các job cần stack nạp image từ đó, nên một commit không đổi tệp nào trong số đó thì không dựng lại gì.
    Workflow `Rerun` chỉ có hiệu lực khi nằm trên `main`, vì GitHub chỉ kích hoạt `workflow_run` từ nhánh mặc định.
@@ -42,7 +65,7 @@ cd ../frontend && npm install && npm run dev
 | Phần đổi | Lệnh kiểm |
 |---|---|
 | Backend | `./mvnw spotless:check` rồi `./mvnw verify` trong `backend/`; các nhóm test và cách đo độ phủ ở [`docs/TESTING.md`](./docs/TESTING.md), «Test của backend» |
-| Frontend | `npx tsc --noEmit` rồi `npm run lint` trong `frontend/` |
+| Frontend | `npx tsc --noEmit`, `npm run lint` rồi `npm test` trong `frontend/` |
 | Toàn stack | Các script `e2e/api/check_*.py` theo thứ tự ở [`docs/TESTING.md`](./docs/TESTING.md), mục 4, trên stack mới dựng |
 | Giấy phép | `python3 .github/scripts/check_licenses.py`; `python3 .github/scripts/check_license_inventory.py check`; `python3 .github/scripts/check_license_texts.py` (cần mạng) |
 | Header giấy phép | `pipx run --spec reuse==6.3.0 reuse lint` |

@@ -32,7 +32,7 @@ Không có lỗi loại trừ: repository công khai, có `LICENSE`, đã có re
 | 1 | Repository công khai, có web viewer | ✅ | `HaUI-ImplSolution/DX-OS`, `visibility: public`, API trả 200 không đăng nhập |
 | 2 | Giấy phép OSI, có `LICENSE` toàn văn, có thông báo | ✅ | `LICENSE` Apache-2.0, GitHub nhận đúng `Apache-2.0`; `NOTICE`; `DEPENDENCIES.txt` |
 | 3 | Có release hoặc tag trước hạn nộp, không dùng định dạng độc quyền | ✅ | 10 release `v1.0.0` đến `v2.1.0`, mỗi release có `.tar.gz` |
-| 4 | Có hướng dẫn build và cài, chạy lại được | ⚠️ | `README.md` mục Chạy thử; `dxos-install.sh` của `v2.0.0` đã chạy được trên máy sạch, còn bài dựng từ bản clone (`docker compose up -d --build`) chưa chạy lại trên máy sạch |
+| 4 | Có hướng dẫn build và cài, chạy lại được | ⚠️ | `README.md` mục Bắt đầu nhanh; `dxos-install.sh` của `v2.0.0` đã chạy được trên máy sạch, còn bài dựng từ bản clone (`docker compose up -d --build`) chưa chạy lại trên máy sạch |
 | 5 | Khai báo thư viện, phiên bản, nguồn, giấy phép | ✅ | `DEPENDENCIES.txt`, `sbom/`, `.github/licenses/component-catalog.json` |
 | 6 | README, CHANGELOG, bug tracker, tài liệu đúng trạng thái | ✅ | Xem tiêu chí 6 |
 | 7 | Không lộ bí mật hay dữ liệu cá nhân | ✅ | Xem mục 9 |
@@ -90,7 +90,7 @@ GitHub tự đính kèm `Source code (zip)` vào mỗi release và không xóa �
 
 | Trạng thái | Yêu cầu | Bằng chứng | Mức trừ nếu thiếu |
 |---|---|---|---|
-| ✅ | Có hướng dẫn dịch từ mã nguồn | `README.md` mục Chạy thử, phần Từ mã nguồn; `README_EN.md` | −5 |
+| ✅ | Có hướng dẫn dịch từ mã nguồn | `README.md` mục Bắt đầu nhanh, mục từ mã nguồn; `README_EN.md` | −5 |
 | ✅ | Không cấu hình bằng cách sửa tay tệp mã | Mọi tham số ở `deploy/.env`, mẫu `deploy/.env.example`; `deploy/make_env.sh` sinh mật khẩu ngẫu nhiên; job `Validate the Compose file` của workflow `Platform` kiểm Compose dừng khi thiếu bí mật | −5 |
 | ✅ | Cấu hình được trước khi dịch | `deploy/make_env.sh` rồi mới `docker compose up -d --build` | −5 |
 | ✅ | Dịch bằng công cụ nguồn mở | Docker, Compose, Git, Maven wrapper, npm | −5 |

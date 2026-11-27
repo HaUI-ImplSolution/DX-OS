@@ -16,6 +16,8 @@ Lõi nhận một tệp mô hình khai báo thực thể, trường, vai, quyề
 | Kiến trúc 3 tầng và luồng gọi dịch vụ | [Kiến trúc](./tai-lieu/kien-truc.md) |
 | Module backend, build, cấu hình | [backend/README.md](https://github.com/HaUI-ImplSolution/DX-OS/blob/main/backend/README.md) |
 | Cài đặt, lệnh `dxos`, sao lưu, quét mã độc | [Cài đặt và vận hành](./tai-lieu/van-hanh.md) |
+| Kho tệp đính kèm SeaweedFS | [Kho tệp đính kèm](./tai-lieu/luu-tep.md) |
+| Số người dùng đồng thời và cấu hình nhỏ nhất | [Cấu hình và tải đồng thời](./tai-lieu/cau-hinh-va-tai.md) |
 | Log, giới hạn tốc độ, sự kiện đăng nhập, audit, giám sát | [Giám sát và nhật ký](./tai-lieu/giam-sat.md) |
 | Webhook sự kiện, lịch sử chống sửa, hồ dữ liệu | [Tích hợp với hệ thống ngoài](./tai-lieu/tich-hop.md) |
 | Kết nối công cụ báo cáo bằng `report_ro` | [Kết nối công cụ báo cáo](./tai-lieu/bao-cao.md) |
@@ -31,7 +33,7 @@ Lõi nhận một tệp mô hình khai báo thực thể, trường, vai, quyề
 ## Các mục trên trang này
 
 - **Hình ảnh và video:** ảnh các màn hình của sản phẩm và hai đoạn video ngắn.
-- **Tài liệu sản phẩm:** viết tệp mô hình, API, cài đặt và vận hành, giám sát, tích hợp, báo cáo, điểm mở rộng, kiến trúc, tương thích giữa các bản, kịch bản trình diễn và thuật ngữ; các trang này được chép từ `docs/` và `deploy/` mỗi lần dựng trang, nên không có bản thứ hai để sửa.
+- **Tài liệu sản phẩm:** viết tệp mô hình, API, cài đặt và vận hành, kho tệp đính kèm, cấu hình và tải đồng thời, giám sát, tích hợp, báo cáo, điểm mở rộng, kiến trúc, tương thích giữa các bản, kịch bản trình diễn và thuật ngữ; các trang này được chép từ `docs/` và `deploy/` mỗi lần dựng trang, nên không có bản thứ hai để sửa.
 - **Hướng dẫn sử dụng:** ba trang theo vai: người nộp hồ sơ, người xử lý hồ sơ và người triển khai.
 - **Đánh giá:** ma trận bằng chứng cho từng tính năng và bảng rà soát PoF theo đề thi.
 - **Cuộc thi:** câu hỏi hội đồng, thành phần được chọn và không chọn.

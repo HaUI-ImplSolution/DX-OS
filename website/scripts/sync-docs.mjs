@@ -21,6 +21,8 @@ export const DOCS = {
   'docs/API.md': {page: 'api', label: 'API'},
   'docs/AI.md': {page: 'tri-tue-nhan-tao', label: 'Trí tuệ nhân tạo'},
   'docs/OPERATIONS.md': {page: 'van-hanh', label: 'Cài đặt và vận hành'},
+  'docs/STORAGE.md': {page: 'luu-tep', label: 'Kho tệp đính kèm'},
+  'docs/SIZING.md': {page: 'cau-hinh-va-tai', label: 'Cấu hình và tải đồng thời'},
   'docs/MONITORING.md': {page: 'giam-sat', label: 'Giám sát và nhật ký'},
   'docs/INTEGRATIONS.md': {page: 'tich-hop', label: 'Tích hợp với hệ thống ngoài'},
   'docs/REPORTING.md': {page: 'bao-cao', label: 'Kết nối công cụ báo cáo'},

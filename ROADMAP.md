@@ -12,11 +12,12 @@ Mọi việc dưới đây giữ hướng đó: thêm nghiệp vụ là thêm t�
 ## Tiếp theo
 
 - **Thử với đơn vị thật:** đưa DX-OS cho một đơn vị có quy trình duyệt để kiểm các giả thuyết về nhu cầu, vì nhu cầu hiện là giả thuyết.
-- **Tài liệu tiếng Anh:** `README_EN.md` đã có; các tài liệu còn lại chỉ có tiếng Việt.
+- **Nâng thành phần lên dòng mới:** gateway APISIX (3.11) và Spring Boot (4.1) đang ở dòng cũ; Dependabot chỉ mở bản vá của hai thành phần này, nên việc nâng làm tay, kèm bộ kiểm của [`docs/TESTING.md`](./docs/TESTING.md).
+- **Tài liệu tiếng Anh:** `README_EN.md` đã có; các tài liệu còn lại chỉ có tiếng Việt, bắt đầu từ Bắt đầu nhanh, Viết tệp mô hình và Kiến trúc.
 
 ## Sau đó
 
-- **Quy trình:** thêm họ mẫu khi có đủ ba miền chạy được bằng tham số.
+- **Quy trình:** thêm họ mẫu (Kiểm tra định kỳ, Đánh giá và chọn lọc) khi có đủ ba miền chạy được bằng tham số.
 
 ## Đã cân nhắc và không làm
 

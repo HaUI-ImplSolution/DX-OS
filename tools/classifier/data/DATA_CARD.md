@@ -29,9 +29,9 @@ Codex của OpenAI không tạo dữ liệu nào của bộ phân loại.
 
 ### Điều khoản của Anthropic
 
-Câu do Claude soạn qua tài khoản Claude Pro, chịu Điều khoản dịch vụ dành cho người dùng cá nhân của Anthropic (hiệu lực 8/10/2025, đọc ngày 26/11/2026).
+Câu do Claude soạn qua tài khoản Claude Pro, chịu Điều khoản dịch vụ dành cho người dùng cá nhân của Anthropic (hiệu lực 8/10/2025).
 Điều khoản chuyển cho người dùng quyền đối với kết quả, nếu có, và cấm dùng dịch vụ để huấn luyện mô hình cạnh tranh với Anthropic.
-Bài hướng dẫn của Anthropic ([Can I use my Outputs to train an AI model?](https://support.claude.com/en/articles/12326764-can-i-use-my-outputs-to-train-an-ai-model), cập nhật 16/3/2026, đọc ngày 26/11/2026) cho phép dùng kết quả để huấn luyện mô hình chuyên biệt không cạnh tranh, như bộ phân loại và hệ thống phân loại nội dung.
+Bài hướng dẫn của Anthropic ([Can I use my Outputs to train an AI model?](https://support.claude.com/en/articles/12326764-can-i-use-my-outputs-to-train-an-ai-model), cập nhật 16/3/2026) cho phép dùng kết quả để huấn luyện mô hình chuyên biệt không cạnh tranh, như bộ phân loại và hệ thống phân loại nội dung.
 Bài này cấm chatbot đa dụng, mô hình sinh văn bản mở, dùng kết quả làm training target và hỗ trợ bên thứ ba làm các việc đó.
 
 Mô hình huấn luyện từ dữ liệu này là bộ phân loại hồi quy logistic cho năm nhiệm vụ nhãn cố định.

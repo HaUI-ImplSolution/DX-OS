@@ -536,6 +536,17 @@ Khi `powershell.exe` không gọi được từ WSL, `doctor` bỏ qua bước n
 Quét mã độc được báo là bật hay tắt; `STORAGE_SCAN_HOST=clamav` mà `COMPOSE_PROFILES` không có `av` bị báo `FAIL`, vì ClamAV sẽ không chạy và mọi tệp tải lên bị từ chối.
 Thoát với mã 1 khi có `FAIL`, nên chạy trước `./update.sh` và `docker compose up -d` trên máy chủ.
 
+## Lỗi thường gặp
+
+| Sự cố | Cách xử lý |
+|---|---|
+| Một thành phần ngừng | `dxos status`, rồi `dxos reconcile`; mọi service chạy lâu tự khởi động lại khi tiến trình thoát |
+| Máy không chạy được stack | `dxos doctor` chỉ đọc, báo thiếu biến trong `.env`, cổng bị chiếm, thiếu RAM hay ổ đĩa |
+| `dxos start` báo cổng không dùng được | Một chương trình khác giữ cổng, kể cả chương trình ở phía Windows; `dxos doctor` và `dxos start` nêu khóa `APISIX_HOST_PORT` hoặc `POSTGRES_HOST_PORT` cần đổi trong `deploy/.env` |
+| Mọi tệp tải lên bị từ chối | Quét mã độc bật mà ClamAV không chạy; `dxos doctor` báo `FAIL`, chạy `dxos av on` hoặc `dxos av off` |
+| Không đăng nhập được tài khoản thử | `dxos demo` đặt lại mật khẩu và in mật khẩu mới |
+| Sau lần áp dụng, một bản `backend` trả 404 | Chỉ chạy một bản `backend`, hoặc khởi động lại cả hai |
+
 ## Thời gian dựng từ tệp mô hình
 
 Số đo trên máy chủ 8 CPU, 7 GB RAM, đã xóa stack cũ và năm image `dxos-*`, bản `2.0.0` cài bằng `dxos-install.sh`.

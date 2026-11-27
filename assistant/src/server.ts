@@ -19,7 +19,7 @@ export async function createServer(store: Store, verify: ReturnType<typeof ident
   options?: { session: CoreSession; publicUrl: URL; core?: CoreClient; fields?: FieldProposals; records?: Records }) {
   const app = Fastify({ bodyLimit: 32768, requestTimeout: 60000, logger: false });
   await app.register(swagger, { openapi: {
-    info: { title: 'DX-OS Assistant API', version: '0.1.0',
+    info: { title: 'DX-OS Assistant API', version: '2.1.0',
       description: 'Tasks run on classifier weights loaded by the service. ASSISTANT_CLASSIFIERS_DIR selects the weights directory at startup (default: /app/classifiers in the assistant image).',
     },
     components: { securitySchemes: { bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' } } },

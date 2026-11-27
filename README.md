@@ -151,7 +151,7 @@ Bốn nguyên lý kỹ thuật của đề (tách theo vòng đời dữ liệu,
 - Số đo của thiết bị vào lõi qua API chung; lõi không giữ trạng thái thiết bị.
 - Chưa có chữ ký số, két bí mật, đa thuê giữa các tổ chức và tìm kiếm toàn văn.
 - Người dùng Windows chạy bản Linux trong WSL2 với Docker Desktop; không có bản chạy thẳng trên Windows.
-- Phần lớn tài liệu chỉ có tiếng Việt.
+- Một số tài liệu, như hướng dẫn vận hành và kiểm thử, chỉ có tiếng Việt.
 
 Danh sách đầy đủ và lý do ở [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md); hướng đi tiếp ở [`ROADMAP.md`](./ROADMAP.md).
 

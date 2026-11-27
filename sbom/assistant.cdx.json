@@ -3,9 +3,9 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
   "version": 1,
-  "serialNumber": "urn:uuid:e0b3b3e8-28f1-4aa1-8203-037889b5b04d",
+  "serialNumber": "urn:uuid:55398a41-4b8a-4476-90bc-aaa690c29ee6",
   "metadata": {
-    "timestamp": "2026-11-25T05:24:41.454Z",
+    "timestamp": "2026-11-27T15:21:13.426Z",
     "tools": {
       "components": [
         {
@@ -59,7 +59,7 @@
           "type": "library",
           "name": "cyclonedx-library",
           "group": "@cyclonedx",
-          "version": "10.4.0",
+          "version": "10.5.1",
           "author": "Jan Kowalleck",
           "description": "Core functionality of CycloneDX for JavaScript (Node.js or WebBrowser).",
           "licenses": [
@@ -98,8 +98,8 @@
     "component": {
       "type": "application",
       "name": "dxos-assistant",
-      "version": "0.1.0",
-      "bom-ref": "dxos-assistant@0.1.0",
+      "version": "2.1.0",
+      "bom-ref": "dxos-assistant@2.1.0",
       "licenses": [
         {
           "license": {
@@ -108,7 +108,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/dxos-assistant@0.1.0",
+      "purl": "pkg:npm/dxos-assistant@2.1.0",
       "properties": [
         {
           "name": "cdx:npm:package:constraint:engine:node",
@@ -131,7 +131,7 @@
       "name": "swagger",
       "group": "@fastify",
       "version": "9.9.3",
-      "bom-ref": "dxos-assistant@0.1.0|@fastify/swagger@9.9.3",
+      "bom-ref": "dxos-assistant@2.1.0|@fastify/swagger@9.9.3",
       "author": "Tomas Della Vedova - @delvedor",
       "description": "Serve Swagger/OpenAPI documentation for Fastify, supporting dynamic generation",
       "licenses": [
@@ -182,7 +182,7 @@
       "type": "library",
       "name": "fastify",
       "version": "5.12.8",
-      "bom-ref": "dxos-assistant@0.1.0|fastify@5.12.8",
+      "bom-ref": "dxos-assistant@2.1.0|fastify@5.12.8",
       "author": "Matteo Collina",
       "description": "Fast and low overhead web framework, for Node.js",
       "licenses": [
@@ -233,7 +233,7 @@
       "type": "library",
       "name": "jose",
       "version": "6.2.15",
-      "bom-ref": "dxos-assistant@0.1.0|jose@6.2.15",
+      "bom-ref": "dxos-assistant@2.1.0|jose@6.2.15",
       "author": "Filip Skokan",
       "description": "JWA, JWS, JWE, JWT, JWK, JWKS for Node.js, Browser, Cloudflare Workers, Deno, Bun, and other Web-interoperable runtimes",
       "licenses": [
@@ -284,7 +284,7 @@
       "type": "library",
       "name": "fastify-plugin",
       "version": "6.0.1",
-      "bom-ref": "dxos-assistant@0.1.0|fastify-plugin@6.0.1",
+      "bom-ref": "dxos-assistant@2.1.0|fastify-plugin@6.0.1",
       "author": "Tomas Della Vedova - @delvedor",
       "description": "Plugin helper for Fastify",
       "licenses": [
@@ -335,7 +335,7 @@
       "type": "library",
       "name": "json-schema-resolver",
       "version": "3.0.0",
-      "bom-ref": "dxos-assistant@0.1.0|json-schema-resolver@3.0.0",
+      "bom-ref": "dxos-assistant@2.1.0|json-schema-resolver@3.0.0",
       "author": "Manuel Spigolon",
       "description": "Resolve all your $refs",
       "licenses": [
@@ -390,7 +390,7 @@
           "type": "library",
           "name": "fast-uri",
           "version": "3.1.9",
-          "bom-ref": "dxos-assistant@0.1.0|json-schema-resolver@3.0.0|fast-uri@3.1.9",
+          "bom-ref": "dxos-assistant@2.1.0|json-schema-resolver@3.0.0|fast-uri@3.1.9",
           "author": "Vincent Le Goff",
           "description": "Dependency-free RFC 3986 URI toolbox",
           "licenses": [
@@ -443,7 +443,7 @@
       "type": "library",
       "name": "openapi-types",
       "version": "12.1.3",
-      "bom-ref": "dxos-assistant@0.1.0|openapi-types@12.1.3",
+      "bom-ref": "dxos-assistant@2.1.0|openapi-types@12.1.3",
       "author": "Joseph Spencer",
       "description": "Types for OpenAPI documents.",
       "licenses": [
@@ -494,7 +494,7 @@
       "type": "library",
       "name": "rfdc",
       "version": "1.4.1",
-      "bom-ref": "dxos-assistant@0.1.0|rfdc@1.4.1",
+      "bom-ref": "dxos-assistant@2.1.0|rfdc@1.4.1",
       "author": "David Mark Clements",
       "description": "Really Fast Deep Clone",
       "licenses": [
@@ -545,7 +545,7 @@
       "type": "library",
       "name": "yaml",
       "version": "2.9.1",
-      "bom-ref": "dxos-assistant@0.1.0|yaml@2.9.1",
+      "bom-ref": "dxos-assistant@2.1.0|yaml@2.9.1",
       "author": "Eemeli Aro",
       "description": "JavaScript parser and stringifier for YAML",
       "licenses": [
@@ -601,7 +601,7 @@
       "name": "ajv-compiler",
       "group": "@fastify",
       "version": "4.0.7",
-      "bom-ref": "dxos-assistant@0.1.0|@fastify/ajv-compiler@4.0.7",
+      "bom-ref": "dxos-assistant@2.1.0|@fastify/ajv-compiler@4.0.7",
       "author": "Manuel Spigolon",
       "description": "Build and manage the AJV instances for the fastify framework",
       "licenses": [
@@ -653,7 +653,7 @@
       "name": "error",
       "group": "@fastify",
       "version": "4.2.1",
-      "bom-ref": "dxos-assistant@0.1.0|@fastify/error@4.2.1",
+      "bom-ref": "dxos-assistant@2.1.0|@fastify/error@4.2.1",
       "author": "Tomas Della Vedova",
       "description": "A small utility, used by Fastify itself, for generating consistent error objects across your codebase and plugins.",
       "licenses": [
@@ -705,7 +705,7 @@
       "name": "fast-json-stringify-compiler",
       "group": "@fastify",
       "version": "5.1.1",
-      "bom-ref": "dxos-assistant@0.1.0|@fastify/fast-json-stringify-compiler@5.1.1",
+      "bom-ref": "dxos-assistant@2.1.0|@fastify/fast-json-stringify-compiler@5.1.1",
       "author": "Manuel Spigolon",
       "description": "Build and manage the fast-json-stringify instances for the fastify framework",
       "licenses": [
@@ -757,7 +757,7 @@
       "name": "proxy-addr",
       "group": "@fastify",
       "version": "5.1.2",
-      "bom-ref": "dxos-assistant@0.1.0|@fastify/proxy-addr@5.1.2",
+      "bom-ref": "dxos-assistant@2.1.0|@fastify/proxy-addr@5.1.2",
       "author": "Douglas Christopher Wilson",
       "description": "Determine the address of a proxied request",
       "licenses": [
@@ -808,7 +808,7 @@
       "type": "library",
       "name": "abstract-logging",
       "version": "2.0.1",
-      "bom-ref": "dxos-assistant@0.1.0|abstract-logging@2.0.1",
+      "bom-ref": "dxos-assistant@2.1.0|abstract-logging@2.0.1",
       "author": "James Sumners",
       "description": "A noop logger that conforms to the Log4j interface for modules to stub out internal logging",
       "licenses": [
@@ -859,7 +859,7 @@
       "type": "library",
       "name": "avvio",
       "version": "9.3.1",
-      "bom-ref": "dxos-assistant@0.1.0|avvio@9.3.1",
+      "bom-ref": "dxos-assistant@2.1.0|avvio@9.3.1",
       "author": "Matteo Collina",
       "description": "Asynchronous bootstrapping of Node applications",
       "licenses": [
@@ -910,7 +910,7 @@
       "type": "library",
       "name": "fast-json-stringify",
       "version": "7.3.1",
-      "bom-ref": "dxos-assistant@0.1.0|fast-json-stringify@7.3.1",
+      "bom-ref": "dxos-assistant@2.1.0|fast-json-stringify@7.3.1",
       "author": "Matteo Collina",
       "description": "Stringify your JSON at max speed",
       "licenses": [
@@ -961,7 +961,7 @@
       "type": "library",
       "name": "find-my-way",
       "version": "9.10.0",
-      "bom-ref": "dxos-assistant@0.1.0|find-my-way@9.10.0",
+      "bom-ref": "dxos-assistant@2.1.0|find-my-way@9.10.0",
       "author": "Tomas Della Vedova - @delvedor",
       "description": "Crazy fast http radix based router",
       "licenses": [
@@ -1016,7 +1016,7 @@
       "type": "library",
       "name": "light-my-request",
       "version": "6.8.0",
-      "bom-ref": "dxos-assistant@0.1.0|light-my-request@6.8.0",
+      "bom-ref": "dxos-assistant@2.1.0|light-my-request@6.8.0",
       "author": "Tomas Della Vedova - @delvedor",
       "description": "Fake HTTP injection library",
       "licenses": [
@@ -1067,7 +1067,7 @@
       "type": "library",
       "name": "pino",
       "version": "10.4.0",
-      "bom-ref": "dxos-assistant@0.1.0|pino@10.4.0",
+      "bom-ref": "dxos-assistant@2.1.0|pino@10.4.0",
       "author": "Matteo Collina",
       "description": "super fast, all natural json logger",
       "licenses": [
@@ -1118,7 +1118,7 @@
       "type": "library",
       "name": "process-warning",
       "version": "5.1.1",
-      "bom-ref": "dxos-assistant@0.1.0|process-warning@5.1.1",
+      "bom-ref": "dxos-assistant@2.1.0|process-warning@5.1.1",
       "author": "Tomas Della Vedova",
       "description": "A small utility for creating warnings and emitting them.",
       "licenses": [
@@ -1169,7 +1169,7 @@
       "type": "library",
       "name": "secure-json-parse",
       "version": "4.1.1",
-      "bom-ref": "dxos-assistant@0.1.0|secure-json-parse@4.1.1",
+      "bom-ref": "dxos-assistant@2.1.0|secure-json-parse@4.1.1",
       "author": "Eran Hammer",
       "description": "JSON parse with prototype poisoning protection",
       "licenses": [
@@ -1220,7 +1220,7 @@
       "type": "library",
       "name": "semver",
       "version": "7.8.6",
-      "bom-ref": "dxos-assistant@0.1.0|semver@7.8.6",
+      "bom-ref": "dxos-assistant@2.1.0|semver@7.8.6",
       "author": "GitHub Inc.",
       "description": "The semantic version parser used by npm.",
       "licenses": [
@@ -1275,7 +1275,7 @@
       "type": "library",
       "name": "toad-cache",
       "version": "3.7.4",
-      "bom-ref": "dxos-assistant@0.1.0|toad-cache@3.7.4",
+      "bom-ref": "dxos-assistant@2.1.0|toad-cache@3.7.4",
       "author": "Igor Savin",
       "description": "LRU and FIFO caches for Client or Server",
       "licenses": [
@@ -1330,7 +1330,7 @@
       "type": "library",
       "name": "debug",
       "version": "4.4.3",
-      "bom-ref": "dxos-assistant@0.1.0|debug@4.4.3",
+      "bom-ref": "dxos-assistant@2.1.0|debug@4.4.3",
       "author": "Josh Junon",
       "description": "Lightweight debugging utility for Node.js and the browser",
       "licenses": [
@@ -1385,7 +1385,7 @@
       "type": "library",
       "name": "ajv-formats",
       "version": "3.0.1",
-      "bom-ref": "dxos-assistant@0.1.0|ajv-formats@3.0.1",
+      "bom-ref": "dxos-assistant@2.1.0|ajv-formats@3.0.1",
       "author": "Evgeny Poberezkin",
       "description": "Format validation for Ajv v7+",
       "licenses": [
@@ -1436,7 +1436,7 @@
       "type": "library",
       "name": "ajv",
       "version": "8.20.0",
-      "bom-ref": "dxos-assistant@0.1.0|ajv@8.20.0",
+      "bom-ref": "dxos-assistant@2.1.0|ajv@8.20.0",
       "author": "Evgeny Poberezkin",
       "description": "Another JSON Schema Validator",
       "licenses": [
@@ -1487,7 +1487,7 @@
           "type": "library",
           "name": "fast-uri",
           "version": "3.1.9",
-          "bom-ref": "dxos-assistant@0.1.0|ajv@8.20.0|fast-uri@3.1.9",
+          "bom-ref": "dxos-assistant@2.1.0|ajv@8.20.0|fast-uri@3.1.9",
           "author": "Vincent Le Goff",
           "description": "Dependency-free RFC 3986 URI toolbox",
           "licenses": [
@@ -1540,7 +1540,7 @@
       "type": "library",
       "name": "fast-uri",
       "version": "4.2.3",
-      "bom-ref": "dxos-assistant@0.1.0|fast-uri@4.2.3",
+      "bom-ref": "dxos-assistant@2.1.0|fast-uri@4.2.3",
       "author": "Vincent Le Goff",
       "description": "Dependency-free RFC 3986 URI toolbox",
       "licenses": [
@@ -1592,7 +1592,7 @@
       "name": "forwarded",
       "group": "@fastify",
       "version": "3.1.2",
-      "bom-ref": "dxos-assistant@0.1.0|@fastify/forwarded@3.1.2",
+      "bom-ref": "dxos-assistant@2.1.0|@fastify/forwarded@3.1.2",
       "author": "Douglas Christopher Wilson",
       "description": "Parse HTTP X-Forwarded-For header",
       "licenses": [
@@ -1643,7 +1643,7 @@
       "type": "library",
       "name": "ipaddr.js",
       "version": "2.5.0",
-      "bom-ref": "dxos-assistant@0.1.0|ipaddr.js@2.5.0",
+      "bom-ref": "dxos-assistant@2.1.0|ipaddr.js@2.5.0",
       "author": "whitequark",
       "description": "A library for manipulating IPv4 and IPv6 addresses in JavaScript.",
       "licenses": [
@@ -1698,7 +1698,7 @@
       "type": "library",
       "name": "fastq",
       "version": "1.20.3",
-      "bom-ref": "dxos-assistant@0.1.0|fastq@1.20.3",
+      "bom-ref": "dxos-assistant@2.1.0|fastq@1.20.3",
       "author": "Matteo Collina",
       "description": "Fast, in memory work queue",
       "licenses": [
@@ -1750,7 +1750,7 @@
       "name": "merge-json-schemas",
       "group": "@fastify",
       "version": "0.2.2",
-      "bom-ref": "dxos-assistant@0.1.0|@fastify/merge-json-schemas@0.2.2",
+      "bom-ref": "dxos-assistant@2.1.0|@fastify/merge-json-schemas@0.2.2",
       "author": "Ivan Tymoshenko",
       "description": "Builds a logical conjunction (AND) of multiple JSON schemas",
       "licenses": [
@@ -1801,7 +1801,7 @@
       "type": "library",
       "name": "json-schema-ref-resolver",
       "version": "3.0.1",
-      "bom-ref": "dxos-assistant@0.1.0|json-schema-ref-resolver@3.0.1",
+      "bom-ref": "dxos-assistant@2.1.0|json-schema-ref-resolver@3.0.1",
       "author": "Ivan Tymoshenko",
       "description": "JSON schema reference resolver",
       "licenses": [
@@ -1852,7 +1852,7 @@
       "type": "library",
       "name": "fast-deep-equal",
       "version": "3.1.3",
-      "bom-ref": "dxos-assistant@0.1.0|fast-deep-equal@3.1.3",
+      "bom-ref": "dxos-assistant@2.1.0|fast-deep-equal@3.1.3",
       "author": "Evgeny Poberezkin",
       "description": "Fast deep equal",
       "licenses": [
@@ -1903,7 +1903,7 @@
       "type": "library",
       "name": "fast-querystring",
       "version": "1.1.2",
-      "bom-ref": "dxos-assistant@0.1.0|fast-querystring@1.1.2",
+      "bom-ref": "dxos-assistant@2.1.0|fast-querystring@1.1.2",
       "author": "Yagiz Nizipli",
       "description": "A fast alternative to legacy querystring module",
       "licenses": [
@@ -1954,7 +1954,7 @@
       "type": "library",
       "name": "safe-regex2",
       "version": "5.1.2",
-      "bom-ref": "dxos-assistant@0.1.0|safe-regex2@5.1.2",
+      "bom-ref": "dxos-assistant@2.1.0|safe-regex2@5.1.2",
       "author": "James Halliday",
       "description": "detect possibly catastrophic, exponential-time regular expressions",
       "licenses": [
@@ -2006,7 +2006,7 @@
       "name": "deepmerge",
       "group": "@fastify",
       "version": "3.2.4",
-      "bom-ref": "dxos-assistant@0.1.0|@fastify/deepmerge@3.2.4",
+      "bom-ref": "dxos-assistant@2.1.0|@fastify/deepmerge@3.2.4",
       "author": "Aras Abbasi",
       "description": "Merges the enumerable properties of two or more objects deeply.",
       "licenses": [
@@ -2057,7 +2057,7 @@
       "type": "library",
       "name": "cookie",
       "version": "2.0.2",
-      "bom-ref": "dxos-assistant@0.1.0|cookie@2.0.2",
+      "bom-ref": "dxos-assistant@2.1.0|cookie@2.0.2",
       "author": "Roman Shtylman",
       "description": "HTTP server cookie parsing and serialization",
       "licenses": [
@@ -2112,7 +2112,7 @@
       "type": "library",
       "name": "set-cookie-parser",
       "version": "3.2.2",
-      "bom-ref": "dxos-assistant@0.1.0|set-cookie-parser@3.2.2",
+      "bom-ref": "dxos-assistant@2.1.0|set-cookie-parser@3.2.2",
       "author": "Nathan Friedly",
       "description": "Parses set-cookie headers into objects",
       "licenses": [
@@ -2164,7 +2164,7 @@
       "name": "redact",
       "group": "@pinojs",
       "version": "0.4.0",
-      "bom-ref": "dxos-assistant@0.1.0|@pinojs/redact@0.4.0",
+      "bom-ref": "dxos-assistant@2.1.0|@pinojs/redact@0.4.0",
       "author": "Matteo Collina",
       "description": "Redact JS objects",
       "licenses": [
@@ -2215,7 +2215,7 @@
       "type": "library",
       "name": "atomic-sleep",
       "version": "1.0.0",
-      "bom-ref": "dxos-assistant@0.1.0|atomic-sleep@1.0.0",
+      "bom-ref": "dxos-assistant@2.1.0|atomic-sleep@1.0.0",
       "author": "David Mark Clements",
       "description": "Zero CPU overhead, zero dependency, true event-loop blocking sleep",
       "licenses": [
@@ -2270,7 +2270,7 @@
       "type": "library",
       "name": "on-exit-leak-free",
       "version": "2.1.2",
-      "bom-ref": "dxos-assistant@0.1.0|on-exit-leak-free@2.1.2",
+      "bom-ref": "dxos-assistant@2.1.0|on-exit-leak-free@2.1.2",
       "author": "Matteo Collina",
       "description": "Execute a function on exit without leaking memory, allowing all objects to be garbage collected",
       "licenses": [
@@ -2325,7 +2325,7 @@
       "type": "library",
       "name": "pino-abstract-transport",
       "version": "3.0.0",
-      "bom-ref": "dxos-assistant@0.1.0|pino-abstract-transport@3.0.0",
+      "bom-ref": "dxos-assistant@2.1.0|pino-abstract-transport@3.0.0",
       "author": "Matteo Collina",
       "description": "Write Pino transports easily",
       "licenses": [
@@ -2376,7 +2376,7 @@
       "type": "library",
       "name": "pino-std-serializers",
       "version": "7.1.0",
-      "bom-ref": "dxos-assistant@0.1.0|pino-std-serializers@7.1.0",
+      "bom-ref": "dxos-assistant@2.1.0|pino-std-serializers@7.1.0",
       "author": "James Sumners",
       "description": "A collection of standard object serializers for Pino",
       "licenses": [
@@ -2427,7 +2427,7 @@
       "type": "library",
       "name": "quick-format-unescaped",
       "version": "4.0.4",
-      "bom-ref": "dxos-assistant@0.1.0|quick-format-unescaped@4.0.4",
+      "bom-ref": "dxos-assistant@2.1.0|quick-format-unescaped@4.0.4",
       "author": "David Mark Clements",
       "description": "Solves a problem with util.format",
       "licenses": [
@@ -2478,7 +2478,7 @@
       "type": "library",
       "name": "real-require",
       "version": "1.0.0",
-      "bom-ref": "dxos-assistant@0.1.0|real-require@1.0.0",
+      "bom-ref": "dxos-assistant@2.1.0|real-require@1.0.0",
       "author": "Paolo Insogna",
       "description": "Keep require and import consistent after bundling or transpiling",
       "licenses": [
@@ -2529,7 +2529,7 @@
       "type": "library",
       "name": "safe-stable-stringify",
       "version": "2.5.0",
-      "bom-ref": "dxos-assistant@0.1.0|safe-stable-stringify@2.5.0",
+      "bom-ref": "dxos-assistant@2.1.0|safe-stable-stringify@2.5.0",
       "author": "Ruben Bridgewater",
       "description": "Deterministic and safely JSON.stringify to quickly serialize JavaScript objects",
       "licenses": [
@@ -2584,7 +2584,7 @@
       "type": "library",
       "name": "sonic-boom",
       "version": "4.2.1",
-      "bom-ref": "dxos-assistant@0.1.0|sonic-boom@4.2.1",
+      "bom-ref": "dxos-assistant@2.1.0|sonic-boom@4.2.1",
       "author": "Matteo Collina",
       "description": "Extremely fast utf8 only stream implementation",
       "licenses": [
@@ -2635,7 +2635,7 @@
       "type": "library",
       "name": "thread-stream",
       "version": "4.2.1",
-      "bom-ref": "dxos-assistant@0.1.0|thread-stream@4.2.1",
+      "bom-ref": "dxos-assistant@2.1.0|thread-stream@4.2.1",
       "author": "Matteo Collina",
       "description": "A streaming way to send data to a Node.js Worker Thread",
       "licenses": [
@@ -2690,7 +2690,7 @@
       "type": "library",
       "name": "ms",
       "version": "2.1.3",
-      "bom-ref": "dxos-assistant@0.1.0|ms@2.1.3",
+      "bom-ref": "dxos-assistant@2.1.0|ms@2.1.3",
       "description": "Tiny millisecond conversion utility",
       "licenses": [
         {
@@ -2740,7 +2740,7 @@
       "type": "library",
       "name": "json-schema-traverse",
       "version": "1.0.0",
-      "bom-ref": "dxos-assistant@0.1.0|json-schema-traverse@1.0.0",
+      "bom-ref": "dxos-assistant@2.1.0|json-schema-traverse@1.0.0",
       "author": "Evgeny Poberezkin",
       "description": "Traverse JSON Schema passing each schema object to callback",
       "licenses": [
@@ -2791,7 +2791,7 @@
       "type": "library",
       "name": "require-from-string",
       "version": "2.0.2",
-      "bom-ref": "dxos-assistant@0.1.0|require-from-string@2.0.2",
+      "bom-ref": "dxos-assistant@2.1.0|require-from-string@2.0.2",
       "author": "Vsevolod Strukchinsky",
       "description": "Require module from string",
       "licenses": [
@@ -2846,7 +2846,7 @@
       "type": "library",
       "name": "reusify",
       "version": "1.1.0",
-      "bom-ref": "dxos-assistant@0.1.0|reusify@1.1.0",
+      "bom-ref": "dxos-assistant@2.1.0|reusify@1.1.0",
       "author": "Matteo Collina",
       "description": "Reuse objects and functions with style",
       "licenses": [
@@ -2905,7 +2905,7 @@
       "type": "library",
       "name": "dequal",
       "version": "2.0.3",
-      "bom-ref": "dxos-assistant@0.1.0|dequal@2.0.3",
+      "bom-ref": "dxos-assistant@2.1.0|dequal@2.0.3",
       "author": "Luke Edwards",
       "description": "A tiny (304B to 489B) utility for check for deep equality",
       "licenses": [
@@ -2960,7 +2960,7 @@
       "type": "library",
       "name": "fast-decode-uri-component",
       "version": "1.0.1",
-      "bom-ref": "dxos-assistant@0.1.0|fast-decode-uri-component@1.0.1",
+      "bom-ref": "dxos-assistant@2.1.0|fast-decode-uri-component@1.0.1",
       "author": "Tomas Della Vedova - @delvedor",
       "description": "Fast and safe decodeURIComponent",
       "licenses": [
@@ -3011,7 +3011,7 @@
       "type": "library",
       "name": "ret",
       "version": "0.5.1",
-      "bom-ref": "dxos-assistant@0.1.0|ret@0.5.1",
+      "bom-ref": "dxos-assistant@2.1.0|ret@0.5.1",
       "author": "fent",
       "description": "Tokenizes a string that represents a regular expression.",
       "licenses": [
@@ -3066,7 +3066,7 @@
       "type": "library",
       "name": "split2",
       "version": "4.2.0",
-      "bom-ref": "dxos-assistant@0.1.0|split2@4.2.0",
+      "bom-ref": "dxos-assistant@2.1.0|split2@4.2.0",
       "author": "Matteo Collina",
       "description": "split a Text Stream into a Line Stream, using Stream 3",
       "licenses": [
@@ -3120,296 +3120,296 @@
   ],
   "dependencies": [
     {
-      "ref": "dxos-assistant@0.1.0",
+      "ref": "dxos-assistant@2.1.0",
       "dependsOn": [
-        "dxos-assistant@0.1.0|@fastify/swagger@9.9.3",
-        "dxos-assistant@0.1.0|fastify@5.12.8",
-        "dxos-assistant@0.1.0|jose@6.2.15"
+        "dxos-assistant@2.1.0|@fastify/swagger@9.9.3",
+        "dxos-assistant@2.1.0|fastify@5.12.8",
+        "dxos-assistant@2.1.0|jose@6.2.15"
       ]
     },
     {
-      "ref": "dxos-assistant@0.1.0|@fastify/swagger@9.9.3",
+      "ref": "dxos-assistant@2.1.0|@fastify/swagger@9.9.3",
       "dependsOn": [
-        "dxos-assistant@0.1.0|fastify-plugin@6.0.1",
-        "dxos-assistant@0.1.0|json-schema-resolver@3.0.0",
-        "dxos-assistant@0.1.0|openapi-types@12.1.3",
-        "dxos-assistant@0.1.0|rfdc@1.4.1",
-        "dxos-assistant@0.1.0|yaml@2.9.1"
+        "dxos-assistant@2.1.0|fastify-plugin@6.0.1",
+        "dxos-assistant@2.1.0|json-schema-resolver@3.0.0",
+        "dxos-assistant@2.1.0|openapi-types@12.1.3",
+        "dxos-assistant@2.1.0|rfdc@1.4.1",
+        "dxos-assistant@2.1.0|yaml@2.9.1"
       ]
     },
     {
-      "ref": "dxos-assistant@0.1.0|fastify@5.12.8",
+      "ref": "dxos-assistant@2.1.0|fastify@5.12.8",
       "dependsOn": [
-        "dxos-assistant@0.1.0|@fastify/ajv-compiler@4.0.7",
-        "dxos-assistant@0.1.0|@fastify/error@4.2.1",
-        "dxos-assistant@0.1.0|@fastify/fast-json-stringify-compiler@5.1.1",
-        "dxos-assistant@0.1.0|@fastify/proxy-addr@5.1.2",
-        "dxos-assistant@0.1.0|abstract-logging@2.0.1",
-        "dxos-assistant@0.1.0|avvio@9.3.1",
-        "dxos-assistant@0.1.0|fast-json-stringify@7.3.1",
-        "dxos-assistant@0.1.0|find-my-way@9.10.0",
-        "dxos-assistant@0.1.0|light-my-request@6.8.0",
-        "dxos-assistant@0.1.0|pino@10.4.0",
-        "dxos-assistant@0.1.0|process-warning@5.1.1",
-        "dxos-assistant@0.1.0|rfdc@1.4.1",
-        "dxos-assistant@0.1.0|secure-json-parse@4.1.1",
-        "dxos-assistant@0.1.0|semver@7.8.6",
-        "dxos-assistant@0.1.0|toad-cache@3.7.4"
+        "dxos-assistant@2.1.0|@fastify/ajv-compiler@4.0.7",
+        "dxos-assistant@2.1.0|@fastify/error@4.2.1",
+        "dxos-assistant@2.1.0|@fastify/fast-json-stringify-compiler@5.1.1",
+        "dxos-assistant@2.1.0|@fastify/proxy-addr@5.1.2",
+        "dxos-assistant@2.1.0|abstract-logging@2.0.1",
+        "dxos-assistant@2.1.0|avvio@9.3.1",
+        "dxos-assistant@2.1.0|fast-json-stringify@7.3.1",
+        "dxos-assistant@2.1.0|find-my-way@9.10.0",
+        "dxos-assistant@2.1.0|light-my-request@6.8.0",
+        "dxos-assistant@2.1.0|pino@10.4.0",
+        "dxos-assistant@2.1.0|process-warning@5.1.1",
+        "dxos-assistant@2.1.0|rfdc@1.4.1",
+        "dxos-assistant@2.1.0|secure-json-parse@4.1.1",
+        "dxos-assistant@2.1.0|semver@7.8.6",
+        "dxos-assistant@2.1.0|toad-cache@3.7.4"
       ]
     },
     {
-      "ref": "dxos-assistant@0.1.0|jose@6.2.15"
+      "ref": "dxos-assistant@2.1.0|jose@6.2.15"
     },
     {
-      "ref": "dxos-assistant@0.1.0|fastify-plugin@6.0.1"
+      "ref": "dxos-assistant@2.1.0|fastify-plugin@6.0.1"
     },
     {
-      "ref": "dxos-assistant@0.1.0|json-schema-resolver@3.0.0",
+      "ref": "dxos-assistant@2.1.0|json-schema-resolver@3.0.0",
       "dependsOn": [
-        "dxos-assistant@0.1.0|debug@4.4.3",
-        "dxos-assistant@0.1.0|json-schema-resolver@3.0.0|fast-uri@3.1.9",
-        "dxos-assistant@0.1.0|rfdc@1.4.1"
+        "dxos-assistant@2.1.0|debug@4.4.3",
+        "dxos-assistant@2.1.0|json-schema-resolver@3.0.0|fast-uri@3.1.9",
+        "dxos-assistant@2.1.0|rfdc@1.4.1"
       ]
     },
     {
-      "ref": "dxos-assistant@0.1.0|json-schema-resolver@3.0.0|fast-uri@3.1.9"
+      "ref": "dxos-assistant@2.1.0|json-schema-resolver@3.0.0|fast-uri@3.1.9"
     },
     {
-      "ref": "dxos-assistant@0.1.0|openapi-types@12.1.3"
+      "ref": "dxos-assistant@2.1.0|openapi-types@12.1.3"
     },
     {
-      "ref": "dxos-assistant@0.1.0|rfdc@1.4.1"
+      "ref": "dxos-assistant@2.1.0|rfdc@1.4.1"
     },
     {
-      "ref": "dxos-assistant@0.1.0|yaml@2.9.1"
+      "ref": "dxos-assistant@2.1.0|yaml@2.9.1"
     },
     {
-      "ref": "dxos-assistant@0.1.0|@fastify/ajv-compiler@4.0.7",
+      "ref": "dxos-assistant@2.1.0|@fastify/ajv-compiler@4.0.7",
       "dependsOn": [
-        "dxos-assistant@0.1.0|ajv-formats@3.0.1",
-        "dxos-assistant@0.1.0|ajv@8.20.0",
-        "dxos-assistant@0.1.0|fast-uri@4.2.3"
+        "dxos-assistant@2.1.0|ajv-formats@3.0.1",
+        "dxos-assistant@2.1.0|ajv@8.20.0",
+        "dxos-assistant@2.1.0|fast-uri@4.2.3"
       ]
     },
     {
-      "ref": "dxos-assistant@0.1.0|@fastify/error@4.2.1"
+      "ref": "dxos-assistant@2.1.0|@fastify/error@4.2.1"
     },
     {
-      "ref": "dxos-assistant@0.1.0|@fastify/fast-json-stringify-compiler@5.1.1",
+      "ref": "dxos-assistant@2.1.0|@fastify/fast-json-stringify-compiler@5.1.1",
       "dependsOn": [
-        "dxos-assistant@0.1.0|fast-json-stringify@7.3.1"
+        "dxos-assistant@2.1.0|fast-json-stringify@7.3.1"
       ]
     },
     {
-      "ref": "dxos-assistant@0.1.0|@fastify/proxy-addr@5.1.2",
+      "ref": "dxos-assistant@2.1.0|@fastify/proxy-addr@5.1.2",
       "dependsOn": [
-        "dxos-assistant@0.1.0|@fastify/forwarded@3.1.2",
-        "dxos-assistant@0.1.0|ipaddr.js@2.5.0"
+        "dxos-assistant@2.1.0|@fastify/forwarded@3.1.2",
+        "dxos-assistant@2.1.0|ipaddr.js@2.5.0"
       ]
     },
     {
-      "ref": "dxos-assistant@0.1.0|abstract-logging@2.0.1"
+      "ref": "dxos-assistant@2.1.0|abstract-logging@2.0.1"
     },
     {
-      "ref": "dxos-assistant@0.1.0|avvio@9.3.1",
+      "ref": "dxos-assistant@2.1.0|avvio@9.3.1",
       "dependsOn": [
-        "dxos-assistant@0.1.0|@fastify/error@4.2.1",
-        "dxos-assistant@0.1.0|fastq@1.20.3"
+        "dxos-assistant@2.1.0|@fastify/error@4.2.1",
+        "dxos-assistant@2.1.0|fastq@1.20.3"
       ]
     },
     {
-      "ref": "dxos-assistant@0.1.0|fast-json-stringify@7.3.1",
+      "ref": "dxos-assistant@2.1.0|fast-json-stringify@7.3.1",
       "dependsOn": [
-        "dxos-assistant@0.1.0|@fastify/merge-json-schemas@0.2.2",
-        "dxos-assistant@0.1.0|ajv-formats@3.0.1",
-        "dxos-assistant@0.1.0|ajv@8.20.0",
-        "dxos-assistant@0.1.0|fast-uri@4.2.3",
-        "dxos-assistant@0.1.0|json-schema-ref-resolver@3.0.1",
-        "dxos-assistant@0.1.0|rfdc@1.4.1"
+        "dxos-assistant@2.1.0|@fastify/merge-json-schemas@0.2.2",
+        "dxos-assistant@2.1.0|ajv-formats@3.0.1",
+        "dxos-assistant@2.1.0|ajv@8.20.0",
+        "dxos-assistant@2.1.0|fast-uri@4.2.3",
+        "dxos-assistant@2.1.0|json-schema-ref-resolver@3.0.1",
+        "dxos-assistant@2.1.0|rfdc@1.4.1"
       ]
     },
     {
-      "ref": "dxos-assistant@0.1.0|find-my-way@9.10.0",
+      "ref": "dxos-assistant@2.1.0|find-my-way@9.10.0",
       "dependsOn": [
-        "dxos-assistant@0.1.0|fast-deep-equal@3.1.3",
-        "dxos-assistant@0.1.0|fast-querystring@1.1.2",
-        "dxos-assistant@0.1.0|safe-regex2@5.1.2"
+        "dxos-assistant@2.1.0|fast-deep-equal@3.1.3",
+        "dxos-assistant@2.1.0|fast-querystring@1.1.2",
+        "dxos-assistant@2.1.0|safe-regex2@5.1.2"
       ]
     },
     {
-      "ref": "dxos-assistant@0.1.0|light-my-request@6.8.0",
+      "ref": "dxos-assistant@2.1.0|light-my-request@6.8.0",
       "dependsOn": [
-        "dxos-assistant@0.1.0|@fastify/deepmerge@3.2.4",
-        "dxos-assistant@0.1.0|cookie@2.0.2",
-        "dxos-assistant@0.1.0|process-warning@5.1.1",
-        "dxos-assistant@0.1.0|set-cookie-parser@3.2.2"
+        "dxos-assistant@2.1.0|@fastify/deepmerge@3.2.4",
+        "dxos-assistant@2.1.0|cookie@2.0.2",
+        "dxos-assistant@2.1.0|process-warning@5.1.1",
+        "dxos-assistant@2.1.0|set-cookie-parser@3.2.2"
       ]
     },
     {
-      "ref": "dxos-assistant@0.1.0|pino@10.4.0",
+      "ref": "dxos-assistant@2.1.0|pino@10.4.0",
       "dependsOn": [
-        "dxos-assistant@0.1.0|@pinojs/redact@0.4.0",
-        "dxos-assistant@0.1.0|atomic-sleep@1.0.0",
-        "dxos-assistant@0.1.0|on-exit-leak-free@2.1.2",
-        "dxos-assistant@0.1.0|pino-abstract-transport@3.0.0",
-        "dxos-assistant@0.1.0|pino-std-serializers@7.1.0",
-        "dxos-assistant@0.1.0|process-warning@5.1.1",
-        "dxos-assistant@0.1.0|quick-format-unescaped@4.0.4",
-        "dxos-assistant@0.1.0|real-require@1.0.0",
-        "dxos-assistant@0.1.0|safe-stable-stringify@2.5.0",
-        "dxos-assistant@0.1.0|sonic-boom@4.2.1",
-        "dxos-assistant@0.1.0|thread-stream@4.2.1"
+        "dxos-assistant@2.1.0|@pinojs/redact@0.4.0",
+        "dxos-assistant@2.1.0|atomic-sleep@1.0.0",
+        "dxos-assistant@2.1.0|on-exit-leak-free@2.1.2",
+        "dxos-assistant@2.1.0|pino-abstract-transport@3.0.0",
+        "dxos-assistant@2.1.0|pino-std-serializers@7.1.0",
+        "dxos-assistant@2.1.0|process-warning@5.1.1",
+        "dxos-assistant@2.1.0|quick-format-unescaped@4.0.4",
+        "dxos-assistant@2.1.0|real-require@1.0.0",
+        "dxos-assistant@2.1.0|safe-stable-stringify@2.5.0",
+        "dxos-assistant@2.1.0|sonic-boom@4.2.1",
+        "dxos-assistant@2.1.0|thread-stream@4.2.1"
       ]
     },
     {
-      "ref": "dxos-assistant@0.1.0|process-warning@5.1.1"
+      "ref": "dxos-assistant@2.1.0|process-warning@5.1.1"
     },
     {
-      "ref": "dxos-assistant@0.1.0|secure-json-parse@4.1.1"
+      "ref": "dxos-assistant@2.1.0|secure-json-parse@4.1.1"
     },
     {
-      "ref": "dxos-assistant@0.1.0|semver@7.8.6"
+      "ref": "dxos-assistant@2.1.0|semver@7.8.6"
     },
     {
-      "ref": "dxos-assistant@0.1.0|toad-cache@3.7.4"
+      "ref": "dxos-assistant@2.1.0|toad-cache@3.7.4"
     },
     {
-      "ref": "dxos-assistant@0.1.0|debug@4.4.3",
+      "ref": "dxos-assistant@2.1.0|debug@4.4.3",
       "dependsOn": [
-        "dxos-assistant@0.1.0|ms@2.1.3"
+        "dxos-assistant@2.1.0|ms@2.1.3"
       ]
     },
     {
-      "ref": "dxos-assistant@0.1.0|ajv-formats@3.0.1",
+      "ref": "dxos-assistant@2.1.0|ajv-formats@3.0.1",
       "dependsOn": [
-        "dxos-assistant@0.1.0|ajv@8.20.0"
+        "dxos-assistant@2.1.0|ajv@8.20.0"
       ]
     },
     {
-      "ref": "dxos-assistant@0.1.0|ajv@8.20.0",
+      "ref": "dxos-assistant@2.1.0|ajv@8.20.0",
       "dependsOn": [
-        "dxos-assistant@0.1.0|fast-deep-equal@3.1.3",
-        "dxos-assistant@0.1.0|ajv@8.20.0|fast-uri@3.1.9",
-        "dxos-assistant@0.1.0|json-schema-traverse@1.0.0",
-        "dxos-assistant@0.1.0|require-from-string@2.0.2"
+        "dxos-assistant@2.1.0|fast-deep-equal@3.1.3",
+        "dxos-assistant@2.1.0|ajv@8.20.0|fast-uri@3.1.9",
+        "dxos-assistant@2.1.0|json-schema-traverse@1.0.0",
+        "dxos-assistant@2.1.0|require-from-string@2.0.2"
       ]
     },
     {
-      "ref": "dxos-assistant@0.1.0|ajv@8.20.0|fast-uri@3.1.9"
+      "ref": "dxos-assistant@2.1.0|ajv@8.20.0|fast-uri@3.1.9"
     },
     {
-      "ref": "dxos-assistant@0.1.0|fast-uri@4.2.3"
+      "ref": "dxos-assistant@2.1.0|fast-uri@4.2.3"
     },
     {
-      "ref": "dxos-assistant@0.1.0|@fastify/forwarded@3.1.2"
+      "ref": "dxos-assistant@2.1.0|@fastify/forwarded@3.1.2"
     },
     {
-      "ref": "dxos-assistant@0.1.0|ipaddr.js@2.5.0"
+      "ref": "dxos-assistant@2.1.0|ipaddr.js@2.5.0"
     },
     {
-      "ref": "dxos-assistant@0.1.0|fastq@1.20.3",
+      "ref": "dxos-assistant@2.1.0|fastq@1.20.3",
       "dependsOn": [
-        "dxos-assistant@0.1.0|reusify@1.1.0"
+        "dxos-assistant@2.1.0|reusify@1.1.0"
       ]
     },
     {
-      "ref": "dxos-assistant@0.1.0|@fastify/merge-json-schemas@0.2.2",
+      "ref": "dxos-assistant@2.1.0|@fastify/merge-json-schemas@0.2.2",
       "dependsOn": [
-        "dxos-assistant@0.1.0|dequal@2.0.3"
+        "dxos-assistant@2.1.0|dequal@2.0.3"
       ]
     },
     {
-      "ref": "dxos-assistant@0.1.0|json-schema-ref-resolver@3.0.1",
+      "ref": "dxos-assistant@2.1.0|json-schema-ref-resolver@3.0.1",
       "dependsOn": [
-        "dxos-assistant@0.1.0|dequal@2.0.3"
+        "dxos-assistant@2.1.0|dequal@2.0.3"
       ]
     },
     {
-      "ref": "dxos-assistant@0.1.0|fast-deep-equal@3.1.3"
+      "ref": "dxos-assistant@2.1.0|fast-deep-equal@3.1.3"
     },
     {
-      "ref": "dxos-assistant@0.1.0|fast-querystring@1.1.2",
+      "ref": "dxos-assistant@2.1.0|fast-querystring@1.1.2",
       "dependsOn": [
-        "dxos-assistant@0.1.0|fast-decode-uri-component@1.0.1"
+        "dxos-assistant@2.1.0|fast-decode-uri-component@1.0.1"
       ]
     },
     {
-      "ref": "dxos-assistant@0.1.0|safe-regex2@5.1.2",
+      "ref": "dxos-assistant@2.1.0|safe-regex2@5.1.2",
       "dependsOn": [
-        "dxos-assistant@0.1.0|ret@0.5.1"
+        "dxos-assistant@2.1.0|ret@0.5.1"
       ]
     },
     {
-      "ref": "dxos-assistant@0.1.0|@fastify/deepmerge@3.2.4"
+      "ref": "dxos-assistant@2.1.0|@fastify/deepmerge@3.2.4"
     },
     {
-      "ref": "dxos-assistant@0.1.0|cookie@2.0.2"
+      "ref": "dxos-assistant@2.1.0|cookie@2.0.2"
     },
     {
-      "ref": "dxos-assistant@0.1.0|set-cookie-parser@3.2.2"
+      "ref": "dxos-assistant@2.1.0|set-cookie-parser@3.2.2"
     },
     {
-      "ref": "dxos-assistant@0.1.0|@pinojs/redact@0.4.0"
+      "ref": "dxos-assistant@2.1.0|@pinojs/redact@0.4.0"
     },
     {
-      "ref": "dxos-assistant@0.1.0|atomic-sleep@1.0.0"
+      "ref": "dxos-assistant@2.1.0|atomic-sleep@1.0.0"
     },
     {
-      "ref": "dxos-assistant@0.1.0|on-exit-leak-free@2.1.2"
+      "ref": "dxos-assistant@2.1.0|on-exit-leak-free@2.1.2"
     },
     {
-      "ref": "dxos-assistant@0.1.0|pino-abstract-transport@3.0.0",
+      "ref": "dxos-assistant@2.1.0|pino-abstract-transport@3.0.0",
       "dependsOn": [
-        "dxos-assistant@0.1.0|split2@4.2.0"
+        "dxos-assistant@2.1.0|split2@4.2.0"
       ]
     },
     {
-      "ref": "dxos-assistant@0.1.0|pino-std-serializers@7.1.0"
+      "ref": "dxos-assistant@2.1.0|pino-std-serializers@7.1.0"
     },
     {
-      "ref": "dxos-assistant@0.1.0|quick-format-unescaped@4.0.4"
+      "ref": "dxos-assistant@2.1.0|quick-format-unescaped@4.0.4"
     },
     {
-      "ref": "dxos-assistant@0.1.0|real-require@1.0.0"
+      "ref": "dxos-assistant@2.1.0|real-require@1.0.0"
     },
     {
-      "ref": "dxos-assistant@0.1.0|safe-stable-stringify@2.5.0"
+      "ref": "dxos-assistant@2.1.0|safe-stable-stringify@2.5.0"
     },
     {
-      "ref": "dxos-assistant@0.1.0|sonic-boom@4.2.1",
+      "ref": "dxos-assistant@2.1.0|sonic-boom@4.2.1",
       "dependsOn": [
-        "dxos-assistant@0.1.0|atomic-sleep@1.0.0"
+        "dxos-assistant@2.1.0|atomic-sleep@1.0.0"
       ]
     },
     {
-      "ref": "dxos-assistant@0.1.0|thread-stream@4.2.1",
+      "ref": "dxos-assistant@2.1.0|thread-stream@4.2.1",
       "dependsOn": [
-        "dxos-assistant@0.1.0|real-require@1.0.0"
+        "dxos-assistant@2.1.0|real-require@1.0.0"
       ]
     },
     {
-      "ref": "dxos-assistant@0.1.0|ms@2.1.3"
+      "ref": "dxos-assistant@2.1.0|ms@2.1.3"
     },
     {
-      "ref": "dxos-assistant@0.1.0|json-schema-traverse@1.0.0"
+      "ref": "dxos-assistant@2.1.0|json-schema-traverse@1.0.0"
     },
     {
-      "ref": "dxos-assistant@0.1.0|require-from-string@2.0.2"
+      "ref": "dxos-assistant@2.1.0|require-from-string@2.0.2"
     },
     {
-      "ref": "dxos-assistant@0.1.0|reusify@1.1.0"
+      "ref": "dxos-assistant@2.1.0|reusify@1.1.0"
     },
     {
-      "ref": "dxos-assistant@0.1.0|dequal@2.0.3"
+      "ref": "dxos-assistant@2.1.0|dequal@2.0.3"
     },
     {
-      "ref": "dxos-assistant@0.1.0|fast-decode-uri-component@1.0.1"
+      "ref": "dxos-assistant@2.1.0|fast-decode-uri-component@1.0.1"
     },
     {
-      "ref": "dxos-assistant@0.1.0|ret@0.5.1"
+      "ref": "dxos-assistant@2.1.0|ret@0.5.1"
     },
     {
-      "ref": "dxos-assistant@0.1.0|split2@4.2.0"
+      "ref": "dxos-assistant@2.1.0|split2@4.2.0"
     }
   ]
 }

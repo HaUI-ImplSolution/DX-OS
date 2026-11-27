@@ -4,6 +4,8 @@ cff-version: 1.2.0
 message: "Nếu bạn dùng DX-OS trong công trình của mình, hãy trích dẫn như sau."
 title: "DX-OS"
 type: software
+version: "2.1.0"
+date-released: "2026-11-27"
 abstract: >-
   Lõi dynamic nguồn mở cho các hệ thống hồ sơ có quy trình:
   khai báo nghiệp vụ trong một tệp mô hình, DX-OS dựng cơ sở dữ liệu,

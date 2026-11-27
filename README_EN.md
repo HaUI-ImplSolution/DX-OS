@@ -151,7 +151,7 @@ The four technical principles of the brief (separating data by life cycle, conve
 - Device readings enter the core through the common API; the core keeps no device state.
 - There is no digital signature, secret vault, multi-tenancy across organizations or full-text search.
 - Windows users run the Linux version in WSL2 with Docker Desktop; there is no version that runs directly on Windows.
-- Most of the documentation is in Vietnamese only.
+- Some documents, such as the operations and testing guides, are in Vietnamese only.
 
 The full list and the reasons are in [`BACKLOG.md`](./docs/dynamic-core/BACKLOG.md) (Vietnamese); where the project goes next is in [`ROADMAP.md`](./ROADMAP.md) (Vietnamese).
 

@@ -2,7 +2,7 @@
 
 Đối chiếu lõi dynamic với đề thi, thể lệ, chuẩn của một repository nguồn mở, rồi nêu các hướng mở rộng lõi.
 Việc còn thiếu và chỗ lệch hướng nằm ở [`BACKLOG.md`](./BACKLOG.md); hướng đi của lõi ở [`README.md`](./README.md).
-Số liệu kiểm ngày 18/11/2026, riêng commit, pull request, issue, CI và `reuse lint` cập nhật ngày 26/11/2026, trên nhánh `Khuong/main` và API công khai của GitHub.
+Số liệu kiểm ngày 18/11/2026, riêng commit, pull request, issue, CI và `reuse lint` cập nhật ngày 27/11/2026, trên nhánh `Khuong/main` và API công khai của GitHub.
 Mỗi mục ghi một trong bốn mức: Đạt, Đạt một phần, Chưa đạt, Chưa kiểm; tài liệu này không ghi số điểm, vì việc chấm là của Ban giám khảo.
 Bản đánh giá nêu cả điểm yếu và những chỗ mình chưa kiểm được.
 
@@ -54,12 +54,12 @@ Cách đọc của đội là bốn dịch vụ ở mục 1 là điều kiện b
 
 | Tiêu chí | Điểm | Đã có | Mức | Còn thiếu |
 |---|---|---|---|---|
-| Quản lý mã nguồn trên Internet | 5 | GitHub công khai; 1254 commit trên `Khuong/main`; 264 pull request đã gộp; ở commit mới nhất của `Khuong/main`, 25 trong 26 kiểm tra của CI xanh và một kiểm tra được bỏ qua theo điều kiện (kiểm gói trong image, chỉ chạy khi image đổi) | Đạt | Không có |
-| Giấy phép OSI | 10 | Apache-2.0 cho mã, tài liệu, ảnh, video và sơ đồ; OFL-1.1 cho hai tệp phông; `LICENSE` toàn văn; `NOTICE` có mục "Mục đích của giấy phép"; dòng SPDX ở tệp mã; `reuse lint` đạt ở mọi tệp (ngày 26/11/2026); CI kiểm giấy phép của mọi gói, của `REUSE.toml` và của `LICENSES/`; chỉ hai gói dữ liệu chỉ đọc lúc dựng trang docs nằm ngoài danh sách OSI, nêu tên kèm lý do ở mục 7 của `DEPENDENCIES.txt` | Đạt | Không có |
+| Quản lý mã nguồn trên Internet | 5 | GitHub công khai; 1273 commit trên `Khuong/main`; 270 pull request đã gộp; ở pull request phát hành bản `2.1.0`, 25 trong 27 kiểm tra của CI xanh và hai kiểm tra được bỏ qua theo điều kiện (kiểm gói trong image, chỉ chạy khi image đổi; đăng trang docs, chỉ chạy trên `main`) | Đạt | Không có |
+| Giấy phép OSI | 10 | Apache-2.0 cho mã, tài liệu, ảnh, video và sơ đồ; OFL-1.1 cho hai tệp phông; `LICENSE` toàn văn; `NOTICE` có mục "Mục đích của giấy phép"; dòng SPDX ở tệp mã; `reuse lint` đạt ở mọi tệp (ngày 27/11/2026); CI kiểm giấy phép của mọi gói, của `REUSE.toml` và của `LICENSES/`; chỉ hai gói dữ liệu chỉ đọc lúc dựng trang docs nằm ngoài danh sách OSI, nêu tên kèm lý do ở mục 7 của `DEPENDENCIES.txt` | Đạt | Không có |
 | Bản phát hành | 5 | Mười bản theo SemVer, mỗi bản có `.tar.gz`, `.sha256` và SBOM, không có `.zip` do đội đăng | Đạt | Không có |
 | Dịch từ mã nguồn | 10 | Cấu hình ở `.env` trước khi dựng, Docker, Maven wrapper và npm, cài ra ngoài thư mục mã nguồn, CI cài từ gói phát hành và chạy trình duyệt trên stack rỗng; công cụ cần có trên máy chạy đã khai giấy phép; ngày 18/11 mình clone `Khuong/main` vào thư mục trống và chạy đúng các lệnh của README (`make_env.sh`, `docker compose up -d --build`, `dxos admin`): 9 dịch vụ `healthy`, 4 địa chỉ trả 200; cùng ngày cài `v2.0.1` từ release bằng `dxos-install.sh` và làm theo `docs/QUICKSTART.md` cả hai đường (CLI và giao diện web) đều chạy đúng | Đạt | Lần chạy dùng bộ nhớ đệm image của Docker nên chưa đo trên máy hoàn toàn mới; mới chạy trên `Khuong/main`, chưa chạy trên `main` |
 | Thư viện và gói đính kèm | 10 | `DEPENDENCIES.txt` có tên, phiên bản, giấy phép, vai trò, trang chủ và nguồn, cùng `docs/DEPENDENCY_INVENTORY.md` liệt kê từng gói kể cả gói dev, test và plugin build do máy sinh và kiểm, `docs/IMAGE_PACKAGES.md` liệt kê gói bên trong các image bên thứ ba, và mỗi image phát hành kèm giấy phép ở `/licenses`; SBOM khớp tệp khóa; CI đọc văn bản giấy phép trong gói đi vào sản phẩm; image ghim digest; không chép và không vá mã của dự án khác | Đạt | Không có |
-| Tài liệu và giao tiếp | 10 | README hai thứ tiếng, CHANGELOG, mẫu issue, CONTRIBUTING, SECURITY, quy tắc ứng xử, trang docs, `ROADMAP.md`, Discussions; `git shortlog` ngày 26/11 liệt kê ba thành viên (922, 165 và 158 commit, kể cả commit gộp), cùng dependabot (7) và `Khuong-PlanB` (2), và dòng đồng tác giả trong commit ghi Claude (399 commit) và Codex hoặc OpenAI (44 commit); API `contributors` của GitHub đọc nhánh mặc định `main` nên chỉ trả `nddKhanh`, `tung51652-alt`, dependabot và `Khuong-PlanB` | Đạt một phần | Phần lớn tài liệu chỉ có tiếng Việt |
+| Tài liệu và giao tiếp | 10 | README hai thứ tiếng, CHANGELOG, mẫu issue, CONTRIBUTING, SECURITY, quy tắc ứng xử, trang docs, `ROADMAP.md`, Discussions; `git shortlog` ngày 27/11 liệt kê ba thành viên (938, 165 và 159 commit, kể cả commit gộp), cùng dependabot (9) và `Khuong-PlanB` (2), và dòng đồng tác giả trong commit ghi Claude (399 commit) và Codex hoặc OpenAI (44 commit); API `contributors` của GitHub ngày 27/11 chỉ trả `nddKhanh`, `tung51652-alt`, dependabot và `Khuong-PlanB` | Đạt một phần | Một số tài liệu chỉ có tiếng Việt |
 
 Các việc ở cột cuối nằm ở `BACKLOG.md`, mục 2 và 3.
 Thư gửi bài (thành viên, người hướng dẫn, đường dẫn kho, cam kết bản quyền) không nằm trong bảng chấm và do đội gửi; đề không đòi báo cáo kỹ thuật, slide hay video.
@@ -139,7 +139,7 @@ GitHub chấm hồ sơ cộng đồng của repository là 100 trên 100; mẫu 
 | Mẫu issue | Có `.github/ISSUE_TEMPLATE` (hai mẫu và `config.yml`); API hồ sơ cộng đồng ghi `false` dù mẫu có thật nên không phải điểm trừ | 5 trên 6 có | Đạt |
 | `SECURITY.md`, quy trình báo lỗ hổng | Có, kèm mốc phản hồi và quy tắc thử trên bản trực tuyến; private vulnerability reporting đang bật (API trả `enabled: true`) | 5 trên 6 có | Đạt |
 | `CHANGELOG`, `ROADMAP`, `NOTICE` | Có cả ba | Không dự án nào có đủ cả ba; APISIX có `CHANGELOG` và `NOTICE` | Đạt |
-| Giấy phép đọc được bằng máy | `reuse lint` đạt ở mọi tệp (ngày 26/11/2026); SBOM kèm mỗi bản phát hành | Không dự án nào có | Đạt |
+| Giấy phép đọc được bằng máy | `reuse lint` đạt ở mọi tệp (ngày 27/11/2026); SBOM kèm mỗi bản phát hành | Không dự án nào có | Đạt |
 | Cập nhật và quét phụ thuộc | Dependabot, Trivy, gitleaks; tab Security ngày 18/11 có 5 cảnh báo Dependabot mở (1 cao, 4 vừa), đều ở thư viện npm gián tiếp (`decode-uri-component`, `react-router` trong web; `uuid` trong trang docs) và đều mở từ 6 đến 11/11, chưa cái nào quá 60 ngày; quét độc lập ngày 14/11 bằng Trivy 0.58.1 (cùng image với CI) trên các tệp khóa thấy 0 lỗ hổng cao hoặc nghiêm trọng, và các lỗ hổng mức vừa bị giới hạn bởi phiên bản mà `react-admin` và Docusaurus cho phép | 5 trên 6 có cấu hình Dependabot | Đạt một phần |
 | Bảo vệ nhánh và tag | Hai ruleset đang `active`: `main` (bắt buộc pull request, 16 kiểm tra phải xanh, một đối tượng được bỏ qua) và tag `v*` bất biến | Không đo được từ ngoài | Đạt |
 | `.editorconfig` | Thêm ngày 14/11 | 5 trên 6 có | Đạt |

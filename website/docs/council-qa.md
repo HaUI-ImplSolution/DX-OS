@@ -205,7 +205,7 @@ Mức hoàn thiện của từng tính năng ở [Ma trận bằng chứng](./ev
 
 ## 19. Mã có phần do công cụ AI viết, đội kiểm soát thế nào?
 
-- Đội dùng Claude (Anthropic) và Codex (OpenAI) để viết nháp mã và tài liệu; 443 trong 1254 commit trên `Khuong/main` (tính đến hết ngày 26/11/2026) mang dòng `Co-Authored-By` của công cụ, và GitHub hiện chúng ở trang thống kê người đóng góp; không phải commit nào có dùng công cụ cũng mang dòng đó.
+- Đội dùng Claude (Anthropic) và Codex (OpenAI) để viết nháp mã và tài liệu; 443 trong 1273 commit trên `Khuong/main` (tính đến hết ngày 27/11/2026) mang dòng `Co-Authored-By` của công cụ, và GitHub hiện chúng ở trang thống kê người đóng góp; không phải commit nào có dùng công cụ cũng mang dòng đó.
 - Người gửi pull request đọc, chạy và chịu trách nhiệm về từng thay đổi; công cụ không tự gộp vào nhánh nào.
 - Mọi thay đổi đi qua cùng kiểm tra của CI: biên dịch, định dạng, kiểm đầu-cuối trên stack thật, kiểm giấy phép và quét bí mật; mã do công cụ viết không có đường tắt.
 - Giấy phép của phần đóng góp do người gửi bảo đảm; thư viện mới qua kiểm OSI trước khi thêm, nên mã sinh ra không kéo theo thành phần ngoài danh sách.

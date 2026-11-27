@@ -11,7 +11,7 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 
 | Nhóm | Số gói |
 |---|---|
-| npm: frontend | 283 |
+| npm: frontend | 289 |
 | npm: website | 1332 |
 | npm: assistant | 79 |
 | npm: e2e/web | 3 |
@@ -55,6 +55,9 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 | `@biomejs/cli-win32-x64` | 2.6.8 | MIT OR Apache-2.0 | dev |  |
 | `@dagrejs/dagre` | 3.1.3 | MIT | prod |  |
 | `@dagrejs/graphlib` | 4.0.6 | MIT | prod |  |
+| `@emnapi/core` | 2.0.0-beta.2 | MIT | dev |  |
+| `@emnapi/runtime` | 2.0.0-beta.2 | MIT | dev |  |
+| `@emnapi/wasi-threads` | 2.2.0 | MIT | dev |  |
 | `@emotion/babel-plugin` | 11.13.5 | MIT | prod |  |
 | `@emotion/cache` | 11.14.0 | MIT | prod |  |
 | `@emotion/hash` | 0.9.2 | MIT | prod |  |
@@ -77,6 +80,8 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 | `@jridgewell/resolve-uri` | 3.1.2 | MIT | prod |  |
 | `@jridgewell/sourcemap-codec` | 1.6.0 | MIT | prod |  |
 | `@jridgewell/trace-mapping` | 0.3.31 | MIT | prod |  |
+| `@marmelab/decode-uri-component` | 0.2.3 | MIT | prod |  |
+| `@marmelab/query-string` | 7.1.4 | MIT | prod |  |
 | `@mui/core-downloads-tracker` | 6.5.0 | MIT | prod |  |
 | `@mui/icons-material` | 6.5.0 | MIT | prod |  |
 | `@mui/material` | 6.5.0 | MIT | prod |  |
@@ -85,28 +90,31 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 | `@mui/system` | 6.5.0 | MIT | prod |  |
 | `@mui/types` | 7.2.24 | MIT | prod |  |
 | `@mui/utils` | 6.4.9 | MIT | prod |  |
-| `@oxc-project/types` | 0.155.0 | MIT | dev |  |
+| `@napi-rs/wasm-runtime` | 1.2.6 | MIT | dev |  |
+| `@oxc-project/types` | 0.156.0 | MIT | dev |  |
 | `@popperjs/core` | 2.11.8 | MIT | prod |  |
 | `@remix-run/router` | 1.23.4 | MIT | prod |  |
-| `@rolldown/binding-android-arm-eabi` | 1.2.15 | MIT | dev |  |
-| `@rolldown/binding-android-arm64` | 1.2.15 | MIT | dev |  |
-| `@rolldown/binding-darwin-arm64` | 1.2.15 | MIT | dev |  |
-| `@rolldown/binding-darwin-x64` | 1.2.15 | MIT | dev |  |
-| `@rolldown/binding-freebsd-x64` | 1.2.15 | MIT | dev |  |
-| `@rolldown/binding-linux-arm-gnueabihf` | 1.2.15 | MIT | dev |  |
-| `@rolldown/binding-linux-arm64-gnu` | 1.2.15 | MIT | dev |  |
-| `@rolldown/binding-linux-arm64-musl` | 1.2.15 | MIT | dev |  |
-| `@rolldown/binding-linux-ppc64-gnu` | 1.2.15 | MIT | dev |  |
-| `@rolldown/binding-linux-s390x-gnu` | 1.2.15 | MIT | dev |  |
-| `@rolldown/binding-linux-x64-gnu` | 1.2.15 | MIT | dev |  |
-| `@rolldown/binding-linux-x64-musl` | 1.2.15 | MIT | dev |  |
-| `@rolldown/binding-openharmony-arm64` | 1.2.15 | MIT | dev |  |
-| `@rolldown/binding-win32-arm64-msvc` | 1.2.15 | MIT | dev |  |
-| `@rolldown/binding-win32-x64-msvc` | 1.2.15 | MIT | dev |  |
+| `@rolldown/binding-android-arm-eabi` | 1.2.19 | MIT | dev |  |
+| `@rolldown/binding-android-arm64` | 1.2.19 | MIT | dev |  |
+| `@rolldown/binding-darwin-arm64` | 1.2.19 | MIT | dev |  |
+| `@rolldown/binding-darwin-x64` | 1.2.19 | MIT | dev |  |
+| `@rolldown/binding-freebsd-x64` | 1.2.19 | MIT | dev |  |
+| `@rolldown/binding-linux-arm-gnueabihf` | 1.2.19 | MIT | dev |  |
+| `@rolldown/binding-linux-arm64-gnu` | 1.2.19 | MIT | dev |  |
+| `@rolldown/binding-linux-arm64-musl` | 1.2.19 | MIT | dev |  |
+| `@rolldown/binding-linux-ppc64-gnu` | 1.2.19 | MIT | dev |  |
+| `@rolldown/binding-linux-s390x-gnu` | 1.2.19 | MIT | dev |  |
+| `@rolldown/binding-linux-x64-gnu` | 1.2.19 | MIT | dev |  |
+| `@rolldown/binding-linux-x64-musl` | 1.2.19 | MIT | dev |  |
+| `@rolldown/binding-openharmony-arm64` | 1.2.19 | MIT | dev |  |
+| `@rolldown/binding-wasm32-wasi` | 1.2.19 | MIT | dev |  |
+| `@rolldown/binding-win32-arm64-msvc` | 1.2.19 | MIT | dev |  |
+| `@rolldown/binding-win32-x64-msvc` | 1.2.19 | MIT | dev |  |
 | `@rolldown/pluginutils` | 1.0.1 | MIT | dev |  |
 | `@tanstack/query-core` | 5.105.1 | MIT | prod |  |
 | `@tanstack/react-query` | 5.105.1 | MIT | prod |  |
-| `@tisoap/react-flow-smart-edge` | 5.0.0 | MIT | prod |  |
+| `@tisoap/react-flow-smart-edge` | 5.0.1 | MIT | prod |  |
+| `@tybys/wasm-util` | 0.10.5 | MIT | dev |  |
 | `@types/chai` | 5.2.3 | MIT | dev |  |
 | `@types/d3-color` | 3.1.3 | MIT | prod |  |
 | `@types/d3-drag` | 3.0.7 | MIT | prod |  |
@@ -142,7 +150,7 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 | `@typescript/typescript-sunos-x64` | 7.0.2 | Apache-2.0 | dev |  |
 | `@typescript/typescript-win32-arm64` | 7.0.2 | Apache-2.0 | dev |  |
 | `@typescript/typescript-win32-x64` | 7.0.2 | Apache-2.0 | dev |  |
-| `@vitejs/plugin-react` | 6.1.2 | MIT | dev |  |
+| `@vitejs/plugin-react` | 6.3.0 | MIT | dev |  |
 | `@vitest/coverage-v8` | 5.1.1 | MIT | dev |  |
 | `@vitest/istanbul-lib-coverage` | 2.1.1 | MIT | dev |  |
 | `@vitest/istanbul-lib-report` | 2.1.1 | MIT | dev |  |
@@ -178,7 +186,6 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 | `d3-zoom` | 3.0.0 | ISC | prod |  |
 | `date-fns` | 3.6.0 | MIT | prod |  |
 | `debug` | 4.4.3 | MIT | prod |  |
-| `decode-uri-component` | 0.2.2 | MIT | prod |  |
 | `define-data-property` | 1.1.4 | MIT | prod |  |
 | `define-properties` | 1.2.1 | MIT | prod |  |
 | `detect-libc` | 2.1.2 | Apache-2.0 | dev |  |
@@ -264,18 +271,17 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 | `prettier` | 3.9.10 | MIT | prod |  |
 | `prop-types` | 15.8.1 | MIT | prod |  |
 | `proxy-disposable` | 1.0.0 | MIT | prod |  |
-| `query-string` | 7.1.3 | MIT | prod |  |
-| `ra-core` | 5.15.5 | MIT | prod |  |
-| `ra-i18n-polyglot` | 5.15.5 | MIT | prod |  |
-| `ra-language-english` | 5.15.5 | (not declared) | prod | MIT text in its LICENSE.md (Marmelab); the lockfile has no license field for it. Needed by react-admin. |
-| `ra-ui-materialui` | 5.15.5 | MIT | prod |  |
+| `ra-core` | 5.15.7 | MIT | prod |  |
+| `ra-i18n-polyglot` | 5.15.7 | MIT | prod |  |
+| `ra-language-english` | 5.15.7 | MIT | prod |  |
+| `ra-ui-materialui` | 5.15.7 | MIT | prod |  |
 | `react` | 18.3.1 | MIT | prod |  |
-| `react-admin` | 5.15.5 | MIT | prod |  |
+| `react-admin` | 5.15.7 | MIT | prod |  |
 | `react-dom` | 18.3.1 | MIT | prod |  |
 | `react-dropzone` | 14.4.1 | MIT | prod |  |
 | `react-error-boundary` | 4.1.2 | MIT | prod |  |
 | `react-hook-form` | 7.91.0 | MIT | prod |  |
-| `react-hotkeys-hook` | 5.3.3 | MIT | prod |  |
+| `react-hotkeys-hook` | 5.4.0 | MIT | prod |  |
 | `react-is` | 16.13.1 | MIT | prod |  |
 | `react-is` | 19.3.1 | MIT | prod |  |
 | `react-router` | 6.30.6 | MIT | prod |  |
@@ -284,7 +290,7 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 | `remove-accents` | 0.4.4 | MIT | prod |  |
 | `resolve` | 1.22.13 | MIT | prod |  |
 | `resolve-from` | 4.0.0 | MIT | prod |  |
-| `rolldown` | 1.2.15 | MIT | dev |  |
+| `rolldown` | 1.2.19 | MIT | dev |  |
 | `scheduler` | 0.23.2 | MIT | prod |  |
 | `set-function-length` | 1.2.2 | MIT | prod |  |
 | `source-map` | 0.5.7 | BSD-3-Clause | prod |  |
@@ -301,7 +307,7 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 | `tslib` | 2.9.1 | 0BSD | prod |  |
 | `typescript` | 7.0.2 | Apache-2.0 | dev |  |
 | `use-sync-external-store` | 1.7.0 | MIT | prod |  |
-| `vite` | 8.3.5 | MIT | dev |  |
+| `vite` | 8.3.8 | MIT | dev |  |
 | `vitest` | 5.1.1 | MIT | dev |  |
 | `vscode-jsonrpc` | 10.0.0 | MIT | prod |  |
 | `vscode-languageserver-protocol` | 3.18.5 | MIT | prod |  |

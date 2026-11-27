@@ -467,7 +467,7 @@ Công cụ dựng backend (plugin Maven), không có trong image hay jar của s
   - org.tukaani:xz 1.9: phạm vi công cộng; do một plugin Maven dùng.
 
 Gói mà lockfile thiếu trường giấy phép nhưng văn bản giấy phép của gói là MIT hoặc BSD-3-Clause, nên thuộc OSI:
-  - ra-language-english, eval, format, khroma, require-like, css-mediaquery, config-chain.
+  - eval, format, khroma, require-like, css-mediaquery, config-chain.
 
 Mô-đun Go biên dịch vào pgschema, tệp chạy mà image backend chép từ image upstream và phát hành:
   - github.com/xi2/xz: phạm vi công cộng theo tệp giấy phép của mô-đun; văn bản nằm ở /licenses/THIRD-PARTY-LICENSES-pgschema.txt trong image backend.

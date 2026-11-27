@@ -7,7 +7,6 @@
   "khroma": "MIT text in its license file (Fabio Spampinato, Andrew Maney); the package metadata has no license field. Needed by Docusaurus theme-mermaid (through mermaid).",
   "org.jdom:jdom2": "JDOM licence: the Apache-1.1 text without its acknowledgment clause, a BSD-style licence the OSI does not list under this text. Used only by SpotBugs while the backend is built; it is in no image or jar of the product.",
   "org.tukaani:xz@1.9": "Public domain dedication of the xz Java library, not an OSI licence (later versions are 0BSD). Used only by a Maven plugin while the backend is built; the product uses the 0BSD versions or none.",
-  "ra-language-english@5.15.5": "MIT text in its LICENSE.md (Marmelab); the lockfile has no license field for it. Needed by react-admin.",
   "eval@0.1.8": "MIT in its package.json (licenses) and in its LICENSE file (Pierre Curto); the lockfile has no license field. Needed by Docusaurus.",
   "format@0.2.2": "MIT in its package.json (licenses, sjs.mit-license.org); the package has no license file and the lockfile has no license field. Needed by Docusaurus.",
   "github.com/xi2/xz": "Public domain dedication of its authors in the license file of the module (XZ Embedded), not an OSI license. Linked into the pgschema binary that the backend image carries.",

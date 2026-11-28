@@ -2280,7 +2280,7 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 | `docker/build-push-action` | v7.4.0 | Apache-2.0 | ci |  |
 | `docker/login-action` | v4.8.0 | Apache-2.0 | ci |  |
 | `docker/setup-buildx-action` | v4.4.1 | Apache-2.0 | ci |  |
-| `github/codeql-action/upload-sarif` | v4.39.3 | MIT | ci |  |
+| `github/codeql-action/upload-sarif` | v4.39.4 | MIT | ci |  |
 | `ossf/scorecard-action` | v2.6.0 | Apache-2.0 | ci |  |
 
 ## Go: pgschema trong image backend

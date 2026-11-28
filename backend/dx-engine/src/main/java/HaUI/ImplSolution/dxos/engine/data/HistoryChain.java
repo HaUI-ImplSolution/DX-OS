@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 package HaUI.ImplSolution.dxos.engine.data;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -90,11 +91,17 @@ public class HistoryChain {
     return rows.isEmpty() ? null : rows.get(0);
   }
 
-  // The last line of the chain (id and hash), or null when there is no history yet.
+  // The last line of the chain (id, hash and the instant it was written), or null when there is no
+  // history yet.
   public Map<String, Object> head() {
     List<Map<String, Object>> rows =
         jdbc.queryForList("SELECT id, hash, at FROM engine.record_event ORDER BY id DESC LIMIT 1");
-    return rows.isEmpty() ? null : rows.get(0);
+    if (rows.isEmpty()) {
+      return null;
+    }
+    Map<String, Object> head = rows.get(0);
+    head.put("at", ((Timestamp) head.get("at")).toInstant());
+    return head;
   }
 
   // The hash stored for a line, or null when there is no such line.

@@ -16,6 +16,7 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 - Sau proxy HTTPS (`KEYCLOAK_HOSTNAME` được đặt), Keycloak đọc các header `X-Forwarded-*`, nên mọi địa chỉ trong discovery là `https://`, đăng nhập vào được ứng dụng và sự kiện đăng nhập ghi địa chỉ client.
 - Khi đổi mã đăng nhập lấy token thất bại, ứng dụng web hiện "Đăng nhập thất bại" kèm nút Thử lại, không chuyển hướng lặp.
 - `Caddyfile` mẫu ghi `CF-Connecting-IP` bằng địa chỉ thật của client, để giới hạn tốc độ tính theo từng client.
+- `head.at` của `GET /api/v1/history/verify` (`dxos history verify`) và `at` của điểm neo mới là thời điểm ISO 8601 theo UTC.
 
 ## [2.1.0] - 2026-11-27
 

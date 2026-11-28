@@ -134,6 +134,7 @@ Webhook sự kiện mang `hash` của từng dòng, nên bên nhận có thêm m
 
 `dxos history verify` (hay `GET /api/v1/history/verify`, ADMIN) tính lại cả chuỗi và so với các điểm neo.
 Kết quả có `intact`, `head`, `firstBreak` (dòng đầu tiên bị sửa, bị chèn hoặc đứng sau một dòng bị xóa) và `mismatchedAnchors` (điểm neo mà dòng hay hash tương ứng không còn); lệnh thoát với mã 1 khi `intact` là `false`.
+`head.at` và `at` của điểm neo là thời điểm ISO 8601 theo UTC; điểm neo do bản `2.1.0` trở về trước ghi giữ thời gian không có múi giờ.
 Chuỗi phát hiện việc sửa phần bất biến, xóa hay chèn một dòng bằng SQL, và việc cắt bớt đuôi lịch sử sau một điểm neo.
 Tên người thực hiện và nội dung tự do của sự kiện phiên bản 2 nằm ngoài cam kết toàn vẹn: `dxos history verify` không phát hiện việc sửa chúng.
 Mã người thực hiện vẫn nằm trong hash.

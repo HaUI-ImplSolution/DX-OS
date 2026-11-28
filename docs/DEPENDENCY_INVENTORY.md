@@ -1745,9 +1745,9 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 
 | Tên | Phiên bản | Giấy phép | Phạm vi | Ngoại lệ |
 |---|---|---|---|---|
-| `@playwright/test` | 1.65.0 | Apache-2.0 | dev |  |
-| `playwright` | 1.65.0 | Apache-2.0 | dev |  |
-| `playwright-core` | 1.65.0 | Apache-2.0 | dev |  |
+| `@playwright/test` | 1.65.1 | Apache-2.0 | dev |  |
+| `playwright` | 1.65.1 | Apache-2.0 | dev |  |
+| `playwright-core` | 1.65.1 | Apache-2.0 | dev |  |
 
 ## Maven: backend
 

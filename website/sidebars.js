@@ -21,6 +21,7 @@ const sidebars = {
         'tai-lieu/tinh-nang',
         'tai-lieu/viet-mo-hinh',
         'tai-lieu/api',
+        'tai-lieu/trien-khai',
         'tai-lieu/van-hanh',
         'tai-lieu/luu-tep',
         'tai-lieu/cau-hinh-va-tai',

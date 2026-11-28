@@ -26,6 +26,7 @@ export const DOCS = {
   'docs/MODEL.md': {page: 'viet-mo-hinh', label: 'Viết tệp mô hình', en: 'Writing a model file'},
   'docs/API.md': {page: 'api', label: 'API', en: 'API'},
   'docs/AI.md': {page: 'tri-tue-nhan-tao', label: 'Trí tuệ nhân tạo', en: 'Artificial intelligence'},
+  'docs/DEPLOY.md': {page: 'trien-khai', label: 'Triển khai lên máy chủ', en: 'Deploy to a server'},
   'docs/OPERATIONS.md': {page: 'van-hanh', label: 'Cài đặt và vận hành', en: 'Install and operations'},
   'docs/STORAGE.md': {page: 'luu-tep', label: 'Kho tệp đính kèm', en: 'Attachment storage'},
   'docs/SIZING.md': {page: 'cau-hinh-va-tai', label: 'Cấu hình và tải đồng thời', en: 'Sizing and concurrent load'},

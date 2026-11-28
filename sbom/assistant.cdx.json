@@ -3,15 +3,15 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
   "version": 1,
-  "serialNumber": "urn:uuid:55398a41-4b8a-4476-90bc-aaa690c29ee6",
+  "serialNumber": "urn:uuid:f327496d-26e0-47d1-a38f-87f4d5f613db",
   "metadata": {
-    "timestamp": "2026-11-27T15:21:13.426Z",
+    "timestamp": "2026-11-28T06:21:20.441Z",
     "tools": {
       "components": [
         {
           "type": "application",
           "name": "npm",
-          "version": "11.16.0"
+          "version": "11.13.0"
         },
         {
           "type": "application",
@@ -130,8 +130,8 @@
       "type": "library",
       "name": "swagger",
       "group": "@fastify",
-      "version": "9.9.3",
-      "bom-ref": "dxos-assistant@2.1.0|@fastify/swagger@9.9.3",
+      "version": "9.9.5",
+      "bom-ref": "dxos-assistant@2.1.0|@fastify/swagger@9.9.5",
       "author": "Tomas Della Vedova - @delvedor",
       "description": "Serve Swagger/OpenAPI documentation for Fastify, supporting dynamic generation",
       "licenses": [
@@ -142,7 +142,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/%40fastify/swagger@9.9.3",
+      "purl": "pkg:npm/%40fastify/swagger@9.9.5",
       "externalReferences": [
         {
           "url": "git+https://github.com/fastify/fastify-swagger.git",
@@ -160,12 +160,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/@fastify/swagger/-/swagger-9.9.3.tgz",
+          "url": "https://registry.npmjs.org/@fastify/swagger/-/swagger-9.9.5.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "d708638e0b99961e1557a38fd920fbc3b64d5d7b8b3f02dcc5b288bbb19c9211c6802c88630b4ec81b247374cb65aecbb1a4666594620759f3fc94da088e60ad"
+              "content": "d97fcc5e84efdc98717a08eef43c2339329c0d3f3aab44833c8bae643c7d0c77d1b07ce955fc55217ccfef75fea9c100d63ecdfa4ec29bde61f5eb06cbfa0180"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -232,8 +232,8 @@
     {
       "type": "library",
       "name": "jose",
-      "version": "6.2.15",
-      "bom-ref": "dxos-assistant@2.1.0|jose@6.2.15",
+      "version": "6.2.18",
+      "bom-ref": "dxos-assistant@2.1.0|jose@6.2.18",
       "author": "Filip Skokan",
       "description": "JWA, JWS, JWE, JWT, JWK, JWKS for Node.js, Browser, Cloudflare Workers, Deno, Bun, and other Web-interoperable runtimes",
       "licenses": [
@@ -244,7 +244,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/jose@6.2.15",
+      "purl": "pkg:npm/jose@6.2.18",
       "externalReferences": [
         {
           "url": "git+https://github.com/panva/jose.git",
@@ -262,12 +262,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/jose/-/jose-6.2.15.tgz",
+          "url": "https://registry.npmjs.org/jose/-/jose-6.2.18.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "a9d17a7b0719011b5e7faddf27d00a2993e0c70faded4487e872d761c0f80ab7664af0e9efdae92523c510a73dd1005e192eb7bb5290b4dd8c6501c2d320c8cc"
+              "content": "768578b61530824af27091f8c8b7aac13188219a611e5fa993b08f45eb8c2216219dc9a0cdd928f3931a086e184054f1a8c16bd7fa041f7dad66e28aa2f70312"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -3122,13 +3122,13 @@
     {
       "ref": "dxos-assistant@2.1.0",
       "dependsOn": [
-        "dxos-assistant@2.1.0|@fastify/swagger@9.9.3",
+        "dxos-assistant@2.1.0|@fastify/swagger@9.9.5",
         "dxos-assistant@2.1.0|fastify@5.12.8",
-        "dxos-assistant@2.1.0|jose@6.2.15"
+        "dxos-assistant@2.1.0|jose@6.2.18"
       ]
     },
     {
-      "ref": "dxos-assistant@2.1.0|@fastify/swagger@9.9.3",
+      "ref": "dxos-assistant@2.1.0|@fastify/swagger@9.9.5",
       "dependsOn": [
         "dxos-assistant@2.1.0|fastify-plugin@6.0.1",
         "dxos-assistant@2.1.0|json-schema-resolver@3.0.0",
@@ -3158,7 +3158,7 @@
       ]
     },
     {
-      "ref": "dxos-assistant@2.1.0|jose@6.2.15"
+      "ref": "dxos-assistant@2.1.0|jose@6.2.18"
     },
     {
       "ref": "dxos-assistant@2.1.0|fastify-plugin@6.0.1"

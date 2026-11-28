@@ -1668,9 +1668,9 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 | `@fastify/forwarded` | 3.1.2 | MIT | prod |  |
 | `@fastify/merge-json-schemas` | 0.2.2 | MIT | prod |  |
 | `@fastify/proxy-addr` | 5.1.2 | MIT | prod |  |
-| `@fastify/swagger` | 9.9.3 | MIT | prod |  |
+| `@fastify/swagger` | 9.9.5 | MIT | prod |  |
 | `@pinojs/redact` | 0.4.0 | MIT | prod |  |
-| `@types/node` | 24.10.0 | MIT | dev |  |
+| `@types/node` | 24.19.2 | MIT | dev |  |
 | `@typescript/typescript-aix-ppc64` | 7.0.2 | Apache-2.0 | dev |  |
 | `@typescript/typescript-darwin-arm64` | 7.0.2 | Apache-2.0 | dev |  |
 | `@typescript/typescript-darwin-x64` | 7.0.2 | Apache-2.0 | dev |  |
@@ -1710,7 +1710,7 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 | `fastq` | 1.20.3 | ISC | prod |  |
 | `find-my-way` | 9.10.0 | MIT | prod |  |
 | `ipaddr.js` | 2.5.0 | MIT | prod |  |
-| `jose` | 6.2.15 | MIT | prod |  |
+| `jose` | 6.2.18 | MIT | prod |  |
 | `json-schema-ref-resolver` | 3.0.1 | MIT | prod |  |
 | `json-schema-resolver` | 3.0.0 | MIT | prod |  |
 | `json-schema-traverse` | 1.0.0 | MIT | prod |  |
@@ -1738,7 +1738,7 @@ Vai trò và trang chủ của thành phần cấp cao ở [`DEPENDENCIES.txt`](
 | `thread-stream` | 4.2.1 | MIT | prod |  |
 | `toad-cache` | 3.7.4 | MIT | prod |  |
 | `typescript` | 7.0.2 | Apache-2.0 | dev |  |
-| `undici-types` | 7.16.0 | MIT | dev |  |
+| `undici-types` | 7.24.6 | MIT | dev |  |
 | `yaml` | 2.9.1 | ISC | prod |  |
 
 ## npm: e2e/web

@@ -134,6 +134,7 @@ Every hour the backend writes an anchor (id, hash, time) into the object `histor
 The event webhook carries the `hash` of each row, so the receiver has an extra anchor outside the server.
 `dxos history verify` (or `GET /api/v1/history/verify`, ADMIN) recomputes the whole chain and compares it with the anchors.
 The result has `intact`, `head`, `firstBreak` (the first row that was edited, inserted or that sits after a deleted row) and `mismatchedAnchors` (anchors whose row or hash no longer exists); the command exits with code 1 when `intact` is `false`.
+`head.at` and the `at` of an anchor are ISO 8601 instants in UTC; an anchor written by release `2.1.0` or earlier keeps a time without a zone.
 The chain detects an edit of the immutable part, a deletion or an insertion of a row made with SQL, and a cutting off of the tail of the history after an anchor.
 The name of the actor and the free content of a version 2 event are outside the integrity commitment: `dxos history verify` does not detect an edit of them.
 The id of the actor is still in the hash.

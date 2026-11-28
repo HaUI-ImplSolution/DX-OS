@@ -40,7 +40,7 @@ public class HistoryController {
               + " every anchor in the object store matches the line it names. firstBreak names the"
               + " first line that does not match and why; mismatchedAnchors lists the anchors whose"
               + " line is gone or holds another hash, which is what a chain rewritten as a whole"
-              + " shows.")
+              + " shows. head is the last line (id, hash, at); at is an ISO-8601 instant in UTC.")
   public ApiResponse<Map<String, Object>> verify() {
     Map<String, Object> firstBreak = chain.firstBreak();
     List<Map<String, Object>> anchors = anchor.anchors();
@@ -69,8 +69,9 @@ public class HistoryController {
   @Operation(
       summary = "Copy the head of the history chain to the object store now",
       description =
-          "The service also does this at a set interval. Returns the anchor, or null"
-              + " when there is no history yet.")
+          "The service also does this at a set interval. Returns the anchor (id, hash, at),"
+              + " or null when there is no history yet. at is an ISO-8601 instant in UTC; an"
+              + " anchor stored by an earlier release may hold a time without a zone.")
   public ApiResponse<Map<String, Object>> anchorNow() {
     return ApiResponse.success(anchor.anchor());
   }

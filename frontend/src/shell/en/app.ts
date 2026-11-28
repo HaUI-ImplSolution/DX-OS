@@ -222,6 +222,7 @@ export const app: Record<string, string> = {
   // Sign-in
   "Đăng nhập thất bại": "Sign-in failed",
   "Thử lại": "Try again",
+  "Không hoàn tất được đăng nhập. Thử lại; nếu vẫn lỗi, hãy báo quản trị viên.": "Sign-in could not be completed. Try again; if it keeps failing, tell an administrator.",
   // Action result
   "{action}: xong": "{action}: done",
   // Built-in states and actions of the process families

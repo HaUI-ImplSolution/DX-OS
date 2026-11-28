@@ -57,7 +57,7 @@ STAFF_OTP_FLOW=CONDITIONAL
 |---|---|
 | `PUBLIC_HOST` | Tên máy chủ mà trình duyệt dùng |
 | `GATEWAY_PUBLIC_URL` | Địa chỉ công khai đầy đủ, dùng cho đăng nhập, link tệp và link hồ sơ |
-| `KEYCLOAK_HOSTNAME` | Keycloak công bố địa chỉ HTTPS cho trình duyệt |
+| `KEYCLOAK_HOSTNAME` | Keycloak công bố địa chỉ này cho trình duyệt và đọc các header `X-Forwarded-*` của proxy |
 | `APISIX_HOST_PORT` | Chỉ tiến trình trên chính máy chủ gọi được gateway |
 | `CORS_ALLOWED_ORIGINS` | Cho giao diện web ghi dữ liệu; thiếu thì bị trả `403 Invalid CORS request`, vì backend chỉ thấy HTTP từ proxy |
 | `STAFF_OTP_FLOW` | Vai `ADMIN` phải nhập mã một lần khi đăng nhập |
@@ -84,11 +84,15 @@ ten-mien.example {
     encode zstd gzip
     reverse_proxy 127.0.0.1:9080 {
         header_up X-Forwarded-Port 443
+        header_up CF-Connecting-IP {remote_host}
     }
 }
 ```
 
 `X-Forwarded-Port 443` giữ cho các địa chỉ chuyển hướng của Keycloak không mang cổng 9080.
+`CF-Connecting-IP` là header gateway đọc địa chỉ client; Caddy ghi nó bằng địa chỉ thật, nên giới hạn tốc độ và nhật ký tính theo từng client và client không tự khai được địa chỉ.
+Proxy khác Caddy phải ghi đè cả `X-Forwarded-Proto`, `X-Forwarded-Host`, `X-Forwarded-Port` và `CF-Connecting-IP`, không chuyển tiếp giá trị client gửi.
+Gateway tin các header này, nên chỉ proxy được gọi tới nó (`APISIX_HOST_PORT=127.0.0.1:9080`).
 Nạp cấu hình khi DNS đã trỏ đúng, vì Let's Encrypt kiểm tên miền ngay lúc đó:
 
 ```bash
@@ -173,4 +177,5 @@ Cơ sở dữ liệu của Keycloak không hạ phiên bản được, nên luô
 | Trình duyệt báo lỗi chứng chỉ | Kiểm bản ghi DNS, cổng 80 và 443, chế độ DNS only; đọc `sudo journalctl -u caddy -n 50` rồi `sudo systemctl restart caddy` |
 | Trang trả `502` | Stack chưa sẵn sàng hoặc `APISIX_HOST_PORT` khác `127.0.0.1:9080`; chạy `dxos status` |
 | Lưu hồ sơ trả `403 Invalid CORS request` | `CORS_ALLOWED_ORIGINS` đúng `https://tên-miền`, không có dấu `/` cuối; rồi `dxos start` |
+| Trang báo `Đăng nhập thất bại` sau khi nhập mật khẩu | Chạy lệnh cuối ở bước 5; khác `0` thì kiểm `KEYCLOAK_HOSTNAME` rồi `dxos start` |
 | Keycloak báo `Invalid parameter: redirect_uri` | Địa chỉ được đặt sau lần khởi động đầu tiên; xem [Đổi cấu hình sau khi đã chạy](#đổi-cấu-hình-sau-khi-đã-chạy) |

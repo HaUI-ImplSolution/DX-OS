@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2026 HaUI-ImplSolution
 // SPDX-License-Identifier: Apache-2.0
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   callbackError,
@@ -46,7 +46,12 @@ export default function App() {
   const [authReady, setAuthReady] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
+  const sessionRead = useRef(false);
+
   useEffect(() => {
+    // A code can be exchanged only once, and StrictMode runs effects twice in development.
+    if (sessionRead.current) return;
+    sessionRead.current = true;
     // A Keycloak callback exchanges its code for a token; otherwise the existing OIDC session is read.
     // A failed callback stops here instead of redirecting again, which would loop.
     (async () => {
@@ -62,6 +67,11 @@ export default function App() {
         setUser(loggedInUser);
         const returnPath = loggedInUser ? takeReturnPath() : null;
         if (returnPath) navigate(returnPath, { replace: true });
+      } catch (error) {
+        console.error(error);
+        clearCallbackParams();
+        const detail = error instanceof Error ? error.message : String(error);
+        setAuthError(`${t("Không hoàn tất được đăng nhập. Thử lại; nếu vẫn lỗi, hãy báo quản trị viên.")} (${detail})`);
       } finally {
         setAuthReady(true);
       }
@@ -91,10 +101,7 @@ export default function App() {
           <button
             type="button"
             className="btn btn-primary"
-            onClick={() => {
-              setAuthError(null);
-              void signIn();
-            }}
+            onClick={() => setAuthError(null)}
           >
             {t("Thử lại")}
           </button>

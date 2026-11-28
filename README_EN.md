@@ -106,6 +106,7 @@ Sign in at `http://localhost:9080/console` as `admin`, change the password, pick
 - **Connect your own application:** the [quick start](./docs/en/QUICKSTART_EN.md) has two paths, without code and with code, from a clean machine to a working process.
 - **Only the API platform:** `dxos start --core`, see [Core-only mode](./docs/OPERATIONS.md#chế-độ-chỉ-lõi) (Vietnamese).
 - **Build from source:** `deploy/make_env.sh`, then `cd deploy && docker compose up -d --build`, then `./dxos admin`; JDK 21 and Node 22 are also needed to build outside Docker.
+- **Deploy to a server with a domain:** [`docs/DEPLOY.md`](./docs/DEPLOY.md) (Vietnamese).
 - **Machine requirements, the `dxos` commands, backup and troubleshooting:** [`docs/OPERATIONS.md`](./docs/OPERATIONS.md) (Vietnamese).
 
 ## Try it
@@ -166,7 +167,7 @@ Docs site: <https://haui-implsolution.github.io/DX-OS/en/>, in English for the f
 | Screenshots and videos | [the gallery page](https://haui-implsolution.github.io/DX-OS/en/docs/hinh-anh) |
 | Writing a model file | [`docs/MODEL_EN.md`](./docs/en/MODEL_EN.md) |
 | Calling the API, building extension services and webhooks | [`docs/API_EN.md`](./docs/en/API_EN.md), [`docs/EXTENSIONS_EN.md`](./docs/en/EXTENSIONS_EN.md); and the OpenAPI specification (`/v3/api-docs`) of the running backend |
-| Install, the `dxos` commands, backup, troubleshooting, monitoring | [`docs/OPERATIONS.md`](./docs/OPERATIONS.md) (Vietnamese), [`docs/MONITORING_EN.md`](./docs/en/MONITORING_EN.md) |
+| Deploy, the `dxos` commands, backup, troubleshooting, monitoring | [`docs/DEPLOY.md`](./docs/DEPLOY.md) (Vietnamese), [`docs/OPERATIONS.md`](./docs/OPERATIONS.md) (Vietnamese), [`docs/MONITORING_EN.md`](./docs/en/MONITORING_EN.md) |
 | Architecture and the decisions made | [`docs/en/ARCHITECTURE_EN.md`](./docs/en/ARCHITECTURE_EN.md) |
 | Testing | [`docs/TESTING.md`](./docs/TESTING.md) (Vietnamese) |
 | Glossary | [`docs/GLOSSARY_EN.md`](./docs/en/GLOSSARY_EN.md) |

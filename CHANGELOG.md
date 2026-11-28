@@ -7,6 +7,16 @@ Mỗi phiên bản có một mục tóm tắt các điểm cốt lõi; mục Ch�
 
 ## [Unreleased]
 
+### Thêm
+
+- `docs/DEPLOY.md` hướng dẫn đưa DX-OS lên máy chủ có tên miền và HTTPS: biến cần đổi, lệnh cần chạy, kiểm tra, cập nhật và lỗi thường gặp; `docs/OPERATIONS.md` gom nội dung theo chủ đề.
+
+### Sửa
+
+- Sau proxy HTTPS (`KEYCLOAK_HOSTNAME` được đặt), Keycloak đọc các header `X-Forwarded-*`, nên mọi địa chỉ trong discovery là `https://`, đăng nhập vào được ứng dụng và sự kiện đăng nhập ghi địa chỉ client.
+- Khi đổi mã đăng nhập lấy token thất bại, ứng dụng web hiện "Đăng nhập thất bại" kèm nút Thử lại, không chuyển hướng lặp.
+- `Caddyfile` mẫu ghi `CF-Connecting-IP` bằng địa chỉ thật của client, để giới hạn tốc độ tính theo từng client.
+
 ## [2.1.0] - 2026-11-27
 
 Thêm và sửa sau bản `2.0.2`: dự án gom mô hình và ứng dụng ngoài kèm quản trị theo dự án, `dxos connect` và `webUrl` để nối ứng dụng ngoài, ứng dụng mẫu `appliance-store`, kế hoạch đổi mô hình báo tác động lên hồ sơ đang chờ, ghi có điều kiện theo phiên bản, tìm hồ sơ theo chữ, `dxos import` nhập hồ sơ từ tệp CSV, thời gian ở từng trạng thái, cầu nối MQTT và Prometheus tùy chọn, trình dựng mô hình ở bảng điều khiển, văn bản giấy phép đi kèm mọi image, và trợ lý nghiệp vụ dùng bộ phân loại tự huấn luyện, chạy cùng stack.

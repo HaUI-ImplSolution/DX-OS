@@ -28,7 +28,8 @@ Tự cài và nối vào ứng dụng của bạn thì theo [`QUICKSTART.md`](./
 | [`API.md`](./API.md) | Đường dẫn API Core và API trợ lý nghiệp vụ |
 | [`AI.md`](./AI.md) | Trợ lý phân loại hồ sơ, rào chắn, thống kê dữ liệu, giấy phép, nghiệm thu và cách đo lại |
 | [`EXTENSIONS.md`](./EXTENSIONS.md) | Viết dịch vụ riêng, bên nhận webhook, giao diện ngoài và route riêng ở ngoài lõi |
-| [`OPERATIONS.md`](./OPERATIONS.md) | Cài đặt, các lệnh `dxos`, tên miền và HTTPS, biến `.env`, sao lưu, ứng phó sự cố, quản trị người dùng và dự án |
+| [`DEPLOY.md`](./DEPLOY.md) | Đưa lên máy chủ có tên miền và HTTPS: biến cần đổi, lệnh cần chạy, kiểm tra và cập nhật |
+| [`OPERATIONS.md`](./OPERATIONS.md) | Cài đặt, các lệnh `dxos`, biến `.env`, sao lưu, ứng phó sự cố, quản trị người dùng và dự án |
 | [`MONITORING.md`](./MONITORING.md) | Số đo, nhật ký, màn hình giám sát, Prometheus tùy chọn |
 | [`INTEGRATIONS.md`](./INTEGRATIONS.md) | Webhook có chữ ký, dòng sự kiện, lịch sử chống sửa và cầu nối MQTT tùy chọn |
 | [`REPORTING.md`](./REPORTING.md) | Nối công cụ báo cáo vào dữ liệu chỉ đọc |

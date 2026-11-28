@@ -237,11 +237,13 @@ services:
       dockerfile: Dockerfile
     command: ["start-dev", "--import-realm"]
     # With KEYCLOAK_HOSTNAME set, Keycloak gives browsers that address and keeps the internal address
-    # for the gateway and the backend; both options are set together because either one alone breaks it.
+    # for the gateway and the backend; the first two options are set together because either one alone
+    # breaks it. The third makes Keycloak read the X-Forwarded-* headers, so the addresses it builds
+    # from a request behind an HTTPS proxy are https.
     entrypoint:
       - /bin/sh
       - -c
-      - '[ -z "$$KEYCLOAK_HOSTNAME" ] || export KC_HOSTNAME="$$KEYCLOAK_HOSTNAME" KC_HOSTNAME_BACKCHANNEL_DYNAMIC=true; exec /opt/keycloak/bin/kc.sh "$$@"'
+      - '[ -z "$$KEYCLOAK_HOSTNAME" ] || export KC_HOSTNAME="$$KEYCLOAK_HOSTNAME" KC_HOSTNAME_BACKCHANNEL_DYNAMIC=true KC_PROXY_HEADERS=xforwarded; exec /opt/keycloak/bin/kc.sh "$$@"'
       - kc
     depends_on:
       postgres:

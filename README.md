@@ -106,6 +106,7 @@ Bộ cài tải bản phát hành mới nhất, kiểm SHA-256 rồi cài vào `
 - **Nối vào ứng dụng của bạn:** [bắt đầu nhanh](./docs/QUICKSTART.md) có hai đường, không cần code và có code, từ máy sạch đến quy trình chạy được.
 - **Chỉ cần nền tảng API:** `dxos start --core`, xem [Chế độ chỉ lõi](./docs/OPERATIONS.md#chế-độ-chỉ-lõi).
 - **Tự build từ mã nguồn:** `deploy/make_env.sh`, rồi `cd deploy && docker compose up -d --build`, rồi `./dxos admin`; cần thêm JDK 21 và Node 22 để build ngoài Docker.
+- **Đưa lên máy chủ có tên miền:** [`docs/DEPLOY.md`](./docs/DEPLOY.md).
 - **Yêu cầu máy, lệnh `dxos`, sao lưu và xử lý sự cố:** [`docs/OPERATIONS.md`](./docs/OPERATIONS.md).
 
 ## Dùng thử
@@ -166,7 +167,7 @@ Trang tài liệu: <https://haui-implsolution.github.io/DX-OS/>; mục lục đ�
 | Ảnh màn hình và video | [trang hình ảnh](https://haui-implsolution.github.io/DX-OS/docs/hinh-anh) |
 | Viết tệp mô hình | [`docs/MODEL.md`](./docs/MODEL.md) |
 | Gọi API, viết dịch vụ và webhook | [`docs/API.md`](./docs/API.md), [`docs/EXTENSIONS.md`](./docs/EXTENSIONS.md) |
-| Cài đặt, lệnh `dxos`, sao lưu, sự cố, giám sát | [`docs/OPERATIONS.md`](./docs/OPERATIONS.md), [`docs/MONITORING.md`](./docs/MONITORING.md) |
+| Triển khai, lệnh `dxos`, sao lưu, sự cố, giám sát | [`docs/DEPLOY.md`](./docs/DEPLOY.md), [`docs/OPERATIONS.md`](./docs/OPERATIONS.md), [`docs/MONITORING.md`](./docs/MONITORING.md) |
 | Kiến trúc và các quyết định đã chốt | [`ARCHITECTURE.md`](./ARCHITECTURE.md) |
 | Kiểm thử | [`docs/TESTING.md`](./docs/TESTING.md) |
 | Thuật ngữ | [`docs/GLOSSARY.md`](./docs/GLOSSARY.md) |

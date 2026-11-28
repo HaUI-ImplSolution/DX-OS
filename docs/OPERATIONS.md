@@ -1,120 +1,25 @@
 # Vận hành
 
-Tài liệu cho người cài và chạy stack hằng ngày: cài đặt và lệnh `dxos`, quản trị người dùng, biến cấu hình `.env`, kiểm tra trước khi chạy, tài nguyên, giám sát từ ngoài, sao lưu và khôi phục, ứng phó sự cố, quét mã độc.
+Tài liệu cho người cài, triển khai và chạy DX-OS hằng ngày.
+
+| Bạn cần | Xem |
+|---|---|
+| Cài DX-OS và tra lệnh `dxos` | [Cài đặt và lệnh `dxos`](#cài-đặt-và-lệnh-dxos) |
+| Đưa lên máy chủ có tên miền | [`DEPLOY.md`](./DEPLOY.md) |
+| Đổi biến `.env`, bật tắt thành phần | [Cấu hình](#cấu-hình) |
+| Đưa tệp mô hình vào hệ thống | [Mô hình nghiệp vụ](#mô-hình-nghiệp-vụ) |
+| Quản lý người dùng, ứng dụng ngoài, dự án | [Người dùng, ứng dụng ngoài và dự án](#người-dùng-ứng-dụng-ngoài-và-dự-án) |
+| Nhập, lưu trữ, sao lưu dữ liệu | [Dữ liệu và sao lưu](#dữ-liệu-và-sao-lưu) |
+| Xử lý lỗi và sự cố | [Giám sát và sự cố](#giám-sát-và-sự-cố) |
+| Ước lượng máy chủ | [Tài nguyên và thời gian](#tài-nguyên-và-thời-gian) |
+
 Log, giới hạn tốc độ, sự kiện đăng nhập, audit, số đo cho Prometheus và màn hình giám sát ở [`MONITORING.md`](./MONITORING.md).
 Webhook sự kiện, API kéo sự kiện, lịch sử chống sửa và hồ dữ liệu ở [`INTEGRATIONS.md`](./INTEGRATIONS.md).
 Kết nối công cụ báo cáo bằng vai PostgreSQL chỉ đọc ở [`REPORTING.md`](./REPORTING.md).
 
-## Quản trị người dùng
-
-Tab Người dùng của bảng điều khiển (`/console`, ADMIN) cho tìm người dùng, xem vai theo từng ứng dụng, gán và gỡ vai và đơn vị của các mô hình đang chạy, tạo người dùng, khóa và mở, đặt lại mật khẩu.
-Mật khẩu tạm do hệ thống sinh, hiện một lần và người dùng phải đổi ở lần đăng nhập đầu.
-Vai `ADMIN` của nền tảng không cấp được ở tab này; cấp ở Keycloak Admin Console (Users, Role mapping), mở theo [Keycloak Admin Console](#keycloak-admin-console).
-Người dùng đăng nhập bằng nhà cung cấp ngoài, chính sách mật khẩu và MFA do Keycloak quản lý.
-Backend cần tài khoản dịch vụ `dxos-backend-admin` có quyền client và scope `kc-admin-api`; `update.sh` gán scope này cho Keycloak dựng từ trước (xem [`sso/README.md`](../sso/README.md)).
-
-## Ứng dụng ngoài
-
-Một dịch vụ ngoài gọi API bằng token máy; đăng ký nó ở tab Ứng dụng ngoài của bảng điều khiển (`/console`, ADMIN), bằng `dxos client add <tên> --model <mô hình> --role <vai>`, hoặc bằng `dxos connect` khi cần nối một ứng dụng với một hay nhiều vai.
-Mỗi ứng dụng là một client Keycloak `dxos-app-<tên>` dạng client credentials, giữ đúng một vai của một mô hình; vai `ADMIN` và các vai của nền tảng không cấp được.
-Mã bí mật hiện một lần khi đăng ký hoặc đổi, hệ thống không giữ lại và không ghi vào nhật ký hay lịch sử.
-Ứng dụng lấy token bằng `grant_type=client_credentials` ở `<địa chỉ>/realms/dxos/protocol/openid-connect/token`, rồi gọi API dữ liệu của mô hình đó; mô hình khác, API quản trị và API người dùng trả 403.
-`dxos client add` và `dxos client rotate` nhận thêm `--env <TIỀN_TỐ>` (ví dụ `--env DXOS_REQUESTER`): lệnh chỉ in hai dòng `<TIỀN_TỐ>_CLIENT_ID=...` và `<TIỀN_TỐ>_CLIENT_SECRET=...`, nối thẳng vào tệp `.env` của ứng dụng được bằng `>>`.
-`dxos connect <mô hình> --role R [--role R ...]` làm việc đó cho mọi vai trong một lệnh: đăng ký client `dxos-app-<mô hình>-<vai>`, ghi `DXOS_BASE_URL` và `DXOS_<VAI>_CLIENT_ID`, `DXOS_<VAI>_CLIENT_SECRET` vào `.env` ở thư mục hiện tại (quyền `600` khi tạo mới), đăng nhập thử bằng client đầu tiên và in hai dòng cần thêm vào `docker-compose.yml` của ứng dụng.
-Chạy lại thì client đã có secret trong tệp được giữ nguyên; client đã đăng ký mà tệp không có secret của nó cần `--rotate`.
-`--app` đổi tên dùng để đặt tên client, `--prefix` đổi tiền tố biến, `--env-file` đổi tệp ghi và `--base-url` đổi địa chỉ ghi vào `DXOS_BASE_URL` (mặc định `http://host.docker.internal:<cổng>`, dùng được từ container trên cùng máy khi service có `extra_hosts: ["host.docker.internal:host-gateway"]`).
-`dxos client test <tên>` đăng nhập bằng client đó rồi gọi API của mô hình của nó, và nói bước nào hỏng: không tới được địa chỉ, sai mã bí mật, hay mô hình chưa áp dụng.
-Mã bí mật lấy từ `--secret-file`, biến `DXOS_CLIENT_SECRET` hoặc hỏi lúc chạy, không bao giờ nằm trên dòng lệnh; `--url` đổi địa chỉ cổng vào cần thử.
-`dxos client list` liệt kê ứng dụng kèm mô hình và vai, `dxos client role <tên> --role <vai>` (hoặc nút đổi vai ở tab Ứng dụng ngoài) chuyển ứng dụng sang vai khác của cùng mô hình mà giữ nguyên tên và mã bí mật, `dxos client rotate <tên>` cấp mã mới và mã cũ hết hiệu lực ngay, `dxos client remove <tên>` xóa client; hồ sơ ứng dụng đã tạo vẫn còn.
-Token đã cấp trước khi đổi mã, đổi vai hoặc xóa ứng dụng vẫn dùng được đến khi hết hạn, tối đa khoảng 5 phút; token đổi vai vẫn mang vai cũ cho đến lúc đó.
-Đổi sang mô hình khác thì gỡ ứng dụng rồi đăng ký lại.
-Tài khoản dịch vụ của ứng dụng không hiện trong danh sách người dùng, và nhật ký quản trị ghi `CLIENT_CREATED`, `CLIENT_SECRET_ROTATED` và `CLIENT_DELETED` kèm tên ứng dụng, và mô hình và vai của nó khi tạo hoặc xóa.
-Lệnh dùng client `dxos-cli` như `dxos plan`, nên cần `DXOS_CLI_SECRET` trong `.env`.
-
-### Giao diện trình duyệt ngoài
-
-Đăng ký một giao diện ở tên miền khác bằng một hoặc nhiều redirect URI chính xác:
-
-```bash
-dxos client browser add partner-ui \
-  --redirect-uri https://partner.example/auth/callback \
-  --redirect-uri https://partner.example/silent-renew
-```
-
-Lệnh tạo public client `dxos-browser-partner-ui` dùng Authorization Code với PKCE S256, không có secret, password grant hay service account.
-Mỗi origin của redirect được thêm vào `CORS_ALLOWED_ORIGINS` trong `deploy/.env`; backend đang chạy được tạo lại để nhận cấu hình.
-Token có audience `dxos-api`, vai của người dùng và nhóm đơn vị như web chính.
-
-Redirect phải dùng HTTPS, trừ `localhost`, `127.0.0.1` và `[::1]` được dùng HTTP khi phát triển.
-Không nhận wildcard, user info, fragment, host hoặc cổng sai; `CORS_ALLOWED_ORIGINS` chỉ nhận origin, không có path, query hay dấu `/` cuối.
-`dxos doctor` kiểm allowlist trước khi khởi động.
-
-`dxos client browser list` liệt kê client trình duyệt.
-`dxos client browser remove partner-ui` xóa client nhưng giữ origin trong allowlist vì giao diện khác có thể dùng chung; xóa origin không còn dùng khỏi `CORS_ALLOWED_ORIGINS` rồi tạo lại backend.
-Hướng dẫn cấu hình ứng dụng từ đầu đến cuối ở [`docs/EXTENSIONS.md`](EXTENSIONS.md#giao-diện-ngoài).
-
-## Dự án
-
-Một dự án gom các mô hình và các ứng dụng ngoài mà một nơi tích hợp dùng, để lọc danh sách và xem một thay đổi chạm tới ai.
-Nó là tên gọi để quản trị và để chia việc quản trị người dùng: dự án không cô lập dữ liệu, không cấp quyền đọc hay ghi dữ liệu, và vai vẫn là `dxos-m-<mô hình>`.
-`ADMIN` của hệ thống vẫn quản trị tất cả; quản trị viên của một dự án chỉ quản trị người dùng trong dự án đó (xem Thành viên và quản trị viên dự án).
-Dự án nằm ngoài tệp mô hình, nên đổi dự án không tạo phiên bản mới và không cần áp dụng lại.
-Hệ thống không đoán dự án từ tên mô hình, tên ứng dụng hay người áp dụng; chỉ có liên kết được khai rõ.
-
-Một mô hình thuộc tối đa một dự án, một ứng dụng ngoài cũng vậy; mô hình và ứng dụng chưa khai nằm ở nhóm chưa phân loại và chạy như trước.
-Ứng dụng có dự án riêng của nó, không theo dự án của mô hình nó gọi, nên ứng dụng của dự án B gọi mô hình của dự án A là cách dùng chung một mô hình.
-Client trình duyệt (`dxos client browser`) chưa có dự án.
-
-Quản lý dự án ở tab Dự án của bảng điều khiển (`/console`, ADMIN); hai tab Mô hình đang chạy và Ứng dụng ngoài lọc theo dự án và cho đổi dự án ngay trên từng dòng, và Danh mục dữ liệu ghi dự án của mô hình.
-Hoặc bằng lệnh:
-
-```bash
-dxos project add <tên> [--label NHÃN] [--description MÔ_TẢ]   # tên: chữ thường, số, - và _
-dxos project list                                              # mỗi dự án kèm mô hình và ứng dụng của nó
-dxos project remove <tên>
-dxos model project <mô hình> <dự án>                           # dấu - đưa ra khỏi dự án
-dxos client project <tên ứng dụng> <dự án>
-dxos client add <tên> --model M --role R --project P           # đăng ký và gán trong một bước
-dxos connect <mô hình> --role R --project P                    # gán cho client mới do lệnh tạo
-```
-
-Xóa dự án còn mô hình hoặc ứng dụng bị từ chối (409); đưa chúng ra khỏi dự án hoặc sang dự án khác trước.
-Xóa một ứng dụng thì liên kết của nó biến mất theo.
-Nhật ký quản trị ghi `PROJECT_CREATED`, `PROJECT_UPDATED`, `PROJECT_DELETED`, `MODEL_PROJECT_CHANGED` và `CLIENT_PROJECT_CHANGED`.
-
-### Thành viên và quản trị viên dự án
-
-Một tài khoản là thành viên (`MEMBER`) hoặc quản trị viên (`ADMIN`) của một dự án, và thuộc nhiều dự án khi được thêm vào từng dự án một cách rõ ràng.
-Thành viên chỉ là tư cách để nhận vai của các mô hình trong dự án; quyền đọc và ghi dữ liệu vẫn đến từ vai của mô hình, và có vai của mô hình A không cho chạm vào mô hình B.
-
-Quản trị viên của dự án A làm được những việc này, chỉ trong dự án A:
-
-- Xem tài khoản thành viên của A, với vai của các mô hình thuộc A; không thấy đơn vị và không thấy vai của dự án khác.
-- Gán và gỡ vai của mô hình thuộc A cho thành viên của A; người chưa là thành viên bị từ chối, nên thêm thành viên là bước riêng.
-- Thêm và bớt thành viên thường; không đổi cấp của quản trị viên, không nâng ai lên quản trị viên.
-
-Chỉ `ADMIN` của hệ thống làm được: tạo tài khoản, khóa và mở, đặt lại mật khẩu, đơn vị, nâng và hạ quản trị viên dự án, tạo và xóa dự án, đổi dự án của mô hình hay ứng dụng, và mọi việc với mô hình chưa thuộc dự án nào.
-Việc ngoài phạm vi trả 403 và được ghi vào nhật ký từ chối; tài khoản không quản trị dự án nào bị từ chối ở mọi API người dùng.
-Phạm vi đọc từ cơ sở dữ liệu ở từng yêu cầu, nên đổi cấp hay đổi dự án của mô hình có hiệu lực ngay; vai trong token vẫn trễ tối đa khoảng 5 phút.
-Việc gán và gỡ vai ghi thêm `project` của mô hình vào nhật ký.
-
-Gỡ một thành viên, hoặc chuyển mô hình sang dự án khác, không gỡ các vai đã cấp: vai còn đến khi bị gỡ, và bảng điều khiển cảnh báo trước khi làm.
-Xóa dự án xóa các thành viên của nó; dự án còn mô hình hoặc ứng dụng vẫn bị từ chối.
-Nhật ký quản trị ghi `PROJECT_MEMBER_ADDED`, `PROJECT_MEMBER_CHANGED` và `PROJECT_MEMBER_REMOVED`.
-
-```bash
-dxos project member list <dự án>
-dxos project member add <dự án> <tên đăng nhập> [--admin]      # --admin: quản trị viên của dự án
-dxos project member remove <dự án> <tên đăng nhập>
-```
-
-Thành viên cũng quản lý ở tab Dự án của bảng điều khiển (nút Thành viên); quản trị viên dự án đăng nhập thấy hai tab Người dùng và Thành viên dự án.
-
-Nhiều dự án dùng chung một bản cài khi cùng một nhóm quản trị chịu trách nhiệm cho tất cả, hoặc khi mỗi dự án chỉ cần người quản trị người dùng riêng cho các mô hình của mình.
-Quản trị viên dự án không phải ranh giới giữa các tổ chức: các dự án vẫn chung một realm, một danh sách tài khoản (nhìn thấy qua `ADMIN` của hệ thống và qua tìm người), một hạ tầng và một `ADMIN`.
-Tách bản cài, hoặc ít nhất tách realm Keycloak, khi các dự án thuộc miền tin cậy khác nhau, cần danh sách người dùng riêng, hoặc không được để `ADMIN` chung nhìn thấy dữ liệu của nhau.
-
 ## Cài đặt và lệnh `dxos`
+
+### Cài và chạy
 
 ```bash
 curl -fsSL https://github.com/HaUI-ImplSolution/DX-OS/releases/latest/download/dxos-install.sh | bash
@@ -126,41 +31,6 @@ Gói sai SHA-256 thì không cài gì.
 `install.sh` chép `deploy/`, `sso/realm-dxos.json` và ba script `e2e/api/` mà `dxos conformance` chạy vào `~/.dxos` (đổi bằng `--prefix` hoặc biến `DXOS_HOME`), sinh `deploy/.env` bằng [`make_env.sh`](../deploy/make_env.sh), đặt `COMPOSE_PROJECT_NAME=dxos` cùng image GHCR của bản đó, và tạo liên kết `~/.local/bin/dxos`.
 Chọn bản bằng `--version vX.Y.Z`; cài từ gói có sẵn trên máy bằng `--file dx-os-X.Y.Z.tar.gz`.
 
-| Lệnh | Việc |
-|---|---|
-| `dxos start [--core\|--full] [tệp...]` | Chạy `doctor.sh`, tải image còn thiếu, khởi động (chạy lại được khi stack mới lên một phần, nó dựng nốt phần còn thiếu), chờ mọi dịch vụ sẵn sàng (`--core` chỉ chạy Tầng 1, xem [Chế độ chỉ lõi](#chế-độ-chỉ-lõi)); realm chưa có ai vai `ADMIN` thì tạo tài khoản `admin` với mật khẩu tạm in ra một lần; có tệp mô hình thì đưa các tệp vào và in kết quả của từng tệp (xem dưới); rồi in các địa chỉ |
-| `dxos stop` | Dừng các container, giữ dữ liệu |
-| `dxos status` | Trạng thái từng dịch vụ, các địa chỉ và trạng thái quét mã độc |
-| `dxos logs [dịch vụ]` | Theo dõi log |
-| `dxos admin` | Đặt mật khẩu tạm mới cho `admin`, tạo tài khoản nếu chưa có |
-| `dxos update [vX.Y.Z]` | Cài bản mới hơn (mặc định bản mới nhất): thay tệp chạy, giữ `.env`, `data/` và `apisix/local.yaml`, thêm biến mới, rồi chạy `update.sh`; script này gán cho `dxos-backend-admin` scope `kc-admin-api` mà Keycloak 26.8 đòi (`lib/keycloak-admin-scope.sh`, chạy lại được), và nên sao lưu trước vì cơ sở dữ liệu của Keycloak không hạ phiên bản được |
-| `dxos doctor`, `dxos backup` | Chạy `doctor.sh`, `backup.sh` |
-| `dxos av [on\|off]` | Bật hoặc tắt quét mã độc tệp tải lên (xem dưới); không có đối số thì in trạng thái quét |
-| `dxos plan [--check] [--json] <tệp>`, `dxos apply <tệp> [--accept MỨC] [--json]` | In kế hoạch của một tệp mô hình, hoặc áp dụng nó (xem dưới) |
-| `dxos lint <tệp>...` | Kiểm tệp mô hình bằng bộ đọc của backend, không cần hệ thống đang chạy (xem dưới) |
-| `dxos conformance <mô hình> [--allow-test-users]` | Kiểm các rào chắn của lõi cho một mô hình đã áp dụng (xem dưới) |
-| `dxos model upgrade [--write] <tệp>` | Xem diff nâng tuần tự tệp lên format hiện hành; `--write` thay tệp nguyên tử sau khi in diff (xem dưới) |
-| `dxos model merge <tệp>` | In tệp mô hình đầy đủ của một tệp có `extends` (xem [`MODEL.md`](./MODEL.md#mở-rộng-từ-mẫu)) |
-| `dxos gitops sync [models\|infra]`, `status [models\|infra]`, `approve [infra] <commit> [--accept MỨC]`, `install`, `uninstall` | Kéo hạ tầng và tệp mô hình từ git, so với bản cài và mô hình đang chạy; `install` chạy mỗi 5 phút bằng systemd user timer (xem dưới) |
-| `dxos history verify`, `dxos history anchor` | Kiểm lịch sử hồ sơ chưa bị sửa, hoặc ghi điểm neo ngay (xem [`INTEGRATIONS.md`](./INTEGRATIONS.md#lịch-sử-chống-sửa)) |
-| `dxos reconcile [install\|uninstall]` | Đưa stack về đúng khai báo; `install` chạy mỗi phút bằng systemd user timer (xem dưới) |
-| `dxos archive <mô hình> [--before YYYY-MM-DD] [--out THƯ_MỤC \| --store]`, `dxos archive query <mô hình>/<lần chạy> ...`, `dxos archive check <thư mục> \| --store <mô hình>/<lần chạy>`, `dxos archive list` | Xuất hồ sơ đã xong ra Parquet, truy vấn chỉ đọc một lần chạy bằng DuckDB, kiểm một bản xuất, liệt kê các lần chạy trong kho (xem [`INTEGRATIONS.md`](./INTEGRATIONS.md#hồ-dữ-liệu)) |
-| `dxos archive auto`, `dxos archive schedule [install\|uninstall]` | Ghi vào kho hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS` ngày; `schedule install` chạy mỗi ngày bằng systemd user timer (xem dưới) |
-| `dxos demo [--password MẬT_KHẨU]`, `dxos demo remove` | Áp dụng mô hình Một cửa sinh viên nếu chưa chạy, tạo bốn tài khoản thử `judge_student`, `judge_officer`, `judge_officer2` và `judge_supervisor` với một mật khẩu (ngẫu nhiên nếu không nêu, in một lần; chạy lại thì đặt và in mật khẩu mới) và nộp khoảng 40 hồ sơ mẫu qua API chung, mỗi bước do đúng người làm; chạy lại không nộp thêm hồ sơ; `remove` chỉ gỡ bốn tài khoản, hồ sơ có quy trình không xóa được nên còn lại; cần client `dxos-cli` như `dxos plan`. Hạn xử lý 72 giờ của mô hình nên hồ sơ quá hạn chỉ có sau ba ngày kể từ lần nộp |
-| `dxos connect <mô hình> --role R [--role R ...] [--project P]`, `dxos client add <tên> --model M --role R [--project P]`, `dxos client list`, `dxos client role <tên> --role R`, `dxos client rotate <tên>`, `dxos client remove <tên>` | Đăng ký và quản lý ứng dụng ngoài gọi API bằng token máy (xem phần Ứng dụng ngoài ở trên) |
-| `dxos project list`, `dxos project add <tên> [--label NHÃN] [--description MÔ_TẢ]`, `dxos project remove <tên>`, `dxos model project <mô hình> <dự án\|->`, `dxos client project <tên> <dự án\|->` | Gom mô hình và ứng dụng ngoài theo dự án để lọc và xem phạm vi ảnh hưởng (xem phần Dự án ở trên) |
-| `dxos project member list <dự án>`, `dxos project member add <dự án> <tên đăng nhập> [--admin]`, `dxos project member remove <dự án> <tên đăng nhập>` | Thành viên và quản trị viên của một dự án, để quản trị người dùng theo dự án |
-| `dxos client browser add <tên> --redirect-uri URL [...]`, `dxos client browser list`, `dxos client browser remove <tên>` | Đăng ký và quản lý public OIDC client dùng PKCE cho giao diện trình duyệt ở origin khác |
-| `dxos import <mô hình> <thực thể> <tệp.csv> --client TÊN [--dry-run] [--secret-file TỆP] [--offset +HH:MM]` | Tạo mỗi dòng của tệp CSV thành một hồ sơ qua API dữ liệu, bằng ứng dụng ngoài đã đăng ký (xem dưới) |
-| `dxos version` | In bản đang cài (thẻ image) và thư mục cài |
-| `dxos uninstall [--purge]` | Xóa container và lệnh `dxos`; `--purge` xóa cả dữ liệu, kho sao lưu trong `deploy/backups` và thư mục cài, phải gõ xác nhận; kho ở `BACKUP_DIR` hoặc `BACKUP_REPOSITORY` ngoài thư mục cài được giữ nguyên |
-
-Prometheus là thành phần tùy chọn nằm ngoài stack mặc định; cách bật ở [`MONITORING.md`](./MONITORING.md#prometheus-kèm-theo-tùy-chọn).
-Cầu nối MQTT là thành phần tùy chọn nằm ngoài stack mặc định; cách bật, cấu hình tuyến và giới hạn ở [`INTEGRATIONS.md`](./INTEGRATIONS.md#cầu-nối-mqtt-tùy-chọn).
-Trợ lý nghiệp vụ chạy cùng stack ở chế độ full; cấu hình, thay khóa và gỡ ở [`assistant/README.md`](../assistant/README.md).
-File route riêng `deploy/apisix/local.yaml` được giữ khi cập nhật và ghép với cấu hình lõi mới sau khi kiểm; cấu hình xung đột làm cập nhật dừng trước khi thay container.
-Cách khai báo và nạp lại ở [Route riêng trong APISIX](EXTENSIONS.md#route-riêng-trong-apisix).
-
 ### Windows (WSL2)
 
 DX-OS chạy trên Windows 10/11 bằng Docker Desktop với WSL2; bộ cài và lệnh `dxos` là Bash nên chạy trong một bản phân phối WSL, không chạy trong PowerShell.
@@ -170,44 +40,76 @@ Thư mục cài mặc định `~/.dxos` nằm trong ổ của WSL; không đặt
 `dxos doctor` báo FAIL khi `docker info` không chạy được trong WSL, tức là WSL integration chưa bật hoặc Docker Desktop chưa chạy.
 Gateway ở cổng `APISIX_HOST_PORT` (mặc định 9080); từ trình duyệt Windows mở `http://localhost:9080/console`.
 
-### Máy chủ có tên miền và HTTPS
+### Bảng lệnh
 
-Muốn người dùng vào bằng `https://tên-miền` thay vì `http://IP:9080`, đặt một reverse proxy trước gateway.
-Ví dụ dưới dùng Caddy: nó tự lấy và gia hạn chứng chỉ Let's Encrypt, và chạy trên chính máy chủ, ngoài Docker.
+#### Vận hành stack
 
-1. Tạo bản ghi DNS loại A của tên miền, trỏ tới IP công khai của máy chủ.
-   Nếu DNS đặt ở Cloudflare thì để chế độ DNS only, để Let's Encrypt nối thẳng tới Caddy.
-2. Mở TCP 80 và 443 từ mọi nơi ở tường lửa của máy chủ (Security Group của AWS, hoặc `ufw`).
-   Không mở cổng 9080; chỉ Caddy gọi gateway.
-3. Đặt trong `deploy/.env` trước lần `dxos start` đầu tiên (realm Keycloak chỉ import một lần nên các địa chỉ phải đúng từ đầu):
+| Lệnh | Việc |
+|---|---|
+| `dxos start [--core\|--full] [tệp...]` | Chạy `doctor.sh`, tải image còn thiếu, khởi động (chạy lại được khi stack mới lên một phần, nó dựng nốt phần còn thiếu), chờ mọi dịch vụ sẵn sàng (`--core` chỉ chạy Tầng 1, xem [Chế độ chỉ lõi](#chế-độ-chỉ-lõi)); realm chưa có ai vai `ADMIN` thì tạo tài khoản `admin` với mật khẩu tạm in ra một lần; có tệp mô hình thì đưa các tệp vào và in kết quả của từng tệp ([Tệp mô hình lúc khởi động](#tệp-mô-hình-lúc-khởi-động)); rồi in các địa chỉ |
+| `dxos stop` | Dừng các container, giữ dữ liệu |
+| `dxos status` | Trạng thái từng dịch vụ, các địa chỉ và trạng thái quét mã độc |
+| `dxos logs [dịch vụ]` | Theo dõi log |
+| `dxos admin` | Đặt mật khẩu tạm mới cho `admin`, tạo tài khoản nếu chưa có |
+| `dxos update [vX.Y.Z]` | Cài bản mới hơn (mặc định bản mới nhất): thay tệp chạy, giữ `.env`, `data/` và `apisix/local.yaml`, thêm biến mới, rồi chạy `update.sh`; script này gán cho `dxos-backend-admin` scope `kc-admin-api` mà Keycloak 26.8 đòi (`lib/keycloak-admin-scope.sh`, chạy lại được), và nên sao lưu trước vì cơ sở dữ liệu của Keycloak không hạ phiên bản được |
+| `dxos doctor`, `dxos backup` | Chạy `doctor.sh`, `backup.sh` |
+| `dxos av [on\|off]` | Bật hoặc tắt quét mã độc tệp tải lên ([Quét mã độc tệp tải lên](#quét-mã-độc-tệp-tải-lên)); không có đối số thì in trạng thái quét |
+| `dxos reconcile [install\|uninstall]` | Đưa stack về đúng khai báo; `install` chạy mỗi phút bằng systemd user timer ([Tự phục hồi](#tự-phục-hồi)) |
+| `dxos demo [--password MẬT_KHẨU]`, `dxos demo remove` | Áp dụng mô hình Một cửa sinh viên nếu chưa chạy, tạo bốn tài khoản thử `judge_student`, `judge_officer`, `judge_officer2` và `judge_supervisor` với một mật khẩu (ngẫu nhiên nếu không nêu, in một lần; chạy lại thì đặt và in mật khẩu mới) và nộp khoảng 40 hồ sơ mẫu qua API chung, mỗi bước do đúng người làm; chạy lại không nộp thêm hồ sơ; `remove` chỉ gỡ bốn tài khoản, hồ sơ có quy trình không xóa được nên còn lại; cần client `dxos-cli` như `dxos plan`. Hạn xử lý 72 giờ của mô hình nên hồ sơ quá hạn chỉ có sau ba ngày kể từ lần nộp |
+| `dxos version` | In bản đang cài (thẻ image) và thư mục cài |
+| `dxos uninstall [--purge]` | Xóa container và lệnh `dxos`; `--purge` xóa cả dữ liệu, kho sao lưu trong `deploy/backups` và thư mục cài, phải gõ xác nhận; kho ở `BACKUP_DIR` hoặc `BACKUP_REPOSITORY` ngoài thư mục cài được giữ nguyên |
 
-   ```bash
-   PUBLIC_HOST=tên-miền
-   GATEWAY_PUBLIC_URL=https://tên-miền
-   KEYCLOAK_HOSTNAME=${GATEWAY_PUBLIC_URL}
-   APISIX_HOST_PORT=127.0.0.1:9080
-   CORS_ALLOWED_ORIGINS=https://tên-miền
-   ```
+#### Tệp mô hình
 
-   `APISIX_HOST_PORT=127.0.0.1:9080` chỉ cho tiến trình trên chính máy chủ gọi gateway.
-   Trình duyệt gửi origin HTTPS còn backend chỉ thấy HTTP từ proxy, nên thiếu `CORS_ALLOWED_ORIGINS` thì các thao tác ghi từ giao diện web bị trả `403 Invalid CORS request`.
-4. Cài Caddy rồi đặt `/etc/caddy/Caddyfile`:
+| Lệnh | Việc |
+|---|---|
+| `dxos plan [--check] [--json] <tệp>`, `dxos apply <tệp> [--accept MỨC] [--json]` | In kế hoạch của một tệp mô hình, hoặc áp dụng nó ([Đổi mô hình bằng dòng lệnh](#đổi-mô-hình-bằng-dòng-lệnh)) |
+| `dxos lint <tệp>...` | Kiểm tệp mô hình bằng bộ đọc của backend, không cần hệ thống đang chạy ([Kiểm tệp mô hình](#kiểm-tệp-mô-hình-và-rào-chắn-của-lõi)) |
+| `dxos conformance <mô hình> [--allow-test-users]` | Kiểm các rào chắn của lõi cho một mô hình đã áp dụng ([Kiểm tệp mô hình](#kiểm-tệp-mô-hình-và-rào-chắn-của-lõi)) |
+| `dxos model upgrade [--write] <tệp>` | Xem diff nâng tuần tự tệp lên format hiện hành; `--write` thay tệp nguyên tử sau khi in diff ([Nâng format](#nâng-format-tệp-mô-hình)) |
+| `dxos model merge <tệp>` | In tệp mô hình đầy đủ của một tệp có `extends` (xem [`MODEL.md`](./MODEL.md#mở-rộng-từ-mẫu)) |
+| `dxos gitops sync [models\|infra]`, `status [models\|infra]`, `approve [infra] <commit> [--accept MỨC]`, `install`, `uninstall` | Kéo hạ tầng và tệp mô hình từ git, so với bản cài và mô hình đang chạy; `install` chạy mỗi 5 phút bằng systemd user timer ([Kéo từ git](#kéo-từ-git-gitops)) |
 
-   ```text
-   tên-miền {
-       encode zstd gzip
-       reverse_proxy 127.0.0.1:9080 {
-           header_up X-Forwarded-Port 443
-       }
-   }
-   ```
+#### Ứng dụng ngoài và dự án
 
-   `X-Forwarded-Port 443` giữ cho các địa chỉ chuyển hướng của Keycloak không mang cổng 9080.
-   Chạy `sudo systemctl enable --now caddy` sau khi DNS đã trỏ đúng, vì Let's Encrypt kiểm tên miền ngay lúc Caddy khởi động.
-5. Chạy `dxos start`, rồi mở `https://tên-miền/console`.
+| Lệnh | Việc |
+|---|---|
+| `dxos connect <mô hình> --role R [--role R ...] [--project P]`, `dxos client add <tên> --model M --role R [--project P]`, `dxos client list`, `dxos client role <tên> --role R`, `dxos client rotate <tên>`, `dxos client remove <tên>` | Đăng ký và quản lý ứng dụng ngoài gọi API bằng token máy ([Ứng dụng ngoài](#ứng-dụng-ngoài)) |
+| `dxos client browser add <tên> --redirect-uri URL [...]`, `dxos client browser list`, `dxos client browser remove <tên>` | Đăng ký và quản lý public OIDC client dùng PKCE cho giao diện trình duyệt ở origin khác ([Giao diện trình duyệt ngoài](#giao-diện-trình-duyệt-ngoài)) |
+| `dxos project list`, `dxos project add <tên> [--label NHÃN] [--description MÔ_TẢ]`, `dxos project remove <tên>`, `dxos model project <mô hình> <dự án\|->`, `dxos client project <tên> <dự án\|->` | Gom mô hình và ứng dụng ngoài theo dự án để lọc và xem phạm vi ảnh hưởng ([Dự án](#dự-án)) |
+| `dxos project member list <dự án>`, `dxos project member add <dự án> <tên đăng nhập> [--admin]`, `dxos project member remove <dự án> <tên đăng nhập>` | Thành viên và quản trị viên của một dự án, để quản trị người dùng theo dự án ([Thành viên và quản trị viên dự án](#thành-viên-và-quản-trị-viên-dự-án)) |
 
-`dxos status` in địa chỉ HTTPS; `deploy/online-check.sh` kiểm địa chỉ đó từ chính máy chủ và gửi tin khi trang ngừng hoặc chạy lại (xem đầu tệp).
-Cấu hình Caddy nằm ngoài repository; DX-OS không kèm và không cần nó khi chạy ở `localhost`.
+#### Dữ liệu và lịch sử
+
+| Lệnh | Việc |
+|---|---|
+| `dxos import <mô hình> <thực thể> <tệp.csv> --client TÊN [--dry-run] [--secret-file TỆP] [--offset +HH:MM]` | Tạo mỗi dòng của tệp CSV thành một hồ sơ qua API dữ liệu, bằng ứng dụng ngoài đã đăng ký ([Nhập hồ sơ từ tệp CSV](#nhập-hồ-sơ-từ-tệp-csv)) |
+| `dxos archive <mô hình> [--before YYYY-MM-DD] [--out THƯ_MỤC \| --store]`, `dxos archive query <mô hình>/<lần chạy> ...`, `dxos archive check <thư mục> \| --store <mô hình>/<lần chạy>`, `dxos archive list` | Xuất hồ sơ đã xong ra Parquet, truy vấn chỉ đọc một lần chạy bằng DuckDB, kiểm một bản xuất, liệt kê các lần chạy trong kho (xem [`INTEGRATIONS.md`](./INTEGRATIONS.md#hồ-dữ-liệu)) |
+| `dxos archive auto`, `dxos archive schedule [install\|uninstall]` | Ghi vào kho hồ sơ đã đóng quá `ARCHIVE_AFTER_DAYS` ngày; `schedule install` chạy mỗi ngày bằng systemd user timer ([Lưu trữ hồ sơ đã đóng](#lưu-trữ-hồ-sơ-đã-đóng)) |
+| `dxos history verify`, `dxos history anchor` | Kiểm lịch sử hồ sơ chưa bị sửa, hoặc ghi điểm neo ngay (xem [`INTEGRATIONS.md`](./INTEGRATIONS.md#lịch-sử-chống-sửa)) |
+
+### Thành phần tùy chọn và route riêng
+
+Prometheus là thành phần tùy chọn nằm ngoài stack mặc định; cách bật ở [`MONITORING.md`](./MONITORING.md#prometheus-kèm-theo-tùy-chọn).
+Cầu nối MQTT là thành phần tùy chọn nằm ngoài stack mặc định; cách bật, cấu hình tuyến và giới hạn ở [`INTEGRATIONS.md`](./INTEGRATIONS.md#cầu-nối-mqtt-tùy-chọn).
+Trợ lý nghiệp vụ chạy cùng stack ở chế độ full; cấu hình, thay khóa và gỡ ở [`assistant/README.md`](../assistant/README.md).
+File route riêng `deploy/apisix/local.yaml` được giữ khi cập nhật và ghép với cấu hình lõi mới sau khi kiểm; cấu hình xung đột làm cập nhật dừng trước khi thay container.
+Cách khai báo và nạp lại ở [Route riêng trong APISIX](EXTENSIONS.md#route-riêng-trong-apisix).
+
+### Kiểm tra trước khi chạy
+
+`./doctor.sh` (trong `deploy/`) chỉ đọc, không đổi gì và không in giá trị nào của `.env`.
+Nó kiểm Docker và Compose, RAM, ổ đĩa, `deploy/.env` (kể cả `DXOS_MODE` khớp với profile `app`) và các cổng.
+`.env` được so với các biến `${NAME:?}` mà Compose bắt buộc phải có: biến thiếu hoặc để trống bị báo `FAIL`.
+Biến có trong `.env` mà `.env.example` không liệt kê bị báo `WARN`.
+Với mỗi cổng `APISIX_HOST_PORT` và `POSTGRES_HOST_PORT`, nó phân biệt cổng do container của chính stack giữ (ổn, kể cả khi stack mới lên một phần và `dxos start` sẽ dựng nốt) với cổng bị chương trình khác ngoài stack giữ (FAIL).
+Cổng bị chương trình ngoài giữ thì `dxos stop` không giải phóng được: đổi giá trị của khóa đó trong `deploy/.env` hoặc dừng chương trình đó.
+Khi Docker không trả lời, `doctor` không kết luận cổng đang bị chương trình ngoài giữ: cổng đang dùng chỉ bị báo `WARN`, vì không biết container của stack có giữ nó không.
+Trên Windows, chương trình giữ cổng ở phía Windows không hiện trong WSL, nên `doctor` và `dxos start` còn hỏi chính Windows qua `powershell.exe`: gateway phải trả JSON trạng thái của nó và PostgreSQL phải trả lời gói `SSLRequest`.
+Cổng mà một chương trình khác ở phía Windows giữ độc quyền bị báo `FAIL` nêu khóa `APISIX_HOST_PORT` hoặc `POSTGRES_HOST_PORT` cần đổi, dù Docker vẫn khởi động được container; `dxos start` thoát mã 1 ở cả hai lúc, trước khi dựng và sau khi stack đã lên.
+Khi `powershell.exe` không gọi được từ WSL, `doctor` bỏ qua bước này; nếu Docker không mở được cổng thì `dxos start` vẫn dừng ở lỗi của Docker và nêu khóa cần đổi.
+Quét mã độc được báo là bật hay tắt; `STORAGE_SCAN_HOST=clamav` mà `COMPOSE_PROFILES` không có `av` bị báo `FAIL`, vì ClamAV sẽ không chạy và mọi tệp tải lên bị từ chối.
+Thoát với mã 1 khi có `FAIL`, nên chạy trước `./update.sh` và `docker compose up -d` trên máy chủ.
 
 ### Kiểm image phát hành theo digest
 
@@ -240,6 +142,146 @@ Tệp trên GitHub Release (`.tar.gz`, `dxos-install.sh`, `dxos-lint.jar`, `LICE
 gh attestation verify dx-os-X.Y.Z.tar.gz --repo HaUI-ImplSolution/DX-OS
 ```
 
+## Triển khai lên máy chủ
+
+Các bước đưa DX-OS lên máy chủ có tên miền và HTTPS, đổi cấu hình và cập nhật bản mới ở [`DEPLOY.md`](./DEPLOY.md).
+
+## Cấu hình
+
+### Biến cấu hình `.env`
+
+Cấu hình của DX-OS nằm ở `.env` trong thư mục `deploy`: `~/.dxos/deploy/.env` với bản cài bằng `dxos`, `deploy/.env` khi chạy từ mã nguồn.
+Bản cài tạo sẵn tệp này, điền ngẫu nhiên mọi mật khẩu và khóa, nên hệ thống chạy được mà không cần sửa gì.
+Sửa xong thì chạy `dxos start` để các dịch vụ nhận giá trị mới; `dxos doctor` kiểm lại tệp.
+Danh sách đầy đủ kèm chú thích từng dòng ở [`deploy/.env.example`](../deploy/.env.example).
+
+#### Biến bạn có thể phải đổi
+
+| Biến | Mặc định | Đổi khi nào |
+|---|---|---|
+| `PUBLIC_HOST` | `localhost` | Người dùng hoặc ứng dụng ở máy khác cần vào hệ thống: đặt IP hoặc tên miền của máy chủ; `GATEWAY_PUBLIC_URL` tự theo. Đặt trước lần `dxos start` đầu tiên; container trên cùng máy gọi qua `host.docker.internal` nên không cần đổi. Giao diện web chỉ đăng nhập được qua HTTPS hoặc `localhost`, xem [`DEPLOY.md`](./DEPLOY.md) |
+| `APISIX_HOST_PORT` | `9080` | Cổng 9080 của máy chủ đã bị chiếm |
+| `KEYCLOAK_HOSTNAME` | không đặt | Hệ thống đứng sau proxy HTTPS: đặt bằng `GATEWAY_PUBLIC_URL`, nếu không đăng nhập lỗi |
+| `STAFF_OTP_FLOW` | `DISABLED` | Máy chủ thật: đặt `CONDITIONAL` để vai `ADMIN` phải nhập mã một lần; phải đặt trước lần `dxos start` đầu tiên |
+| `CORS_ALLOWED_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173` | Giao diện trình duyệt ở tên miền khác gọi API; `dxos client browser add` tự thêm origin |
+| `DXOS_MODE` | `full` | `core` để chỉ chạy lõi, không có giao diện web; đổi bằng `dxos start --core` hoặc `--full`, không sửa tay |
+| `KEYCLOAK_ADMIN_CONSOLE` | `false` | `true` để mở trang quản trị Keycloak tại `/admin` |
+| `METRICS_PASSWORD` | ngẫu nhiên | Để trống thì endpoint số đo cho Prometheus đóng; xem [`MONITORING.md`](./MONITORING.md) |
+
+#### Biến đã điền sẵn, không cần đổi
+
+Các biến này bắt buộc có giá trị, và bản cài đã điền.
+Mật khẩu và khóa là giá trị ngẫu nhiên; không đổi sau khi đã có dữ liệu, trừ khi bạn biết rõ việc đó ảnh hưởng gì.
+
+| Nhóm | Biến |
+|---|---|
+| Đăng nhập (Keycloak) | `KEYCLOAK_ADMIN_USERNAME`, `KEYCLOAK_ADMIN_PASSWORD`, `KEYCLOAK_ADMIN_CLIENT_ID`, `KEYCLOAK_ADMIN_CLIENT_SECRET`, `DXOS_CLI_SECRET`, `KEYCLOAK_DB_PASSWORD` |
+| Cơ sở dữ liệu | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `POSTGRES_DATA_DIR`, `POSTGRES_HOST_PORT`, `REPORT_DB_PASSWORD` |
+| Lưu tệp | `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_ENDPOINT`, `S3_BUCKET`, `STORAGE_SCAN_HOST` |
+| Giám sát | `MONITOR_DB_PASSWORD`, `KEYCLOAK_READONLY_DB_PASSWORD`, `MONITOR_INGEST_KEY`, `MONITOR_OIDC_CLIENT_SECRET` |
+| Sao lưu | `BACKUP_PASSWORD`: cất một bản ngoài máy chủ, mất là mất mọi bản sao lưu |
+| Image và chế độ chạy | `DXOS_IMAGE_PREFIX`, `DXOS_IMAGE_TAG`, `COMPOSE_PROJECT_NAME`, `COMPOSE_PROFILES`: do `dxos` đặt và cập nhật, không sửa tay |
+
+#### Biến tùy chọn
+
+Trong `.env` các biến này nằm dưới dạng dòng chú thích (`# TÊN=giá trị`); bỏ dấu `#` để đặt, không đặt thì dùng giá trị mặc định ghi dưới đây.
+
+| Chức năng | Biến (mặc định) | Việc |
+|---|---|---|
+| Webhook | `DXOS_WEBHOOK_URL` (trống), `DXOS_WEBHOOK_SECRET` (trống), `DXOS_WEBHOOK_FORMAT` (`json`) | Đích mặc định nhận mọi thay đổi của hồ sơ; chi tiết ở [`INTEGRATIONS.md`](./INTEGRATIONS.md#webhook-sự-kiện) |
+| Hàng đợi và hạn xử lý | `DXOS_OUTBOX_MAX_ATTEMPTS` (`20`), `DXOS_OUTBOX_POLL_MS` (`2000`), `DXOS_OVERDUE_SWEEP_MS` (`60000`), `DXOS_DUE_SOON_BEFORE` (`24h`) | Số lần gửi thử, nhịp quét hàng đợi và hồ sơ quá hạn, báo sắp đến hạn |
+| Mô hình lúc khởi động | `DXOS_MODEL_FILE` (trống) | Do `dxos start <tệp>` đặt; xem [Tệp mô hình lúc khởi động](#tệp-mô-hình-lúc-khởi-động) |
+| Giới hạn gọi API | `RATE_LIMIT_ENABLED` (`true`) | `false` khi thử tải |
+| Tệp tải lên | `STORAGE_PRESIGN_TTL` (`15m`), `DXOS_FILE_DELETE_DELAY` (`24h`) | Hạn của link tải tệp và thời gian chờ trước khi xóa tệp đã gỡ |
+| Lưu trữ hồ sơ đã đóng | `S3_ARCHIVE_BUCKET` (`dxos-archive`), `ARCHIVE_AFTER_DAYS` (`365`), `ARCHIVE_QUERY_MEMORY_LIMIT` (`2GB`), `ARCHIVE_QUERY_THREADS` (`2`), `ARCHIVE_QUERY_TEMP_LIMIT` (`4GB`) | Xem [Lưu trữ hồ sơ đã đóng](#lưu-trữ-hồ-sơ-đã-đóng) |
+| Kéo từ git | `GITOPS_REPO`, `GITOPS_REF` (`main`), `GITOPS_PATH` (`models`), `GITOPS_MODE` (`report`), `GITOPS_INFRA_REPO`, `GITOPS_INFRA_REF` (`main`), `GITOPS_INFRA_MODE` (`report`), `GITOPS_SSH_KEY`, `GITOPS_KNOWN_HOSTS`, `GITOPS_REQUIRE_SIGNED` (`false`), `GITOPS_ALLOWED_SIGNERS` | Xem [Kéo từ git](#kéo-từ-git-gitops) |
+| Giám sát | `METRICS_REFRESH_MS` (`30000`), `ALERT_WEBHOOK_URL`, `ALERT_WEBHOOK_URL_ADMIN` | Nhịp cập nhật số đo và kênh nhận cảnh báo; xem [`MONITORING.md`](./MONITORING.md) |
+| Sao lưu | `BACKUP_DIR` (`./backups`), `BACKUP_REPOSITORY` (trống) | Nơi đặt kho sao lưu; xem [Sao lưu và khôi phục](#sao-lưu-và-khôi-phục) |
+
+### Chế độ chỉ lõi
+
+`dxos start --core` chỉ chạy Tầng 1: cổng vào APISIX, Keycloak, dịch vụ lõi, PostgreSQL và kho tệp SeaweedFS, thêm ClamAV khi bật quét mã độc.
+Ứng dụng web, portal, dịch vụ giám sát và trợ lý không chạy, và gateway không có route của chúng: `/`, `/portal/`, `/monitor/`, `/console` và `/assistant-api/` trả 404.
+Hồ sơ và thông điệp webhook không có trường `webUrl`.
+Gateway cũng không gửi nhật ký truy cập tới dịch vụ giám sát.
+API, đăng nhập, áp dụng tệp mô hình, `/v3/api-docs`, OpenAPI theo mô hình và lưu tệp dùng như ở chế độ đầy đủ.
+
+Chế độ được lưu trong `deploy/.env` bằng `DXOS_MODE` và profile `app` của `COMPOSE_PROFILES`; `dxos` sửa cả hai cùng lúc.
+`dxos start --core` gỡ container của Tầng 2 nếu đang chạy, và `dxos start --full` chạy lại đủ.
+`dxos start`, `dxos stop`, `dxos status`, `dxos update` và `dxos reconcile` giữ chế độ đã lưu, nên không bật lại thành phần nào của Tầng 2; `docker compose up -d` chạy tay trong `deploy/` cũng theo `.env`.
+Không có `DXOS_MODE` thì là chế độ đầy đủ, như các bản cài trước.
+Không có bảng điều khiển ở chế độ lõi: áp dụng mô hình bằng `dxos apply` hoặc `POST /api/v1/models/apply`, và quản trị người dùng bằng API hoặc `dxos admin`.
+
+### Keycloak Admin Console
+
+Gateway không mở Keycloak Admin Console mặc định: `/admin` và `/admin/*` trả 404, và `/swagger-ui.html` cùng `/swagger-ui/*` cũng vậy vì lõi không kèm Swagger UI.
+Dịch vụ lõi gọi Admin API của Keycloak qua mạng nội bộ, nên quản lý tài khoản, vai và client không bị ảnh hưởng.
+`dxos admin` và `dxos start` đặt tài khoản `admin` của realm bằng `kcadm.sh` trong container, không cần gateway.
+
+Mở Admin Console khi cần vận hành:
+
+1. Đặt `KEYCLOAK_ADMIN_CONSOLE=true` trong `deploy/.env`.
+2. Chạy `docker compose up -d apisix-config` rồi `docker compose restart apisix` trong `deploy/`.
+3. Mở `<địa chỉ>/admin/` và đăng nhập bằng `KEYCLOAK_ADMIN_USERNAME` và `KEYCLOAK_ADMIN_PASSWORD`; `dxos status` in địa chỉ này khi cờ đang bật.
+
+Đặt lại `false` rồi làm lại bước 2 để đóng.
+Các script kiểm ở `e2e/api` gọi Keycloak Admin API qua gateway nên cần cờ này bật (xem [`docs/TESTING.md`](TESTING.md)).
+
+### Quét mã độc tệp tải lên
+
+Mọi tệp đính kèm được ClamAV quét trước khi xử lý và lưu.
+Tệp nhiễm bị từ chối với HTTP 422 `ERR_FILE_INFECTED` và lần chặn được ghi vào `audit_log` (`FILE_INFECTED`, kèm tên mẫu mã độc).
+ClamAV không trả lời thì tệp không được lưu và người dùng nhận HTTP 503 `ERR_SCAN_UNAVAILABLE`, vì tệp chưa quét không được coi là sạch (fail-closed).
+`deploy/.env` sinh từ `.env.example` có sẵn `av` trong `COMPOSE_PROFILES` và `STORAGE_SCAN_HOST=clamav`, nên quét bật ngay từ lần cài đầu; ClamAV cần khoảng 1 GB RAM.
+`dxos av off` tắt quét và `dxos av on` bật lại: lệnh sửa `COMPOSE_PROFILES` và `STORAGE_SCAN_HOST` trong `.env`, rồi khởi động hoặc gỡ ClamAV, tạo lại backend và khởi động lại APISIX nếu stack đang chạy.
+Không dùng `dxos` thì sửa hai biến đó bằng tay (`COMPOSE_PROFILES` bỏ hoặc có `av`, `STORAGE_SCAN_HOST` để trống hoặc `clamav`) rồi `docker compose up -d`.
+Quét tắt thì tệp nhiễm được lưu bình thường, và `dxos doctor` báo `WARN`.
+`install.sh --upgrade` giữ nguyên lựa chọn của bản đã cài: bản chưa từng bật quét vẫn tắt, bật bằng `dxos av on`.
+Chữ ký virus tải về lần đầu mất vài phút và được giữ trong volume `clamav_data`.
+Image chính thức tự cập nhật chữ ký một lần mỗi ngày từ mạng phân phối của ClamAV; không dùng `curl` hay script riêng để tải chúng, vì ClamAV có thể giới hạn hoặc chặn cách tải đó.
+Mã 429 trong log của `clamav` là bị giới hạn tốc độ (hay gặp ở IP máy chủ đám mây dùng chung), và chữ ký cũ vẫn dùng được cho đến lần cập nhật sau.
+ClamAV chặn tải chữ ký với phiên bản đã hết hỗ trợ, nên nâng image `clamav/clamav` trong `clamav/Dockerfile` khi bản đang ghim tới hạn (chính sách ở https://docs.clamav.net/faq/faq-eol.html).
+Mỗi lần clamd nạp lại chữ ký (hằng ngày và sau khi khởi động) nó không quét được khoảng 10 giây, và người dùng gặp 503 trong lúc đó; chờ rồi tải lại.
+Thử bằng tệp EICAR (chuỗi kiểm thử chuẩn của ngành diệt virus): tệp chỉ gồm đúng chuỗi đó, đổi tên `.pdf` rồi đính vào một yêu cầu; `e2e/api/check_demo.py` tự làm bước này khi `STORAGE_SCAN_HOST` có giá trị, cùng với tệp sạch và tệp tải lên lúc ClamAV dừng, và nhóm chế độ lõi của job `Test the API` chạy nó trong CI.
+
+## Mô hình nghiệp vụ
+
+### Đổi mô hình bằng dòng lệnh
+
+`dxos plan <tệp>` in kế hoạch của tệp mô hình mà không đổi gì; mã thoát 1 khi kế hoạch bị từ chối.
+Kế hoạch in bằng chữ tiếng Anh: mô hình và phiên bản, mức rủi ro, mỗi thay đổi một dòng, hồ sơ đang xử lý, tác động lên hành động, dòng vi phạm, lý do từ chối và lệnh `dxos apply` kèm `--accept` cần dùng.
+`dxos plan --json <tệp>` in JSON đầy đủ, gồm cả các câu lệnh SQL; không có `jq` thì lệnh luôn in JSON.
+Thay đổi hành động của quy trình hiện từng hành động và từng thuộc tính đổi (nhãn, vai, `needs_note`, điều kiện kiểm, `require` thêm hoặc bỏ).
+Hành động nhận thêm `require` thì kế hoạch vẫn ở mức SAFE và có thêm mục `impacts`: với mỗi hành động, số hồ sơ đang chờ ở trạng thái nguồn mà còn thiếu trường mới (trống hoặc chỉ có khoảng trắng cũng là thiếu); hành động từ chối những hồ sơ đó cho đến khi bổ sung.
+Chế độ `auto` của GitOps vẫn tự áp dụng kế hoạch SAFE, nên `impacts` chỉ là cảnh báo cho người đọc kế hoạch, không chặn lần áp dụng.
+`dxos plan --check <tệp>` thoát với mã 0 khi mô hình đang chạy giống tệp, 2 khi kế hoạch có thay đổi và 1 khi bị từ chối, để dùng trong pipeline.
+`dxos apply <tệp> [--accept SAFE|MIGRATION|LOSS] [--json]` lấy kế hoạch rồi áp dụng với phiên bản của kế hoạch làm `base`.
+Khi áp dụng thành công, lệnh in tên mô hình, phiên bản và các bước đã chạy bằng chữ tiếng Anh, còn `--json` in phản hồi JSON cho công cụ đọc.
+Kế hoạch có mức cao hơn `--accept` (mặc định `SAFE`) thì bị từ chối với mã thoát 1 và không đổi gì; lệnh không bao giờ tự nâng mức.
+Tệp giống mô hình đang chạy và không có gì lệch thì in "Nothing to apply" và thoát với mã 0.
+Tệp giống nhưng bảng hoặc Keycloak đã lệch khỏi tệp thì kế hoạch ghi `repair`; `dxos apply` sửa phần lệch, và cần `--accept MIGRATION` khi kế hoạch ở mức đó.
+Việc kiểm lệch chỉ chạy khi xem kế hoạch hoặc áp dụng, không chạy lúc backend khởi động; bảng hoặc cột thừa do sửa tay bị từ chối chứ không bị xóa, vai thừa ở client của mô hình và nhóm đơn vị thừa không bị đụng, còn chỉ mục hay ràng buộc thừa bị xóa khi áp dụng với mức `MIGRATION`.
+Đường dẫn tương đối tính theo thư mục gõ lệnh.
+
+Lệnh đăng nhập bằng client `dxos-cli` của realm, dùng `DXOS_CLI_SECRET` trong `.env`; tài khoản dịch vụ của client giữ vai `ADMIN`, và lịch sử áp dụng ghi tên nó (`service-account-dxos-cli`).
+Bí mật nằm trong `.env` của máy chủ, nên chạy được trong pipeline GitOps trên chính máy đó.
+Realm đã import từ trước chưa có client này: thêm client `dxos-cli` ở Keycloak Admin Console (mở theo [Keycloak Admin Console](#keycloak-admin-console)) hoặc dựng lại realm.
+
+### Kiểm tệp mô hình và rào chắn của lõi
+
+`dxos lint <tệp>...` chạy được khi chưa có `deploy/.env`; hợp đồng đầu vào, đầu ra và mã thoát ở [`docs/MODEL.md`](MODEL.md#kiểm-tệp-trước-khi-áp-dụng).
+Nó chạy `dxos-lint.jar` trong image backend, hoặc trên Java 21 của máy khi đặt `DXOS_LINT_JAR`.
+
+`dxos conformance <mô hình>` chạy `e2e/api/check_conformance.py` trên stack này, cho một mô hình đã áp dụng:
+- Trạng thái của hồ sơ có quy trình không ghi được qua API dữ liệu (403).
+- Yêu cầu không có token bị từ chối (401).
+- Người dùng của mô hình không chạm tới dữ liệu của mô hình khác.
+
+Mỗi kiểm in một dòng `PASS` hoặc `FAIL` kèm nhãn `CF-xx`, và mã thoát là 1 khi có kiểm hỏng, kể cả khi mô hình chưa được áp dụng.
+Lệnh cần stack đang chạy, Python 3 và `KEYCLOAK_ADMIN_CONSOLE=true` (xem [Keycloak Admin Console](#keycloak-admin-console)), vì nó gọi Keycloak Admin API qua gateway.
+Nó tạo client `dxos-check` (đăng nhập bằng mật khẩu) và người dùng thử `cf_<mô hình>` trong Keycloak, nên dùng trên stack tạm của CI hoặc máy dev.
+Stack có `PUBLIC_HOST` khác `localhost` từ chối chạy nếu thiếu `--allow-test-users`.
+
 ### Tệp mô hình lúc khởi động
 
 `dxos start <tệp>...` chép các tệp vào `deploy/model/` (chỉ giữ các tệp vừa đưa vào), ghi tên chúng theo thứ tự, cách nhau bằng dấu phẩy, vào `DXOS_MODEL_FILE` trong `.env` và khởi động lại backend nếu nó đang chạy.
@@ -271,42 +313,6 @@ Sau khi ghi tệp đã nâng, `dxos apply` lần đầu tạo thêm một phiên
 
 Nếu lệnh lỗi trước rename, tệp gốc giữ nguyên.
 Xóa file `.dxos-model-upgrade.*` còn sót sau khi máy bị dừng đột ngột, sửa nguyên nhân rồi chạy lại; sau khi rename, khôi phục bằng Git hoặc bản sao lưu nếu cần.
-
-### Kiểm tệp mô hình và rào chắn của lõi
-
-`dxos lint <tệp>...` chạy được khi chưa có `deploy/.env`; hợp đồng đầu vào, đầu ra và mã thoát ở [`docs/MODEL.md`](MODEL.md#kiểm-tệp-trước-khi-áp-dụng).
-Nó chạy `dxos-lint.jar` trong image backend, hoặc trên Java 21 của máy khi đặt `DXOS_LINT_JAR`.
-
-`dxos conformance <mô hình>` chạy `e2e/api/check_conformance.py` trên stack này, cho một mô hình đã áp dụng:
-- Trạng thái của hồ sơ có quy trình không ghi được qua API dữ liệu (403).
-- Yêu cầu không có token bị từ chối (401).
-- Người dùng của mô hình không chạm tới dữ liệu của mô hình khác.
-
-Mỗi kiểm in một dòng `PASS` hoặc `FAIL` kèm nhãn `CF-xx`, và mã thoát là 1 khi có kiểm hỏng, kể cả khi mô hình chưa được áp dụng.
-Lệnh cần stack đang chạy, Python 3 và `KEYCLOAK_ADMIN_CONSOLE=true` (xem [Keycloak Admin Console](#keycloak-admin-console)), vì nó gọi Keycloak Admin API qua gateway.
-Nó tạo client `dxos-check` (đăng nhập bằng mật khẩu) và người dùng thử `cf_<mô hình>` trong Keycloak, nên dùng trên stack tạm của CI hoặc máy dev.
-Stack có `PUBLIC_HOST` khác `localhost` từ chối chạy nếu thiếu `--allow-test-users`.
-
-### Đổi mô hình bằng dòng lệnh
-
-`dxos plan <tệp>` in kế hoạch của tệp mô hình mà không đổi gì; mã thoát 1 khi kế hoạch bị từ chối.
-Kế hoạch in bằng chữ tiếng Anh: mô hình và phiên bản, mức rủi ro, mỗi thay đổi một dòng, hồ sơ đang xử lý, tác động lên hành động, dòng vi phạm, lý do từ chối và lệnh `dxos apply` kèm `--accept` cần dùng.
-`dxos plan --json <tệp>` in JSON đầy đủ, gồm cả các câu lệnh SQL; không có `jq` thì lệnh luôn in JSON.
-Thay đổi hành động của quy trình hiện từng hành động và từng thuộc tính đổi (nhãn, vai, `needs_note`, điều kiện kiểm, `require` thêm hoặc bỏ).
-Hành động nhận thêm `require` thì kế hoạch vẫn ở mức SAFE và có thêm mục `impacts`: với mỗi hành động, số hồ sơ đang chờ ở trạng thái nguồn mà còn thiếu trường mới (trống hoặc chỉ có khoảng trắng cũng là thiếu); hành động từ chối những hồ sơ đó cho đến khi bổ sung.
-Chế độ `auto` của GitOps vẫn tự áp dụng kế hoạch SAFE, nên `impacts` chỉ là cảnh báo cho người đọc kế hoạch, không chặn lần áp dụng.
-`dxos plan --check <tệp>` thoát với mã 0 khi mô hình đang chạy giống tệp, 2 khi kế hoạch có thay đổi và 1 khi bị từ chối, để dùng trong pipeline.
-`dxos apply <tệp> [--accept SAFE|MIGRATION|LOSS] [--json]` lấy kế hoạch rồi áp dụng với phiên bản của kế hoạch làm `base`.
-Khi áp dụng thành công, lệnh in tên mô hình, phiên bản và các bước đã chạy bằng chữ tiếng Anh, còn `--json` in phản hồi JSON cho công cụ đọc.
-Kế hoạch có mức cao hơn `--accept` (mặc định `SAFE`) thì bị từ chối với mã thoát 1 và không đổi gì; lệnh không bao giờ tự nâng mức.
-Tệp giống mô hình đang chạy và không có gì lệch thì in "Nothing to apply" và thoát với mã 0.
-Tệp giống nhưng bảng hoặc Keycloak đã lệch khỏi tệp thì kế hoạch ghi `repair`; `dxos apply` sửa phần lệch, và cần `--accept MIGRATION` khi kế hoạch ở mức đó.
-Việc kiểm lệch chỉ chạy khi xem kế hoạch hoặc áp dụng, không chạy lúc backend khởi động; bảng hoặc cột thừa do sửa tay bị từ chối chứ không bị xóa, vai thừa ở client của mô hình và nhóm đơn vị thừa không bị đụng, còn chỉ mục hay ràng buộc thừa bị xóa khi áp dụng với mức `MIGRATION`.
-Đường dẫn tương đối tính theo thư mục gõ lệnh.
-
-Lệnh đăng nhập bằng client `dxos-cli` của realm, dùng `DXOS_CLI_SECRET` trong `.env`; tài khoản dịch vụ của client giữ vai `ADMIN`, và lịch sử áp dụng ghi tên nó (`service-account-dxos-cli`).
-Bí mật nằm trong `.env` của máy chủ, nên chạy được trong pipeline GitOps trên chính máy đó.
-Realm đã import từ trước chưa có client này: thêm client `dxos-cli` ở Keycloak Admin Console (mở theo [Keycloak Admin Console](#keycloak-admin-console)) hoặc dựng lại realm.
 
 ### Kéo từ git (GitOps)
 
@@ -383,25 +389,118 @@ Dữ liệu và các phiên bản đã lưu không mất.
 Mô hình có `warnings` sửa bằng cách sửa tệp mô hình rồi `dxos apply`: lần áp dụng tạo phiên bản mới và xóa cảnh báo.
 Mô hình `leftOut` chưa sửa được bằng `dxos apply`, vì kế hoạch và lần áp dụng đọc phiên bản đã lưu trước và gặp lại chính lỗi đó; mô hình chạy lại khi phiên bản đã lưu qua được bộ kiểm, và hiện chỉ sửa được ở bảng `engine.model_version`.
 
-### Tệp bị gỡ khỏi hồ sơ
+## Người dùng, ứng dụng ngoài và dự án
 
-Gỡ hoặc thay một tệp, xóa hồ sơ hay xóa thực thể thì đối tượng rời kho sau `DXOS_FILE_DELETE_DELAY` (mặc định 24 giờ).
-Backend ghi một thông điệp `file.delete` vào outbox trong cùng giao dịch, đến hạn thì xóa đối tượng.
-Đối tượng đã mất thì thông điệp coi như xong; kho đang ngừng thì thông điệp được thử lại.
-Một lượt sao lưu ngắn hơn khoảng trễ này luôn có đủ tệp cho mọi dòng tệp đính kèm trong bản dump.
-Tệp của giao dịch bị hủy (đã vào kho nhưng dòng không được ghi) bị xóa ngay.
+### Quản trị người dùng
 
-### Tự phục hồi
+Tab Người dùng của bảng điều khiển (`/console`, ADMIN) cho tìm người dùng, xem vai theo từng ứng dụng, gán và gỡ vai và đơn vị của các mô hình đang chạy, tạo người dùng, khóa và mở, đặt lại mật khẩu.
+Mật khẩu tạm do hệ thống sinh, hiện một lần và người dùng phải đổi ở lần đăng nhập đầu.
+Vai `ADMIN` của nền tảng không cấp được ở tab này; cấp ở Keycloak Admin Console (Users, Role mapping), mở theo [Keycloak Admin Console](#keycloak-admin-console).
+Người dùng đăng nhập bằng nhà cung cấp ngoài, chính sách mật khẩu và MFA do Keycloak quản lý.
+Backend cần tài khoản dịch vụ `dxos-backend-admin` có quyền client và scope `kc-admin-api`; `update.sh` gán scope này cho Keycloak dựng từ trước (xem [`sso/README.md`](../sso/README.md)).
 
-Mọi service chạy lâu có `restart: unless-stopped`, nên Docker khởi động lại chúng khi tiến trình thoát hoặc máy khởi động lại.
-`dxos reconcile` chạy `docker compose up -d --no-build` theo các image đã ghim trong `.env`: container bị xóa được tạo lại, container lệch cấu hình được tạo lại theo khai báo, container đang đúng thì để nguyên.
-Mỗi lượt có thay đổi ghi một dòng vào `deploy/reconcile.log`; lượt đến khi lượt trước còn chạy thì bỏ qua.
-`update.sh` và `backup.sh` giữ cùng khóa `deploy/.reconcile.lock`, nên khi một lần cập nhật hoặc sao lưu đang chạy thì `dxos reconcile` bỏ qua lượt; hai script đợi tối đa 5 phút để lấy khóa rồi báo lỗi.
-`dxos stop` để lại tệp `deploy/.stopped`, và `dxos reconcile` không bật lại stack có tệp này; `dxos start` xóa nó.
+### Ứng dụng ngoài
 
-`dxos reconcile install` cài `dxos-reconcile.timer` (systemd user timer) chạy lệnh trên mỗi phút, `dxos reconcile uninstall` gỡ.
-Máy không có systemd thì chạy `dxos reconcile` từ cron mỗi phút.
-Timer của user chỉ chạy khi user còn phiên đăng nhập, trừ khi bật `loginctl enable-linger <user>`.
+Một dịch vụ ngoài gọi API bằng token máy; đăng ký nó ở tab Ứng dụng ngoài của bảng điều khiển (`/console`, ADMIN), bằng `dxos client add <tên> --model <mô hình> --role <vai>`, hoặc bằng `dxos connect` khi cần nối một ứng dụng với một hay nhiều vai.
+Mỗi ứng dụng là một client Keycloak `dxos-app-<tên>` dạng client credentials, giữ đúng một vai của một mô hình; vai `ADMIN` và các vai của nền tảng không cấp được.
+Mã bí mật hiện một lần khi đăng ký hoặc đổi, hệ thống không giữ lại và không ghi vào nhật ký hay lịch sử.
+Ứng dụng lấy token bằng `grant_type=client_credentials` ở `<địa chỉ>/realms/dxos/protocol/openid-connect/token`, rồi gọi API dữ liệu của mô hình đó; mô hình khác, API quản trị và API người dùng trả 403.
+`dxos client add` và `dxos client rotate` nhận thêm `--env <TIỀN_TỐ>` (ví dụ `--env DXOS_REQUESTER`): lệnh chỉ in hai dòng `<TIỀN_TỐ>_CLIENT_ID=...` và `<TIỀN_TỐ>_CLIENT_SECRET=...`, nối thẳng vào tệp `.env` của ứng dụng được bằng `>>`.
+`dxos connect <mô hình> --role R [--role R ...]` làm việc đó cho mọi vai trong một lệnh: đăng ký client `dxos-app-<mô hình>-<vai>`, ghi `DXOS_BASE_URL` và `DXOS_<VAI>_CLIENT_ID`, `DXOS_<VAI>_CLIENT_SECRET` vào `.env` ở thư mục hiện tại (quyền `600` khi tạo mới), đăng nhập thử bằng client đầu tiên và in hai dòng cần thêm vào `docker-compose.yml` của ứng dụng.
+Chạy lại thì client đã có secret trong tệp được giữ nguyên; client đã đăng ký mà tệp không có secret của nó cần `--rotate`.
+`--app` đổi tên dùng để đặt tên client, `--prefix` đổi tiền tố biến, `--env-file` đổi tệp ghi và `--base-url` đổi địa chỉ ghi vào `DXOS_BASE_URL` (mặc định `http://host.docker.internal:<cổng>`, dùng được từ container trên cùng máy khi service có `extra_hosts: ["host.docker.internal:host-gateway"]`).
+`dxos client test <tên>` đăng nhập bằng client đó rồi gọi API của mô hình của nó, và nói bước nào hỏng: không tới được địa chỉ, sai mã bí mật, hay mô hình chưa áp dụng.
+Mã bí mật lấy từ `--secret-file`, biến `DXOS_CLIENT_SECRET` hoặc hỏi lúc chạy, không bao giờ nằm trên dòng lệnh; `--url` đổi địa chỉ cổng vào cần thử.
+`dxos client list` liệt kê ứng dụng kèm mô hình và vai, `dxos client role <tên> --role <vai>` (hoặc nút đổi vai ở tab Ứng dụng ngoài) chuyển ứng dụng sang vai khác của cùng mô hình mà giữ nguyên tên và mã bí mật, `dxos client rotate <tên>` cấp mã mới và mã cũ hết hiệu lực ngay, `dxos client remove <tên>` xóa client; hồ sơ ứng dụng đã tạo vẫn còn.
+Token đã cấp trước khi đổi mã, đổi vai hoặc xóa ứng dụng vẫn dùng được đến khi hết hạn, tối đa khoảng 5 phút; token đổi vai vẫn mang vai cũ cho đến lúc đó.
+Đổi sang mô hình khác thì gỡ ứng dụng rồi đăng ký lại.
+Tài khoản dịch vụ của ứng dụng không hiện trong danh sách người dùng, và nhật ký quản trị ghi `CLIENT_CREATED`, `CLIENT_SECRET_ROTATED` và `CLIENT_DELETED` kèm tên ứng dụng, và mô hình và vai của nó khi tạo hoặc xóa.
+Lệnh dùng client `dxos-cli` như `dxos plan`, nên cần `DXOS_CLI_SECRET` trong `.env`.
+
+#### Giao diện trình duyệt ngoài
+
+Đăng ký một giao diện ở tên miền khác bằng một hoặc nhiều redirect URI chính xác:
+
+```bash
+dxos client browser add partner-ui \
+  --redirect-uri https://partner.example/auth/callback \
+  --redirect-uri https://partner.example/silent-renew
+```
+
+Lệnh tạo public client `dxos-browser-partner-ui` dùng Authorization Code với PKCE S256, không có secret, password grant hay service account.
+Mỗi origin của redirect được thêm vào `CORS_ALLOWED_ORIGINS` trong `deploy/.env`; backend đang chạy được tạo lại để nhận cấu hình.
+Token có audience `dxos-api`, vai của người dùng và nhóm đơn vị như web chính.
+
+Redirect phải dùng HTTPS, trừ `localhost`, `127.0.0.1` và `[::1]` được dùng HTTP khi phát triển.
+Không nhận wildcard, user info, fragment, host hoặc cổng sai; `CORS_ALLOWED_ORIGINS` chỉ nhận origin, không có path, query hay dấu `/` cuối.
+`dxos doctor` kiểm allowlist trước khi khởi động.
+
+`dxos client browser list` liệt kê client trình duyệt.
+`dxos client browser remove partner-ui` xóa client nhưng giữ origin trong allowlist vì giao diện khác có thể dùng chung; xóa origin không còn dùng khỏi `CORS_ALLOWED_ORIGINS` rồi tạo lại backend.
+Hướng dẫn cấu hình ứng dụng từ đầu đến cuối ở [`docs/EXTENSIONS.md`](EXTENSIONS.md#giao-diện-ngoài).
+
+### Dự án
+
+Một dự án gom các mô hình và các ứng dụng ngoài mà một nơi tích hợp dùng, để lọc danh sách và xem một thay đổi chạm tới ai.
+Nó là tên gọi để quản trị và để chia việc quản trị người dùng: dự án không cô lập dữ liệu, không cấp quyền đọc hay ghi dữ liệu, và vai vẫn là `dxos-m-<mô hình>`.
+`ADMIN` của hệ thống vẫn quản trị tất cả; quản trị viên của một dự án chỉ quản trị người dùng trong dự án đó (xem [Thành viên và quản trị viên dự án](#thành-viên-và-quản-trị-viên-dự-án)).
+Dự án nằm ngoài tệp mô hình, nên đổi dự án không tạo phiên bản mới và không cần áp dụng lại.
+Hệ thống không đoán dự án từ tên mô hình, tên ứng dụng hay người áp dụng; chỉ có liên kết được khai rõ.
+
+Một mô hình thuộc tối đa một dự án, một ứng dụng ngoài cũng vậy; mô hình và ứng dụng chưa khai nằm ở nhóm chưa phân loại và chạy như trước.
+Ứng dụng có dự án riêng của nó, không theo dự án của mô hình nó gọi, nên ứng dụng của dự án B gọi mô hình của dự án A là cách dùng chung một mô hình.
+Client trình duyệt (`dxos client browser`) chưa có dự án.
+
+Quản lý dự án ở tab Dự án của bảng điều khiển (`/console`, ADMIN); hai tab Mô hình đang chạy và Ứng dụng ngoài lọc theo dự án và cho đổi dự án ngay trên từng dòng, và Danh mục dữ liệu ghi dự án của mô hình.
+Hoặc bằng lệnh:
+
+```bash
+dxos project add <tên> [--label NHÃN] [--description MÔ_TẢ]   # tên: chữ thường, số, - và _
+dxos project list                                              # mỗi dự án kèm mô hình và ứng dụng của nó
+dxos project remove <tên>
+dxos model project <mô hình> <dự án>                           # dấu - đưa ra khỏi dự án
+dxos client project <tên ứng dụng> <dự án>
+dxos client add <tên> --model M --role R --project P           # đăng ký và gán trong một bước
+dxos connect <mô hình> --role R --project P                    # gán cho client mới do lệnh tạo
+```
+
+Xóa dự án còn mô hình hoặc ứng dụng bị từ chối (409); đưa chúng ra khỏi dự án hoặc sang dự án khác trước.
+Xóa một ứng dụng thì liên kết của nó biến mất theo.
+Nhật ký quản trị ghi `PROJECT_CREATED`, `PROJECT_UPDATED`, `PROJECT_DELETED`, `MODEL_PROJECT_CHANGED` và `CLIENT_PROJECT_CHANGED`.
+
+#### Thành viên và quản trị viên dự án
+
+Một tài khoản là thành viên (`MEMBER`) hoặc quản trị viên (`ADMIN`) của một dự án, và thuộc nhiều dự án khi được thêm vào từng dự án một cách rõ ràng.
+Thành viên chỉ là tư cách để nhận vai của các mô hình trong dự án; quyền đọc và ghi dữ liệu vẫn đến từ vai của mô hình, và có vai của mô hình A không cho chạm vào mô hình B.
+
+Quản trị viên của dự án A làm được những việc này, chỉ trong dự án A:
+
+- Xem tài khoản thành viên của A, với vai của các mô hình thuộc A; không thấy đơn vị và không thấy vai của dự án khác.
+- Gán và gỡ vai của mô hình thuộc A cho thành viên của A; người chưa là thành viên bị từ chối, nên thêm thành viên là bước riêng.
+- Thêm và bớt thành viên thường; không đổi cấp của quản trị viên, không nâng ai lên quản trị viên.
+
+Chỉ `ADMIN` của hệ thống làm được: tạo tài khoản, khóa và mở, đặt lại mật khẩu, đơn vị, nâng và hạ quản trị viên dự án, tạo và xóa dự án, đổi dự án của mô hình hay ứng dụng, và mọi việc với mô hình chưa thuộc dự án nào.
+Việc ngoài phạm vi trả 403 và được ghi vào nhật ký từ chối; tài khoản không quản trị dự án nào bị từ chối ở mọi API người dùng.
+Phạm vi đọc từ cơ sở dữ liệu ở từng yêu cầu, nên đổi cấp hay đổi dự án của mô hình có hiệu lực ngay; vai trong token vẫn trễ tối đa khoảng 5 phút.
+Việc gán và gỡ vai ghi thêm `project` của mô hình vào nhật ký.
+
+Gỡ một thành viên, hoặc chuyển mô hình sang dự án khác, không gỡ các vai đã cấp: vai còn đến khi bị gỡ, và bảng điều khiển cảnh báo trước khi làm.
+Xóa dự án xóa các thành viên của nó; dự án còn mô hình hoặc ứng dụng vẫn bị từ chối.
+Nhật ký quản trị ghi `PROJECT_MEMBER_ADDED`, `PROJECT_MEMBER_CHANGED` và `PROJECT_MEMBER_REMOVED`.
+
+```bash
+dxos project member list <dự án>
+dxos project member add <dự án> <tên đăng nhập> [--admin]      # --admin: quản trị viên của dự án
+dxos project member remove <dự án> <tên đăng nhập>
+```
+
+Thành viên cũng quản lý ở tab Dự án của bảng điều khiển (nút Thành viên); quản trị viên dự án đăng nhập thấy hai tab Người dùng và Thành viên dự án.
+
+Nhiều dự án dùng chung một bản cài khi cùng một nhóm quản trị chịu trách nhiệm cho tất cả, hoặc khi mỗi dự án chỉ cần người quản trị người dùng riêng cho các mô hình của mình.
+Quản trị viên dự án không phải ranh giới giữa các tổ chức: các dự án vẫn chung một realm, một danh sách tài khoản (nhìn thấy qua `ADMIN` của hệ thống và qua tìm người), một hạ tầng và một `ADMIN`.
+Tách bản cài, hoặc ít nhất tách realm Keycloak, khi các dự án thuộc miền tin cậy khác nhau, cần danh sách người dùng riêng, hoặc không được để `ADMIN` chung nhìn thấy dữ liệu của nhau.
+
+## Dữ liệu và sao lưu
 
 ### Nhập hồ sơ từ tệp CSV
 
@@ -429,6 +528,14 @@ Kết quả:
   Hai dòng giống hệt nhau trong tệp vẫn tạo hai hồ sơ, và gửi lại tệp sau 24 giờ tạo trùng.
 - Gặp giới hạn tốc độ (429) lệnh chờ rồi gửi tiếp; ba lần liên tiếp bị từ chối quyền thì dừng.
 
+### Tệp bị gỡ khỏi hồ sơ
+
+Gỡ hoặc thay một tệp, xóa hồ sơ hay xóa thực thể thì đối tượng rời kho sau `DXOS_FILE_DELETE_DELAY` (mặc định 24 giờ).
+Backend ghi một thông điệp `file.delete` vào outbox trong cùng giao dịch, đến hạn thì xóa đối tượng.
+Đối tượng đã mất thì thông điệp coi như xong; kho đang ngừng thì thông điệp được thử lại.
+Một lượt sao lưu ngắn hơn khoảng trễ này luôn có đủ tệp cho mọi dòng tệp đính kèm trong bản dump.
+Tệp của giao dịch bị hủy (đã vào kho nhưng dòng không được ghi) bị xóa ngay.
+
 ### Lưu trữ hồ sơ đã đóng
 
 `dxos archive schedule install` cài `dxos-archive.timer` (systemd user timer) chạy `dxos archive auto` lúc 03:30 mỗi ngày, `dxos archive schedule uninstall` gỡ.
@@ -442,158 +549,7 @@ Bộ nhớ, số thread và dung lượng tệp tạm lấy từ `ARCHIVE_QUERY_
 Ví dụ: `dxos archive query onestop/20261111T030000Z --file request.parquet --param "status='CLOSED'" 'SELECT id, status FROM archive WHERE status = $status ORDER BY id'`.
 Tham số dùng cú pháp literal của DuckDB; giá trị chuỗi đặt trong dấu nháy đơn.
 
-## Chế độ chỉ lõi
-
-`dxos start --core` chỉ chạy Tầng 1: cổng vào APISIX, Keycloak, dịch vụ lõi, PostgreSQL và kho tệp SeaweedFS, thêm ClamAV khi bật quét mã độc.
-Ứng dụng web, portal, dịch vụ giám sát và trợ lý không chạy, và gateway không có route của chúng: `/`, `/portal/`, `/monitor/`, `/console` và `/assistant-api/` trả 404.
-Hồ sơ và thông điệp webhook không có trường `webUrl`.
-Gateway cũng không gửi nhật ký truy cập tới dịch vụ giám sát.
-API, đăng nhập, áp dụng tệp mô hình, `/v3/api-docs`, OpenAPI theo mô hình và lưu tệp dùng như ở chế độ đầy đủ.
-
-Chế độ được lưu trong `deploy/.env` bằng `DXOS_MODE` và profile `app` của `COMPOSE_PROFILES`; `dxos` sửa cả hai cùng lúc.
-`dxos start --core` gỡ container của Tầng 2 nếu đang chạy, và `dxos start --full` chạy lại đủ.
-`dxos start`, `dxos stop`, `dxos status`, `dxos update` và `dxos reconcile` giữ chế độ đã lưu, nên không bật lại thành phần nào của Tầng 2; `docker compose up -d` chạy tay trong `deploy/` cũng theo `.env`.
-Không có `DXOS_MODE` thì là chế độ đầy đủ, như các bản cài trước.
-Không có bảng điều khiển ở chế độ lõi: áp dụng mô hình bằng `dxos apply` hoặc `POST /api/v1/models/apply`, và quản trị người dùng bằng API hoặc `dxos admin`.
-
-## Keycloak Admin Console
-
-Gateway không mở Keycloak Admin Console mặc định: `/admin` và `/admin/*` trả 404, và `/swagger-ui.html` cùng `/swagger-ui/*` cũng vậy vì lõi không kèm Swagger UI.
-Dịch vụ lõi gọi Admin API của Keycloak qua mạng nội bộ, nên quản lý tài khoản, vai và client không bị ảnh hưởng.
-`dxos admin` và `dxos start` đặt tài khoản `admin` của realm bằng `kcadm.sh` trong container, không cần gateway.
-
-Mở Admin Console khi cần vận hành:
-
-1. Đặt `KEYCLOAK_ADMIN_CONSOLE=true` trong `deploy/.env`.
-2. Chạy `docker compose up -d apisix-config` rồi `docker compose restart apisix` trong `deploy/`.
-3. Mở `<địa chỉ>/admin/` và đăng nhập bằng `KEYCLOAK_ADMIN_USERNAME` và `KEYCLOAK_ADMIN_PASSWORD`; `dxos status` in địa chỉ này khi cờ đang bật.
-
-Đặt lại `false` rồi làm lại bước 2 để đóng.
-Các script kiểm ở `e2e/api` gọi Keycloak Admin API qua gateway nên cần cờ này bật (xem [`docs/TESTING.md`](TESTING.md)).
-
-## Biến cấu hình `.env`
-
-Cấu hình của DX-OS nằm ở `.env` trong thư mục `deploy`: `~/.dxos/deploy/.env` với bản cài bằng `dxos`, `deploy/.env` khi chạy từ mã nguồn.
-Bản cài tạo sẵn tệp này, điền ngẫu nhiên mọi mật khẩu và khóa, nên hệ thống chạy được mà không cần sửa gì.
-Sửa xong thì chạy `dxos start` để các dịch vụ nhận giá trị mới; `dxos doctor` kiểm lại tệp.
-Danh sách đầy đủ kèm chú thích từng dòng ở [`deploy/.env.example`](../deploy/.env.example).
-
-### Biến bạn có thể phải đổi
-
-| Biến | Mặc định | Đổi khi nào |
-|---|---|---|
-| `PUBLIC_HOST` | `localhost` | Người dùng hoặc ứng dụng ở máy khác cần vào hệ thống: đặt IP hoặc tên miền của máy chủ; `GATEWAY_PUBLIC_URL` tự theo. Đặt trước lần `dxos start` đầu tiên; container trên cùng máy gọi qua `host.docker.internal` nên không cần đổi |
-| `APISIX_HOST_PORT` | `9080` | Cổng 9080 của máy chủ đã bị chiếm |
-| `KEYCLOAK_HOSTNAME` | không đặt | Hệ thống đứng sau proxy HTTPS: đặt bằng `GATEWAY_PUBLIC_URL`, nếu không đăng nhập lỗi |
-| `STAFF_OTP_FLOW` | `DISABLED` | Máy chủ thật: đặt `CONDITIONAL` để vai `ADMIN` phải nhập mã một lần; phải đặt trước lần `dxos start` đầu tiên |
-| `CORS_ALLOWED_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173` | Giao diện trình duyệt ở tên miền khác gọi API; `dxos client browser add` tự thêm origin |
-| `DXOS_MODE` | `full` | `core` để chỉ chạy lõi, không có giao diện web; đổi bằng `dxos start --core` hoặc `--full`, không sửa tay |
-| `KEYCLOAK_ADMIN_CONSOLE` | `false` | `true` để mở trang quản trị Keycloak tại `/admin` |
-| `METRICS_PASSWORD` | ngẫu nhiên | Để trống thì endpoint số đo cho Prometheus đóng; xem [`MONITORING.md`](./MONITORING.md) |
-
-### Biến đã điền sẵn, không cần đổi
-
-Các biến này bắt buộc có giá trị, và bản cài đã điền.
-Mật khẩu và khóa là giá trị ngẫu nhiên; không đổi sau khi đã có dữ liệu, trừ khi bạn biết rõ việc đó ảnh hưởng gì.
-
-| Nhóm | Biến |
-|---|---|
-| Đăng nhập (Keycloak) | `KEYCLOAK_ADMIN_USERNAME`, `KEYCLOAK_ADMIN_PASSWORD`, `KEYCLOAK_ADMIN_CLIENT_ID`, `KEYCLOAK_ADMIN_CLIENT_SECRET`, `DXOS_CLI_SECRET`, `KEYCLOAK_DB_PASSWORD` |
-| Cơ sở dữ liệu | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `POSTGRES_DATA_DIR`, `POSTGRES_HOST_PORT`, `REPORT_DB_PASSWORD` |
-| Lưu tệp | `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_ENDPOINT`, `S3_BUCKET`, `STORAGE_SCAN_HOST` |
-| Giám sát | `MONITOR_DB_PASSWORD`, `KEYCLOAK_READONLY_DB_PASSWORD`, `MONITOR_INGEST_KEY`, `MONITOR_OIDC_CLIENT_SECRET` |
-| Sao lưu | `BACKUP_PASSWORD`: cất một bản ngoài máy chủ, mất là mất mọi bản sao lưu |
-| Image và chế độ chạy | `DXOS_IMAGE_PREFIX`, `DXOS_IMAGE_TAG`, `COMPOSE_PROJECT_NAME`, `COMPOSE_PROFILES`: do `dxos` đặt và cập nhật, không sửa tay |
-
-### Biến tùy chọn
-
-Trong `.env` các biến này nằm dưới dạng dòng chú thích (`# TÊN=giá trị`); bỏ dấu `#` để đặt, không đặt thì dùng giá trị mặc định ghi dưới đây.
-
-| Chức năng | Biến (mặc định) | Việc |
-|---|---|---|
-| Webhook | `DXOS_WEBHOOK_URL` (trống), `DXOS_WEBHOOK_SECRET` (trống), `DXOS_WEBHOOK_FORMAT` (`json`) | Đích mặc định nhận mọi thay đổi của hồ sơ; chi tiết ở [`INTEGRATIONS.md`](./INTEGRATIONS.md#webhook-sự-kiện) |
-| Hàng đợi và hạn xử lý | `DXOS_OUTBOX_MAX_ATTEMPTS` (`20`), `DXOS_OUTBOX_POLL_MS` (`2000`), `DXOS_OVERDUE_SWEEP_MS` (`60000`), `DXOS_DUE_SOON_BEFORE` (`24h`) | Số lần gửi thử, nhịp quét hàng đợi và hồ sơ quá hạn, báo sắp đến hạn |
-| Mô hình lúc khởi động | `DXOS_MODEL_FILE` (trống) | Do `dxos start <tệp>` đặt; xem [Tệp mô hình lúc khởi động](#tệp-mô-hình-lúc-khởi-động) |
-| Giới hạn gọi API | `RATE_LIMIT_ENABLED` (`true`) | `false` khi thử tải |
-| Tệp tải lên | `STORAGE_PRESIGN_TTL` (`15m`), `DXOS_FILE_DELETE_DELAY` (`24h`) | Hạn của link tải tệp và thời gian chờ trước khi xóa tệp đã gỡ |
-| Lưu trữ hồ sơ đã đóng | `S3_ARCHIVE_BUCKET` (`dxos-archive`), `ARCHIVE_AFTER_DAYS` (`365`), `ARCHIVE_QUERY_MEMORY_LIMIT` (`2GB`), `ARCHIVE_QUERY_THREADS` (`2`), `ARCHIVE_QUERY_TEMP_LIMIT` (`4GB`) | Xem [Lưu trữ hồ sơ đã đóng](#lưu-trữ-hồ-sơ-đã-đóng) |
-| Kéo từ git | `GITOPS_REPO`, `GITOPS_REF` (`main`), `GITOPS_PATH` (`models`), `GITOPS_MODE` (`report`), `GITOPS_INFRA_REPO`, `GITOPS_INFRA_REF` (`main`), `GITOPS_INFRA_MODE` (`report`), `GITOPS_SSH_KEY`, `GITOPS_KNOWN_HOSTS`, `GITOPS_REQUIRE_SIGNED` (`false`), `GITOPS_ALLOWED_SIGNERS` | Xem [Kéo từ git](#kéo-từ-git-gitops) |
-| Giám sát | `METRICS_REFRESH_MS` (`30000`), `ALERT_WEBHOOK_URL`, `ALERT_WEBHOOK_URL_ADMIN` | Nhịp cập nhật số đo và kênh nhận cảnh báo; xem [`MONITORING.md`](./MONITORING.md) |
-| Sao lưu | `BACKUP_DIR` (`./backups`), `BACKUP_REPOSITORY` (trống) | Nơi đặt kho sao lưu; xem [Sao lưu và khôi phục](#sao-lưu-và-khôi-phục) |
-
-## Kiểm tra trước khi chạy
-
-`./doctor.sh` (trong `deploy/`) chỉ đọc, không đổi gì và không in giá trị nào của `.env`.
-Nó kiểm Docker và Compose, RAM, ổ đĩa, `deploy/.env` (kể cả `DXOS_MODE` khớp với profile `app`) và các cổng.
-`.env` được so với các biến `${NAME:?}` mà Compose bắt buộc phải có: biến thiếu hoặc để trống bị báo `FAIL`.
-Biến có trong `.env` mà `.env.example` không liệt kê bị báo `WARN`.
-Với mỗi cổng `APISIX_HOST_PORT` và `POSTGRES_HOST_PORT`, nó phân biệt cổng do container của chính stack giữ (ổn, kể cả khi stack mới lên một phần và `dxos start` sẽ dựng nốt) với cổng bị chương trình khác ngoài stack giữ (FAIL).
-Cổng bị chương trình ngoài giữ thì `dxos stop` không giải phóng được: đổi giá trị của khóa đó trong `deploy/.env` hoặc dừng chương trình đó.
-Khi Docker không trả lời, `doctor` không kết luận cổng đang bị chương trình ngoài giữ: cổng đang dùng chỉ bị báo `WARN`, vì không biết container của stack có giữ nó không.
-Trên Windows, chương trình giữ cổng ở phía Windows không hiện trong WSL, nên `doctor` và `dxos start` còn hỏi chính Windows qua `powershell.exe`: gateway phải trả JSON trạng thái của nó và PostgreSQL phải trả lời gói `SSLRequest`.
-Cổng mà một chương trình khác ở phía Windows giữ độc quyền bị báo `FAIL` nêu khóa `APISIX_HOST_PORT` hoặc `POSTGRES_HOST_PORT` cần đổi, dù Docker vẫn khởi động được container; `dxos start` thoát mã 1 ở cả hai lúc, trước khi dựng và sau khi stack đã lên.
-Khi `powershell.exe` không gọi được từ WSL, `doctor` bỏ qua bước này; nếu Docker không mở được cổng thì `dxos start` vẫn dừng ở lỗi của Docker và nêu khóa cần đổi.
-Quét mã độc được báo là bật hay tắt; `STORAGE_SCAN_HOST=clamav` mà `COMPOSE_PROFILES` không có `av` bị báo `FAIL`, vì ClamAV sẽ không chạy và mọi tệp tải lên bị từ chối.
-Thoát với mã 1 khi có `FAIL`, nên chạy trước `./update.sh` và `docker compose up -d` trên máy chủ.
-
-## Lỗi thường gặp
-
-| Sự cố | Cách xử lý |
-|---|---|
-| Một thành phần ngừng | `dxos status`, rồi `dxos reconcile`; mọi service chạy lâu tự khởi động lại khi tiến trình thoát |
-| Máy không chạy được stack | `dxos doctor` chỉ đọc, báo thiếu biến trong `.env`, cổng bị chiếm, thiếu RAM hay ổ đĩa |
-| `dxos start` báo cổng không dùng được | Một chương trình khác giữ cổng, kể cả chương trình ở phía Windows; `dxos doctor` và `dxos start` nêu khóa `APISIX_HOST_PORT` hoặc `POSTGRES_HOST_PORT` cần đổi trong `deploy/.env` |
-| Mọi tệp tải lên bị từ chối | Quét mã độc bật mà ClamAV không chạy; `dxos doctor` báo `FAIL`, chạy `dxos av on` hoặc `dxos av off` |
-| Không đăng nhập được tài khoản thử | `dxos demo` đặt lại mật khẩu và in mật khẩu mới |
-| Sau lần áp dụng, một bản `backend` trả 404 | Chỉ chạy một bản `backend`, hoặc khởi động lại cả hai |
-
-## Thời gian dựng từ tệp mô hình
-
-Số đo trên máy chủ 8 CPU, 7 GB RAM, đã xóa stack cũ và năm image `dxos-*`, bản `2.0.0` cài bằng `dxos-install.sh`.
-
-| Bước | Thời gian |
-|---|---|
-| `dxos start <tệp mô hình>`: kéo năm image `dxos-*` từ GHCR, khởi động tám service, áp dụng `onestop.yaml` | 174 giây |
-| `dxos av on`: tải ClamAV, khởi động lại backend | 32 giây |
-| `dxos demo`: bốn tài khoản thử và 40 hồ sơ mẫu | 98 giây |
-
-Từ tệp mô hình đến hệ thống chạy mất khoảng ba phút khi quét mã độc còn tắt, và bản cài mặc định thêm ClamAV nên lâu hơn khoảng 32 giây; image của bên thứ ba (`postgres`, `apisix`, `seaweedfs`) đã có sẵn trên máy nên không nằm trong số này.
-
-## Tài nguyên và số bản sao
-
-Số đo trên máy 12 CPU, 31 GB RAM, với stack tám service (không bật `clamav`) đang rảnh sau khi nạp 40 hồ sơ mẫu bằng `dxos demo`.
-
-| Service | RAM (MiB) |
-|---|---|
-| `keycloak` | 624 |
-| `backend` | 494 |
-| `monitor` | 287 |
-| `apisix` | 221 |
-| `postgres` | 117 |
-| `seaweedfs` | 75 |
-| `frontend`, `portal` | 11 mỗi service |
-
-Cả stack dùng khoảng 1,8 GiB RAM, CPU gần 0 lúc rảnh; số này chưa gồm `clamav` (khoảng 1 GB RAM, bật sẵn, `dxos av off` để bỏ) và `assistant-control` (giới hạn 256 MB RAM và 0,5 CPU trong `docker-compose.yml`).
-Số nhân và RAM cần cho một số người dùng đồng thời nhất định, và cách đo lại trên máy của bạn, ở [`docs/SIZING.md`](SIZING.md).
-Image chiếm khoảng 3,5 GiB đĩa (kích thước `docker images` của tám service); cơ sở dữ liệu 12 MB.
-
-Dựng stack rỗng khi image đã có trên máy, với một tệp mô hình: stack lên và mô hình áp dụng xong sau khoảng 1 phút, và tài khoản ADMIN đầu tiên (`dxos admin`) thêm vài giây.
-Trên mô hình đã có 40 hồ sơ, `dxos plan` và `dxos apply` một trường mới mất dưới 1 giây và các hồ sơ còn nguyên.
-Giao diện, cổng vào, trang đăng nhập Keycloak và bảng điều khiển không tải tài nguyên từ ngoài cổng vào của hệ thống.
-
-`backend` chạy một bản.
-Chạy hai bản sau gateway thì mỗi bản giữ danh sách mô hình riêng trong bộ nhớ: sau một lần áp dụng, bản kia trả 404 cho mô hình mới và tiếp tục phục vụ mô hình đang bị giữ, cho đến khi khởi động lại cả hai.
-
-## Giám sát từ ngoài
-
-`./online-check.sh` (trong `deploy/`) gọi web, portal, trang đăng nhập và `/api/v1/system/status` qua địa chỉ công khai, rồi thoát với mã 1 khi một đường không trả 200 hoặc khi `backend` hoặc `storage` không `UP`.
-Địa chỉ lấy từ `GATEWAY_PUBLIC_URL` trong `.env`; biến `PUBLIC_URL` trong shell ghi đè để kiểm địa chỉ khác.
-Chạy theo lịch bằng cron, ví dụ mỗi 12 giờ: `0 */12 * * * cd /đường/dẫn/deploy && ./online-check.sh >> online-check.log 2>&1`.
-Khi `.env` có `ALERT_WEBHOOK_URL_ADMIN` (hoặc `ALERT_WEBHOOK_URL`), script gửi một tin vào kênh khi site chuyển sang lỗi và một tin khi site trở lại, không gửi lặp trong lúc còn lỗi.
-Script chạy trên chính máy chủ nên không phát hiện được việc máy chủ tắt hẳn; muốn phát hiện, thêm một dịch vụ ping ngoài (ví dụ UptimeRobot) trỏ vào `/api/v1/system/status`.
-Người đã có Prometheus thì đọc số hồ sơ theo trạng thái, hồ sơ quá hạn, hàng đợi sự kiện và lần áp dụng mô hình ở `/actuator/prometheus`, cách đọc ở [`MONITORING.md`](./MONITORING.md#số-đo-cho-prometheus).
-
-## Sao lưu và khôi phục
+### Sao lưu và khôi phục
 
 `./backup.sh` (trong `deploy/`) chụp một bản sao lưu mã hóa của những gì không dựng lại được từ repo.
 Gồm toàn bộ Postgres (dữ liệu nghiệp vụ, tài khoản Keycloak) và tệp trong SeaweedFS.
@@ -623,7 +579,9 @@ Chạy theo lịch bằng cron, ví dụ mỗi đêm: `0 2 * * * cd /đường/d
 Máy chủ dùng tệp env khác `.env` thì đặt `ENV_FILE=.env.dev ./backup.sh`.
 CI chạy một lượt backup và verify trên Postgres thật có một mô hình hai dòng và một tệp đính kèm thật ở job `Test backup and restore` của workflow `Platform`, rồi thêm một dòng tệp không có trong kho và mong `verify` thất bại.
 
-**Khôi phục** (máy mới hoặc sau khi mất dữ liệu):
+#### Khôi phục
+
+Áp dụng cho máy mới hoặc sau khi mất dữ liệu:
 
 1. Dựng lại stack từ repo với cùng `deploy/.env`, giữ Postgres chạy và dừng các dịch vụ còn lại: `docker compose up -d postgres` rồi `docker compose stop` các dịch vụ khác.
 2. Lấy bản sao lưu ra thư mục tạm: `./backup.sh restore /tmp/dxos-restore`.
@@ -632,57 +590,7 @@ CI chạy một lượt backup và verify trên Postgres thật có một mô h�
    Phần còn lại phải nạp không lỗi.
 4. Chép `data/seaweedfs` từ `/tmp/dxos-restore/data/` vào `deploy/data/` (các tệp thuộc root nên dùng `sudo`), rồi `docker compose up -d`.
 
-## Ứng phó sự cố
-
-Nghi bị xâm nhập, tệp bị mã hóa hay dữ liệu đổi lạ thì làm lần lượt bốn bước dưới đây.
-Mỗi bước ghi lại thời điểm và việc đã làm.
-
-1. **Cách ly.**
-   Gỡ các timer tự chạy để không gì dựng lại thứ vừa dừng: `dxos reconcile uninstall`, `dxos gitops uninstall` và `dxos archive schedule uninstall`.
-   Rồi `dxos stop`: lệnh dừng các container, giữ nguyên dữ liệu và log của container, và để lại `deploy/.stopped` nên `dxos reconcile` không bật lại.
-   Cắt đường vào từ Internet ở tường lửa, ở đường hầm hoặc ở reverse proxy đặt trước gateway.
-   Nghi máy chủ đã bị chiếm thì chép log ra máy khác trước: `docker compose logs --timestamps --no-color > su-co.log` trong `deploy/`.
-   Đừng chạy `docker compose down` hay `dxos uninstall --purge`: `down` xóa container kèm log của chúng, còn `--purge` xóa cả dữ liệu.
-   Chưa xóa gì khác, vì `deploy/data` và kho sao lưu còn cần cho các bước sau.
-2. **Khoanh vùng.**
-   Bật lại stack khi đường vào từ Internet đã cắt (`dxos start`), rồi `dxos history verify`.
-   Lệnh tính lại chuỗi hash của lịch sử hồ sơ và so với các điểm neo ở ngoài PostgreSQL; chuỗi hỏng thì in dòng đầu tiên bị sửa, xóa hoặc chèn.
-   Chuỗi nguyên vẹn nghĩa là lịch sử tới điểm neo gần nhất không bị đổi, không có nghĩa là dữ liệu hiện tại sạch.
-   Xem ai đã làm gì ở `audit_log` (nhật ký quản trị ở tab Người dùng) và ở màn hình giám sát `/monitor/`.
-   `./backup.sh snapshots` liệt kê các bản sao lưu để chọn bản chụp trước lúc sự cố.
-3. **Làm sạch.**
-   Cài lại đúng bản phát hành đang dùng bằng `dxos update vX.Y.Z`, hoặc bằng bộ cài trên một máy mới nếu nghi máy chủ bị chiếm quyền root; chép `deploy/.env` từ bản lưu ngoài máy sang máy mới.
-   Đổi bí mật nghi bị lộ: `dxos admin` cấp mật khẩu tạm mới cho `admin`, `dxos client rotate <tên>` cấp mã mới cho từng ứng dụng ngoài, và khóa hoặc đặt lại mật khẩu tài khoản nghi bị lộ ở tab Người dùng.
-   Các bí mật khác trong `deploy/.env` đổi theo hướng dẫn của thành phần tương ứng.
-   Không đổi `BACKUP_PASSWORD`, vì các bản sao lưu đã có sẽ không đọc được nữa.
-4. **Khôi phục.**
-   Làm theo mục Khôi phục ở trên với bản đã chọn ở bước 2.
-   `./backup.sh restore` chỉ lấy bản mới nhất.
-   Bản mới nhất chụp sau lúc sự cố bắt đầu thì lấy bản cũ hơn bằng `restic restore <ID>` trực tiếp trên kho, với ID từ `./backup.sh snapshots`; chưa có lệnh riêng cho việc này.
-   Khôi phục xong chạy `dxos history verify` và `dxos status`, mở lại đường vào, rồi cài lại các timer đã gỡ (`dxos reconcile install`, và `dxos gitops install` hay `dxos archive schedule install` nếu đang dùng).
-   Báo người dùng khoảng thời gian dữ liệu bị mất, từ bản sao lưu tới lúc sự cố.
-
-Sau sự cố, lập biên bản: lúc phát hiện, bản đã khôi phục, khoảng dữ liệu mất và nguyên nhân.
-Sự cố có đụng tới dữ liệu cá nhân thì báo cáo theo quy định về bảo vệ dữ liệu cá nhân.
-
-## Quét mã độc tệp tải lên
-
-Mọi tệp đính kèm được ClamAV quét trước khi xử lý và lưu.
-Tệp nhiễm bị từ chối với HTTP 422 `ERR_FILE_INFECTED` và lần chặn được ghi vào `audit_log` (`FILE_INFECTED`, kèm tên mẫu mã độc).
-ClamAV không trả lời thì tệp không được lưu và người dùng nhận HTTP 503 `ERR_SCAN_UNAVAILABLE`, vì tệp chưa quét không được coi là sạch (fail-closed).
-`deploy/.env` sinh từ `.env.example` có sẵn `av` trong `COMPOSE_PROFILES` và `STORAGE_SCAN_HOST=clamav`, nên quét bật ngay từ lần cài đầu; ClamAV cần khoảng 1 GB RAM.
-`dxos av off` tắt quét và `dxos av on` bật lại: lệnh sửa `COMPOSE_PROFILES` và `STORAGE_SCAN_HOST` trong `.env`, rồi khởi động hoặc gỡ ClamAV, tạo lại backend và khởi động lại APISIX nếu stack đang chạy.
-Không dùng `dxos` thì sửa hai biến đó bằng tay (`COMPOSE_PROFILES` bỏ hoặc có `av`, `STORAGE_SCAN_HOST` để trống hoặc `clamav`) rồi `docker compose up -d`.
-Quét tắt thì tệp nhiễm được lưu bình thường, và `dxos doctor` báo `WARN`.
-`install.sh --upgrade` giữ nguyên lựa chọn của bản đã cài: bản chưa từng bật quét vẫn tắt, bật bằng `dxos av on`.
-Chữ ký virus tải về lần đầu mất vài phút và được giữ trong volume `clamav_data`.
-Image chính thức tự cập nhật chữ ký một lần mỗi ngày từ mạng phân phối của ClamAV; không dùng `curl` hay script riêng để tải chúng, vì ClamAV có thể giới hạn hoặc chặn cách tải đó.
-Mã 429 trong log của `clamav` là bị giới hạn tốc độ (hay gặp ở IP máy chủ đám mây dùng chung), và chữ ký cũ vẫn dùng được cho đến lần cập nhật sau.
-ClamAV chặn tải chữ ký với phiên bản đã hết hỗ trợ, nên nâng image `clamav/clamav` trong `clamav/Dockerfile` khi bản đang ghim tới hạn (chính sách ở https://docs.clamav.net/faq/faq-eol.html).
-Mỗi lần clamd nạp lại chữ ký (hằng ngày và sau khi khởi động) nó không quét được khoảng 10 giây, và người dùng gặp 503 trong lúc đó; chờ rồi tải lại.
-Thử bằng tệp EICAR (chuỗi kiểm thử chuẩn của ngành diệt virus): tệp chỉ gồm đúng chuỗi đó, đổi tên `.pdf` rồi đính vào một yêu cầu; `e2e/api/check_demo.py` tự làm bước này khi `STORAGE_SCAN_HOST` có giá trị, cùng với tệp sạch và tệp tải lên lúc ClamAV dừng, và nhóm chế độ lõi của job `Test the API` chạy nó trong CI.
-
-## Dữ liệu cá nhân ra nước ngoài
+### Dữ liệu cá nhân ra nước ngoài
 
 Cài đặt chạy trên máy chủ của người triển khai nên dữ liệu ở lại nơi máy chủ đặt.
 Dữ liệu chỉ ra nước ngoài khi người triển khai tự chọn một đích ngoài lãnh thổ Việt Nam.
@@ -715,3 +623,109 @@ Giữ máy chủ, kho sao lưu và đích webhook trong lãnh thổ Việt Nam l
 Hai liên kết trỏ tới bản đăng trên Công báo điện tử, và nội dung các điều được nêu ở trên đã đối chiếu với bản PDF ở đó.
 Điều kiện áp dụng cho từng bản cài, như vai trò bên kiểm soát hay bên xử lý và loại dữ liệu nhạy cảm, cần luật sư hoặc cơ quan chuyên trách xác nhận.
 Mục này tóm tắt văn bản, không phải tư vấn pháp lý.
+
+## Giám sát và sự cố
+
+### Lỗi thường gặp
+
+| Sự cố | Cách xử lý |
+|---|---|
+| Một thành phần ngừng | `dxos status`, rồi `dxos reconcile`; mọi service chạy lâu tự khởi động lại khi tiến trình thoát |
+| Máy không chạy được stack | `dxos doctor` chỉ đọc, báo thiếu biến trong `.env`, cổng bị chiếm, thiếu RAM hay ổ đĩa |
+| `dxos start` báo cổng không dùng được | Một chương trình khác giữ cổng, kể cả chương trình ở phía Windows; `dxos doctor` và `dxos start` nêu khóa `APISIX_HOST_PORT` hoặc `POSTGRES_HOST_PORT` cần đổi trong `deploy/.env` |
+| Mọi tệp tải lên bị từ chối | Quét mã độc bật mà ClamAV không chạy; `dxos doctor` báo `FAIL`, chạy `dxos av on` hoặc `dxos av off` |
+| Không đăng nhập được tài khoản thử | `dxos demo` đặt lại mật khẩu và in mật khẩu mới |
+| Sau lần áp dụng, một bản `backend` trả 404 | Chỉ chạy một bản `backend`, hoặc khởi động lại cả hai |
+
+### Tự phục hồi
+
+Mọi service chạy lâu có `restart: unless-stopped`, nên Docker khởi động lại chúng khi tiến trình thoát hoặc máy khởi động lại.
+`dxos reconcile` chạy `docker compose up -d --no-build` theo các image đã ghim trong `.env`: container bị xóa được tạo lại, container lệch cấu hình được tạo lại theo khai báo, container đang đúng thì để nguyên.
+Mỗi lượt có thay đổi ghi một dòng vào `deploy/reconcile.log`; lượt đến khi lượt trước còn chạy thì bỏ qua.
+`update.sh` và `backup.sh` giữ cùng khóa `deploy/.reconcile.lock`, nên khi một lần cập nhật hoặc sao lưu đang chạy thì `dxos reconcile` bỏ qua lượt; hai script đợi tối đa 5 phút để lấy khóa rồi báo lỗi.
+`dxos stop` để lại tệp `deploy/.stopped`, và `dxos reconcile` không bật lại stack có tệp này; `dxos start` xóa nó.
+
+`dxos reconcile install` cài `dxos-reconcile.timer` (systemd user timer) chạy lệnh trên mỗi phút, `dxos reconcile uninstall` gỡ.
+Máy không có systemd thì chạy `dxos reconcile` từ cron mỗi phút.
+Timer của user chỉ chạy khi user còn phiên đăng nhập, trừ khi bật `loginctl enable-linger <user>`.
+
+### Giám sát từ ngoài
+
+`./online-check.sh` (trong `deploy/`) gọi web, portal, trang đăng nhập và `/api/v1/system/status` qua địa chỉ công khai, rồi thoát với mã 1 khi một đường không trả 200 hoặc khi `backend` hoặc `storage` không `UP`.
+Địa chỉ lấy từ `GATEWAY_PUBLIC_URL` trong `.env`; biến `PUBLIC_URL` trong shell ghi đè để kiểm địa chỉ khác.
+Chạy theo lịch bằng cron, ví dụ mỗi 12 giờ: `0 */12 * * * cd /đường/dẫn/deploy && ./online-check.sh >> online-check.log 2>&1`.
+Khi `.env` có `ALERT_WEBHOOK_URL_ADMIN` (hoặc `ALERT_WEBHOOK_URL`), script gửi một tin vào kênh khi site chuyển sang lỗi và một tin khi site trở lại, không gửi lặp trong lúc còn lỗi.
+Script chạy trên chính máy chủ nên không phát hiện được việc máy chủ tắt hẳn; muốn phát hiện, thêm một dịch vụ ping ngoài (ví dụ UptimeRobot) trỏ vào `/api/v1/system/status`.
+Người đã có Prometheus thì đọc số hồ sơ theo trạng thái, hồ sơ quá hạn, hàng đợi sự kiện và lần áp dụng mô hình ở `/actuator/prometheus`, cách đọc ở [`MONITORING.md`](./MONITORING.md#số-đo-cho-prometheus).
+
+### Ứng phó sự cố
+
+Nghi bị xâm nhập, tệp bị mã hóa hay dữ liệu đổi lạ thì làm lần lượt bốn bước dưới đây.
+Mỗi bước ghi lại thời điểm và việc đã làm.
+
+1. **Cách ly.**
+   Gỡ các timer tự chạy để không gì dựng lại thứ vừa dừng: `dxos reconcile uninstall`, `dxos gitops uninstall` và `dxos archive schedule uninstall`.
+   Rồi `dxos stop`: lệnh dừng các container, giữ nguyên dữ liệu và log của container, và để lại `deploy/.stopped` nên `dxos reconcile` không bật lại.
+   Cắt đường vào từ Internet ở tường lửa, ở đường hầm hoặc ở reverse proxy đặt trước gateway.
+   Nghi máy chủ đã bị chiếm thì chép log ra máy khác trước: `docker compose logs --timestamps --no-color > su-co.log` trong `deploy/`.
+   Đừng chạy `docker compose down` hay `dxos uninstall --purge`: `down` xóa container kèm log của chúng, còn `--purge` xóa cả dữ liệu.
+   Chưa xóa gì khác, vì `deploy/data` và kho sao lưu còn cần cho các bước sau.
+2. **Khoanh vùng.**
+   Bật lại stack khi đường vào từ Internet đã cắt (`dxos start`), rồi `dxos history verify`.
+   Lệnh tính lại chuỗi hash của lịch sử hồ sơ và so với các điểm neo ở ngoài PostgreSQL; chuỗi hỏng thì in dòng đầu tiên bị sửa, xóa hoặc chèn.
+   Chuỗi nguyên vẹn nghĩa là lịch sử tới điểm neo gần nhất không bị đổi, không có nghĩa là dữ liệu hiện tại sạch.
+   Xem ai đã làm gì ở `audit_log` (nhật ký quản trị ở tab Người dùng) và ở màn hình giám sát `/monitor/`.
+   `./backup.sh snapshots` liệt kê các bản sao lưu để chọn bản chụp trước lúc sự cố.
+3. **Làm sạch.**
+   Cài lại đúng bản phát hành đang dùng bằng `dxos update vX.Y.Z`, hoặc bằng bộ cài trên một máy mới nếu nghi máy chủ bị chiếm quyền root; chép `deploy/.env` từ bản lưu ngoài máy sang máy mới.
+   Đổi bí mật nghi bị lộ: `dxos admin` cấp mật khẩu tạm mới cho `admin`, `dxos client rotate <tên>` cấp mã mới cho từng ứng dụng ngoài, và khóa hoặc đặt lại mật khẩu tài khoản nghi bị lộ ở tab Người dùng.
+   Các bí mật khác trong `deploy/.env` đổi theo hướng dẫn của thành phần tương ứng.
+   Không đổi `BACKUP_PASSWORD`, vì các bản sao lưu đã có sẽ không đọc được nữa.
+4. **Khôi phục.**
+   Làm theo mục [Khôi phục](#khôi-phục) với bản đã chọn ở bước 2.
+   `./backup.sh restore` chỉ lấy bản mới nhất.
+   Bản mới nhất chụp sau lúc sự cố bắt đầu thì lấy bản cũ hơn bằng `restic restore <ID>` trực tiếp trên kho, với ID từ `./backup.sh snapshots`; chưa có lệnh riêng cho việc này.
+   Khôi phục xong chạy `dxos history verify` và `dxos status`, mở lại đường vào, rồi cài lại các timer đã gỡ (`dxos reconcile install`, và `dxos gitops install` hay `dxos archive schedule install` nếu đang dùng).
+   Báo người dùng khoảng thời gian dữ liệu bị mất, từ bản sao lưu tới lúc sự cố.
+
+Sau sự cố, lập biên bản: lúc phát hiện, bản đã khôi phục, khoảng dữ liệu mất và nguyên nhân.
+Sự cố có đụng tới dữ liệu cá nhân thì báo cáo theo quy định về bảo vệ dữ liệu cá nhân.
+
+## Tài nguyên và thời gian
+
+### Tài nguyên và số bản sao
+
+Số đo trên máy 12 CPU, 31 GB RAM, với stack tám service (không bật `clamav`) đang rảnh sau khi nạp 40 hồ sơ mẫu bằng `dxos demo`.
+
+| Service | RAM (MiB) |
+|---|---|
+| `keycloak` | 624 |
+| `backend` | 494 |
+| `monitor` | 287 |
+| `apisix` | 221 |
+| `postgres` | 117 |
+| `seaweedfs` | 75 |
+| `frontend`, `portal` | 11 mỗi service |
+
+Cả stack dùng khoảng 1,8 GiB RAM, CPU gần 0 lúc rảnh; số này chưa gồm `clamav` (khoảng 1 GB RAM, bật sẵn, `dxos av off` để bỏ) và `assistant-control` (giới hạn 256 MB RAM và 0,5 CPU trong `docker-compose.yml`).
+Số nhân và RAM cần cho một số người dùng đồng thời nhất định, và cách đo lại trên máy của bạn, ở [`docs/SIZING.md`](SIZING.md).
+Image chiếm khoảng 3,5 GiB đĩa (kích thước `docker images` của tám service); cơ sở dữ liệu 12 MB.
+
+Dựng stack rỗng khi image đã có trên máy, với một tệp mô hình: stack lên và mô hình áp dụng xong sau khoảng 1 phút, và tài khoản ADMIN đầu tiên (`dxos admin`) thêm vài giây.
+Trên mô hình đã có 40 hồ sơ, `dxos plan` và `dxos apply` một trường mới mất dưới 1 giây và các hồ sơ còn nguyên.
+Giao diện, cổng vào, trang đăng nhập Keycloak và bảng điều khiển không tải tài nguyên từ ngoài cổng vào của hệ thống.
+
+`backend` chạy một bản.
+Chạy hai bản sau gateway thì mỗi bản giữ danh sách mô hình riêng trong bộ nhớ: sau một lần áp dụng, bản kia trả 404 cho mô hình mới và tiếp tục phục vụ mô hình đang bị giữ, cho đến khi khởi động lại cả hai.
+
+### Thời gian dựng từ tệp mô hình
+
+Số đo trên máy chủ 8 CPU, 7 GB RAM, đã xóa stack cũ và năm image `dxos-*`, bản `2.0.0` cài bằng `dxos-install.sh`.
+
+| Bước | Thời gian |
+|---|---|
+| `dxos start <tệp mô hình>`: kéo năm image `dxos-*` từ GHCR, khởi động tám service, áp dụng `onestop.yaml` | 174 giây |
+| `dxos av on`: tải ClamAV, khởi động lại backend | 32 giây |
+| `dxos demo`: bốn tài khoản thử và 40 hồ sơ mẫu | 98 giây |
+
+Từ tệp mô hình đến hệ thống chạy mất khoảng ba phút khi quét mã độc còn tắt, và bản cài mặc định thêm ClamAV nên lâu hơn khoảng 32 giây; image của bên thứ ba (`postgres`, `apisix`, `seaweedfs`) đã có sẵn trên máy nên không nằm trong số này.
